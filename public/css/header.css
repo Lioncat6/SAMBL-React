@@ -37,6 +37,7 @@ img {
 
 header {
 	width: 50%;
+	min-width: 400px;
 	margin: 0 auto;
 	height: 150px;
 	overflow: hidden;
