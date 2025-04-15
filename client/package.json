@@ -1,5 +1,5 @@
 {
-    "name": "sambl-react",
+    "name": "sambl-client",
     "version": "0.0.0",
     "main": "/src/index.js",
     "scripts": {
