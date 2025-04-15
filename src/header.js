@@ -10,7 +10,7 @@ export default function header() {
 				</a>
 				<div className="textwrapper">
 					<h1>SAMBL</h1>
-					<div className="subdesc">Spotify Artist MusicBrainz Lookup</div>
+					<div className="subdesc">Streaming Artist MusicBrainz Lookup</div>
 				</div>
 				<div id="buttonWrapper">
 					<button id="savedArtists">
