@@ -1,0 +1,24 @@
+<svg id="a" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 27 30" xmlns:bx="https://boxy-svg.com">
+  <defs>
+    <style>.b{fill:#eb743b;}.c{fill:#ba478f;}</style>
+    <filter id="drop-shadow-filter-0" bx:preset="drop-shadow 1 0.5 0.5 0 0.5 rgba(0,0,0,0.3)" color-interpolation-filters="sRGB" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="0"></feGaussianBlur>
+      <feOffset dx="0.5" dy="0.5"></feOffset>
+      <feComponentTransfer result="offsetblur">
+        <feFuncA id="spread-ctrl" type="linear" slope="1"></feFuncA>
+      </feComponentTransfer>
+      <feFlood flood-color="rgba(0,0,0,0.3)"></feFlood>
+      <feComposite in2="offsetblur" operator="in"></feComposite>
+      <feMerge>
+        <feMergeNode></feMergeNode>
+        <feMergeNode in="SourceGraphic"></feMergeNode>
+      </feMerge>
+    </filter>
+    <bx:export>
+      <bx:file format="svg" path="FoundByUPC.svg"></bx:file>
+    </bx:export>
+  </defs>
+  <polygon class="c" points="13 1 1 8 1 22 13 29 13 1"></polygon>
+  <polygon class="b" points="14 1 26 8 26 22 14 29 14 1"></polygon>
+  <text style="fill: rgb(0, 255, 186); font-family: Arial, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: -0.2px; paint-order: fill; white-space: pre; filter: url(#drop-shadow-filter-0);" x="0.077" y="19.539">UPC</text>
+</svg>

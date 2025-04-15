@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 27 30" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+  <defs>
+    <filter id="grayscale-filter-0" color-interpolation-filters="sRGB" x="-50%" y="-50%" width="200%" height="200%" bx:preset="grayscale 1 0.8">
+      <feColorMatrix type="matrix" values="0.37 0.572 0.058 0 0 0.17 0.772 0.058 0 0 0.17 0.572 0.258 0 0 0 0 0 1 0"/>
+    </filter>
+    <filter id="grayscale-filter-1" color-interpolation-filters="sRGB" x="-50%" y="-50%" width="200%" height="200%" bx:preset="grayscale 1 0.8">
+      <feColorMatrix type="matrix" values="0.37 0.572 0.058 0 0 0.17 0.772 0.058 0 0 0.17 0.572 0.258 0 0 0 0 0 1 0"/>
+    </filter>
+    <filter id="drop-shadow-filter-0" color-interpolation-filters="sRGB" x="-50%" y="-50%" width="200%" height="200%" bx:preset="drop-shadow 1 1 1 1 0.85 rgba(0,0,0,0.3)">
+      <title>Drop shadow</title>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1"/>
+      <feOffset dx="1" dy="1"/>
+      <feComponentTransfer result="offsetblur">
+        <feFuncA id="spread-ctrl" type="linear" slope="1.7"/>
+      </feComponentTransfer>
+      <feFlood flood-color="rgba(0,0,0,0.3)"/>
+      <feComposite in2="offsetblur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <style>.b{fill:#eb743b;}.c{fill:#ba478f;}</style>
+  </defs>
+  <polygon class="c" points="13 1 1 8 1 22 13 29 13 1" style="filter: url('#grayscale-filter-0');" transform="matrix(1, 0, 0, 1, 0, 2.842170943040401e-14)"/>
+  <polygon class="b" points="14 1 26 8 26 22 14 29 14 1" style="filter: url('#grayscale-filter-1');" transform="matrix(1, 0, 0, 1, 0, 2.842170943040401e-14)"/>
+  <text style="fill: rgb(255, 0, 0); font-family: Arial, sans-serif; font-size: 35px; font-style: italic; font-weight: 700; white-space: pre; filter: url('#drop-shadow-filter-0');" x="6.5" y="26.971" transform="matrix(1, 0, 0, 1, 0, 2.842170943040401e-14)">!</text>
+</svg>

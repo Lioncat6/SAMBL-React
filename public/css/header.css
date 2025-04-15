@@ -24,8 +24,8 @@ body {
 img {
 	padding-top: 10px;
 	overflow: hidden;
-	width: 80vh;
-	height: 80vh;
+	width: 120px;
+	height: 120px;
 }
 
 .imagewrapper {
@@ -36,7 +36,9 @@ img {
 }
 
 header {
-	height: 88vh;
+	width: 50%;
+	margin: 0 auto;
+	height: 150px;
 	overflow: hidden;
 	display: flex;
 	flex-direction: row;
