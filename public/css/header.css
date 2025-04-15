@@ -37,7 +37,7 @@ img {
 
 header {
 	width: 50%;
-	min-width: 400px;
+	min-width: 500px;
 	margin: 0 auto;
 	height: 150px;
 	overflow: hidden;
@@ -142,6 +142,10 @@ header {
 	.samblWrapper {
 		margin-right: 30px;
 	}
+	header {
+		min-width: 380px;
+		width: -webkit-fill-available;
+	}
 }
 
 #configButton, #savedArtists {
@@ -156,6 +160,7 @@ header {
 	background: transparent;
 	color: rgb(184, 184, 184);
 	text-align: center;
+	font-size: 13.33px;
 }
 
 #configButton:hover {
