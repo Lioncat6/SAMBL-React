@@ -4,11 +4,10 @@ import styles from '../styles/header.module.css';
 export default function Header() {
     return (
         <>
-            <link rel="stylesheet" href="../styles/header.css" />
             <header className={styles.header}>
                 <Link className={styles.samblWrapper} href="/">
                     <div className={styles.imagewrapper}>
-                        <img src="assets/images/favicon.svg" alt="SAMBL Logo" />
+                        <img src="assets/images/favicon.svg" alt="SAMBL Logo" className={styles.logo} />
                     </div>
                 </Link>
                 <div className={styles.textwrapper}>

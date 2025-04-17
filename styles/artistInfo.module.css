@@ -1,0 +1,88 @@
+.spIcon,
+.mbIcon {
+	width: 40px;
+	max-height: 10vh;
+}
+
+.nameContainer {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+}
+
+.spURLContainer {
+	display: flex;
+	flex-direction: row;
+	padding: 1.2vh 0 0 2%;
+	margin-bottom: 0;
+}
+
+.spURLContainer a {
+	padding: 0 3px 0 0;
+}
+
+.mbURLContainer {
+	padding: 1vh 0 0 0;
+	margin-bottom: 0;
+}
+
+.artistPageContainer {
+	display: flex;
+	flex-direction: row;
+    justify-content: center;
+}
+
+.artistImageContainer img {
+	width: 20vh;
+	max-width: 100%;
+	border-radius: 6px;
+	object-fit: cover;
+	aspect-ratio: 1;
+	filter: drop-shadow(8px 8px 10px #000000a8);
+}
+.artistImageContainer {
+	width: 50%;
+}
+
+.artistTextContainer {
+	display: flex;
+	flex-direction: column;
+	margin-left: 5px;
+}
+
+.artistName {
+	margin-bottom: 0;
+	text-wrap: nowrap;
+}
+
+.artistFollowerCount {
+	margin: 0;
+}
+
+.artistGenres p {
+	margin: 4%;
+	color: grey;
+	font-style: italic;
+}
+
+.artistPopularityBar {
+	width: 50%;
+	margin: auto;
+	display: flex;
+	align-items: start;
+	border: 1px solid darkgray;
+	border-radius: 10px;
+}
+
+.artistPopularityFill {
+	height: 8px;
+	width: 0;
+	border-radius: 5px;
+	background: gold;
+	border-right: aliceblue;
+}
+
+.artistPopularity {
+	font-size: smaller;
+	color: lightgrey;
+}
