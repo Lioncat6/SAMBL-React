@@ -29,7 +29,7 @@
 .artistPageContainer {
 	display: flex;
 	flex-direction: row;
-    justify-content: center;
+	justify-content: center;
 }
 
 .artistImageContainer img {
@@ -40,6 +40,7 @@
 	aspect-ratio: 1;
 	filter: drop-shadow(8px 8px 10px #000000a8);
 }
+
 .artistImageContainer {
 	width: 50%;
 }
@@ -48,6 +49,7 @@
 	display: flex;
 	flex-direction: column;
 	margin-left: 5px;
+	width: 50%;
 }
 
 .artistName {
@@ -85,4 +87,8 @@
 .artistPopularity {
 	font-size: smaller;
 	color: lightgrey;
+}
+
+.artistPopularityContainer {
+	cursor: help;
 }

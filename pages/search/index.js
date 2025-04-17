@@ -1,18 +1,5 @@
 import { useRouter } from "next/router";
-
-async function checkArtist(spfId) {
-    const response = await fetch(`/api/lookupArtist?spotifyId=${spfId}`);
-    if (response.ok) {
-        const mbid = await response.json();
-        if (mbid) {
-            router.push(`/artist?spid=${spfId}&artist_mbid=${mbid}`);
-        } else {
-            router.push(`/newartist?spid=${spfId}`);
-        }
-    } else {
-        dispError("Spotify artist not found!");
-    }
-}
+import ArtistList from "../../components/ItemList";
 
 export default function search() {
     const router = useRouter();
@@ -28,7 +15,7 @@ export default function search() {
                     <div id="loadingContainer" />
                     <div id="loadingText" />
                     <div id="artistContainer">
-                        <div id="artistList" />
+                        <ArtistList type={"artist"} />
                         <div id="statusText" />
                     </div>
                 </div>

@@ -40,7 +40,6 @@ function ImageContainer({url}){
 }
 
 export default function ArtistInfo({artist}) {
-	console.log(artist);
 	return (
 		<>
 			<div id="artistPageContainer" className={styles.artistPageContainer}>
@@ -52,12 +51,12 @@ export default function ArtistInfo({artist}) {
 					</div>
 					<h2 id="artistFollowerCount" className={styles.artistFollowerCount}>{artist.followers} Followers</h2>
 					<div id="artistGenres" className={styles.artistGenres}>{artist.genres}</div>
-					<div id="artistPopularityContainer" className={styles.artistPopularityContainer}>
+					<div id="artistPopularityContainer" className={styles.artistPopularityContainer} title={'Popularity: ' + artist.popularity+'%'}>
 						<div id="artistPopularity" className={styles.artistPopularity}>Popularity:</div>
 						<div id="artistPopularityBar" className={styles.artistPopularityBar}>
 							<div id="artistPopularityFill" className={styles.artistPopularityFill} style={{ width: `${artist.popularity}%` }} />
 						</div>
-					</div>
+					</div>	
 				</div>
 			</div>
 		</>

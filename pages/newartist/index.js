@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
 import ArtistInfo from "../../components/ArtistInfo";
+import AddButtons from "../../components/buttons";
 
-async function getArtist(spfId) {
-    const response = await fetch(`/api/getArtistInfo?spotifyId=${spfId}`);
+async function fetchArtistData(spfId) {
+    const response = await fetch(`http://localhost:3000/api/getArtistInfo?spotifyId=${spfId}`);
     if (response.ok) {
         return await response.json();
     } else {
@@ -11,46 +10,40 @@ async function getArtist(spfId) {
     }
 }
 
-export default function NewArtist() {
-    const router = useRouter();
-    const { spid } = router.query;
+export async function getServerSideProps(context) {
+    const { spid } = context.query;
 
-    const [artist, setArtist] = useState(null);
-    const [error, setError] = useState(null);
+    try {
+        const data = await fetchArtistData(spid);
 
-    useEffect(() => {
-        if (spid) {
-            // Fetch artist data when spid is available
-            getArtist(spid)
-                .then((data) => {
-                    console.log(data)
-                    setArtist({
-                        name: data.name,
-                        imageUrl: data.images[0]?.url || "",
-                        genres: data.genres,
-                        followers: data.followers.total,
-                        popularity: data.popularity,
-                        spotifyId: spid,
-                    });
-                })
-                .catch((err) => {
-                    console.error(err);
-                    setError("Failed to fetch artist data.");
-                });
-        }
-    }, [spid]); // Run the effect when spid changes
+        // Transform the data into the format expected by the component
+        const artist = {
+            name: data.name,
+            imageUrl: data.images[0]?.url || "",
+            genres: data.genres.join(", "), // Convert genres array to a string
+            followers: data.followers.total,
+            popularity: data.popularity,
+            spotifyId: spid,
+        };
 
-    if (error) {
-        return <div>Error: {error}</div>;
+        return {
+            props: { artist }, // Pass the artist data as props to the page
+        };
+    } catch (error) {
+        console.error("Error fetching artist data:", error);
+        return {
+            notFound: true, // Return a 404 page if the artist is not found
+        };
     }
+}
 
-    if (!artist) {
-        return <div class="loadingContainer"><div class="lds-facebook"><div></div><div></div><div></div></div></div>; // Show a loading state while fetching data
-    }
-
+export default function NewArtist({ artist }) {
     return (
         <>
             <ArtistInfo artist={artist} />
+            <div id="contentContainer">
+                <AddButtons artist={artist} />
+            </div>
         </>
     );
 }

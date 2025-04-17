@@ -38,8 +38,23 @@ async function getArtistById(spotifyId) {
     }
 }
 
+async function searchByArtistName(artistName) {
+    try {
+        await refreshAccessToken();
+
+        // Fetch artist data
+        const data = await spotifyApi.searchArtists(artistName);
+
+        return data.body;
+    } catch (error) {
+        console.error("Error searching for artist:", error);
+        throw new Error("Failed to search for artist");
+    }
+}
+
 const spotify = {
     getArtistById,
+    searchByArtistName
 };
 
 export default spotify;

@@ -6,7 +6,7 @@ export default function footer() {
 			<footer className={styles.footer}>
 				<div>
 					Please report any bugs or suggestions here{" "}
-					<a rel="noopener" href="https://github.com/Lioncat6/SAMBL" target="_blank">
+					<a rel="noopener" href="https://github.com/Lioncat6/SAMBL-React" target="_blank">
 						Github
 					</a>{" "}
 					|{" "}
@@ -15,7 +15,7 @@ export default function footer() {
 					</a>
 					<div>
 						<div id="commitId" />
-						<div id="serverStatus">
+						<div id="serverStatus" className={styles.serverStatus}>
 							Server Status:
 							<div className={styles.loader} />
 						</div>

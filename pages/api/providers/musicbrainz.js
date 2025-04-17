@@ -11,7 +11,7 @@ const mbApi = new MusicBrainzApi({
 });
 
 
-async function getArtistBySpotifyId(spotifyId) {
+async function getIdBySpotifyId(spotifyId) {
     try {
         const data = await mbApi.search('url', {query: {url: `https://open.spotify.com/artist/${spotifyId}`}}, {inc: ['artist-rels']}, {limit: 1});
         if (data.count === 0) {
@@ -24,8 +24,26 @@ async function getArtistBySpotifyId(spotifyId) {
     }
 }
 
+async function getIdsBySpotifyUrls(spotifyUrls) {
+    try {
+        const data = await mbApi.search('url', {query: {url: spotifyUrls}}, {inc: ['artist-rels']});
+        if (data.count === 0) {
+            return null; // No artist found
+        }
+        let mbids = {}
+        for (url of data.urls){
+            mbids[url.resource] = url['relation-list'][0].relations[0].artist.id
+        }
+        return mbids;
+    } catch (error) {
+        console.error(error);
+        throw new Error("Failed to fetch artist data");
+    }
+}
+
 const musicbrainz = {
-    getIdBySpotifyId: getArtistBySpotifyId,
+    getIdBySpotifyId: getIdBySpotifyId,
+    getIdsBySpotifyUrls: getIdsBySpotifyUrls
 };
 
 export default musicbrainz;
