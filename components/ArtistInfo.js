@@ -1,6 +1,6 @@
 import styles from "../styles/artistInfo.module.css";
 
-function SpotifyUrlContainer(id) {
+function SpotifyUrlContainer({id}) {
 	return (
 		<div className={styles.spURLContainer}>
 			<a id="spURL" target="_blank" href={"https://open.spotify.com/artist/" + id}>
@@ -10,7 +10,7 @@ function SpotifyUrlContainer(id) {
 	);
 }
 
-function MusicBrainzUrlContainer(id) {
+function MusicBrainzUrlContainer({id}) {
 	return (
 		<div className={styles.mbURLContainer}>
 			<a id="mbURL" target="_blank" href={"https://musicbrainz.org/artist/" + id}>
@@ -20,7 +20,7 @@ function MusicBrainzUrlContainer(id) {
 	);
 }
 
-function UrlIcons(artist) {
+function UrlIcons({artist}) {
 	return (
 		<>
 			{artist.spotifyId && <SpotifyUrlContainer id={artist.spotifyId} />}
@@ -29,7 +29,7 @@ function UrlIcons(artist) {
 	);
 }
 
-function ImageContainer(url){
+function ImageContainer({url}){
 	return (
 		<div id="artistImageContainer" className={styles.artistImageContainer}>
 					<a href={url} target="_blank">
@@ -39,7 +39,7 @@ function ImageContainer(url){
 	)
 }
 
-export default function ArtistInfo(artist) {
+export default function ArtistInfo({artist}) {
 	console.log(artist);
 	return (
 		<>

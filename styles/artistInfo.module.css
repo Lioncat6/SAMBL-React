@@ -59,7 +59,7 @@
 	margin: 0;
 }
 
-.artistGenres p {
+.artistGenres {
 	margin: 4%;
 	color: grey;
 	font-style: italic;

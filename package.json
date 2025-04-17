@@ -8,7 +8,7 @@
 		"lint": "next lint",
 		"test": "react-scripts test --env=jsdom",
 		"eject": "react-scripts eject",
-		"dev": "next dev --turbopack"
+		"dev": "next dev"
 	},
 	"dependencies": {
 		"musicbrainz-api": "^0.22.0",

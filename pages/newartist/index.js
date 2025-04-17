@@ -45,7 +45,7 @@ export default function NewArtist() {
     }
 
     if (!artist) {
-        return <div>Loading...</div>; // Show a loading state while fetching data
+        return <div class="loadingContainer"><div class="lds-facebook"><div></div><div></div><div></div></div></div>; // Show a loading state while fetching data
     }
 
     return (
