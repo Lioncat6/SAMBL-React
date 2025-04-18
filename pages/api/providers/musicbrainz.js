@@ -27,7 +27,7 @@ async function getIdBySpotifyId(spotifyId) {
 async function getIdsBySpotifyUrls(spotifyUrls) {
     try {
         let queryString = spotifyUrls.map(url => `resource=${url}`).join('&');
-        const data = await mbApi.restGet('url', queryString, {inc: ['artist-rels']});
+        const data = await mbApi.search('url', {query: {url: spotifyUrls[0]}}, {inc: ['artist-rels']});
         console.log(data)
         if (data.count === 0) {
             return null; // No artist found

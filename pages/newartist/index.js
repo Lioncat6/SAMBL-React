@@ -1,5 +1,6 @@
 import ArtistInfo from "../../components/ArtistInfo";
 import AddButtons from "../../components/buttons";
+import Head from "next/head";
 
 async function fetchArtistData(spfId) {
     const response = await fetch(`http://localhost:3000/api/getArtistInfo?spotifyId=${spfId}`);
@@ -40,6 +41,10 @@ export async function getServerSideProps(context) {
 export default function NewArtist({ artist }) {
     return (
         <>
+        <Head>
+                <title>SAMBL • {artist.name}</title>
+                <meta name="description" content={`SAMBL - Add Artist • ${artist.name}`} />
+            </Head>
             <ArtistInfo artist={artist} />
             <div id="contentContainer">
                 <AddButtons artist={artist} />
