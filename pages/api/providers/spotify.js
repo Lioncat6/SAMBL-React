@@ -1,4 +1,4 @@
-import  SpotifyWebApi  from "spotify-web-api-node";
+import SpotifyWebApi from "spotify-web-api-node";
 import config from "../../../config";
 import logger from "../../../utils/logger";
 
@@ -10,51 +10,66 @@ const spotifyApi = new SpotifyWebApi({
     redirectUri: redirectUri,
 });
 
-async function refreshAccessToken() {
+let accessToken = null;
+let tokenExpirationTime = null;
+
+// refresh the access token if needed
+async function checkAccessToken() {
+    const currentTime = Date.now();
+
+    // Check if the token is still valid
+    if (accessToken && tokenExpirationTime && currentTime < tokenExpirationTime) {
+        logger.debug("Using cached access token");
+        spotifyApi.setAccessToken(accessToken);
+        return;
+    }
+
     try {
         const tokenData = await spotifyApi.clientCredentialsGrant();
-        const accessToken = tokenData.body["access_token"];
+        accessToken = tokenData.body["access_token"];
+        const expiresIn = tokenData.body["expires_in"];
+        tokenExpirationTime = currentTime + expiresIn * 1000;
+
         spotifyApi.setAccessToken(accessToken);
-        logger.info("Access token refreshed");
+        logger.debug("Access token refreshed successfully");
     } catch (error) {
-        console.error("Error refreshing access token:", error);
+        logger.error("Error refreshing access token:", error);
         throw new Error("Failed to refresh access token");
     }
 }
 
 async function getArtistById(spotifyId) {
     try {
-        await refreshAccessToken();
+        await checkAccessToken();
 
         // Fetch artist data
         const data = await spotifyApi.getArtist(spotifyId);
-        if (data.statusCode == 404) {
+        if (data.statusCode === 404) {
             return null;
         }
         return data.body;
     } catch (error) {
-        console.error("Error fetching artist data:", error);
+        logger.error("Error fetching artist data:", error);
         throw new Error("Failed to fetch artist data");
     }
 }
 
 async function searchByArtistName(artistName) {
     try {
-        await refreshAccessToken();
+        await checkAccessToken();
 
         // Fetch artist data
         const data = await spotifyApi.searchArtists(artistName);
-
         return data.body;
     } catch (error) {
-        console.error("Error searching for artist:", error);
+        logger.error("Error searching for artist:", error);
         throw new Error("Failed to search for artist");
     }
 }
 
 const spotify = {
     getArtistById,
-    searchByArtistName
+    searchByArtistName,
 };
 
 export default spotify;

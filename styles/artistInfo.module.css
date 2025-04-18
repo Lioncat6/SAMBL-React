@@ -71,7 +71,7 @@
 	width: 50%;
 	margin: auto;
 	display: flex;
-	align-items: start;
+	align-items: flex-start;
 	border: 1px solid darkgray;
 	border-radius: 10px;
 }
