@@ -16,13 +16,9 @@ export default async function handler(req, res) {
             spotifyId: artist.id,
         }
     }
-    console.log(artistUrls)
     let mbids = await musicbrainz.getIdsBySpotifyUrls(artistUrls);
-    console.log(mbids)
     for (let url of artistUrls){
         artistData[url].mbid = mbids[url] || null
     }
-    console.log("---")
-    console.log(artistData)
     res.status(200).json(artistData);
 }
