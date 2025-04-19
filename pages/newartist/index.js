@@ -17,23 +17,22 @@ export async function getServerSideProps(context) {
     try {
         const data = await fetchArtistData(spid);
 
-        // Transform the data into the format expected by the component
         const artist = {
             name: data.name,
             imageUrl: data.images[0]?.url || "",
-            genres: data.genres.join(", "), // Convert genres array to a string
+            genres: data.genres.join(", "),
             followers: data.followers.total,
             popularity: data.popularity,
             spotifyId: spid,
         };
 
         return {
-            props: { artist }, // Pass the artist data as props to the page
+            props: { artist },
         };
     } catch (error) {
         console.error("Error fetching artist data:", error);
         return {
-            notFound: true, // Return a 404 page if the artist is not found
+            notFound: true, 
         };
     }
 }

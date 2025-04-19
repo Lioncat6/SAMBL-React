@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import ItemList from "../../components/ItemList";
 import Head from 'next/head';
+
 async function getItems(query) {
     const response = await fetch(`http://localhost:3000/api/searchArtists?query=${query}`);
     if (response.ok) {
@@ -43,7 +44,7 @@ export default function search({ items }) {
             <div id="contentContainer">
                 <div id="loadingContainer" />
                 <div id="loadingText" />
-                <ItemList type={"artist"} items={items} />
+                    <ItemList type={"artist"} items={items} />
                 <div id="statusText" />
             </div>
 
