@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import ItemList from "../../components/ItemList";
-
+import Head from 'next/head';
 async function getItems(query) {
     const response = await fetch(`http://localhost:3000/api/searchArtists?query=${query}`);
     if (response.ok) {
@@ -17,7 +17,7 @@ export async function getServerSideProps(context) {
     try {
         const items = await getItems(query);
         return {
-            props: { items }, 
+            props: { items },
         };
     } catch (error) {
         console.error("Error fetching artist data:", error);
@@ -27,21 +27,25 @@ export async function getServerSideProps(context) {
     }
 }
 
-export default function search({items}) {
+export default function search({ items }) {
     const router = useRouter();
     const { query } = router.query;
     return (
         <>
-                <div id="err" />
-                <div className="titleContainer">
-                    <h1 id="searchFor">Search Results for "{query}"</h1>
-                </div>
-                <div id="contentContainer">
-                    <div id="loadingContainer" />
-                    <div id="loadingText" />
-                        <ItemList type={"artist"} items={items} />
-                        <div id="statusText" />
-                </div>
+            <Head>
+                <title>SAMBL • Resutls for  "{query}"</title>
+                <meta name="description" content={`SAMBL • Search results for "${query}"`} />
+            </Head>
+            <div id="err" />
+            <div className="titleContainer">
+                <h1 id="searchFor">Search Results for "{query}"</h1>
+            </div>
+            <div id="contentContainer">
+                <div id="loadingContainer" />
+                <div id="loadingText" />
+                <ItemList type={"artist"} items={items} />
+                <div id="statusText" />
+            </div>
 
         </>
 

@@ -4,12 +4,12 @@
 .textwrapper {
 	font-family: Arial, sans-serif;
 	background-color: #f9f9f9;
-	margin: 0;
 	padding: 0;
 	justify-content: center;
 	display: flex;
 	flex-direction: column;
 	margin: auto;
+	margin-top: 18px;
 	width: 50%;
 	text-align: center;
 }

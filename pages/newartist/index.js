@@ -41,7 +41,7 @@ export async function getServerSideProps(context) {
 export default function NewArtist({ artist }) {
     return (
         <>
-        <Head>
+            <Head>
                 <title>SAMBL • {artist.name}</title>
                 <meta name="description" content={`SAMBL - Add Artist • ${artist.name}`} />
             </Head>
