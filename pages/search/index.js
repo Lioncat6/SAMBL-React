@@ -5,7 +5,6 @@ async function getItems(query) {
     const response = await fetch(`http://localhost:3000/api/searchArtists?query=${query}`);
     if (response.ok) {
         const data = await response.json();
-        console.log("Response Data:", data);
         return data; 
     } else {
         throw new Error("Error fetching artist data");
@@ -17,7 +16,6 @@ export async function getServerSideProps(context) {
 
     try {
         const items = await getItems(query);
-        console.log(items);
         return {
             props: { items }, 
         };

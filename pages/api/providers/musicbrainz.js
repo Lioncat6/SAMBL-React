@@ -26,15 +26,14 @@ async function getIdBySpotifyId(spotifyId) {
 
 async function getIdsBySpotifyUrls(spotifyUrls) {
     try {
-        let queryString = spotifyUrls.map(url => `resource=${url}`).join('&');
-        const data = await mbApi.search('url', {query: {url: spotifyUrls[0]}}, {inc: ['artist-rels']});
-        console.log(data)
+        const data = await mbApi.lookupUrl(spotifyUrls, ['artist-rels']);
+        // console.log(data)
         if (data.count === 0) {
             return null; // No artist found
         }
         let mbids = {}
         for (let url of data.urls){
-            mbids[url.resource] = url['relation-list'][0].relations[0].artist.id
+            mbids[url.resource] = url.relations[0].artist.id
         }
         return mbids;
     } catch (error) {

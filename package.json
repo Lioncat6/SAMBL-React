@@ -11,13 +11,13 @@
 		"dev": "next dev"
 	},
 	"dependencies": {
-		"musicbrainz-api": "^0.22.0",
+		"log4js": "^6.6.0",
+		"musicbrainz-api": "^0.23.1",
 		"next": "^15.3.0",
 		"react": "^19.1.0",
 		"react-dom": "^19.1.0",
 		"react-scripts": "^5.0.1",
-		"spotify-web-api-node": "^5.0.0",
-		"log4js": "^6.6.0"
+		"spotify-web-api-node": "^5.0.0"
 	},
 	"browserslist": {
 		"production": [

@@ -53,7 +53,7 @@ function ListBuilder({ items, type }) {
 	return (
 		<>
 			{items.map((item, index) => (
-				<div key={index} className={styles.itemContainer}>
+				<div id={index} key={index} className={styles.itemContainer}>
 					{type == "album" && <AlbumItem item={item} />}
 					{type == "artist" && <ArtistItem item={item} />}
 				</div>
