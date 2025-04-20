@@ -160,3 +160,259 @@
 	position: relative;
 	z-index: 2;
 }
+
+.fbText {
+	transform: translateY(-3px);
+}
+
+.searchContainer {
+	display: flex;
+	flex-direction: row;
+}
+
+.filterSearch {
+	position: relative;
+	margin: 10px 10px 2px 0px;
+	padding: 10px;
+	height: 32px;
+	border: 1px solid gray;
+	border-radius: 10px;
+	transition: 0.2s all;
+	background: transparent;
+	color: black;
+	text-align: center;
+}
+
+.filterSearch:hover {
+	border: 1px solid black;
+	transition: 0.2s all;
+}
+
+.listSearch {
+	border-radius: 10px;
+	height: 30px;
+	border: 1px solid black;
+	margin: 10px 10px 2px 10px;
+	width: calc(100% - 32px);
+	padding: 0px 5px;
+}
+
+.listItem {
+	border: 1px solid gray;
+	display: flex;
+	flex-direction: row;
+	border-radius: 10px;
+	height: 64px;
+	margin: 3px 3px;
+}
+
+.listItem:hover {
+	border: 1px solid black;
+	transition: 0.5s all;
+}
+
+.statusPill {
+	transform: translateY(2px);
+	margin: 2px 2px 0 3px;
+	width: 12px;
+	height: 56px;
+	border-radius: 10px;
+	cursor: help;
+}
+
+.aTisketButton,
+.harmonyButton {
+	position: relative;
+	margin-top: 12px;
+	margin-right: 5px;
+	padding: 10px;
+	height: 15px;
+	border: 1px solid black;
+	border-radius: 20px;
+	transition: 0.2s all;
+	text-decoration: none !important;
+	white-space: nowrap;
+	margin-left: auto;
+}
+
+.aTisketButton {
+	margin-left: auto;
+}
+
+.aTisketButton:hover {
+	border: 1px solid #ffc470;
+	transition: 0.2s all;
+	background-color: #ffeea8;
+	text-decoration: none;
+	color: #704100;
+}
+
+.harmonyButton:hover {
+	border: 1px solid #333440;
+	transition: 0.2s all;
+	background-color: #eabf48;
+	text-decoration: none;
+	color: #333440;
+}
+
+.statusPill.red {
+	background-color: red;
+}
+
+.statusPill.green {
+	background-color: #34eb80;
+}
+
+.statusPill.orange {
+	background-color: orange;
+}
+
+.albumCover img {
+	margin: 2px 0 0 0;
+	border-radius: 10px;
+	width: 60px;
+	height: 60px;
+}
+
+.albumCover img:hover {
+	transition: 0.2s all;
+	filter: drop-shadow(0px 0px 5px #000000);
+}
+
+.textContainer {
+	padding: 8px 0 0 8px;
+	display: flex;
+	flex-direction: column;
+	width: calc(100% - 260px);
+}
+
+.textContainer.wider {
+	width: calc(100% - 180px) !important;
+}
+
+.albumTitle {
+	font-weight: bold !important;
+	display: flex;
+	align-items: center;
+	width: 100%;
+	overflow: hidden;
+}
+
+.albumTitle a:first-child {
+	font-weight: bold !important;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.albumTitle .albumMB {
+	flex-shrink: 0;
+	margin-left: 4px;
+}
+
+.artists {
+	text-align: left;
+	font-size: small;
+	font-weight: normal;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.albumInfo {
+	color: lightgray;
+	text-align: left;
+	font-size: small;
+	font-weight: normal;
+	display: flex;
+	align-items: center;
+	width: 100%;
+	overflow: hidden;
+}
+
+.albumInfo div:first-child {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Skeleton Animation */
+@keyframes skeletonShimmer {
+    0% {
+        background-position: 100% 0;
+    }
+    100% {
+        background-position: -100% 0;
+    }
+}
+
+
+.skeletonPill {
+    width: 12px;
+    height: 56px;
+    border-radius: 10px;
+    margin: 2px 2px 0 3px;
+}
+
+.skeletonCover {
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    margin: 2px 0 0 0;
+}
+
+.skeletonTextContainer {
+    padding: 8px 0 0 8px;
+    display: flex;
+    flex-direction: column;
+    width: calc(100% - 260px);
+}
+
+.skeletonText {
+    height: 12px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+.skeletonTitle {
+    width: 60%;
+}
+
+.skeletonSubtitle {
+    width: 40%;
+}
+
+.skeletonInfo {
+    width: 80%;
+}
+
+.listSkeletonContainer {
+	border-radius: 10px;
+	height: 100%;
+	border: 1px solid black;
+	overflow-y: hidden;
+	margin: 0 10px 0 10px;
+}
+
+.skeletonButton {
+	position: relative;
+	margin-top: 12px;
+	margin-right: 5px;
+	padding: 10px;
+	height: 18px;
+	/* border: 1px solid black; */
+	border-radius: 20px;
+	margin-left: auto;
+	width: 80px;
+}
+
+.skeletonCover, .skeletonText, .skeletonPill, .skeletonButton {
+    animation: skeletonShimmer 1.5s infinite linear;
+    background: linear-gradient(
+        90deg, 
+        #e0e0e0 25%,
+        #f0f0f0 50%,
+        #e0e0e0 75%
+    );
+    background-size: 200% 100%; 
+}

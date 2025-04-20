@@ -15,6 +15,11 @@ export default function Header() {
                     <div className={styles.subdesc}>Streaming Artist MusicBrainz Lookup</div>
                 </div>
                 <div className={styles.buttonWrapper}>
+                    <button className={styles.toolsButton}>
+                        <div className={styles.buttonText}>
+                            <i className="fa-solid fa-tools" /> Tools
+                        </div>
+                    </button>
                     <button className={styles.savedArtists}>
                         <div className={styles.buttonText}>
                             <i className="fa-solid fa-user" /> Artists
