@@ -67,12 +67,12 @@ async function searchByArtistName(artistName) {
     }
 }
 
-async function getArtistAlbums(spotifyId) {
+async function getArtistAlbums(spotifyId, offset = 0, limit = 50) {
     try {
         await checkAccessToken();
 
         // Fetch artist albums
-        const data = await spotifyApi.getArtistAlbums(spotifyId, { limit: 50 });
+        const data = await spotifyApi.getArtistAlbums(spotifyId, { limit: limit, offset: offset });
         return data.body;
     } catch (error) {
         logger.error("Error fetching artist albums:", error);

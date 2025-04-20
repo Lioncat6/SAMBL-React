@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import ArtistInfo from "../../components/ArtistInfo";
-import AddButtons from "../../components/buttons";
 import Head from "next/head";
 import ItemList from "../../components/ItemList";
 
@@ -39,28 +38,49 @@ export async function getServerSideProps(context) {
 	}
 }
 
+async function fetchAlbums(artistId, offset = 0) {
+	return fetch(`/api/getArtistAlbums?spotifyId=${artistId}&offset=${offset}&limit=50`).then((response) => {
+		if (!response.ok) {
+			throw new Error("Failed to fetch albums");
+		}
+		return response.json();
+	});
+}
+
 export default function Artist({ artist }) {
 	const [albums, setAlbums] = useState([]);
 	const [loading, setLoading] = useState(true);
+	const [loadingtext, setLoadingText] = useState("Loading albums...");
+	let albumCount = 99;
 
 	useEffect(() => {
-		async function fetchAlbums() {
-			try {
-				const response = await fetch(`/api/getArtistAlbums?spotifyId=${artist.spotifyId}`);
-				if (response.ok) {
-					const data = await response.json();
-					setAlbums(data.albums || []);
-				} else {
-					console.error("Failed to fetch albums");
-				}
-			} catch (error) {
-				console.error("Error fetching albums:", error);
-			} finally {
-				setLoading(false);
+		function updateLoadingText() {
+			if (albums.length >= albumCount) {
+				setLoadingText("Loading albums from musicbrainz...");
+			} else {
+				setLoadingText(`Loading albums from spotify... ${albums.length}/${albumCount}`);
 			}
 		}
 
-		fetchAlbums();
+		async function fetchArtistAlbums() {
+			let albumList = [];
+			let offset = 0;
+			while (offset < albumCount) {
+				try {
+					const data = await fetchAlbums(artist.spotifyId, offset);
+					albumList = [...albumList, ...data.items];
+					albumCount = data.total;
+					offset += 50;
+					setAlbums(albumList);
+					updateLoadingText();
+				} catch (error) {
+					console.error("Error fetching albums:", error);
+				}
+			}
+
+			setLoading(false);
+		}
+		fetchArtistAlbums();
 	}, [artist.spotifyId]);
 
 	return (
@@ -70,7 +90,7 @@ export default function Artist({ artist }) {
 				<meta name="description" content={`SAMBL - Add Artist • ${artist.name}`} />
 			</Head>
 			<ArtistInfo artist={artist} />
-			<div id="contentContainer">{loading ? <ItemList type={"loadingAlbum"} /> : <ItemList type={"album"} items={albums} />}</div>
+			<div id="contentContainer">{loading ? <ItemList type={"loadingAlbum"} text={loadingtext} /> : <ItemList type={"album"} items={albums} />}</div>
 		</>
 	);
 }
