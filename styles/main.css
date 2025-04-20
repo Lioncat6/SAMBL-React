@@ -441,6 +441,6 @@ iframe {
 }
 
 #nprogress .bar {
-    background: #00e1ff !important;
+	background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet) !important;
     height: 3px !important;
 }
