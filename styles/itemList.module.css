@@ -312,6 +312,12 @@
 	margin-left: 4px;
 }
 
+.albumMB {
+	width: 16px;
+	height: 20px;
+	vertical-align: middle;
+}
+
 .artists {
 	text-align: left;
 	font-size: small;

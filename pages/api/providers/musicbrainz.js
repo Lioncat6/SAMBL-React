@@ -42,9 +42,31 @@ async function getIdsBySpotifyUrls(spotifyUrls) {
     }
 }
 
+async function getArtistAlbums(mbid, offset = 0, limit = 100) {
+    try {
+        const data = await mbApi.browse('release', {artist: mbid}, {limit: limit, offset: offset});
+        return data;
+    } catch (error) {
+        console.error(error);
+        throw new Error("Failed to fetch artist albums");
+    }
+}
+
+async function getArtistFeaturedAlbums(mbid, offset = 0, limit = 100) {
+    try {
+        const data = await mbApi.browse('release', {track_artist: mbid, },  {limit: limit, offset: offset});
+        return data;
+    } catch (error) {
+        console.error(error);
+        throw new Error("Failed to fetch artist albums");
+    }
+}
+
 const musicbrainz = {
     getIdBySpotifyId: getIdBySpotifyId,
-    getIdsBySpotifyUrls: getIdsBySpotifyUrls
+    getIdsBySpotifyUrls: getIdsBySpotifyUrls,
+    getArtistAlbums,
+    getArtistFeaturedAlbums
 };
 
 export default musicbrainz;

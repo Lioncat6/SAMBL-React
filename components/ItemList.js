@@ -3,24 +3,31 @@ import Link from "next/link";
 
 function AlbumItem({ item }) {
 	const {
-		external_urls,
-		id: spotifyId,
-		name: spotifyName,
-		images,
-		artists: spotifyAlbumArtists,
-		release_date: spotifyReleaseDate,
-		total_tracks: spotifyTrackCount,
-		album_type: spotifyAlbumType,
-		mbData, // Assuming MusicBrainz data is passed as part of the item
+		spotifyId,
+		spotifyName,
+		spotifyUrl,
+		spotifyImageURL,
+		spotifyImageURL300px,
+		spotifyAlbumArtists,
+		spotifyReleaseDate,
+		spotifyTrackCount,
+		spotifyAlbumType,
+		albumStatus,
+		albumMBUrl,
+		finalTrackCount,
+		finalReleaseDate,
+		finalMBID,
+		albumIssues,
+		mbTrackNames,
+		mbTrackISRCs,
+		tracksWithoutISRCs,
 	} = item;
 
-	const spotifyUrl = external_urls.spotify;
-	const spotifyImageURL = images[0]?.url || "";
-	const spotifyImageURL300px = images[1]?.url || spotifyImageURL;
+	
 	const spotifyTrackString = spotifyTrackCount > 1 ? `${spotifyTrackCount} Tracks` : "1 Track";
 
-	const albumStatus = mbData?.status || "red";
-	const albumMBUrl = mbData?.url || "";
+	const mbTrackString = mbTrackNames.map((track) => track.title).join(", ");
+	
 	const pillTooltipText =
 		albumStatus === "green"
 			? "This album has a MB release with a matching Spotify URL"
@@ -78,7 +85,7 @@ function AlbumItem({ item }) {
 				<div className={styles.albumInfo}>
 					<div>
 						{spotifyReleaseDate} • {spotifyAlbumType.charAt(0).toUpperCase() + spotifyAlbumType.slice(1)} •{" "}
-						<span className={albumStatus === "red" ? "" : styles.hasTracks} title={mbData?.trackString || ""}>
+						<span className={albumStatus === "red" ? "" : styles.hasTracks} title={mbTrackString || ""}>
 							{spotifyTrackString}
 						</span>
 					</div>
