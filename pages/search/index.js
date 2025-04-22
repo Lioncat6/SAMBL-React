@@ -34,7 +34,7 @@ export default function search({ items }) {
     return (
         <>
             <Head>
-                <title>SAMBL • Resutls for  "{query}"</title>
+                <title>{`SAMBL • Results for  "${query}"`}</title>
                 <meta name="description" content={`SAMBL • Search results for "${query}"`} />
             </Head>
             <div id="err" />

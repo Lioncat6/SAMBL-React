@@ -15,6 +15,19 @@ export async function getServerSideProps(context) {
     const { spid } = context.query;
 
     try {
+        const response = await fetch(`http://localhost:3000/api/lookupArtist?spotifyId=${spid}`);
+        if (response.ok) {
+            const mbid = await response.json();
+            if (mbid) {
+                return {
+                    redirect: {
+                        destination: `/artist?spid=${spid}&artist_mbid=${mbid}`,
+                        permanent: false,
+                    },
+                };
+            }
+        }
+
         const data = await fetchArtistData(spid);
 
         const artist = {
@@ -32,7 +45,7 @@ export async function getServerSideProps(context) {
     } catch (error) {
         console.error("Error fetching artist data:", error);
         return {
-            notFound: true, 
+            notFound: true,
         };
     }
 }
@@ -41,7 +54,7 @@ export default function NewArtist({ artist }) {
     return (
         <>
             <Head>
-                <title>SAMBL • {artist.name}</title>
+                <title>{`SAMBL • ${artist.name}`}</title>
                 <meta name="description" content={`SAMBL - Add Artist • ${artist.name}`} />
             </Head>
             <ArtistInfo artist={artist} />

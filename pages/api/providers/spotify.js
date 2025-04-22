@@ -8,19 +8,37 @@ const spotifyApi = new SpotifyWebApi({
     clientId: clientId,
     clientSecret: clientSecret,
     redirectUri: redirectUri,
+
 });
 
 let accessToken = null;
 let tokenExpirationTime = null;
 
-// refresh the access token if needed
+async function withRetry(apiCall, retries = 3, delay = 1000) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            return await apiCall();
+        } catch (error) {
+            if (attempt < retries) {
+                logger.warn(`Retrying API call (attempt ${attempt} of ${retries})...`);
+                await new Promise((resolve) => setTimeout(resolve, delay));
+            } else {
+                logger.error("API call failed after retries:", error);
+                throw error;
+            }
+        }
+    }
+}
+
 async function checkAccessToken() {
     const currentTime = Date.now();
 
-    // Check if the token is still valid
+
+
     if (accessToken && tokenExpirationTime && currentTime < tokenExpirationTime) {
-        logger.debug("Using cached access token");
-        spotifyApi.setAccessToken(accessToken);
+        // logger.debug("Using cached access token");
+        // spotifyApi.setAccessToken(accessToken);
+        // This doesn't need to be set again 
         return;
     }
 
@@ -34,7 +52,7 @@ async function checkAccessToken() {
         logger.debug("Access token refreshed successfully");
     } catch (error) {
         logger.error("Error refreshing access token:", error);
-        throw new Error("Failed to refresh access token");
+        // throw new Error("Failed to refresh access token");
     }
 }
 

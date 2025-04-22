@@ -26,7 +26,7 @@ function AlbumItem({ item }) {
 	
 	const spotifyTrackString = spotifyTrackCount > 1 ? `${spotifyTrackCount} Tracks` : "1 Track";
 
-	const mbTrackString = mbTrackNames.map((track) => track.title).join(", ");
+	const mbTrackString = mbTrackNames.map((track) => track).join("\n");
 	
 	const pillTooltipText =
 		albumStatus === "green"
@@ -35,8 +35,29 @@ function AlbumItem({ item }) {
 			? "This album has a MB release with a matching name but no associated link"
 			: "This album has no MB release with a matching name or URL";
 
+	let data_params = {
+		"data-spotify-id": spotifyId,
+		"data-spotify-name": spotifyName,
+		"data-spotify-url": spotifyUrl,
+		"data-spotify-image-url": spotifyImageURL,
+		"data-spotify-image-url-300px": spotifyImageURL300px,
+		"data-spotify-album-artists": spotifyAlbumArtists.map((artist) => artist.name).join(", "),
+		"data-spotify-album-artist-ids": spotifyAlbumArtists.map((artist) => artist.id).join(", "),
+		"data-spotify-release-date": spotifyReleaseDate,
+		"data-spotify-track-count": spotifyTrackCount,
+		"data-spotify-album-type": spotifyAlbumType,
+		"data-status": albumStatus,
+		"data-track-count": finalTrackCount,
+		"data-release-date": finalReleaseDate,
+		"data-mbid": finalMBID,
+		"data-album-issues": albumIssues,
+		"data-track-names": mbTrackNames,
+		"data-track-isrcs": mbTrackISRCs,
+		"data-tracks-without-isrcs": tracksWithoutISRCs,
+	}
+
 	return (
-		<div className={`${styles.listItem} ${styles.album}`}>
+		<div className={`${styles.listItem} ${styles.album}` } {... data_params} >
 			{/* Status Pill */}
 			<div className={`${styles.statusPill} ${styles[albumStatus]}`} title={pillTooltipText}></div>
 
@@ -94,7 +115,7 @@ function AlbumItem({ item }) {
 			<a className={styles.aTisketButton} href={`https://atisket.pulsewidth.org.uk/?spf_id=${spotifyId}&amp;preferred_vendor=spf`} target="_blank" rel="noopener noreferrer">
 				<div>A-tisket</div>
 			</a>
-			<a className={styles.harmonyButton} href={`https://harmony.pulsewidth.org.uk/release?url=${spotifyUrl}`} target="_blank" rel="noopener noreferrer">
+			<a className={styles.harmonyButton} href={`https://harmony.pulsewidth.org.uk/release?url=${spotifyUrl}&category=preferred`} target="_blank" rel="noopener noreferrer">
 				<div>Harmony</div>
 			</a>
 		</div>

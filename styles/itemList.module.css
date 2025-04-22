@@ -132,7 +132,8 @@
 	position: relative;
 	overflow: hidden;
 	background-size: cover;
-	background-position: center; /* Center the image */
+	background-position: center;
+	/* Center the image */
 }
 
 .listItem::before {
@@ -144,10 +145,13 @@
 	height: 100%;
 	background-image: var(--background-image);
 	background-size: cover;
-	background-position: center; /* Center the image */
+	background-position: center;
+	/* Center the image */
 	background-repeat: no-repeat;
-	opacity: 0.15; /* Adjust opacity as needed */
-	filter: blur(3px); /* Apply blur effect */
+	opacity: 0.15;
+	/* Adjust opacity as needed */
+	filter: blur(3px);
+	/* Apply blur effect */
 	z-index: 1;
 	transition: opacity 0.2s linear;
 }
@@ -156,7 +160,7 @@
 	opacity: 0.4;
 }
 
-.listItem > * {
+.listItem>* {
 	position: relative;
 	z-index: 2;
 }
@@ -179,23 +183,35 @@
 	border-radius: 10px;
 	transition: 0.2s all;
 	background: transparent;
-	color: black;
+	color: gray;
 	text-align: center;
 }
 
 .filterSearch:hover {
 	border: 1px solid black;
 	transition: 0.2s all;
+	color: black;
 	background: transparent;
 }
-
-.listSearch {
+.listSearch,
+.listSearchLoading {
 	border-radius: 10px;
 	height: 30px;
 	border: 1px solid black;
-	margin: 10px 10px 2px 10px;
+	margin: 10px 5px 2px 10px;
 	width: calc(100% - 32px);
 	padding: 0px 5px;
+	background: transparent;
+	
+}
+
+.listSearchLoading {
+	color: gray;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: small;
+	animation: textColorShimmer 1.5s infinite linear;
 }
 
 .listItem {
@@ -224,7 +240,7 @@
 .aTisketButton,
 .harmonyButton {
 	position: relative;
-	margin-top: 12px;
+	margin-top: 14px;
 	margin-right: 5px;
 	padding: 10px;
 	height: 15px;
@@ -344,28 +360,16 @@
 	text-overflow: ellipsis;
 }
 
-.listSearchLoading {
-	border-radius: 10px;
-	height: 30px;
-	border: 1px solid black;
-	margin: 10px 10px 2px 10px;
-	width: calc(100% - 32px);
-	padding: 0px 5px;
-	color: gray;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: small;
-	animation: textColorShimmer 1.5s infinite linear;
-}
 
 @keyframes textColorShimmer {
 	0% {
 		color: #cccccc;
 	}
+
 	50% {
 		color: #f0f0f0;
 	}
+
 	100% {
 		color: #cccccc;
 	}
@@ -376,6 +380,7 @@
 	0% {
 		background-position: 100% 0;
 	}
+
 	100% {
 		background-position: -100% 0;
 	}
@@ -440,15 +445,16 @@
 	width: 80px;
 }
 
-.skeletonCover, .skeletonText, .skeletonPill, .skeletonButton {
+.skeletonCover,
+.skeletonText,
+.skeletonPill,
+.skeletonButton {
 	animation: skeletonShimmer 1.5s infinite linear;
-	background: linear-gradient(
-		90deg, 
-		#e0e0e0 25%,
-		#f0f0f0 50%,
-		#e0e0e0 75%
-	);
-	background-size: 200% 100%; 
+	background: linear-gradient(90deg,
+			#e0e0e0 25%,
+			#f0f0f0 50%,
+			#e0e0e0 75%);
+	background-size: 200% 100%;
 }
 
 .SAMBLicon {
@@ -463,5 +469,5 @@
 
 .statusText {
 	color: grey;
-    padding: 5px 0 0 0 ;
+	padding: 5px 0 0 0;
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import ArtistInfo from "../../components/ArtistInfo";
 import Head from "next/head";
 import ItemList from "../../components/ItemList";
+import Notice from "../../components/notices";
 
 async function fetchArtistData(spfId) {
 	const response = await fetch(`http://localhost:3000/api/getArtistInfo?spotifyId=${spfId}`);
@@ -12,9 +13,24 @@ async function fetchArtistData(spfId) {
 	}
 }
 
+
+
 export async function getServerSideProps(context) {
 	const { spid, artist_mbid } = context.query;
-
+	if (!artist_mbid) {
+		const response = await fetch(`http://localhost:3000/api/lookupArtist?spotifyId=${spid}`);
+		if (response.ok) {
+			const mbid = await response.json();
+			if (mbid) {
+				return {
+					redirect: {
+						destination: `/artist?spid=${spid}&artist_mbid=${mbid}`,
+						permanent: false,
+					},
+				};
+			}
+		}
+	}
 	try {
 		const data = await fetchArtistData(spid);
 		const artist = {
@@ -103,10 +119,10 @@ function processData(sourceAlbums, mbAlbums) {
 			var MBTracks = [];
 			mbAlbum.media?.forEach((media) => {
 				console.log(media)
-				if (media.tracks){
+				if (media.tracks) {
 					MBTracks = [...MBTracks, ...media.tracks];
 				}
-				
+
 			});
 			mbReleaseUrls.forEach((relation) => {
 				if (relation.url.resource == spotifyUrl) {
@@ -227,7 +243,7 @@ export default function Artist({ artist }) {
 	useEffect(() => {
 		function updateLoadingText(musicBrainz) {
 			if (musicBrainz) {
-				setStatusText(`Loading albums from musicbrainz... ${mbAlbums.length}/${mbAlbumCount+mbFeaturedAlbumCount}`);
+				setStatusText(`Loading albums from musicbrainz... ${parseInt(mbAlbums.length)}/${parseInt(mbAlbumCount) + parseInt(mbFeaturedAlbumCount)}`);
 			} else {
 				setStatusText(`Loading albums from spotify... ${sourceAlbums.length}/${sourceAlbumCount}`);
 			}
@@ -279,7 +295,16 @@ export default function Artist({ artist }) {
 		}
 
 		async function loadAlbums() {
-			await Promise.all([fetchMusicbrainzArtistAlbums(), fetchSpotifyAlbums(), fetchMusicBrainzFeaturedAlbums()]);
+			if (!artist.mbid) {
+				await fetchSpotifyAlbums();
+			} else {
+				await Promise.all([
+					fetchSpotifyAlbums(),
+					fetchMusicbrainzArtistAlbums(),
+					fetchMusicBrainzFeaturedAlbums(),
+				]);
+			}
+
 			let data = processData(sourceAlbums, mbAlbums)
 			console.log(data)
 			setStatusText(data.statusText);
@@ -294,8 +319,9 @@ export default function Artist({ artist }) {
 		<>
 			<Head>
 				<title>{`SAMBL • ${artist.name}`}</title>
-				<meta name="description" content={`SAMBL - Add Artist • ${artist.name}`} />
+				<meta name="description" content={`SAMBL - View Artist • ${artist.name}`} />
 			</Head>
+			{!artist.mbid && <Notice type={"noMBID"} data={artist} />}
 			<ArtistInfo artist={artist} />
 			<div id="contentContainer">{loading ? <ItemList type={"loadingAlbum"} text={statusText} /> : <ItemList type={"album"} items={albums} text={statusText} />}</div>
 		</>
