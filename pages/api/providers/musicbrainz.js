@@ -44,7 +44,9 @@ async function getIdsBySpotifyUrls(spotifyUrls) {
 
 async function getArtistAlbums(mbid, offset = 0, limit = 100) {
     try {
-        const data = await mbApi.browse('release', {artist: mbid}, {limit: limit, offset: offset});
+        // const data = await mbApi.browse('release', {artist: mbid, limit: limit, offset: offset});
+        const data = await mbApi.restGet('/release', {artist: mbid, limit: limit, offset: offset, inc:['url-rels recordings isrcs']});
+        console.log(data)
         return data;
     } catch (error) {
         console.error(error);
@@ -54,7 +56,9 @@ async function getArtistAlbums(mbid, offset = 0, limit = 100) {
 
 async function getArtistFeaturedAlbums(mbid, offset = 0, limit = 100) {
     try {
-        const data = await mbApi.browse('release', {track_artist: mbid, },  {limit: limit, offset: offset});
+        // const data = await mbApi.browse('release', {track_artist: mbid, limit: limit, offset: offset});
+        const data = await mbApi.restGet('/release', {track_artist: mbid, limit: limit, offset: offset, inc:['url-rels recordings isrcs']});
+
         return data;
     } catch (error) {
         console.error(error);

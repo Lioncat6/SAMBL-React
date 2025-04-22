@@ -200,8 +200,15 @@ function processData(sourceAlbums, mbAlbums) {
 		});
 	});
 
-	console.log(`Albums on MusicBrainz: ${green}/${total} ~ ${orange} albums have matching names but no associated link`);
-	return albumData;
+	let statusText = `Albums on MusicBrainz: ${green}/${total} ~ ${orange} albums have matching names but no associated link`
+	return {
+		albumData,
+		statusText,
+		green,
+		orange,
+		red,
+		total,
+	}
 }
 
 function normalizeText(text) {
@@ -211,18 +218,18 @@ function normalizeText(text) {
 export default function Artist({ artist }) {
 	const [albums, setAlbums] = useState([]);
 	const [loading, setLoading] = useState(true);
-	const [loadingtext, setLoadingText] = useState("Loading albums...");
+	const [statusText, setStatusText] = useState("Loading albums...");
 	let sourceAlbumCount = 999;
 	let mbAlbumCount = 999;
 	let mbFeaturedAlbumCount = 999;
 	let sourceAlbums = [];
 	let mbAlbums = [];
 	useEffect(() => {
-		function updateLoadingText() {
-			if (albums.length >= sourceAlbumCount) {
-				setLoadingText(`Loading albums from musicbrainz... ${mbAlbums.length}/${mbAlbumCount}`);
+		function updateLoadingText(musicBrainz) {
+			if (musicBrainz) {
+				setStatusText(`Loading albums from musicbrainz... ${mbAlbums.length}/${mbAlbumCount+mbFeaturedAlbumCount}`);
 			} else {
-				setLoadingText(`Loading albums from spotify... ${sourceAlbums.length}/${sourceAlbumCount}`);
+				setStatusText(`Loading albums from spotify... ${sourceAlbums.length}/${sourceAlbumCount}`);
 			}
 		}
 
@@ -249,7 +256,7 @@ export default function Artist({ artist }) {
 					mbAlbums = [...mbAlbums, ...data.releases];
 					mbAlbumCount = data["release-count"];
 					offset = mbAlbums.length;
-					updateLoadingText();
+					updateLoadingText(true);
 				} catch (error) {
 					console.error("Error fetching albums:", error);
 				}
@@ -264,7 +271,7 @@ export default function Artist({ artist }) {
 					mbAlbums = [...mbAlbums, ...data.releases];
 					mbFeaturedAlbumCount = data["release-count"];
 					offset = mbAlbums.length;
-					updateLoadingText();
+					updateLoadingText(true);
 				} catch (error) {
 					console.error("Error fetching albums:", error);
 				}
@@ -275,7 +282,8 @@ export default function Artist({ artist }) {
 			await Promise.all([fetchMusicbrainzArtistAlbums(), fetchSpotifyAlbums(), fetchMusicBrainzFeaturedAlbums()]);
 			let data = processData(sourceAlbums, mbAlbums)
 			console.log(data)
-			setAlbums(data);
+			setStatusText(data.statusText);
+			setAlbums(data.albumData);
 			setLoading(false);
 		}
 		loadAlbums()
@@ -289,7 +297,7 @@ export default function Artist({ artist }) {
 				<meta name="description" content={`SAMBL - Add Artist • ${artist.name}`} />
 			</Head>
 			<ArtistInfo artist={artist} />
-			<div id="contentContainer">{loading ? <ItemList type={"loadingAlbum"} text={loadingtext} /> : <ItemList type={"album"} items={albums} />}</div>
+			<div id="contentContainer">{loading ? <ItemList type={"loadingAlbum"} text={statusText} /> : <ItemList type={"album"} items={albums} text={statusText} />}</div>
 		</>
 	);
 }

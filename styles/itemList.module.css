@@ -460,3 +460,8 @@
 .artistLink {
 	font-weight: normal;
 }
+
+.statusText {
+	color: grey;
+    padding: 5px 0 0 0 ;
+}

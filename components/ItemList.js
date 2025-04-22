@@ -157,8 +157,8 @@ function ListBuilder({ items, type }) {
 	);
 }
 
-function ListContainer({ items, type }) {
-	return <div className={styles.listContainer}>{items && <ListBuilder items={items} type={type} />}</div>;
+function ListContainer({ items, type, text }) {
+	return <><div className={styles.listContainer}>{items && <ListBuilder items={items} type={type} />}</div><div className={styles.statusText}>{text}</div></>;
 }
 
 function LoadingItem() {
@@ -249,7 +249,7 @@ export default function ItemList({ items, type, text }) {
 			{" "}
 			<div className={styles.listWrapper}>
 				{type == "album" && <SearchContainer />}
-				{type == "loadingAlbum" ? <LoadingContainer text={text}/> : <ListContainer items={itemArray} type={type} />}
+				{type == "loadingAlbum" ? <LoadingContainer text={text}/> : <ListContainer items={itemArray} type={type} text={text} />}
 			</div>
 		</>
 	);
