@@ -101,9 +101,9 @@ function processData(sourceAlbums, mbAlbums) {
 		let spotifyTrackCount = album.total_tracks;
 		let spotifyAlbumType = album.album_type;
 
-		let finalTrackCount = 0;
-		let finalReleaseDate = "";
-		let finalMBID = "";
+		let mbTrackCount = 0;
+		let mbReleaseDate = "";
+		let mbid = "";
 		let finalHasCoverArt = false;
 		let albumIssues = [];
 		let finalTracks = [];
@@ -127,10 +127,10 @@ function processData(sourceAlbums, mbAlbums) {
 			mbReleaseUrls.forEach((relation) => {
 				if (relation.url.resource == spotifyUrl) {
 					albumStatus = "green";
-					finalMBID = mbAlbum.id;
-					albumMBUrl = `https://musicbrainz.org/release/${finalMBID}`;
-					finalTrackCount = MBTrackCount;
-					finalReleaseDate = MBReleaseDate;
+					mbid = mbAlbum.id;
+					albumMBUrl = `https://musicbrainz.org/release/${mbid}`;
+					mbTrackCount = MBTrackCount;
+					mbReleaseDate = MBReleaseDate;
 					finalHasCoverArt = hasCoverArt;
 					finalTracks = MBTracks;
 					finalUPC = MBReleaseUPC;
@@ -139,10 +139,10 @@ function processData(sourceAlbums, mbAlbums) {
 
 			if (albumStatus === "red" && normalizeText(mbReleaseName) === normalizeText(spotifyName)) {
 				albumStatus = "orange";
-				finalMBID = mbAlbum.id;
-				albumMBUrl = `https://musicbrainz.org/release/${finalMBID}`;
-				finalTrackCount = MBTrackCount;
-				finalReleaseDate = MBReleaseDate;
+				mbid = mbAlbum.id;
+				albumMBUrl = `https://musicbrainz.org/release/${mbid}`;
+				mbTrackCount = MBTrackCount;
+				mbReleaseDate = MBReleaseDate;
 				finalHasCoverArt = hasCoverArt;
 				finalTracks = MBTracks;
 				finalUPC = MBReleaseUPC
@@ -169,12 +169,12 @@ function processData(sourceAlbums, mbAlbums) {
 			if (!finalUPC || finalUPC == null) {
 				albumIssues.push("noUPC");
 			}
-			if (finalTrackCount != spotifyTrackCount) {
+			if (mbTrackCount != spotifyTrackCount) {
 				albumIssues.push("trackDiff");
 			}
-			if (finalReleaseDate == "" || finalReleaseDate == undefined || !finalReleaseDate) {
+			if (mbReleaseDate == "" || mbReleaseDate == undefined || !mbReleaseDate) {
 				albumIssues.push("noDate");
-			} else if (finalReleaseDate != spotifyReleaseDate) {
+			} else if (mbReleaseDate != spotifyReleaseDate) {
 				albumIssues.push("dateDiff");
 			}
 			if (!finalHasCoverArt) {
@@ -206,9 +206,9 @@ function processData(sourceAlbums, mbAlbums) {
 			spotifyAlbumType,
 			albumStatus,
 			albumMBUrl,
-			finalTrackCount,
-			finalReleaseDate,
-			finalMBID,
+			mbTrackCount,
+			mbReleaseDate,
+			mbid,
 			albumIssues,
 			mbTrackNames,
 			mbTrackISRCs,
@@ -243,7 +243,7 @@ export default function Artist({ artist }) {
 	useEffect(() => {
 		function updateLoadingText(musicBrainz) {
 			if (musicBrainz) {
-				setStatusText(`Loading albums from musicbrainz... ${parseInt(mbAlbums.length)}/${parseInt(mbAlbumCount) + parseInt(mbFeaturedAlbumCount)}`);
+				setStatusText(`Loading albums from musicbrainz... ${parseInt(mbAlbums.length)}/${Number(mbAlbumCount) + Number(mbFeaturedAlbumCount)}`);
 			} else {
 				setStatusText(`Loading albums from spotify... ${sourceAlbums.length}/${sourceAlbumCount}`);
 			}

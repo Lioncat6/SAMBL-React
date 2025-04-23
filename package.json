@@ -12,7 +12,7 @@
 	},
 	"dependencies": {
 		"log4js": "^6.6.0",
-		"musicbrainz-api": "^0.23.1",
+		"musicbrainz-api": "^0.24.0",
 		"next": "^15.3.0",
 		"nprogress": "^0.2.0",
 		"react": "^19.1.0",

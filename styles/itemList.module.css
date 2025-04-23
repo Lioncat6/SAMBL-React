@@ -193,6 +193,7 @@
 	color: black;
 	background: transparent;
 }
+
 .listSearch,
 .listSearchLoading {
 	border-radius: 10px;
@@ -202,7 +203,7 @@
 	width: calc(100% - 32px);
 	padding: 0px 5px;
 	background: transparent;
-	
+
 }
 
 .listSearchLoading {
@@ -470,4 +471,104 @@
 .statusText {
 	color: grey;
 	padding: 5px 0 0 0;
+}
+
+.iconContainer {
+	display: flex;
+	align-items: center;
+}
+
+.upcIcon {
+	margin-left: 5px;
+	width: 27px;
+	height: 11px;
+	cursor: help;
+	margin-right: -2px;
+}
+
+.isrcIcon {
+	margin-left: 5px;
+	width: 36px;
+	cursor: help;
+}
+
+.isrcText, .isrcTextAvaliable {
+	margin-left: 5px;
+	cursor: help;
+	font-size: smaller;
+	color: red !important;
+	font-weight: bolder !important;
+}
+.isrcText:hover {
+	text-decoration: none;
+}
+
+.isrcTextAvaliable:hover {
+	color: #36b100 !important;
+	text-decoration: underline !important;
+}
+
+.coverArtMissing, .coverArtMissingAvaliable {
+	color: red !important;
+	margin-left: 5px;
+	font-weight: bold !important;
+	cursor: help;
+	background: url("../public/assets/images/missingCover.svg") no-repeat center;
+	background-size: contain;
+	width: 16px;
+	height: 16px;
+	min-width: 16px;
+	min-height: 16px;
+}
+
+.coverArtMissingAvaliable:hover {
+	background: url("../public/assets/images/addCover.svg") no-repeat center;
+	background-size: contain;
+	width: 16px;
+	height: 16px;
+	min-width: 16px;
+	min-height: 16px;
+}
+
+
+.numDiff {
+	color: red;
+	margin-left: 5px;
+	font-weight: bold;
+	cursor: help;
+}
+
+.dateDiff {
+	color: red !important;
+	margin-left: 5px;
+	font-weight: bold !important;
+	cursor: help;
+	background: url("../public/assets/images/dateConflict.svg") no-repeat center;
+	background-size: contain;
+	width: 16px;
+	height: 16px;
+	min-width: 16px;
+	min-height: 16px;
+}
+
+.dateMissing, .dateMissingAvaliable {
+	color: red !important;
+	margin-left: 5px;
+	font-weight: bold !important;
+	cursor: help;
+	background: url("../public/assets/images/missingDate.svg") no-repeat center;
+	background-size: contain;
+	width: 16px;
+	height: 16px;
+	min-width: 16px;
+	min-height: 16px;
+}
+
+.dateMissingAvaliable:hover {
+	background: url("../public/assets/images/addDate.svg") no-repeat center;
+	background-size: contain;
+	width: 16px;
+	height: 16px;
+	min-width: 16px;
+	min-height: 16px;
 }

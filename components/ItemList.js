@@ -1,6 +1,94 @@
 import styles from "../styles/itemList.module.css";
 import Link from "next/link";
 
+function AlbumIcons({ item }) {
+	const {
+		spotifyId,
+		spotifyName,
+		spotifyUrl,
+		spotifyImageURL,
+		spotifyImageURL300px,
+		spotifyAlbumArtists,
+		spotifyReleaseDate,
+		spotifyTrackCount,
+		spotifyAlbumType,
+		albumStatus,
+		albumMBUrl,
+		mbTrackCount,
+		mbReleaseDate,
+		mbid,
+		albumIssues,
+		mbTrackNames,
+		mbTrackISRCs,
+		tracksWithoutISRCs,
+	} = item;
+	return (
+		<div className={styles.iconContainer}>
+			{albumIssues.includes("noUPC") && (
+				<img
+					className={styles.upcIcon}
+					src="../assets/images/noUPC.svg"
+					title="This release is missing a UPC/Barcode!"
+					alt="Missing UPC"
+				/>
+			)}
+			{albumIssues.includes("missingISRCs") && (
+				<a
+					className={albumStatus === "green" ? styles.isrcTextAvaliable : styles.isrcText}
+					href={albumStatus === "green" ? `https://isrchunt.com/spotify/importisrc?releaseId=${spotifyId}` : undefined}
+					target={albumStatus === "green" ? "_blank" : undefined}
+					rel={albumStatus === "green" ? "noopener" : undefined}
+					title={albumStatus === "green" ? "This release has missing ISRCs! [Click to Fix]" : "This release has missing ISRCs!"}
+				>
+					ISRC
+				</a>
+			)}
+			{albumIssues.includes("noCover") && (
+				<a
+					className={albumStatus === "green" ? styles.coverArtMissingAvaliable : styles.coverArtMissing}
+					href={albumStatus === "green" ? `https://musicbrainz.org/release/${mbid}/cover-art` : undefined}
+					target={albumStatus === "green" ? "_blank" : undefined}
+					rel={albumStatus === "green" ? "noopener" : undefined}
+					title={albumStatus === "green" ? "This release is missing cover art! [Click to Fix]" : "This release is missing cover art!"}
+				/>
+			)}
+			{albumIssues.includes("trackDiff") && (
+				<div
+					className={styles.numDiff}
+					title={`This release has a differing track count! [SP: ${spotifyTrackCount} MB: ${mbTrackCount}]`}
+				>
+					#
+				</div>
+			)}
+			{albumIssues.includes("noDate") && (
+				<a
+					className={`${styles.dateMissing} ${albumStatus === "green" ? styles.dateMissingAvaliable : ""}`}
+					href={
+						albumStatus === "green"
+							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${spotifyReleaseDate.split("-")[0]}&events.0.date.month=${spotifyReleaseDate.split("-")[1]}&events.0.date.day=${spotifyReleaseDate.split("-")[2]}&edit_note=${encodeURIComponent(`Added release date from Spotify using SAMBL: ${spotifyUrl}`)}`
+							: undefined
+					}
+					title={
+						albumStatus === "green"
+							? "This release is missing a release date!\n[Click to Fix]"
+							: "This release is missing a release date!"
+					}
+					target={albumStatus === "green" ? "_blank" : undefined}
+					rel={albumStatus === "green" ? "noopener" : undefined}
+				>
+					Date Missing
+				</a>
+			)}
+			{albumIssues.includes("dateDiff") && (
+				<div
+					className={styles.dateDiff}
+					title={`This release has a differing release date! [SP: ${spotifyReleaseDate} MB: ${mbReleaseDate}]\n(This may indicate that you have to split a release.)`}
+				/>
+			)}
+		</div>
+	)
+}
+
 function AlbumItem({ item }) {
 	const {
 		spotifyId,
@@ -14,26 +102,26 @@ function AlbumItem({ item }) {
 		spotifyAlbumType,
 		albumStatus,
 		albumMBUrl,
-		finalTrackCount,
-		finalReleaseDate,
-		finalMBID,
+		mbTrackCount,
+		mbReleaseDate,
+		mbid,
 		albumIssues,
 		mbTrackNames,
 		mbTrackISRCs,
 		tracksWithoutISRCs,
 	} = item;
 
-	
+
 	const spotifyTrackString = spotifyTrackCount > 1 ? `${spotifyTrackCount} Tracks` : "1 Track";
 
 	const mbTrackString = mbTrackNames.map((track) => track).join("\n");
-	
+
 	const pillTooltipText =
 		albumStatus === "green"
 			? "This album has a MB release with a matching Spotify URL"
 			: albumStatus === "orange"
-			? "This album has a MB release with a matching name but no associated link"
-			: "This album has no MB release with a matching name or URL";
+				? "This album has a MB release with a matching name but no associated link"
+				: "This album has no MB release with a matching name or URL";
 
 	let data_params = {
 		"data-spotify-id": spotifyId,
@@ -47,9 +135,9 @@ function AlbumItem({ item }) {
 		"data-spotify-track-count": spotifyTrackCount,
 		"data-spotify-album-type": spotifyAlbumType,
 		"data-status": albumStatus,
-		"data-track-count": finalTrackCount,
-		"data-release-date": finalReleaseDate,
-		"data-mbid": finalMBID,
+		"data-track-count": mbTrackCount,
+		"data-release-date": mbReleaseDate,
+		"data-mbid": mbid,
 		"data-album-issues": albumIssues,
 		"data-track-names": mbTrackNames,
 		"data-track-isrcs": mbTrackISRCs,
@@ -57,7 +145,7 @@ function AlbumItem({ item }) {
 	}
 
 	return (
-		<div className={`${styles.listItem} ${styles.album}` } {... data_params} >
+		<div className={`${styles.listItem} ${styles.album}`} {...data_params} >
 			{/* Status Pill */}
 			<div className={`${styles.statusPill} ${styles[albumStatus]}`} title={pillTooltipText}></div>
 
@@ -110,6 +198,7 @@ function AlbumItem({ item }) {
 							{spotifyTrackString}
 						</span>
 					</div>
+					<AlbumIcons item={item} />
 				</div>
 			</div>
 			<a className={styles.aTisketButton} href={`https://atisket.pulsewidth.org.uk/?spf_id=${spotifyId}&amp;preferred_vendor=spf`} target="_blank" rel="noopener noreferrer">
@@ -206,10 +295,10 @@ function LoadingItem() {
 	);
 }
 
-function LoadingContainer({text}) {
+function LoadingContainer({ text }) {
 	return (
 		<>
-		<LoadingSearchContainer text={text} />
+			<LoadingSearchContainer text={text} />
 			<div className={styles.listSkeletonContainer}>
 				<LoadingItem />
 				<LoadingItem />
@@ -229,7 +318,7 @@ function LoadingContainer({text}) {
 	);
 }
 
-function LoadingSearchContainer({text}) {
+function LoadingSearchContainer({ text }) {
 	return (
 		<>
 			<div id="searchContainer" className={styles.searchContainer}>
@@ -245,33 +334,63 @@ function LoadingSearchContainer({text}) {
 }
 
 
-function SearchContainer() {
+import { useState, useEffect } from "react";
+
+function SearchContainer({ onSearch }) {
 	return (
-		<>
-			<div id="searchContainer" className={styles.searchContainer}>
-				<input id="listSearch" placeholder="Search..." className={styles.listSearch} /> 
-				<button id="filterSearch" className={styles.filterSearch}>
-					<div id="fbText" className={styles.fbText}>
-						Filter
-					</div>
-				</button>
-			</div>
-		</>
+		<div id="searchContainer" className={styles.searchContainer}>
+			<input
+				id="listSearch"
+				placeholder="Search..."
+				className={styles.listSearch}
+				onChange={(e) => onSearch(e.target.value)} // Call onSearch when input changes
+			/>
+			<button id="filterSearch" className={styles.filterSearch}>
+				<div id="fbText" className={styles.fbText}>
+					Filter
+				</div>
+			</button>
+		</div>
 	);
 }
 
 export default function ItemList({ items, type, text }) {
-	let itemArray;
-	if (items) {
-		itemArray = Array.isArray(items) ? items : Object.values(items);
-	}
+	const [searchQuery, setSearchQuery] = useState(""); // State for search query
+	const [filteredItems, setFilteredItems] = useState(items || []); // State for filtered items
+
+	useEffect(() => {
+		if (searchQuery.trim() === "") {
+			setFilteredItems(items); 
+		} else {
+			const lowerCaseQuery = searchQuery.toLowerCase();
+			setFilteredItems(
+				items.filter((item) => {
+					if (type === "album") {
+						return (
+							item.spotifyName.toLowerCase().includes(lowerCaseQuery) ||
+							item.spotifyAlbumArtists.some((artist) =>
+								artist.name.toLowerCase().includes(lowerCaseQuery)
+							) || item.mbTrackNames.some((track) =>
+								track.toLowerCase().includes(lowerCaseQuery)
+							)
+						);
+					} else if (type === "artist") {
+						return item.name.toLowerCase().includes(lowerCaseQuery);
+					}
+					return false;
+				})
+			);
+		}
+	}, [searchQuery, items, type]);
+
 	return (
-		<>
-			{" "}
-			<div className={styles.listWrapper}>
-				{type == "album" && <SearchContainer />}
-				{type == "loadingAlbum" ? <LoadingContainer text={text}/> : <ListContainer items={itemArray} type={type} text={text} />}
-			</div>
-		</>
+		<div className={styles.listWrapper}>
+			{type === "album" && <SearchContainer onSearch={setSearchQuery} />}
+			{type === "loadingAlbum" ? (
+				<LoadingContainer text={text} />
+			) : (
+				<ListContainer items={filteredItems} type={type} text={text} />
+			)}
+		</div>
 	);
 }

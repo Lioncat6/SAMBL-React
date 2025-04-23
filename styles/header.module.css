@@ -3,7 +3,7 @@
 
 .textwrapper {
 	font-family: Arial, sans-serif;
-	background-color: #f9f9f9;
+	background: transparent;
 	padding: 0;
 	justify-content: center;
 	display: flex;
@@ -37,7 +37,7 @@
 	overflow: hidden;
 	display: flex;
 	flex-direction: row;
-	background-color: #f9f9f9;
+	background: transparent;
 }
 
 .spotifyStatus {
