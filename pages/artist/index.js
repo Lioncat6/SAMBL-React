@@ -109,7 +109,6 @@ function processData(sourceAlbums, mbAlbums) {
 		let finalTracks = [];
 		let finalUPC = "";
 		mbAlbums.forEach((mbAlbum) => {
-			console.log(mbAlbum)
 			let mbReleaseName = mbAlbum.title;
 			let mbReleaseUrls = mbAlbum.relations || [];
 			let MBTrackCount = mbAlbum.media?.reduce((count, media) => count + media["track-count"], 0);
@@ -118,7 +117,6 @@ function processData(sourceAlbums, mbAlbums) {
 			let hasCoverArt = mbAlbum["cover-art-archive"]?.front || false;
 			var MBTracks = [];
 			mbAlbum.media?.forEach((media) => {
-				console.log(media)
 				if (media.tracks) {
 					MBTracks = [...MBTracks, ...media.tracks];
 				}
@@ -236,14 +234,16 @@ export default function Artist({ artist }) {
 	const [loading, setLoading] = useState(true);
 	const [statusText, setStatusText] = useState("Loading albums...");
 	let sourceAlbumCount = 999;
-	let mbAlbumCount = 999;
-	let mbFeaturedAlbumCount = 999;
+	let mbAlbumCount = -1;
+	let mbFeaturedAlbumCount = -1;
 	let sourceAlbums = [];
 	let mbAlbums = [];
 	useEffect(() => {
 		function updateLoadingText(musicBrainz) {
 			if (musicBrainz) {
-				setStatusText(`Loading albums from musicbrainz... ${parseInt(mbAlbums.length)}/${Number(mbAlbumCount) + Number(mbFeaturedAlbumCount)}`);
+				if (mbAlbumCount > -1 && mbFeaturedAlbumCount > -1) {
+					setStatusText(`Loading albums from musicbrainz... ${parseInt(mbAlbums.length)}/${Number(mbAlbumCount) + Number(mbFeaturedAlbumCount)}`);
+				}
 			} else {
 				setStatusText(`Loading albums from spotify... ${sourceAlbums.length}/${sourceAlbumCount}`);
 			}
@@ -266,7 +266,7 @@ export default function Artist({ artist }) {
 
 		async function fetchMusicbrainzArtistAlbums() {
 			let offset = 0;
-			while (offset < mbAlbumCount) {
+			while (offset < mbAlbumCount || mbAlbumCount == -1) {
 				try {
 					const data = await fetchMbArtistAlbums(artist.mbid, offset);
 					mbAlbums = [...mbAlbums, ...data.releases];
@@ -281,7 +281,7 @@ export default function Artist({ artist }) {
 
 		async function fetchMusicBrainzFeaturedAlbums() {
 			let offset = 0;
-			while (offset < mbFeaturedAlbumCount) {
+			while (offset < mbFeaturedAlbumCount || mbFeaturedAlbumCount == -1) {
 				try {
 					const data = await fetchMbArtistFeaturedtAlbums(artist.mbid, offset);
 					mbAlbums = [...mbAlbums, ...data.releases];
@@ -306,7 +306,6 @@ export default function Artist({ artist }) {
 			}
 
 			let data = processData(sourceAlbums, mbAlbums)
-			console.log(data)
 			setStatusText(data.statusText);
 			setAlbums(data.albumData);
 			setLoading(false);

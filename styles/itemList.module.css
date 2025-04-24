@@ -1,7 +1,7 @@
 .listContainer {
 	border-radius: 10px;
 	height: 100%;
-	border: 1px solid black;
+	border: 1px solid var(--foreground-primary);
 	overflow-y: auto;
 	margin: 0 10px 0 10px;
 }
@@ -38,7 +38,7 @@
 }
 
 .artistGenres {
-	color: gray;
+	color: var(--foreground-tertiary);
 	text-align: left;
 	font-size: small;
 	font-weight: normal;
@@ -48,7 +48,7 @@
 }
 
 .listItem {
-	border: 1px solid gray;
+	border: 1px solid var(--foreground-tertiary);
 	display: flex;
 	flex-direction: row;
 	border-radius: 10px;
@@ -57,7 +57,7 @@
 }
 
 .listItem:hover {
-	border: 1px solid black;
+	border: 1px solid var(--foreground-primary);
 	transition: 0.5s all;
 }
 
@@ -87,7 +87,7 @@
 
 .itemList a {
 	text-align: left;
-	color: #333;
+	color: var(--foreground-secondary);
 	text-decoration: none;
 	font-weight: normal;
 }
@@ -105,7 +105,7 @@
 	margin: 5px;
 	border-radius: 10px;
 	padding: 10px;
-	border: 1px solid black;
+	border: 1px solid var(--foreground-primary);
 	transition: 0.2s all;
 	text-decoration: none !important;
 	white-space: nowrap;
@@ -179,18 +179,18 @@
 	margin: 10px 10px 2px 0px;
 	padding: 10px;
 	height: 32px;
-	border: 1px solid gray;
+	border: 1px solid var(--foreground-tertiary);
 	border-radius: 10px;
 	transition: 0.2s all;
 	background: transparent;
-	color: gray;
+	color: var(--foreground-tertiary);
 	text-align: center;
 }
 
 .filterSearch:hover {
-	border: 1px solid black;
+	border: 1px solid var(--foreground-primary);
 	transition: 0.2s all;
-	color: black;
+	color: var(--foreground-primary);
 	background: transparent;
 }
 
@@ -198,7 +198,7 @@
 .listSearchLoading {
 	border-radius: 10px;
 	height: 30px;
-	border: 1px solid black;
+	border: 1px solid var(--foreground-primary);
 	margin: 10px 5px 2px 10px;
 	width: calc(100% - 32px);
 	padding: 0px 5px;
@@ -207,7 +207,7 @@
 }
 
 .listSearchLoading {
-	color: gray;
+	color: var(--foreground-tertiary);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -216,7 +216,7 @@
 }
 
 .listItem {
-	border: 1px solid gray;
+	border: 1px solid var(--foreground-tertiary);
 	display: flex;
 	flex-direction: row;
 	border-radius: 10px;
@@ -225,7 +225,7 @@
 }
 
 .listItem:hover {
-	border: 1px solid black;
+	border: 1px solid var(--foreground-primary);
 	transition: 0.5s all;
 }
 
@@ -245,13 +245,23 @@
 	margin-right: 5px;
 	padding: 10px;
 	height: 15px;
-	border: 1px solid black;
+	border: 1px solid var(--foreground-primary);
 	border-radius: 20px;
 	transition: 0.2s all;
 	text-decoration: none !important;
 	white-space: nowrap;
 	margin-left: auto;
 	font-weight: normal;
+}
+
+.hasTracks {
+	cursor: help;
+	transition: all .2s ease-in-out;
+}
+
+.trackHighlight {
+	background: #ffff0075;
+	color: var(--foreground-primary);
 }
 
 .aTisketButton {
@@ -322,6 +332,7 @@
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+	color: var(--foreground-secondary)
 }
 
 .albumTitle .albumMB {
@@ -345,7 +356,7 @@
 }
 
 .albumInfo {
-	color: lightgray;
+	color: var(--foreground-quaternary);
 	text-align: left;
 	font-size: small;
 	font-weight: normal;
@@ -429,7 +440,7 @@
 .listSkeletonContainer {
 	border-radius: 10px;
 	height: 100%;
-	border: 1px solid black;
+	border: 1px solid var(--foreground-primary);
 	overflow-y: hidden;
 	margin: 0 10px 0 10px;
 }
@@ -440,7 +451,7 @@
 	margin-right: 5px;
 	padding: 10px;
 	height: 18px;
-	/* border: 1px solid black; */
+	/* border: 1px solid var(--foreground-primary); */
 	border-radius: 20px;
 	margin-left: auto;
 	width: 80px;

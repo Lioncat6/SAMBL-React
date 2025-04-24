@@ -4,23 +4,14 @@ import Link from "next/link";
 function AlbumIcons({ item }) {
 	const {
 		spotifyId,
-		spotifyName,
 		spotifyUrl,
-		spotifyImageURL,
-		spotifyImageURL300px,
-		spotifyAlbumArtists,
 		spotifyReleaseDate,
 		spotifyTrackCount,
-		spotifyAlbumType,
 		albumStatus,
-		albumMBUrl,
 		mbTrackCount,
 		mbReleaseDate,
 		mbid,
 		albumIssues,
-		mbTrackNames,
-		mbTrackISRCs,
-		tracksWithoutISRCs,
 	} = item;
 	return (
 		<div className={styles.iconContainer}>
@@ -89,6 +80,20 @@ function AlbumIcons({ item }) {
 	)
 }
 
+function ActionButtons({ item }) {
+	const { spotifyId, spotifyUrl } = item;
+	return (
+		<>
+			<a className={styles.aTisketButton} href={`https://atisket.pulsewidth.org.uk/?spf_id=${spotifyId}&amp;preferred_vendor=spf`} target="_blank" rel="noopener noreferrer">
+				<div>A-tisket</div>
+			</a>
+			<a className={styles.harmonyButton} href={`https://harmony.pulsewidth.org.uk/release?url=${spotifyUrl}&category=preferred`} target="_blank" rel="noopener noreferrer">
+				<div>Harmony</div>
+			</a>
+		</>
+	)
+}
+
 function AlbumItem({ item }) {
 	const {
 		spotifyId,
@@ -109,8 +114,8 @@ function AlbumItem({ item }) {
 		mbTrackNames,
 		mbTrackISRCs,
 		tracksWithoutISRCs,
+		highlightTracks
 	} = item;
-
 
 	const spotifyTrackString = spotifyTrackCount > 1 ? `${spotifyTrackCount} Tracks` : "1 Track";
 
@@ -194,19 +199,14 @@ function AlbumItem({ item }) {
 				<div className={styles.albumInfo}>
 					<div>
 						{spotifyReleaseDate} • {spotifyAlbumType.charAt(0).toUpperCase() + spotifyAlbumType.slice(1)} •{" "}
-						<span className={albumStatus === "red" ? "" : styles.hasTracks} title={mbTrackString || ""}>
+						<span className={`${albumStatus === "red" ? "" : styles.hasTracks} ${highlightTracks ? styles.trackHighlight : ""}`} title={mbTrackString || ""}>
 							{spotifyTrackString}
 						</span>
 					</div>
 					<AlbumIcons item={item} />
 				</div>
 			</div>
-			<a className={styles.aTisketButton} href={`https://atisket.pulsewidth.org.uk/?spf_id=${spotifyId}&amp;preferred_vendor=spf`} target="_blank" rel="noopener noreferrer">
-				<div>A-tisket</div>
-			</a>
-			<a className={styles.harmonyButton} href={`https://harmony.pulsewidth.org.uk/release?url=${spotifyUrl}&category=preferred`} target="_blank" rel="noopener noreferrer">
-				<div>Harmony</div>
-			</a>
+			<ActionButtons item={item} />
 		</div>
 	);
 }
@@ -300,19 +300,9 @@ function LoadingContainer({ text }) {
 		<>
 			<LoadingSearchContainer text={text} />
 			<div className={styles.listSkeletonContainer}>
-				<LoadingItem />
-				<LoadingItem />
-				<LoadingItem />
-				<LoadingItem />
-				<LoadingItem />
-				<LoadingItem />
-				<LoadingItem />
-				<LoadingItem />
-				<LoadingItem />
-				<LoadingItem />
-				<LoadingItem />
-				<LoadingItem />
-				<LoadingItem />
+				{Array.from({ length: 13 }).map((_, index) => (
+					<LoadingItem key={index} />
+				))}
 			</div>
 		</>
 	);
@@ -357,31 +347,42 @@ function SearchContainer({ onSearch }) {
 export default function ItemList({ items, type, text }) {
 	const [searchQuery, setSearchQuery] = useState(""); // State for search query
 	const [filteredItems, setFilteredItems] = useState(items || []); // State for filtered items
-
 	useEffect(() => {
-		if (searchQuery.trim() === "") {
-			setFilteredItems(items); 
+		if (type === "artist") {
+			setFilteredItems(items);
+		} else if (searchQuery.trim() === "") {
+			setFilteredItems(items);
 		} else {
 			const lowerCaseQuery = searchQuery.toLowerCase();
 			setFilteredItems(
-				items.filter((item) => {
-					if (type === "album") {
-						return (
-							item.spotifyName.toLowerCase().includes(lowerCaseQuery) ||
-							item.spotifyAlbumArtists.some((artist) =>
-								artist.name.toLowerCase().includes(lowerCaseQuery)
-							) || item.mbTrackNames.some((track) =>
-								track.toLowerCase().includes(lowerCaseQuery)
-							)
-						);
-					} else if (type === "artist") {
-						return item.name.toLowerCase().includes(lowerCaseQuery);
-					}
-					return false;
+				items.map((item) => { //logic for track highligting
+					const matchesTrack = item.mbTrackNames.some((track) =>
+						track.toLowerCase().includes(lowerCaseQuery)
+					);
+
+					const matchesTitle = item.spotifyName.toLowerCase().includes(lowerCaseQuery);
+
+					return {
+						...item,
+						highlightTracks: matchesTrack && !matchesTitle,
+					};
+				}).filter((item) => {  //actual filter logic
+					return (
+						item.spotifyName.toLowerCase().includes(lowerCaseQuery) ||
+						item.spotifyAlbumArtists.some((artist) =>
+							artist.name.toLowerCase().includes(lowerCaseQuery)
+						) ||
+						item.highlightTracks
+					);
 				})
 			);
 		}
 	}, [searchQuery, items, type]);
+
+	let itemArray = [];
+	if (type == "artist") {
+		itemArray = Array.isArray(items) ? items : Object.values(items);
+	}
 
 	return (
 		<div className={styles.listWrapper}>
@@ -389,7 +390,7 @@ export default function ItemList({ items, type, text }) {
 			{type === "loadingAlbum" ? (
 				<LoadingContainer text={text} />
 			) : (
-				<ListContainer items={filteredItems} type={type} text={text} />
+				<ListContainer items={type == "album" ? filteredItems : itemArray} type={type} text={text} />
 			)}
 		</div>
 	);

@@ -54,7 +54,7 @@
 	height: auto;
 	border-radius: 20px;
 	color: white;
-	background-color: black;
+	background-color: var(--foreground-primary);
 }
 
 .spfTextWrapper {

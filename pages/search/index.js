@@ -23,7 +23,7 @@ export async function getServerSideProps(context) {
     } catch (error) {
         console.error("Error fetching artist data:", error);
         return {
-            notFound: true, // Return a 404 page if the artist is not found
+            notFound: true,
         };
     }
 }
