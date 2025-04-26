@@ -5,12 +5,16 @@
 	--background: #f9f9f9;
 	--foreground-primary: #000000;
 	--foreground-secondary: #333;
-	--foreground-tertiary : gray;
+	--foreground-tertiary: gray;
 	--foreground-quaternary: lightgray;
 	--scrollbar-active: #555;
 	--scrollbar: #aaa;
 	--nprogress-gradient: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet);
-
+	--skeleton: #e0e0e0;
+	--skeleton-highlight: #f0f0f0;
+	--toolsButton: #000f52;
+	--configButton: #522e00;
+	--savedArtists: #00631c;
 }
 
 .dark {
@@ -20,6 +24,11 @@
 	--scrollbar-active: #d3d3d3;
 	--scrollbar: #929292;
 	--nprogress-gradient: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #7f00ff, #ff00ff);
+	--skeleton: #444;
+	--skeleton-highlight: #666;
+	--toolsButton: #001d9f;
+	--configButton: #905100;
+	--savedArtists: #00a62f;
 }
 
 #main {
@@ -62,6 +71,7 @@ textarea {
 	margin-bottom: 10px;
 	margin-top: 10px;
 	resize: none;
+	background: transparent;
 }
 
 button {
@@ -496,5 +506,10 @@ iframe {
 
 #nprogress .bar {
 	background: var(--nprogress-gradient, linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet)) !important;
-	height: .3% !important;
+	height: .2% !important;
+}
+
+.popup-content {
+	background: none !important;
+	border: none !important;
 }

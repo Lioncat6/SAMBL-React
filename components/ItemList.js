@@ -1,5 +1,7 @@
 import styles from "../styles/itemList.module.css";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useSettings } from "./SettingsContext";
 
 function AlbumIcons({ item }) {
 	const {
@@ -81,17 +83,33 @@ function AlbumIcons({ item }) {
 }
 
 function ActionButtons({ item }) {
-	const { spotifyId, spotifyUrl } = item;
-	return (
-		<>
-			<a className={styles.aTisketButton} href={`https://atisket.pulsewidth.org.uk/?spf_id=${spotifyId}&amp;preferred_vendor=spf`} target="_blank" rel="noopener noreferrer">
-				<div>A-tisket</div>
-			</a>
-			<a className={styles.harmonyButton} href={`https://harmony.pulsewidth.org.uk/release?url=${spotifyUrl}&category=preferred`} target="_blank" rel="noopener noreferrer">
-				<div>Harmony</div>
-			</a>
-		</>
-	)
+    const { settings } = useSettings();
+    const { spotifyId, spotifyUrl } = item;
+
+    return (
+        <>
+            {settings.showATisket && (
+                <a
+                    className={styles.aTisketButton}
+                    href={`https://atisket.pulsewidth.org.uk/?spf_id=${spotifyId}&amp;preferred_vendor=spf`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    <div>A-tisket</div>
+                </a>
+            )}
+            {settings.showHarmony && (
+                <a
+                    className={styles.harmonyButton}
+                    href={`https://harmony.pulsewidth.org.uk/release?url=${spotifyUrl}&category=preferred`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    <div>Harmony</div>
+                </a>
+            )}
+        </>
+    );
 }
 
 function AlbumItem({ item }) {
@@ -324,7 +342,6 @@ function LoadingSearchContainer({ text }) {
 }
 
 
-import { useState, useEffect } from "react";
 
 function SearchContainer({ onSearch }) {
 	return (

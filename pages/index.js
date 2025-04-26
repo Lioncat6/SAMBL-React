@@ -1,12 +1,30 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import { ToastContainer, toast, Flip } from 'react-toastify';
 
 export default function Home() {
 	const [errorMessage, setErrorMessage] = useState(""); // State for error message
 	const router = useRouter();
 
-	function dispError(message) {
-		setErrorMessage(message);
+	function dispError(message, type = "warn") {
+		let toastProperties = {
+			position: "top-left",
+			autoClose: 5000,
+			hideProgressBar: false,
+			closeOnClick: false,
+			pauseOnHover: true,
+			draggable: true,
+			progress: undefined,
+			theme: "dark",
+			transition: Flip,
+		}
+		if (type === "error") {
+			toast.error(message, toastProperties);
+		} else {
+			toast.warn(message, toastProperties);
+		}
+
+		// setErrorMessage(message);
 		document.getElementById("searchEnter").innerHTML = "Search";
 	}
 
@@ -54,7 +72,7 @@ export default function Home() {
 				router.push(`/newartist?spid=${spfId}`);
 			}
 		} else {
-			dispError("Spotify artist not found!");
+			dispError("Spotify artist not found!", "error");
 		}
 	}
 
@@ -76,14 +94,26 @@ export default function Home() {
 	}, []);
 	return (
 		<>
-			
-				<textarea id="searchbox" rows={1} placeholder="Search for artist or enter id/url..." defaultValue={""} />
-				<button type="button" id="searchEnter" onClick={handleSearch}>
-					Search
-				</button>
-				{errorMessage && <div id="err">{errorMessage}</div>} {/* Render error message */}
-				<div id="loadingMsg" />
 
+			<textarea id="searchbox" rows={1} placeholder="Search for artist or enter id/url..." defaultValue={""} />
+			<button type="button" id="searchEnter" onClick={handleSearch}>
+				Search
+			</button>
+			{errorMessage && <div id="err">{errorMessage}</div>} {/* Render error message */}
+			<div id="loadingMsg" />
+			<ToastContainer
+				position="top-right"
+				autoClose={3000}
+				hideProgressBar={false}
+				newestOnTop={false}
+				closeOnClick={false}
+				rtl={false}
+				pauseOnFocusLoss
+				draggable
+				pauseOnHover
+				theme="dark"
+				transition={Flip}
+			/>
 		</>
 	);
 }

@@ -20,6 +20,8 @@
 		"react": "^19.1.0",
 		"react-dom": "^19.1.0",
 		"react-scripts": "^5.0.1",
+		"react-toastify": "^11.0.5",
+		"reactjs-popup": "^2.0.6",
 		"spotify-web-api-node": "^5.0.0"
 	},
 	"browserslist": {

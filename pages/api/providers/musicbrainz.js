@@ -46,7 +46,7 @@ async function getArtistAlbums(mbid, offset = 0, limit = 100) {
     try {
         // const data = await mbApi.browse('release', {artist: mbid, limit: limit, offset: offset});
         const data = await mbApi.browse('release', {artist: mbid, limit: limit, offset: offset}, ['url-rels', 'recordings', 'isrcs']);
-        console.log(data)
+        // console.log(data)
         return data;
     } catch (error) {
         console.error(error);

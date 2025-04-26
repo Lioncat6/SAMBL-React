@@ -159,22 +159,22 @@
 
 .toolsButton:hover {
 	background: transparent;
-	border: 1px solid #000f52;
-	color: #000f52;
+	border: 1px solid var(--toolsButton);
+	color: var(--toolsButton);
 	transition: 0.2s all;
 }
 
 .configButton:hover {
 	background: transparent;
-	border: 1px solid #522e00;
-	color: #522e00;
+	border: 1px solid var(--configButton);
+	color: var(--configButton);
 	transition: 0.2s all;
 }
 
 .savedArtists:hover {
 	background: transparent;
-	border: 1px solid #00631c;
-	color: #00631c;
+	border: 1px solid var(--savedArtists);
+	color: var(--savedArtists);
 	transition: 0.2s all;
 }
 

@@ -1,17 +1,22 @@
-import spotify  from "./providers/spotify";
+import spotify from "./providers/spotify";
 import musicbrainz from "./providers/musicbrainz";
 
 export default async function handler(req, res) {
-    const { spotifyId } = req.query;
-    let spArtist = await spotify.getArtistById(spotifyId)
-    if (spArtist != null){
-        let mbid = await musicbrainz.getIdBySpotifyId(spotifyId)
-        if (mbid != null){
-            res.status(200).json(mbid);
+    try {
+        const { spotifyId } = req.query;
+        let spArtist = await spotify.getArtistById(spotifyId)
+        if (spArtist != null) {
+            let mbid = await musicbrainz.getIdBySpotifyId(spotifyId)
+            if (mbid != null) {
+                res.status(200).json(mbid);
+            } else {
+                res.status(200).json(null);
+            }
         } else {
-            res.status(200).json(null);
+            res.status(404).json({ error: "Spotify artist not found" });
         }
-    } else {
-        res.status(404).json({error: "Spotify artist not found"});
+	} catch (error) {
+        res.status(500).json({ error: "Internal Server Error", details: error.message });
+
     }
 }

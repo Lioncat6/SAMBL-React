@@ -463,9 +463,9 @@
 .skeletonButton {
 	animation: skeletonShimmer 1.5s infinite linear;
 	background: linear-gradient(90deg,
-			#e0e0e0 25%,
-			#f0f0f0 50%,
-			#e0e0e0 75%);
+			var(--skeleton) 25%,
+			var(--skeleton-highlight) 50%,
+			var(--skeleton) 75%);
 	background-size: 200% 100%;
 }
 

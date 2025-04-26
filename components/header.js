@@ -1,6 +1,6 @@
 import Link from "next/link";
 import styles from '../styles/header.module.css';
-
+import Popup from "./Popup";
 export default function Header() {
     return (
         <>
@@ -25,11 +25,14 @@ export default function Header() {
                             <i className="fa-solid fa-user" /> Artists
                         </div>
                     </button>
-                    <button className={styles.configButton}>
+                    <Popup button={<button className={styles.configButton}>
                         <div className={styles.buttonText}>
                             <i className="fa-solid fa-gear" /> Configure
                         </div>
-                    </button>
+                    </button>}>
+
+                    </Popup>
+
                 </div>
             </header>
         </>
