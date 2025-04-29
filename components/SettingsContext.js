@@ -4,16 +4,16 @@ const SettingsContext = createContext();
 
 export function SettingsProvider({ children }) {
     const [settings, setSettings] = useState({
-        showHarmony: false,
-        showATisket: false,
+        showHarmony: true,
+        showATisket: true,
     });
 
     useEffect(() => {
         // Load settings from localStorage on mount
         const savedConfig = JSON.parse(localStorage.getItem("samblConfig")) || {};
         setSettings({
-            showHarmony: savedConfig.showHarmony || false,
-            showATisket: savedConfig.showATisket || false,
+            showHarmony: savedConfig.showHarmony !== undefined ? savedConfig.showHarmony : true,
+            showATisket: savedConfig.showATisket !== undefined ? savedConfig.showATisket : true,
         });
     }, []);
 

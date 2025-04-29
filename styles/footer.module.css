@@ -16,7 +16,7 @@
 }
 
 
-/* HTML: <div class="loader"></div> */
+/* HTML: <div className="loader"></div> */
 .loader {
 	display: inline-block;
 	width: 8px;

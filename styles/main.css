@@ -12,6 +12,8 @@
 	--nprogress-gradient: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet);
 	--skeleton: #e0e0e0;
 	--skeleton-highlight: #f0f0f0;
+	--button-border: #e0e0e0;
+	--button-text: #b8b8b8;
 	--toolsButton: #000f52;
 	--configButton: #522e00;
 	--savedArtists: #00631c;
@@ -26,7 +28,7 @@
 	--nprogress-gradient: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #7f00ff, #ff00ff);
 	--skeleton: #444;
 	--skeleton-highlight: #666;
-	--toolsButton: #001d9f;
+	--toolsButton: #5d7aff;
 	--configButton: #905100;
 	--savedArtists: #00a62f;
 }
@@ -512,4 +514,9 @@ iframe {
 .popup-content {
 	background: none !important;
 	border: none !important;
+}
+
+svg {
+	padding-top: 1px;
+      vertical-align: text-top;
 }

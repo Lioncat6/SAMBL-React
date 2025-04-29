@@ -148,11 +148,11 @@
 	margin: 10px 10px 2px 0px;
 	padding: 10px;
 	height: 32px;
-	border: 1px solid rgb(224, 224, 224);
+	border: 1px solid var(--button-border);
 	border-radius: 10px;
 	transition: 0.2s all;
 	background: transparent;
-	color: rgb(184, 184, 184);
+	color: var(--button-text);
 	text-align: center;
 	font-size: 13.33px;
 }
@@ -193,3 +193,38 @@
 .buttonText {
 	transform: translateY(-2px);
 }
+
+.dropdownWrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdownMenu {
+    position: absolute;
+    top: 100%; 
+    left: 0;
+    background-color: var(--background-primary); 
+    border: 1px solid var(--button-border);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    padding: 8px 0; 
+    min-width: 150px;
+}
+
+.dropdownMenu a, .dropdownMenu .menuItem {
+	font-family: Arial, sans-serif;
+    display: block;
+    padding: 8px 16px;
+    color: var(--button-text);
+    text-decoration: none;
+    font-size: 14px;
+	font-weight: normal;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.dropdownMenu a:hover, .dropdownMenu .menuItem:hover {
+    background-color: #444;
+    color: #ffffff;
+}
+

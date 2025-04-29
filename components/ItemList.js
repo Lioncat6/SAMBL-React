@@ -3,6 +3,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSettings } from "./SettingsContext";
 
+import { FaBarcode } from "react-icons/fa6";
+
+
 function AlbumIcons({ item }) {
 	const {
 		spotifyId,
@@ -112,7 +115,7 @@ function ActionButtons({ item }) {
     );
 }
 
-function AlbumItem({ item }) {
+function AlbumItem({ item, selecting }) {
 	const {
 		spotifyId,
 		spotifyName,
@@ -224,7 +227,7 @@ function AlbumItem({ item }) {
 					<AlbumIcons item={item} />
 				</div>
 			</div>
-			<ActionButtons item={item} />
+			{selecting ? "" :<ActionButtons item={item} />}
 		</div>
 	);
 }
