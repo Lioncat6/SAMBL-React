@@ -76,7 +76,7 @@ textarea {
 	background: transparent;
 }
 
-button {
+.searchButton {
 	background-color: #0074d9;
 	color: #fff;
 	border: none;
@@ -86,7 +86,7 @@ button {
 	cursor: pointer;
 }
 
-button:hover {
+.searchButton:hover {
 	background-color: #0056b3;
 }
 

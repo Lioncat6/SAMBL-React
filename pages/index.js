@@ -15,7 +15,7 @@ export default function Home() {
 			pauseOnHover: true,
 			draggable: true,
 			progress: undefined,
-			theme: "dark",
+			
 			transition: Flip,
 		}
 		if (type === "error") {
@@ -96,24 +96,11 @@ export default function Home() {
 		<>
 
 			<textarea id="searchbox" rows={1} placeholder="Search for artist or enter id/url..." defaultValue={""} />
-			<button type="button" id="searchEnter" onClick={handleSearch}>
+			<button type="button" className="searchButton" id="searchEnter" onClick={handleSearch}>
 				Search
 			</button>
 			{errorMessage && <div id="err">{errorMessage}</div>} {/* Render error message */}
 			<div id="loadingMsg" />
-			<ToastContainer
-				position="top-right"
-				autoClose={3000}
-				hideProgressBar={false}
-				newestOnTop={false}
-				closeOnClick={false}
-				rtl={false}
-				pauseOnFocusLoss
-				draggable
-				pauseOnHover
-				theme="dark"
-				transition={Flip}
-			/>
 		</>
 	);
 }

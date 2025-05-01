@@ -57,7 +57,7 @@ export async function getServerSideProps(context) {
 async function fetchSourceAlbums(artistId, offset = 0) {
 	return fetch(`/api/getArtistAlbums?spotifyId=${artistId}&offset=${offset}&limit=50`).then((response) => {
 		if (!response.ok) {
-			throw new Error("Failed to fetch albums");
+			// throw new Error("Failed to fetch albums");
 		}
 		return response.json();
 	});
@@ -66,7 +66,7 @@ async function fetchSourceAlbums(artistId, offset = 0) {
 async function fetchMbArtistAlbums(mbid, offset = 0) {
 	return fetch(`/api/getMusicBrainzAlbums?mbid=${mbid}&offset=${offset}&limit=100`).then((response) => {
 		if (!response.ok) {
-			throw new Error("Failed to fetch albums from MusicBrainz");
+			// throw new Error("Failed to fetch albums from MusicBrainz");
 		}
 		return response.json();
 	});

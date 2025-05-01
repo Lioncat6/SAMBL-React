@@ -8,11 +8,13 @@ import { FaTools, FaUser } from "react-icons/fa";
 import { TbTableExport } from "react-icons/tb";
 
 
-const exportData = dynamic(() => import("./Export"), { ssr: false });
+import { useExportData } from "./Export";
 
 const Popup = dynamic(() => import("./Popup"), { ssr: false });
 
 export default function Header() {
+	const exportData = useExportData();
+
 	return (
 		<>
 			<header className={styles.header}>
