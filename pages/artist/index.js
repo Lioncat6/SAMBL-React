@@ -107,7 +107,7 @@ function processData(sourceAlbums, mbAlbums) {
 		let finalHasCoverArt = false;
 		let albumIssues = [];
 		let finalTracks = [];
-		let finalUPC = "";
+		let mbBarcode = "";
 		mbAlbums.forEach((mbAlbum) => {
 			let mbReleaseName = mbAlbum.title;
 			let mbReleaseUrls = mbAlbum.relations || [];
@@ -131,7 +131,7 @@ function processData(sourceAlbums, mbAlbums) {
 					mbReleaseDate = MBReleaseDate;
 					finalHasCoverArt = hasCoverArt;
 					finalTracks = MBTracks;
-					finalUPC = MBReleaseUPC;
+					mbBarcode = MBReleaseUPC;
 				}
 			});
 
@@ -143,7 +143,7 @@ function processData(sourceAlbums, mbAlbums) {
 				mbReleaseDate = MBReleaseDate;
 				finalHasCoverArt = hasCoverArt;
 				finalTracks = MBTracks;
-				finalUPC = MBReleaseUPC
+				mbBarcode = MBReleaseUPC
 			}
 		});
 
@@ -164,7 +164,7 @@ function processData(sourceAlbums, mbAlbums) {
 		}
 
 		if (albumStatus != "red") {
-			if (!finalUPC || finalUPC == null) {
+			if (!mbBarcode || mbBarcode == null) {
 				albumIssues.push("noUPC");
 			}
 			if (mbTrackCount != spotifyTrackCount) {
@@ -211,6 +211,7 @@ function processData(sourceAlbums, mbAlbums) {
 			mbTrackNames,
 			mbTrackISRCs,
 			tracksWithoutISRCs,
+			mbBarcode,
 		});
 	});
 

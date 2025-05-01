@@ -135,7 +135,8 @@ function AlbumItem({ item, selecting }) {
 		mbTrackNames,
 		mbTrackISRCs,
 		tracksWithoutISRCs,
-		highlightTracks
+		highlightTracks,
+		mbBarcode
 	} = item;
 
 	const spotifyTrackString = spotifyTrackCount > 1 ? `${spotifyTrackCount} Tracks` : "1 Track";
@@ -168,6 +169,7 @@ function AlbumItem({ item, selecting }) {
 		"data-track-names": mbTrackNames,
 		"data-track-isrcs": mbTrackISRCs,
 		"data-tracks-without-isrcs": tracksWithoutISRCs,
+		"data-barcode": mbBarcode,
 	}
 
 	return (
@@ -275,6 +277,62 @@ function ArtistItem({ item }) {
 	);
 }
 
+function Icon({source}) {
+	return (
+		<>
+			{source === "spotify" && <img className={styles.spotifyIcon} src="../assets/images/Spotify_icon.svg" />}
+			{source === "musicbrainz" && <img className={styles.mbIcon} src="../assets/images/MusicBrainz_logo_icon.svg" />}
+			</>
+	);
+}
+
+function GenericItem({ item }) {
+	const  {
+		source, 
+		imageUrl,
+		title,
+		artists,
+		info,
+		link
+	} = item;
+	let artistString = artists.map((artist, index) => (
+		<>
+			{index > 0 && ", "}
+			<a href={artist.link} target="_blank" rel="noopener noreferrer" className={styles.artists}>
+				{artist.name}
+			</a>
+			</>
+	));
+	let infoString = Array.isArray(info) 
+		? info.filter(item => item != null && item != "").join(" • ") 
+		: "";
+	return (
+		<div className={styles.listItem} style={{ "--background-image": `url('${imageUrl}')` }}>
+			{imageUrl && (
+				<div className={styles.artistIcon}>
+					<a href={imageUrl} target="_blank">
+						<img src={imageUrl} />
+					</a>
+				</div>
+			)}
+			<div className={styles.textContainer}>
+				<div className={styles.artistName}>
+					<a href={link} target="_blank">
+						{title}
+					</a>
+				</div>
+				<div className={styles.artistFollowers}>{artistString}</div>
+				<div className={styles.artistGenres}>{infoString}</div>
+			</div>
+			<a href={link} target="_blank" className={styles.viewButton}>
+				<div>
+					View <Icon source={source} />
+				</div>
+			</a>
+		</div>
+	)
+}
+
 function ListBuilder({ items, type }) {
 	return (
 		<>
@@ -282,6 +340,7 @@ function ListBuilder({ items, type }) {
 				<div id={index} key={index} className={styles.itemContainer}>
 					{type == "album" && <AlbumItem item={item} />}
 					{type == "artist" && <ArtistItem item={item} />}
+					{type == "mixed" && <GenericItem item={item} />}
 				</div>
 			))}
 		</>
@@ -368,8 +427,7 @@ export default function ItemList({ items, type, text }) {
 	const [searchQuery, setSearchQuery] = useState(""); // State for search query
 	const [filteredItems, setFilteredItems] = useState(items || []); // State for filtered items
 	useEffect(() => {
-		if (type === "artist") {
-			setFilteredItems(items);
+		if (type != "album") {
 		} else if (searchQuery.trim() === "") {
 			setFilteredItems(items);
 		} else {
@@ -400,10 +458,9 @@ export default function ItemList({ items, type, text }) {
 	}, [searchQuery, items, type]);
 
 	let itemArray = [];
-	if (type == "artist") {
+	if (type != "album" && type != "loadingAlbum") {
 		itemArray = Array.isArray(items) ? items : Object.values(items);
 	}
-
 	return (
 		<div className={styles.listWrapper}>
 			{type === "album" && <SearchContainer onSearch={setSearchQuery} />}

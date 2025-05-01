@@ -121,7 +121,7 @@
 	transform: translateY(-1px);
 }
 
-.artistMB {
+.artistMB, .spotifyIcon, .mbIcon {
 	width: 16px;
 	height: 20px;
 	vertical-align: middle;
@@ -165,10 +165,6 @@
 	z-index: 2;
 }
 
-.fbText {
-	transform: translateY(-3px);
-}
-
 .searchContainer {
 	display: flex;
 	flex-direction: row;
@@ -184,7 +180,8 @@
 	transition: 0.2s all;
 	background: transparent;
 	color: var(--foreground-tertiary);
-	text-align: center;
+	align-items: center;
+	display: flex;
 }
 
 .filterSearch:hover {

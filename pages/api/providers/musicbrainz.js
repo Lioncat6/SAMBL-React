@@ -66,11 +66,33 @@ async function getArtistFeaturedAlbums(mbid, offset = 0, limit = 100) {
     }
 }
 
+async function getAlbumByUPC(upc) {
+    try {
+        const data = await mbApi.search('release', {query: upc, inc: ['artist-rels']}, {limit: 20});
+        return data;
+    } catch (error) {
+        console.error(error);
+        throw new Error("Failed to fetch album data");
+    }
+}
+
+async function getTrackByISRC(isrc) {
+    try {
+        const data = await mbApi.search('recording', {query: isrc, inc: ['artist-rels']}, {limit: 20});
+        return data;
+    } catch (error) {
+        console.error(error);
+        throw new Error("Failed to fetch album data");
+    }
+}
+
 const musicbrainz = {
     getIdBySpotifyId: getIdBySpotifyId,
     getIdsBySpotifyUrls: getIdsBySpotifyUrls,
     getArtistAlbums,
-    getArtistFeaturedAlbums
+    getArtistFeaturedAlbums,
+    getAlbumByUPC,
+    getTrackByISRC
 };
 
 export default musicbrainz;

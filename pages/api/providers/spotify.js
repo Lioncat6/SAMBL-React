@@ -98,10 +98,37 @@ async function getArtistAlbums(spotifyId, offset = 0, limit = 50) {
     }
 }
 
+async function getAlbumByUPC(upc) {
+    try {
+        await checkAccessToken();
+
+        const data = await spotifyApi.searchAlbums(`upc:${upc}`, { limit: 20 });
+        return data.body;
+    } catch (error) {
+        logger.error("Error fetching album data:", error);
+        throw new Error("Failed to fetch album data");
+    }
+}
+
+async function getTrackByISRC(isrc) {
+    try {
+        await checkAccessToken();
+
+        const data = await spotifyApi.searchTracks(`isrc:${isrc}`, { limit: 20 });
+        return data.body;
+    } catch (error) {
+        logger.error("Error fetching track data:", error);
+        throw new Error("Failed to fetch track data");
+    }
+}
+
+
 const spotify = {
     getArtistById,
     searchByArtistName,
-    getArtistAlbums
+    getArtistAlbums,
+    getAlbumByUPC,
+    getTrackByISRC,
 };
 
 export default spotify;
