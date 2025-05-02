@@ -94,12 +94,12 @@ export default function Find() {
 					const matchedQuery = query.match(isrcPattern)[0];
 					handleResults(await dispPromise(serverFind(matchedQuery, "ISRC"), "Finding by ISRC..."));
 				} else if (urlPattern.test(query)) {
-					const matchedQuery = query.match(urlPattern)[0];
-					handleResults(await dispPromise(serverFind(matchedQuery, "URL"), "Finding by URL..."));
-				} else if (upcPattern.test(query)) {
 					dispError("This finding method isn't supported yet. Try using a barcode or ISRC!");
-					// const matchedQuery = query.match(upcPattern)[0]; 
-					// handleResults(await dispPromise(serverFind(matchedQuery, "UPC"), "Finding by Barcode..."));
+					// const matchedQuery = query.match(urlPattern)[0];
+					// handleResults(await dispPromise(serverFind(matchedQuery, "URL"), "Finding by URL..."));
+				} else if (upcPattern.test(query)) {
+					const matchedQuery = query.match(upcPattern)[0]; 
+					handleResults(await dispPromise(serverFind(matchedQuery, "UPC"), "Finding by Barcode..."));
 				}
 				else {
 					dispError("Invalid input format. Please enter a valid ISRC, MBID, Barcode, or Spotify link.");
