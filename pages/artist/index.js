@@ -4,6 +4,7 @@ import Head from "next/head";
 import ItemList from "../../components/ItemList";
 import Notice from "../../components/notices";
 
+
 async function fetchArtistData(spfId) {
 	const response = await fetch(`http://localhost:3000/api/getArtistInfo?spotifyId=${spfId}`);
 	if (response.ok) {

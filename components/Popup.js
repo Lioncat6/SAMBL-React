@@ -3,7 +3,7 @@ import "reactjs-popup/dist/index.css";
 import { useEffect, useState } from "react";
 import styles from "../styles/popups.module.css";
 import { useSettings } from "./SettingsContext";
-import { FaXmark, FaGear } from "react-icons/fa6";
+import { FaXmark, FaGear, FaFilter } from "react-icons/fa6";
 
 function ConfigureMenu({ close }) {
 	const { settings, updateSettings } = useSettings();
@@ -49,7 +49,84 @@ function ConfigureMenu({ close }) {
 	);
 }
 
-export default function SAMBLPopup({ button, type }) {
+function FilterMenu({ close, data, apply }) {
+	const [filter, setFilter] = useState({ ...data });
+	return (
+		<>
+			{" "}
+			<div className={styles.header}>
+				{" "}
+				<FaFilter /> Filter Items{" "}
+			</div>
+			<div className={styles.content}>
+				<div className={styles.configureMenu}>
+					<div className="checkbox-wrapper">
+						<input
+							type="checkbox"
+							className="substituted"
+							id="showGreen"
+							checked={filter.showGreen}
+							onChange={(e) => {
+								setFilter({ ...filter, showGreen: e.target.checked });
+							}}
+						/>
+						<label htmlFor="showGreen">Show Green</label>
+					</div>
+					<div className="checkbox-wrapper">
+						<input
+							type="checkbox"
+							className="substituted"
+							id="showOrange"
+							checked={filter.showOrange}
+							onChange={(e) => {
+								setFilter({ ...filter, showOrange: e.target.checked });
+							}}
+						/>
+						<label htmlFor="showOrange">Show Orange</label>
+					</div>
+					<div className="checkbox-wrapper">
+						<input
+							type="checkbox"
+							className="substituted"
+							id="showRed"
+							checked={filter.showRed}
+							onChange={(e) => {
+								setFilter({ ...filter, showRed: e.target.checked });
+							}}
+						/>
+						<label htmlFor="showRed">Show Red</label>
+					</div>
+					<br />
+					<div className="checkbox-wrapper">
+						<input
+							type="checkbox"
+							className="substituted"
+							id="showVarious"
+							checked={filter.showVarious}
+							onChange={(e) => {
+								setFilter({ ...filter, showVarious: e.target.checked });
+							}}
+						/>
+						<label htmlFor="showVarious">Show Various Artists</label>
+					</div>
+				</div>
+			</div>
+			<div className={styles.actions}>
+				<button
+					className={styles.button}
+					onClick={() => {
+						apply(filter);
+						close();
+					}}
+				>
+					Apply
+				</button>
+			</div>
+		</>
+	);
+}
+
+export default function SAMBLPopup({ button, type, data, apply }) {
 	return (
 		<Popup trigger={button} position="right center" modal nested>
 			{(close) => (
@@ -57,8 +134,8 @@ export default function SAMBLPopup({ button, type }) {
 					<button className={styles.close} onClick={close}>
 						<FaXmark />
 					</button>
-
-					<ConfigureMenu close={close} />
+					{type == "configure" && <ConfigureMenu close={close} />}
+					{type == "filter" && <FilterMenu close={close} data={data} apply={apply} />}
 				</div>
 			)}
 		</Popup>

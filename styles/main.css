@@ -77,6 +77,10 @@ textarea {
 	background: transparent;
 }
 
+#findBox {
+	height: 20px;
+}
+
 .searchButton,
 .findButton {
 	color: #fff;

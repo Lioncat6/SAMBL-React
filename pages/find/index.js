@@ -70,7 +70,7 @@ export default function Find() {
 	}
 
 	async function handleSearch() {
-		const query = document.getElementById("searchbox").value.trim();
+		const query = document.getElementById("findBox").value.trim();
 		if (query !== "") {
 			setIsLoading(true); // Set loading state to true
 			try {
@@ -83,11 +83,13 @@ export default function Find() {
 
 
 				if (mbidPattern.test(query)) {
-					const matchedQuery = query.match(mbidPattern)[0];
-					handleResults(await dispPromise(serverFind(matchedQuery, "MBID"), "Finding by MBID..."));
+					dispError("This finding method isn't supported yet. Try using a barcode or ISRC!");
+					// const matchedQuery = query.match(mbidPattern)[0];
+					// handleResults(await dispPromise(serverFind(matchedQuery, "MBID"), "Finding by MBID..."));
 				} else if (spfPattern.test(query)) {
-					const matchedQuery = query.match(spfPattern)[0];
-					handleResults(await dispPromise(serverFind(matchedQuery, "SPID"), "Finding by Spotify ID..."));
+					dispError("This finding method isn't supported yet. Try using a barcode or ISRC!");
+					// const matchedQuery = query.match(spfPattern)[0];
+					// handleResults(await dispPromise(serverFind(matchedQuery, "SPID"), "Finding by Spotify ID..."));
 				} else if (isrcPattern.test(query)) {
 					const matchedQuery = query.match(isrcPattern)[0];
 					handleResults(await dispPromise(serverFind(matchedQuery, "ISRC"), "Finding by ISRC..."));
@@ -95,8 +97,9 @@ export default function Find() {
 					const matchedQuery = query.match(urlPattern)[0];
 					handleResults(await dispPromise(serverFind(matchedQuery, "URL"), "Finding by URL..."));
 				} else if (upcPattern.test(query)) {
-					const matchedQuery = query.match(upcPattern)[0]; 
-					handleResults(await dispPromise(serverFind(matchedQuery, "UPC"), "Finding by Barcode..."));
+					dispError("This finding method isn't supported yet. Try using a barcode or ISRC!");
+					// const matchedQuery = query.match(upcPattern)[0]; 
+					// handleResults(await dispPromise(serverFind(matchedQuery, "UPC"), "Finding by Barcode..."));
 				}
 				else {
 					dispError("Invalid input format. Please enter a valid ISRC, MBID, Barcode, or Spotify link.");
@@ -146,7 +149,7 @@ export default function Find() {
                 <title>{"SAMBL • ​🅵🅸🅽🅳​"}</title>
                 <meta name="description" content={`SAMBL - Find by ISRC, MBID, Barcode...`} />
             </Head>
-			<textarea id="searchbox" rows={1} placeholder="Find by ISRC, MBID, Barcode..." defaultValue={""} />
+			<textarea id="findBox" rows={1} placeholder="Find by ISRC, MBID, Barcode..." defaultValue={""} />
 			<button type="button" className="findButton" id="searchEnter" onClick={handleSearch}>
 				{isLoading ? (
 					<div className="lds-ellipsis">
