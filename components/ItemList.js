@@ -3,8 +3,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSettings } from "./SettingsContext";
 import { FaBarcode } from "react-icons/fa6";
-
 import dynamic from "next/dynamic";
+import { useExport } from "./ExportProvider";
+
 
 function AlbumIcons({ item }) {
 	const { spotifyId, spotifyUrl, spotifyReleaseDate, spotifyTrackCount, albumStatus, mbTrackCount, mbReleaseDate, mbid, albumIssues } = item;
@@ -41,9 +42,8 @@ function AlbumIcons({ item }) {
 					className={`${styles.dateMissing} ${albumStatus === "green" ? styles.dateMissingAvaliable : ""}`}
 					href={
 						albumStatus === "green"
-							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${spotifyReleaseDate.split("-")[0]}&events.0.date.month=${spotifyReleaseDate.split("-")[1]}&events.0.date.day=${
-									spotifyReleaseDate.split("-")[2]
-							  }&edit_note=${encodeURIComponent(`Added release date from Spotify using SAMBL: ${spotifyUrl}`)}`
+							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${spotifyReleaseDate.split("-")[0]}&events.0.date.month=${spotifyReleaseDate.split("-")[1]}&events.0.date.day=${spotifyReleaseDate.split("-")[2]
+							}&edit_note=${encodeURIComponent(`Added release date from Spotify using SAMBL: ${spotifyUrl}`)}`
 							: undefined
 					}
 					title={albumStatus === "green" ? "This release is missing a release date!\n[Click to Fix]" : "This release is missing a release date!"}
@@ -110,8 +110,8 @@ function AlbumItem({ item, selecting }) {
 		albumStatus === "green"
 			? "This album has a MB release with a matching Spotify URL"
 			: albumStatus === "orange"
-			? "This album has a MB release with a matching name but no associated link"
-			: "This album has no MB release with a matching name or URL";
+				? "This album has a MB release with a matching name but no associated link"
+				: "This album has no MB release with a matching name or URL";
 
 	let data_params = {
 		"data-spotify-id": spotifyId,
@@ -302,6 +302,7 @@ function ListBuilder({ items, type }) {
 }
 
 function ListContainer({ items, type, text }) {
+
 	return (
 		<>
 			<div className={styles.listContainer}>{items && <ListBuilder items={items} type={type} />}</div>
@@ -391,7 +392,7 @@ function SearchContainer({ onSearch, currentFilter, setFilter }) {
 export default function ItemList({ items, type, text }) {
 	const [searchQuery, setSearchQuery] = useState(""); // State for search query
 	const [filteredItems, setFilteredItems] = useState(items || []); // State for filtered items
-	const [filter, setFilter] = useState({showGreen: true, showOrange: true, showRed: true, showVarious: true});
+	const [filter, setFilter] = useState({ showGreen: true, showOrange: true, showRed: true, showVarious: true });
 	useEffect(() => {
 		if (type !== "album") {
 			return;
@@ -444,7 +445,7 @@ export default function ItemList({ items, type, text }) {
 	}
 	return (
 		<div className={styles.listWrapper}>
-			{type === "album" && <SearchContainer onSearch={setSearchQuery} currentFilter={filter} setFilter={setFilter}/>}
+			{type === "album" && <SearchContainer onSearch={setSearchQuery} currentFilter={filter} setFilter={setFilter} />}
 			{type === "loadingAlbum" ? <LoadingContainer text={text} /> : <ListContainer items={type == "album" ? filteredItems : itemArray} type={type} text={text} />}
 		</div>
 	);

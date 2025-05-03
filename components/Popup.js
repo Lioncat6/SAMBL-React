@@ -3,7 +3,9 @@ import "reactjs-popup/dist/index.css";
 import { useEffect, useState } from "react";
 import styles from "../styles/popups.module.css";
 import { useSettings } from "./SettingsContext";
-import { FaXmark, FaGear, FaFilter } from "react-icons/fa6";
+import { FaXmark, FaGear, FaFilter, FaCopy } from "react-icons/fa6";
+import { TbTableExport } from "react-icons/tb";
+import { useExportData } from "./Export";
 
 function ConfigureMenu({ close }) {
 	const { settings, updateSettings } = useSettings();
@@ -126,8 +128,39 @@ function FilterMenu({ close, data, apply }) {
 	);
 }
 
+function ExportMenu({ close }) {
+	const exportData = useExportData();
+	console.log(exportData())
+
+	return (
+		<>
+			{" "}
+			<div className={styles.header}>
+				{" "}
+				<TbTableExport /> Export Data{" "}
+			</div>
+			<div className={styles.content}>
+				<div className={styles.configureMenu}>
+
+				</div>
+			</div>
+			<div className={styles.actions}>
+				<button
+					className={styles.button}
+					onClick={() => {
+
+					}}
+				>
+					<FaCopy />	Copy
+				</button>
+			</div>
+		</>
+	)
+}
+
 export default function SAMBLPopup({ button, type, data, apply }) {
 	return (
+		<>
 		<Popup trigger={button} position="right center" modal nested>
 			{(close) => (
 				<div className={styles.modal}>
@@ -136,8 +169,10 @@ export default function SAMBLPopup({ button, type, data, apply }) {
 					</button>
 					{type == "configure" && <ConfigureMenu close={close} />}
 					{type == "filter" && <FilterMenu close={close} data={data} apply={apply} />}
+					{type == "export" && <ExportMenu close={close} />}
 				</div>
 			)}
 		</Popup>
+		</>
 	);
 }

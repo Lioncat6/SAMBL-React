@@ -9,13 +9,15 @@ import { SettingsProvider } from "../components/SettingsContext";
 export default function App({ Component, pageProps }) {
     return (
         <>
-            <SettingsProvider>
-                <Layout>
-                    <Component {...pageProps} />
-                </Layout>
-                <ProgressBar />
-            </SettingsProvider >
-            
+
+                <SettingsProvider>
+                    <Layout>
+                        <Component {...pageProps} />
+                    </Layout>
+                    <ProgressBar />
+                </SettingsProvider >
+
+
         </>
 
     );

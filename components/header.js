@@ -2,6 +2,7 @@ import Link from "next/link";
 import styles from "../styles/header.module.css";
 import dynamic from "next/dynamic";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { Description, Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
 
 import { FaMagnifyingGlass, FaGear } from "react-icons/fa6";
 import { FaTools, FaUser } from "react-icons/fa";

@@ -1,8 +1,14 @@
 import { useRouter } from "next/router";
 import { toast, Flip } from "react-toastify";
+import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
+import { useExport } from "./ExportProvider";
 
 export function useExportData() {
     const router = useRouter();
+
+    const { exportProviderData } = useExport(); 
+
     let toastProperties = {
         position: "top-left",
         autoClose: 5000,
@@ -17,13 +23,11 @@ export function useExportData() {
     const exportData = () => {
         console.log("Exporting data...");
         if (router.pathname == "/artist") {
-            toast.info("Select items to export", {
-                ...toastProperties,
-                autoClose: false,
-                draggable: false,
-            });
+            console.log(exportProviderData);
+            return exportProviderData
         } else {
             toast.warn("Data export is not avaliable on this page", toastProperties);
+            return null;
         }
     };
 

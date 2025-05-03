@@ -4,9 +4,10 @@ import Footer from "./footer";
 import Head from "next/head";
 import { ThemeProvider, useTheme } from "next-themes";
 import { ToastContainer, Flip } from "react-toastify";
+import { ExportProvider } from "../components/ExportProvider";
 
 function LayoutContent({ children }) {
-    const { systemTheme } = useTheme(); 
+    const { systemTheme } = useTheme();
     return (
         <>
             <Head>
@@ -27,7 +28,7 @@ function LayoutContent({ children }) {
                 pauseOnFocusLoss
                 draggable
                 pauseOnHover
-                theme={systemTheme === "dark" ? "dark" : "light"} 
+                theme={systemTheme === "dark" ? "dark" : "light"}
                 transition={Flip}
             />
             <Footer />
@@ -43,7 +44,9 @@ export default function Layout({ children }) {
             enableSystem
             disableTransitionOnChange
         >
-            <LayoutContent>{children}</LayoutContent>
+            <ExportProvider>
+                <LayoutContent>{children}</LayoutContent>
+            </ExportProvider>
         </ThemeProvider>
     );
 }

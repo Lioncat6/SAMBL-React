@@ -13,11 +13,11 @@ const mbApi = new MusicBrainzApi({
 
 async function getIdBySpotifyId(spotifyId) {
 	try {
-		const data = await mbApi.search("url", { query: { url: `https://open.spotify.com/artist/${spotifyId}` } }, { inc: ["artist-rels"] }, { limit: 1 });
-		if (data.count === 0) {
+		const data = await mbApi.lookupUrl(`https://open.spotify.com/artist/${spotifyId}`, ["artist-rels"]);
+		if (!data.relations || data.relations?.length == 0) {
 			return null; // No artist found
 		}
-		return data.urls[0]["relation-list"][0].relations[0].artist.id;
+		return data.relations[0].artist.id;
 	} catch (error) {
 		console.error(error);
 		throw new Error("Failed to fetch artist data");
@@ -103,7 +103,7 @@ const musicbrainz = {
 	getArtistFeaturedAlbums,
 	getAlbumByUPC,
 	getTrackByISRC,
-    getCoverByMBID
+	getCoverByMBID
 };
 
 export default musicbrainz;

@@ -3,6 +3,7 @@ import ArtistInfo from "../../components/ArtistInfo";
 import Head from "next/head";
 import ItemList from "../../components/ItemList";
 import Notice from "../../components/notices";
+import { useExport } from "../../components/ExportProvider";
 
 
 async function fetchArtistData(spfId) {
@@ -235,6 +236,8 @@ export default function Artist({ artist }) {
 	const [albums, setAlbums] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [statusText, setStatusText] = useState("Loading albums...");
+	const { setExportData } = useExport(); // Access setExportData from context
+
 	let sourceAlbumCount = 999;
 	let mbAlbumCount = -1;
 	let mbFeaturedAlbumCount = -1;
@@ -311,6 +314,7 @@ export default function Artist({ artist }) {
 			setStatusText(data.statusText);
 			setAlbums(data.albumData);
 			setLoading(false);
+			setExportData(data.albumData);
 		}
 		loadAlbums()
 
@@ -326,5 +330,6 @@ export default function Artist({ artist }) {
 			<ArtistInfo artist={artist} />
 			<div id="contentContainer">{loading ? <ItemList type={"loadingAlbum"} text={statusText} /> : <ItemList type={"album"} items={albums} text={statusText} />}</div>
 		</>
+		
 	);
 }
