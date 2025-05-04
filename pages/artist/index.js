@@ -5,6 +5,7 @@ import ItemList from "../../components/ItemList";
 import Notice from "../../components/notices";
 import { useExport } from "../../components/ExportProvider";
 
+import { toast, Flip } from "react-toastify";
 
 async function fetchArtistData(spfId) {
 	const response = await fetch(`http://localhost:3000/api/getArtistInfo?spotifyId=${spfId}`);
@@ -14,8 +15,6 @@ async function fetchArtistData(spfId) {
 		throw new Error("Spotify artist not found!");
 	}
 }
-
-
 
 export async function getServerSideProps(context) {
 	const { spid, artist_mbid } = context.query;
@@ -59,7 +58,7 @@ export async function getServerSideProps(context) {
 async function fetchSourceAlbums(artistId, offset = 0) {
 	return fetch(`/api/getArtistAlbums?spotifyId=${artistId}&offset=${offset}&limit=50`).then((response) => {
 		if (!response.ok) {
-			// throw new Error("Failed to fetch albums");
+			throw new Error("Failed to fetch albums");
 		}
 		return response.json();
 	});
@@ -68,7 +67,7 @@ async function fetchSourceAlbums(artistId, offset = 0) {
 async function fetchMbArtistAlbums(mbid, offset = 0) {
 	return fetch(`/api/getMusicBrainzAlbums?mbid=${mbid}&offset=${offset}&limit=100`).then((response) => {
 		if (!response.ok) {
-			// throw new Error("Failed to fetch albums from MusicBrainz");
+			throw new Error("Failed to fetch albums from MusicBrainz");
 		}
 		return response.json();
 	});
@@ -115,14 +114,13 @@ function processData(sourceAlbums, mbAlbums) {
 			let mbReleaseUrls = mbAlbum.relations || [];
 			let MBTrackCount = mbAlbum.media?.reduce((count, media) => count + media["track-count"], 0);
 			let MBReleaseDate = mbAlbum.date;
-			let MBReleaseUPC = mbAlbum.barcode
+			let MBReleaseUPC = mbAlbum.barcode;
 			let hasCoverArt = mbAlbum["cover-art-archive"]?.front || false;
 			var MBTracks = [];
 			mbAlbum.media?.forEach((media) => {
 				if (media.tracks) {
 					MBTracks = [...MBTracks, ...media.tracks];
 				}
-
 			});
 			mbReleaseUrls.forEach((relation) => {
 				if (relation.url.resource == spotifyUrl) {
@@ -145,7 +143,7 @@ function processData(sourceAlbums, mbAlbums) {
 				mbReleaseDate = MBReleaseDate;
 				finalHasCoverArt = hasCoverArt;
 				finalTracks = MBTracks;
-				mbBarcode = MBReleaseUPC
+				mbBarcode = MBReleaseUPC;
 			}
 		});
 
@@ -217,7 +215,7 @@ function processData(sourceAlbums, mbAlbums) {
 		});
 	});
 
-	let statusText = `Albums on MusicBrainz: ${green}/${total} ~ ${orange} albums have matching names but no associated link`
+	let statusText = `Albums on MusicBrainz: ${green}/${total} ~ ${orange} albums have matching names but no associated link`;
 	return {
 		albumData,
 		statusText,
@@ -225,11 +223,25 @@ function processData(sourceAlbums, mbAlbums) {
 		orange,
 		red,
 		total,
-	}
+	};
 }
 
 function normalizeText(text) {
 	return text.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function dispError(message) {
+	let toastProperties = {
+		position: "top-left",
+		autoClose: 5000,
+		hideProgressBar: false,
+		closeOnClick: false,
+		pauseOnHover: true,
+		draggable: true,
+		progress: undefined,
+		transition: Flip,
+	};
+	toast.error(message, toastProperties);
 }
 
 export default function Artist({ artist }) {
@@ -256,6 +268,7 @@ export default function Artist({ artist }) {
 
 		async function fetchSpotifyAlbums() {
 			let offset = 0;
+			let attempts = 0;
 			while (offset < sourceAlbumCount) {
 				try {
 					const data = await fetchSourceAlbums(artist.spotifyId, offset);
@@ -264,37 +277,56 @@ export default function Artist({ artist }) {
 					offset = sourceAlbums.length;
 					updateLoadingText();
 				} catch (error) {
+					attempts++;
 					console.error("Error fetching albums:", error);
+				}
+				if (attempts > 3) {
+					dispError("Failed to fetch Spotify albums");
+					break;
 				}
 			}
 		}
 
 		async function fetchMusicbrainzArtistAlbums() {
 			let offset = 0;
+			let attempts = 0;
 			while (offset < mbAlbumCount || mbAlbumCount == -1) {
 				try {
 					const data = await fetchMbArtistAlbums(artist.mbid, offset);
+					console.log(data);
 					mbAlbums = [...mbAlbums, ...data.releases];
 					mbAlbumCount = data["release-count"];
 					offset = mbAlbums.length;
 					updateLoadingText(true);
 				} catch (error) {
+					attempts++;
 					console.error("Error fetching albums:", error);
+				}
+				if (attempts > 3) {
+					dispError("Failed to MusicBrainz albums");
+					break;
 				}
 			}
 		}
 
 		async function fetchMusicBrainzFeaturedAlbums() {
 			let offset = 0;
+			let attempts = 0;
 			while (offset < mbFeaturedAlbumCount || mbFeaturedAlbumCount == -1) {
 				try {
 					const data = await fetchMbArtistFeaturedtAlbums(artist.mbid, offset);
+					console.log(data);
 					mbAlbums = [...mbAlbums, ...data.releases];
 					mbFeaturedAlbumCount = data["release-count"];
 					offset = mbAlbums.length;
 					updateLoadingText(true);
 				} catch (error) {
+					attempts++;
 					console.error("Error fetching albums:", error);
+				}
+				if (attempts > 3) {
+					dispError("Failed to fetch MusicBrainz Featured albums");
+					break;
 				}
 			}
 		}
@@ -303,21 +335,16 @@ export default function Artist({ artist }) {
 			if (!artist.mbid) {
 				await fetchSpotifyAlbums();
 			} else {
-				await Promise.all([
-					fetchSpotifyAlbums(),
-					fetchMusicbrainzArtistAlbums(),
-					fetchMusicBrainzFeaturedAlbums(),
-				]);
+				await Promise.all([fetchSpotifyAlbums(), fetchMusicbrainzArtistAlbums(), fetchMusicBrainzFeaturedAlbums()]);
 			}
 
-			let data = processData(sourceAlbums, mbAlbums)
+			let data = processData(sourceAlbums, mbAlbums);
 			setStatusText(data.statusText);
 			setAlbums(data.albumData);
 			setLoading(false);
 			setExportData(data.albumData);
 		}
-		loadAlbums()
-
+		loadAlbums();
 	}, [artist.spotifyId]);
 
 	return (
@@ -330,6 +357,5 @@ export default function Artist({ artist }) {
 			<ArtistInfo artist={artist} />
 			<div id="contentContainer">{loading ? <ItemList type={"loadingAlbum"} text={statusText} /> : <ItemList type={"album"} items={albums} text={statusText} />}</div>
 		</>
-		
 	);
 }

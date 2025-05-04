@@ -13,6 +13,7 @@ export default function footer() {
 					<a rel="noopener" href="https://community.metabrainz.org/t/sambl-spotify-artist-musicbrainz-lookup/716550" target="_blank">
 						MetaBrainz
 					</a>
+					
 					{/* <div>
 						<div id="commitId" />
 						<div id="serverStatus" className={styles.serverStatus}>

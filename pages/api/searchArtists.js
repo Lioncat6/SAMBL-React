@@ -4,6 +4,9 @@ import musicbrainz from "./providers/musicbrainz";
 export default async function handler(req, res) {
     try {
         const { query } = req.query;
+        if (!query) {
+            return res.status(400).json({ error: "Parameter `query` is required" });
+        }
         let results = await spotify.searchByArtistName(query);
         let artistUrls = [];
         let artistData = {}

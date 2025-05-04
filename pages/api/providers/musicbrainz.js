@@ -11,6 +11,17 @@ const mbApi = new MusicBrainzApi({
 	appContactInfo: appContactInfo,
 });
 
+function checkError(data){
+	if (data.error){
+		throw new Error({error: "Musicbrainz returned an error", details: data.error})
+	}
+}
+
+function validateMBID(mbid){
+	const mbidPattern = /.*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.*/i;
+	return mbidPattern.test(mbid);
+}
+
 async function getIdBySpotifyId(spotifyId) {
 	try {
 		const data = await mbApi.lookupUrl(`https://open.spotify.com/artist/${spotifyId}`, ["artist-rels"]);
@@ -46,7 +57,7 @@ async function getArtistAlbums(mbid, offset = 0, limit = 100) {
 	try {
 		// const data = await mbApi.browse('release', {artist: mbid, limit: limit, offset: offset});
 		const data = await mbApi.browse("release", { artist: mbid, limit: limit, offset: offset }, ["url-rels", "recordings", "isrcs"]);
-		// console.log(data)
+		checkError(data);
 		return data;
 	} catch (error) {
 		console.error(error);
@@ -58,7 +69,7 @@ async function getArtistFeaturedAlbums(mbid, offset = 0, limit = 100) {
 	try {
 		// const data = await mbApi.browse('release', {track_artist: mbid, limit: limit, offset: offset});
 		const data = await mbApi.browse("release", { track_artist: mbid, limit: limit, offset: offset }, ["url-rels", "recordings", "isrcs"]);
-
+		checkError(data);
 		return data;
 	} catch (error) {
 		console.error(error);
@@ -69,6 +80,7 @@ async function getArtistFeaturedAlbums(mbid, offset = 0, limit = 100) {
 async function getAlbumByUPC(upc) {
 	try {
 		const data = await mbApi.search("release", { query: `barcode:${upc}`, inc: ["artist-rels"] }, { limit: 20 });
+		checkError(data);
 		return data;
 	} catch (error) {
 		console.error(error);
@@ -79,6 +91,7 @@ async function getAlbumByUPC(upc) {
 async function getTrackByISRC(isrc) {
 	try {
 		const data = await mbApi.search("recording", { query: `isrc:${isrc}`, inc: ["artist-rels"] }, { limit: 20 });
+		checkError(data);
 		return data;
 	} catch (error) {
 		console.error(error);
@@ -96,6 +109,7 @@ async function getCoverByMBID(mbid) {
 	}
 }
 
+
 const musicbrainz = {
 	getIdBySpotifyId: getIdBySpotifyId,
 	getIdsBySpotifyUrls: getIdsBySpotifyUrls,
@@ -103,7 +117,8 @@ const musicbrainz = {
 	getArtistFeaturedAlbums,
 	getAlbumByUPC,
 	getTrackByISRC,
-	getCoverByMBID
+	getCoverByMBID,
+	validateMBID
 };
 
 export default musicbrainz;

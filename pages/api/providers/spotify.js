@@ -14,6 +14,11 @@ const spotifyApi = new SpotifyWebApi({
 let accessToken = null;
 let tokenExpirationTime = null;
 
+function validateSpotifyId(spotifyId) {
+    const spfPattern = /^[A-Za-z0-9]{22}$/; // Corrected regex pattern
+    return spfPattern.test(spotifyId); // Call test on the regex, not the string
+}
+
 async function withRetry(apiCall, retries = 3, delay = 1000) {
     for (let attempt = 1; attempt <= retries; attempt++) {
         try {
@@ -129,6 +134,7 @@ const spotify = {
     getArtistAlbums,
     getAlbumByUPC,
     getTrackByISRC,
+    validateSpotifyId 
 };
 
 export default spotify;
