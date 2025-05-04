@@ -58,7 +58,7 @@ export async function getServerSideProps(context) {
 async function fetchSourceAlbums(artistId, offset = 0) {
 	return fetch(`/api/getArtistAlbums?spotifyId=${artistId}&offset=${offset}&limit=50`).then((response) => {
 		if (!response.ok) {
-			throw new Error("Failed to fetch albums");
+			return response.status;
 		}
 		return response.json();
 	});
@@ -67,7 +67,7 @@ async function fetchSourceAlbums(artistId, offset = 0) {
 async function fetchMbArtistAlbums(mbid, offset = 0) {
 	return fetch(`/api/getMusicBrainzAlbums?mbid=${mbid}&offset=${offset}&limit=100`).then((response) => {
 		if (!response.ok) {
-			throw new Error("Failed to fetch albums from MusicBrainz");
+			return response.status;
 		}
 		return response.json();
 	});
@@ -76,7 +76,7 @@ async function fetchMbArtistAlbums(mbid, offset = 0) {
 async function fetchMbArtistFeaturedtAlbums(mbid, offset = 0) {
 	return fetch(`/api/getMusicBrainzFeaturedAlbums?mbid=${mbid}&offset=${offset}&limit=100`).then((response) => {
 		if (!response.ok) {
-			throw new Error("Failed to fetch albums from MusicBrainz");
+			return response.status;
 		}
 		return response.json();
 	});
@@ -272,6 +272,13 @@ export default function Artist({ artist }) {
 			while (offset < sourceAlbumCount) {
 				try {
 					const data = await fetchSourceAlbums(artist.spotifyId, offset);
+					if (typeof data == "number") {
+						if (data == 404){
+							dispError("SpotifyId not found!")
+							return;
+						}
+						throw new Error(`Error fetching Spotify albums: ${data}`);
+					}
 					sourceAlbums = [...sourceAlbums, ...data.items];
 					sourceAlbumCount = data.total;
 					offset = sourceAlbums.length;
@@ -293,6 +300,13 @@ export default function Artist({ artist }) {
 			while (offset < mbAlbumCount || mbAlbumCount == -1) {
 				try {
 					const data = await fetchMbArtistAlbums(artist.mbid, offset);
+					if (typeof data == "number") {
+						if (data == 404){
+							dispError("MBID not found!")
+							return;
+						}
+						throw new Error(`Error fetching MusicBrainz albums: ${data}`);
+					}
 					console.log(data);
 					mbAlbums = [...mbAlbums, ...data.releases];
 					mbAlbumCount = data["release-count"];
@@ -315,6 +329,13 @@ export default function Artist({ artist }) {
 			while (offset < mbFeaturedAlbumCount || mbFeaturedAlbumCount == -1) {
 				try {
 					const data = await fetchMbArtistFeaturedtAlbums(artist.mbid, offset);
+					if (typeof data == "number") {
+						if (data == 404){
+							dispError("MBID not found!")
+							return;
+						}
+						throw new Error(`Error fetching MusicBrainz Featured albums: ${data}`);
+					}
 					console.log(data);
 					mbAlbums = [...mbAlbums, ...data.releases];
 					mbFeaturedAlbumCount = data["release-count"];
@@ -326,7 +347,7 @@ export default function Artist({ artist }) {
 				}
 				if (attempts > 3) {
 					dispError("Failed to fetch MusicBrainz Featured albums");
-					break;
+					return;
 				}
 			}
 		}

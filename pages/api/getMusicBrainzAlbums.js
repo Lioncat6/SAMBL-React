@@ -10,7 +10,9 @@ export default async function handler(req, res) {
 		const data = await musicbrainz.getArtistAlbums(mbid, offset, limit);
 		res.status(200).json(data);
 	} catch (error) {
-		console.error("Error: " + error);
+		if (error.message == "Not Found") {
+			return res.status(404).json({ error: "Artist not found" });
+		}
 		res.status(500).json({ error: "Internal Server Error", details: error.message });
 	}
 }

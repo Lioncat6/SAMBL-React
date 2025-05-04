@@ -11,10 +11,11 @@ const mbApi = new MusicBrainzApi({
 	appContactInfo: appContactInfo,
 });
 
-function checkError(data){
-	if (data.error){
-		throw new Error({error: "Musicbrainz returned an error", details: data.error})
-	}
+function checkError(data) {
+	console.log(data.error)
+    if (data.error) {
+        throw new Error(data.error);
+    }
 }
 
 function validateMBID(mbid){
@@ -49,7 +50,7 @@ async function getIdsBySpotifyUrls(spotifyUrls) {
 		return mbids;
 	} catch (error) {
 		console.error(error);
-		throw new Error("Failed to fetch artist data");
+		throw new Error(error.message);
 	}
 }
 
@@ -61,7 +62,7 @@ async function getArtistAlbums(mbid, offset = 0, limit = 100) {
 		return data;
 	} catch (error) {
 		console.error(error);
-		throw new Error("Failed to fetch artist albums");
+		throw new Error(error.message);
 	}
 }
 
@@ -73,7 +74,7 @@ async function getArtistFeaturedAlbums(mbid, offset = 0, limit = 100) {
 		return data;
 	} catch (error) {
 		console.error(error);
-		throw new Error("Failed to fetch artist albums");
+		throw new Error(error.message);
 	}
 }
 
@@ -84,7 +85,7 @@ async function getAlbumByUPC(upc) {
 		return data;
 	} catch (error) {
 		console.error(error);
-		throw new Error("Failed to fetch album data");
+		throw new Error(error.message);
 	}
 }
 
@@ -95,7 +96,7 @@ async function getTrackByISRC(isrc) {
 		return data;
 	} catch (error) {
 		console.error(error);
-		throw new Error("Failed to fetch album data");
+		throw new Error(error.message);
 	}
 }
 
@@ -105,7 +106,7 @@ async function getCoverByMBID(mbid) {
 		return coverInfo;
 	} catch (error) {
 		console.error(error);
-		throw new Error("Failed to fetch cover art data");
+		throw new Error(error.message);
 	}
 }
 
