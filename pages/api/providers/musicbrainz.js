@@ -31,7 +31,7 @@ async function getIdBySpotifyId(spotifyId) {
 		}
 		return data.relations[0].artist.id;
 	} catch (error) {
-		console.error(error);
+		logger.error("Failed to fetch artist data", error);
 		throw new Error("Failed to fetch artist data");
 	}
 }
@@ -49,7 +49,7 @@ async function getIdsBySpotifyUrls(spotifyUrls) {
 		}
 		return mbids;
 	} catch (error) {
-		console.error(error);
+		logger.error("Failed to get ids", error);
 		throw new Error(error.message);
 	}
 }
@@ -61,7 +61,7 @@ async function getArtistAlbums(mbid, offset = 0, limit = 100) {
 		checkError(data);
 		return data;
 	} catch (error) {
-		console.error(error);
+		logger.error("Failed to fetch artist albums", error);
 		throw new Error(error.message);
 	}
 }
@@ -73,7 +73,7 @@ async function getArtistFeaturedAlbums(mbid, offset = 0, limit = 100) {
 		checkError(data);
 		return data;
 	} catch (error) {
-		console.error(error);
+		logger.error("Failed to fetch artist featured albums", error);
 		throw new Error(error.message);
 	}
 }
@@ -84,7 +84,7 @@ async function getAlbumByUPC(upc) {
 		checkError(data);
 		return data;
 	} catch (error) {
-		console.error(error);
+		logger.error("Failed to fetch album", error);
 		throw new Error(error.message);
 	}
 }
@@ -95,7 +95,7 @@ async function getTrackByISRC(isrc) {
 		checkError(data);
 		return data;
 	} catch (error) {
-		console.error(error);
+		logger.error("Failed to fetch album", error);
 		throw new Error(error.message);
 	}
 }
@@ -105,7 +105,7 @@ async function getCoverByMBID(mbid) {
 		const coverInfo = await coverArtArchiveApiClient.getReleaseCovers(mbid);
 		return coverInfo;
 	} catch (error) {
-		console.error(error);
+		logger.error("Failed to fetch cover", error);
 		throw new Error(error.message);
 	}
 }
