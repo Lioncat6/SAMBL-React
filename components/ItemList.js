@@ -1,11 +1,12 @@
 import styles from "../styles/itemList.module.css";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, memo } from "react";
 import { useSettings } from "./SettingsContext";
 import { FaBarcode } from "react-icons/fa6";
 import dynamic from "next/dynamic";
 import { useExport } from "./ExportProvider";
-
+import { FixedSizeList as List } from "react-window";
+import AutoSizer from "react-virtualized-auto-sizer"
 
 function AlbumIcons({ item }) {
 	const { spotifyId, spotifyUrl, spotifyReleaseDate, spotifyTrackCount, albumStatus, mbTrackCount, mbReleaseDate, mbid, albumIssues } = item;
@@ -42,8 +43,9 @@ function AlbumIcons({ item }) {
 					className={`${styles.dateMissing} ${albumStatus === "green" ? styles.dateMissingAvaliable : ""}`}
 					href={
 						albumStatus === "green"
-							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${spotifyReleaseDate.split("-")[0]}&events.0.date.month=${spotifyReleaseDate.split("-")[1]}&events.0.date.day=${spotifyReleaseDate.split("-")[2]
-							}&edit_note=${encodeURIComponent(`Added release date from Spotify using SAMBL: ${spotifyUrl}`)}`
+							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${spotifyReleaseDate.split("-")[0]}&events.0.date.month=${spotifyReleaseDate.split("-")[1]}&events.0.date.day=${
+									spotifyReleaseDate.split("-")[2]
+							  }&edit_note=${encodeURIComponent(`Added release date from Spotify using SAMBL: ${spotifyUrl}`)}`
 							: undefined
 					}
 					title={albumStatus === "green" ? "This release is missing a release date!\n[Click to Fix]" : "This release is missing a release date!"}
@@ -78,7 +80,8 @@ function ActionButtons({ item }) {
 	);
 }
 
-function AlbumItem({ item, selecting }) {
+
+const AlbumItem = memo(function AlbumItem({ item, selecting }) {
 	const {
 		spotifyId,
 		spotifyName,
@@ -110,8 +113,8 @@ function AlbumItem({ item, selecting }) {
 		albumStatus === "green"
 			? "This album has a MB release with a matching Spotify URL"
 			: albumStatus === "orange"
-				? "This album has a MB release with a matching name but no associated link"
-				: "This album has no MB release with a matching name or URL";
+			? "This album has a MB release with a matching name but no associated link"
+			: "This album has no MB release with a matching name or URL";
 
 	let data_params = {
 		"data-spotify-id": spotifyId,
@@ -143,7 +146,7 @@ function AlbumItem({ item, selecting }) {
 			{/* Album Cover */}
 			<div className={styles.albumCover}>
 				<a href={spotifyImageURL} target="_blank" rel="noopener noreferrer">
-					<img src={spotifyImageURL300px} alt={`${spotifyName} cover`} />
+					<img src={spotifyImageURL300px} alt={`${spotifyName} cover`} loading="lazy"/>
 				</a>
 			</div>
 
@@ -195,7 +198,7 @@ function AlbumItem({ item, selecting }) {
 			{selecting ? "" : <ActionButtons item={item} />}
 		</div>
 	);
-}
+});
 
 function AddButton({ item }) {
 	return (
@@ -302,11 +305,38 @@ function ListBuilder({ items, type }) {
 }
 
 function ListContainer({ items, type, text }) {
-
 	return (
 		<>
 			<div className={styles.listContainer}>{items && <ListBuilder items={items} type={type} />}</div>
 			<div className={styles.statusText}>{text}</div>
+		</>
+	);
+}
+
+function VirtualizedList({ items, type, text }) {
+	return (
+		<>
+		<div className={styles.virtualListContainer}>
+			<AutoSizer>
+				{({ height, width})=> 
+		<List
+			height={height} 
+			itemCount={items.length}
+			itemSize={69} //nice 
+			width={width}
+		>
+			{({ index, style }) => (
+				<div style={style}>
+					{type === "album" && <AlbumItem item={items[index]} />}
+					{type === "artist" && <ArtistItem item={items[index]} />}
+					{type === "mixed" && <GenericItem item={items[index]} />}
+				</div>
+			)}
+		</List>
+		}
+		</AutoSizer>
+		</div>
+		<div className={styles.statusText}>{text}</div>
 		</>
 	);
 }
@@ -392,7 +422,7 @@ function SearchContainer({ onSearch, currentFilter, setFilter }) {
 export default function ItemList({ items, type, text }) {
 	const [searchQuery, setSearchQuery] = useState(""); // State for search query
 	const [filteredItems, setFilteredItems] = useState(items || []); // State for filtered items
-	const [filter, setFilter] = useState({ showGreen: true, showOrange: true, showRed: true, showVarious: true });
+	const [filter, setFilter] = useState({ showGreen: true, showOrange: true, showRed: true, showVarious: true, onlyIssues: false });
 	useEffect(() => {
 		if (type !== "album") {
 			return;
@@ -433,6 +463,9 @@ export default function ItemList({ items, type, text }) {
 			if (!filter.showVarious) {
 				updatedItems = updatedItems.filter((item) => !variousArtistsList.some((artist) => item.spotifyAlbumArtists.some((a) => a.name === artist)));
 			}
+			if (filter.onlyIssues) {
+				updatedItems = updatedItems.filter((item) => item.albumIssues.length > 0);
+			}
 		}
 		if (updatedItems != filteredItems) {
 			setFilteredItems(updatedItems);
@@ -446,7 +479,13 @@ export default function ItemList({ items, type, text }) {
 	return (
 		<div className={styles.listWrapper}>
 			{type === "album" && <SearchContainer onSearch={setSearchQuery} currentFilter={filter} setFilter={setFilter} />}
-			{type === "loadingAlbum" ? <LoadingContainer text={text} /> : <ListContainer items={type == "album" ? filteredItems : itemArray} type={type} text={text} />}
+			{type === "loadingAlbum" ? (
+				<LoadingContainer text={text} />
+			) : items.length > 30 ? ( // If over 30 albums, use the virtualized list. Reason why I don't want to always use it is because it scrolls less smooth
+				<VirtualizedList items={type === "album" ? filteredItems : itemArray} type={type} text={text} />
+			) : (
+				<ListContainer items={type === "album" ? filteredItems : itemArray} type={type} text={text} />
+			)}
 		</div>
 	);
 }

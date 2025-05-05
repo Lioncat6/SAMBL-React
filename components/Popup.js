@@ -111,6 +111,18 @@ function FilterMenu({ close, data, apply }) {
 						/>
 						<label htmlFor="showVarious">Show Various Artists</label>
 					</div>
+					<div className="checkbox-wrapper">
+						<input
+							type="checkbox"
+							className="substituted"
+							id="onlyIssues"
+							checked={filter.onlyIssues}
+							onChange={(e) => {
+								setFilter({ ...filter, onlyIssues: e.target.checked });
+							}}
+						/>
+						<label htmlFor="onlyIssues">Only Albums With Issues</label>
+					</div>
 				</div>
 			</div>
 			<div className={styles.actions}>

@@ -1,4 +1,4 @@
-.listContainer {
+.listContainer, .virtualListContainer {
 	border-radius: 10px;
 	height: 100%;
 	border: 1px solid var(--foreground-primary);
@@ -6,6 +6,9 @@
 	margin: 0 10px 0 10px;
 }
 
+.virtualListContainer{
+	overflow: hidden
+}
 
 .listWrapper {
 	display: flex;
