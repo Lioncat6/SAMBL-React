@@ -481,7 +481,7 @@ export default function ItemList({ items, type, text }) {
 			{type === "album" && <SearchContainer onSearch={setSearchQuery} currentFilter={filter} setFilter={setFilter} />}
 			{type === "loadingAlbum" ? (
 				<LoadingContainer text={text} />
-			) : items.length > 30 ? ( // If over 30 albums, use the virtualized list. Reason why I don't want to always use it is because it scrolls less smooth
+			) : items.length > 100 ? ( // If over 200 albums, use the virtualized list. Reason why I don't want to always use it is because it scrolls less smooth
 				<VirtualizedList items={type === "album" ? filteredItems : itemArray} type={type} text={text} />
 			) : (
 				<ListContainer items={type === "album" ? filteredItems : itemArray} type={type} text={text} />
