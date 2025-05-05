@@ -227,7 +227,12 @@ function processData(sourceAlbums, mbAlbums) {
 }
 
 function normalizeText(text) {
-	return text.toLowerCase().replace(/[^a-z0-9]/g, "");
+	let normalizedText = text.toUpperCase().replace(/\s/g, "");
+	let textRemovedChars = normalizedText.replace(/['’!?.,:;(){}\[\]<>\/\\|_\-+=*&^%$#@~`“”«»„“”¿¡]/g, "");
+	if (textRemovedChars == "") {
+		textRemovedChars = normalizedText;
+	}
+	return textRemovedChars;
 }
 
 function dispError(message) {
