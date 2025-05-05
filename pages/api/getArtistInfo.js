@@ -4,6 +4,9 @@ import musicbrainz from "./providers/musicbrainz";
 export default async function handler(req, res) {
     try {
         const { spotifyId } = req.query;
+        if (!spotifyId || !spotify.validateSpotifyId(spotifyId)) {
+			return res.status(400).json({ error: "Parameter `spotifyId` is missing or malformed" });
+		}
         let spArtist = await spotify.getArtistById(spotifyId);
         if (spArtist != null) {
             return res.status(200).json(spArtist);

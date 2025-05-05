@@ -11,9 +11,9 @@ function ConfigureMenu({ close }) {
 	const { settings, updateSettings } = useSettings();
 	const [showHarmony, setShowHarmony] = useState(settings.showHarmony);
 	const [showATisket, setShowATisket] = useState(settings.showATisket);
-
+	const [listVirtualization, setListVirtualization] = useState(settings.listVirtualization);
 	const saveConfig = () => {
-		const newSettings = { showHarmony, showATisket };
+		const newSettings = { showHarmony, showATisket, listVirtualization };
 		updateSettings(newSettings);
 		close();
 	};
@@ -34,6 +34,11 @@ function ConfigureMenu({ close }) {
 					<div className="checkbox-wrapper">
 						<input type="checkbox" id="showATisket" checked={showATisket} onChange={(e) => setShowATisket(e.target.checked)} className="substituted" />
 						<label htmlFor="showATisket">Show A-tisket Button</label>
+					</div>
+					<br />
+					<div className="checkbox-wrapper">
+						<input type="checkbox" id="listVirtualization" checked={listVirtualization} onChange={(e) => setListVirtualization(e.target.checked)} className="substituted" />
+						<label htmlFor="listVirtualization" title="Enable list virtualization for artists over a certain amount of albums to speed up filtering. Disable for userscript compatibility." className={styles.info}>Enable List virtualization</label>
 					</div>
 				</div>
 			</div>
@@ -110,6 +115,18 @@ function FilterMenu({ close, data, apply }) {
 							}}
 						/>
 						<label htmlFor="showVarious">Show Various Artists</label>
+					</div>
+					<div className="checkbox-wrapper">
+						<input
+							type="checkbox"
+							className="substituted"
+							id="onlyIssues"
+							checked={filter.onlyIssues}
+							onChange={(e) => {
+								setFilter({ ...filter, onlyIssues: e.target.checked });
+							}}
+						/>
+						<label htmlFor="onlyIssues">Only Albums With Issues</label>
 					</div>
 				</div>
 			</div>

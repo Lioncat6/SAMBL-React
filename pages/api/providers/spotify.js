@@ -1,18 +1,20 @@
 import SpotifyWebApi from "spotify-web-api-node";
-import config from "../../../config";
 import logger from "../../../utils/logger";
 
-const { clientId, clientSecret, redirectUri } = config();
-
 const spotifyApi = new SpotifyWebApi({
-    clientId: clientId,
-    clientSecret: clientSecret,
-    redirectUri: redirectUri,
+    clientId: process.env.SPOTIFY_CLIENT_ID,
+    clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+    redirectUri: process.env.SPOTIFY_REDIRECT_URI,
 
 });
 
 let accessToken = null;
 let tokenExpirationTime = null;
+
+function validateSpotifyId(spotifyId) {
+    const spfPattern = /^[A-Za-z0-9]{22}$/; // Corrected regex pattern
+    return spfPattern.test(spotifyId); // Call test on the regex, not the string
+}
 
 async function withRetry(apiCall, retries = 3, delay = 1000) {
     for (let attempt = 1; attempt <= retries; attempt++) {
@@ -129,6 +131,7 @@ const spotify = {
     getArtistAlbums,
     getAlbumByUPC,
     getTrackByISRC,
+    validateSpotifyId 
 };
 
 export default spotify;
