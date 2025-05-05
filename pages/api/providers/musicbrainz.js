@@ -1,14 +1,11 @@
 import { MusicBrainzApi, CoverArtArchiveApi } from "musicbrainz-api";
-import config from "../../../config";
 import logger from "../../../utils/logger";
-
-const { appName, appVersion, appContactInfo } = config();
 
 const coverArtArchiveApiClient = new CoverArtArchiveApi();
 const mbApi = new MusicBrainzApi({
-	appName: appName,
-	appVersion: appVersion,
-	appContactInfo: appContactInfo,
+	appName: process.env.REACT_APP_NAME,
+	appVersion: process.env.REACT_APP_VERSION,
+	appContactInfo: process.env.CONTACT_INFO,
 });
 
 function checkError(data) {

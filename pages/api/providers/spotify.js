@@ -1,13 +1,10 @@
 import SpotifyWebApi from "spotify-web-api-node";
-import config from "../../../config";
 import logger from "../../../utils/logger";
 
-const { clientId, clientSecret, redirectUri } = config();
-
 const spotifyApi = new SpotifyWebApi({
-    clientId: clientId,
-    clientSecret: clientSecret,
-    redirectUri: redirectUri,
+    clientId: process.env.SPOTIFY_CLIENT_ID,
+    clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+    redirectUri: process.env.SPOTIFY_REDIRECT_URI,
 
 });
 
