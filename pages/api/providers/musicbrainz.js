@@ -9,7 +9,6 @@ const mbApi = new MusicBrainzApi({
 });
 
 function checkError(data) {
-	console.log(data.error)
     if (data.error) {
         throw new Error(data.error);
     }
