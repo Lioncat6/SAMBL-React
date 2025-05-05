@@ -59,6 +59,7 @@
 	margin: 3px 3px;
 }
 
+
 .listItem:hover {
 	border: 1px solid var(--foreground-primary);
 	transition: 0.5s all;

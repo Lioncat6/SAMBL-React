@@ -6,6 +6,7 @@ export function SettingsProvider({ children }) {
     const [settings, setSettings] = useState({
         showHarmony: true,
         showATisket: true,
+        listVirtualization: true
     });
 
     useEffect(() => {
@@ -14,6 +15,7 @@ export function SettingsProvider({ children }) {
         setSettings({
             showHarmony: savedConfig.showHarmony !== undefined ? savedConfig.showHarmony : true,
             showATisket: savedConfig.showATisket !== undefined ? savedConfig.showATisket : true,
+            listVirtualization: savedConfig.listVirtualization !== undefined ? savedConfig.listVirtualization : true,
         });
     }, []);
 
