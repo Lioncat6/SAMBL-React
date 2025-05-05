@@ -38,7 +38,7 @@ function ConfigureMenu({ close }) {
 					<br />
 					<div className="checkbox-wrapper">
 						<input type="checkbox" id="listVirtualization" checked={listVirtualization} onChange={(e) => setListVirtualization(e.target.checked)} className="substituted" />
-						<label htmlFor="listVirtualization">Enable List virtualization</label>
+						<label htmlFor="listVirtualization" title="Enable list virtualization for artists over a certain amount of albums to speed up filtering. Disable for userscript compatibility." className={styles.info}>Enable List virtualization</label>
 					</div>
 				</div>
 			</div>
