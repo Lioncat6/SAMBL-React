@@ -370,7 +370,10 @@ export default function Artist({ artist }) {
 		<>
 			<Head>
 				<title>{`SAMBL • ${artist.name}`}</title>
-				<meta name="description" content={`SAMBL - View Artist • ${artist.name}`} />
+				<meta name="description" content={`View Artist • ${artist.name}  • ${artist.followers} Followers`} />
+				<meta property="og:image" content={artist.imageUrl} />
+				<meta property="og:title" content={`SAMBL • ${artist.name}`} />
+				<meta property="og:description" content={`View Artist • ${artist.name}  • ${artist.followers} Followers`} />
 			</Head>
 			{!artist.mbid && <Notice type={"noMBID"} data={artist} />}
 			<ArtistInfo artist={artist} />
