@@ -74,7 +74,6 @@ export default async function handler(req, res) {
 					);
 				});
 			}
-			console.log(mbData);
 			if (mbData.recordings) {
 				mbData.recordings.forEach((track) => {
 					let initialReleaseDate = null;

@@ -307,7 +307,6 @@ export default function Artist({ artist }) {
 						}
 						throw new Error(`Error fetching MusicBrainz albums: ${data}`);
 					}
-					console.log(data);
 					mbAlbums = [...mbAlbums, ...data.releases];
 					mbAlbumCount = data["release-count"];
 					offset = mbAlbums.length;
@@ -336,7 +335,6 @@ export default function Artist({ artist }) {
 						}
 						throw new Error(`Error fetching MusicBrainz Featured albums: ${data}`);
 					}
-					console.log(data);
 					mbAlbums = [...mbAlbums, ...data.releases];
 					mbFeaturedAlbumCount = data["release-count"];
 					offset = mbAlbums.length;
