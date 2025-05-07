@@ -43,9 +43,8 @@ function AlbumIcons({ item }) {
 					className={`${styles.dateMissing} ${albumStatus === "green" ? styles.dateMissingAvaliable : ""}`}
 					href={
 						albumStatus === "green"
-							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${spotifyReleaseDate.split("-")[0]}&events.0.date.month=${spotifyReleaseDate.split("-")[1]}&events.0.date.day=${
-									spotifyReleaseDate.split("-")[2]
-							  }&edit_note=${encodeURIComponent(`Added release date from Spotify using SAMBL: ${spotifyUrl}`)}`
+							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${spotifyReleaseDate.split("-")[0]}&events.0.date.month=${spotifyReleaseDate.split("-")[1]}&events.0.date.day=${spotifyReleaseDate.split("-")[2]
+							}&edit_note=${encodeURIComponent(`Added release date from Spotify using SAMBL: ${spotifyUrl}`)}`
 							: undefined
 					}
 					title={albumStatus === "green" ? "This release is missing a release date!\n[Click to Fix]" : "This release is missing a release date!"}
@@ -80,6 +79,16 @@ function ActionButtons({ item }) {
 	);
 }
 
+function SelectionButtons({state}) {
+	return (
+		<>
+			<div className={`${styles.selectingBox} checkbox-wrapper`}>
+				<input type="checkbox" className="substituted" id="selected" checked={false} onChange={(e) => console.log(e.target.checked)} />
+				<label htmlFor="selected"></label>
+			</div>
+		</>
+	)
+}
 
 const AlbumItem = memo(function AlbumItem({ item, selecting }) {
 	const {
@@ -113,8 +122,8 @@ const AlbumItem = memo(function AlbumItem({ item, selecting }) {
 		albumStatus === "green"
 			? "This album has a MB release with a matching Spotify URL"
 			: albumStatus === "orange"
-			? "This album has a MB release with a matching name but no associated link"
-			: "This album has no MB release with a matching name or URL";
+				? "This album has a MB release with a matching name but no associated link"
+				: "This album has no MB release with a matching name or URL";
 
 	let data_params = {
 		"data-spotify-id": spotifyId,
@@ -146,7 +155,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting }) {
 			{/* Album Cover */}
 			<div className={styles.albumCover}>
 				<a href={spotifyImageURL} target="_blank" rel="noopener noreferrer">
-					<img src={spotifyImageURL300px} alt={`${spotifyName} cover`} loading="lazy"/>
+					<img src={spotifyImageURL300px} alt={`${spotifyName} cover`} loading="lazy" />
 				</a>
 			</div>
 
@@ -195,7 +204,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting }) {
 					<AlbumIcons item={item} />
 				</div>
 			</div>
-			{selecting ? "" : <ActionButtons item={item} />}
+			{selecting ? "" : <SelectionButtons item={item} />}
 		</div>
 	);
 });
@@ -316,27 +325,27 @@ function ListContainer({ items, type, text }) {
 function VirtualizedList({ items, type, text }) {
 	return (
 		<>
-		<div className={styles.virtualListContainer}>
-			<AutoSizer>
-				{({ height, width})=> 
-		<List
-			height={height} 
-			itemCount={items.length}
-			itemSize={69} //nice 
-			width={width}
-		>
-			{({ index, style }) => (
-				<div style={style}>
-					{type === "album" && <AlbumItem item={items[index]} />}
-					{type === "artist" && <ArtistItem item={items[index]} />}
-					{type === "mixed" && <GenericItem item={items[index]} />}
-				</div>
-			)}
-		</List>
-		}
-		</AutoSizer>
-		</div>
-		<div className={styles.statusText}>{text}</div>
+			<div className={styles.virtualListContainer}>
+				<AutoSizer>
+					{({ height, width }) =>
+						<List
+							height={height}
+							itemCount={items.length}
+							itemSize={69} //nice 
+							width={width}
+						>
+							{({ index, style }) => (
+								<div style={style}>
+									{type === "album" && <AlbumItem item={items[index]} />}
+									{type === "artist" && <ArtistItem item={items[index]} />}
+									{type === "mixed" && <GenericItem item={items[index]} />}
+								</div>
+							)}
+						</List>
+					}
+				</AutoSizer>
+			</div>
+			<div className={styles.statusText}>{text}</div>
 		</>
 	);
 }
