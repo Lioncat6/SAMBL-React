@@ -17,17 +17,11 @@ export function useExportData() {
         pauseOnHover: true,
         draggable: true,
         progress: undefined,
-
         transition: Flip,
     }
     const exportData = () => {
         console.log("Exporting data...");
         if (router.pathname == "/artist") {
-            if (!exportState) { // because it hasn't been flipped yet and even it it was, it wouldn't have updated here yet cause that's how useState works :3
-                toast.info("Select items to export...", toastProperties)
-            } else {
-                toast.warn("Export cancelled...", toastProperties)
-            }
             setExportState(!exportState);
         } else {
             toast.warn("Data export is not avaliable on this page", toastProperties);
