@@ -33,6 +33,11 @@
     align-items: center;
 }
 
+.subHeader {
+    display: inline;
+    color: var(--foreground-tertiary);
+}
+
 .content {
     margin-top: 20px;
     margin-bottom: 20px;
@@ -74,4 +79,14 @@
 
 .info {
     cursor: help;
+}
+
+.property {
+
+}
+
+.propertyData {
+    display: inline;
+    margin-left: 5px;
+    color: var(--foreground-tertiary);
 }

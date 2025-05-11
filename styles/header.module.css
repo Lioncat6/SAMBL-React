@@ -218,7 +218,7 @@
     font-size: 14px;
 	font-weight: normal;
     transition: background-color 0.2s, color 0.2s;
-
+	cursor: pointer;
 }
 
 .dropdownMenu a:hover, .dropdownMenu .menuItem:hover {

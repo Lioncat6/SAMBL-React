@@ -4,7 +4,7 @@ import Footer from "./footer";
 import Head from "next/head";
 import { ThemeProvider, useTheme } from "next-themes";
 import { ToastContainer, Flip } from "react-toastify";
-import { ExportProvider } from "../components/ExportProvider";
+import { ExportState } from "../components/ExportState";
 
 function LayoutContent({ children }) {
     const { systemTheme } = useTheme();
@@ -44,9 +44,9 @@ export default function Layout({ children }) {
             enableSystem
             disableTransitionOnChange
         >
-            <ExportProvider>
+            <ExportState>
                 <LayoutContent>{children}</LayoutContent>
-            </ExportProvider>
+            </ExportState>
         </ThemeProvider>
     );
 }

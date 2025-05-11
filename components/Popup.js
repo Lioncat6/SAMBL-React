@@ -5,7 +5,8 @@ import styles from "../styles/popups.module.css";
 import { useSettings } from "./SettingsContext";
 import { FaXmark, FaGear, FaFilter, FaCopy } from "react-icons/fa6";
 import { TbTableExport } from "react-icons/tb";
-import { useExportData } from "./Export";
+import { useExport } from "./ExportState"
+
 
 function ConfigureMenu({ close }) {
 	const { settings, updateSettings } = useSettings();
@@ -145,51 +146,123 @@ function FilterMenu({ close, data, apply }) {
 	);
 }
 
-function ExportMenu({ close }) {
-	const exportData = useExportData();
-	console.log(exportData())
+// function ExportMenu({ close }) {
+// 	const { selectedData } = useExport();
+// 	const [selectedProperties, setSelectedProperties] = useState([]);
+
+// 	const exportableProperties = Array.from(
+// 		new Set(
+// 			Object.values(selectedData).flatMap((entry) => Object.keys(entry))
+// 		)
+// 	);
+
+// 	function toggleProperty(field) {
+// 		setSelectedProperties((prevSelected) => {
+// 			if (prevSelected.includes(field)) {
+// 				// Remove the field if it's already selected
+// 				return prevSelected.filter((selectedField) => selectedField !== field);
+// 			} else {
+// 				// Add the field if it's not selected
+// 				return [...prevSelected, field];
+// 			}
+// 		});
+// 	}
+
+// 	const handleCopy = () => {
+// 		const filteredData = Object.fromEntries(
+// 			Object.entries(selectedData).map(([key, value]) => [
+// 				key,
+// 				Object.fromEntries(
+// 					Object.entries(value).filter(([field]) =>
+// 						selectedProperties.includes(field)
+// 					)
+// 				),
+// 			])
+// 		);
+// 		navigator.clipboard.writeText(JSON.stringify(filteredData, null, 2));
+// 		close();
+// 	};
+
+// 	return (
+// 		<>
+// 			<div className={styles.header}>
+// 				<TbTableExport /> Export Data{" "}
+// 				<div className={styles.subHeader}>
+// 					{`(${Object.keys(selectedData).length} selected)`}
+// 				</div>
+// 			</div>
+// 			<div className={styles.content}>
+// 				<div className={styles.configureMenu}>
+// 					{exportableProperties.map((field) => (
+// 						<div className="checkbox-wrapper" key={field}>
+// 							<input
+// 								type="checkbox"
+// 								className="substituted"
+// 								id={`field-${field}`}
+// 								checked={selectedProperties.includes(field)}
+// 								onChange={() => toggleProperty(field)}
+// 							/>
+// 							<label htmlFor={`field-${field}`}>{field}</label>
+// 						</div>
+// 					))}
+// 				</div>
+// 			</div>
+// 			<div className={styles.actions}>
+// 				<button className={styles.button} onClick={handleCopy}>
+// 					<FaCopy /> Copy
+// 				</button>
+// 			</div>
+// 		</>
+// 	);
+// }
+
+
+function ExportMenu({ data, close }) {
+
 
 	return (
 		<>
 			{" "}
 			<div className={styles.header}>
 				{" "}
-				<TbTableExport /> Export Data{" "}
+				<TbTableExport /> Export Item{" "}
 			</div>
 			<div className={styles.content}>
-				<div className={styles.configureMenu}>
-
-				</div>
+				{data.map((key, data) => {
+					<div key={key}>
+						<div className={styles.property}>{key.toUpperCase()}</div>
+						<div className={styles.propertyData}>{data}</div>
+					</div>
+				})}
 			</div>
 			<div className={styles.actions}>
 				<button
 					className={styles.button}
 					onClick={() => {
-
 					}}
 				>
-					<FaCopy />	Copy
+					<FaCopy /> Copy All
 				</button>
 			</div>
 		</>
-	)
+	);
 }
 
 export default function SAMBLPopup({ button, type, data, apply }) {
 	return (
 		<>
-		<Popup trigger={button} position="right center" modal nested>
-			{(close) => (
-				<div className={styles.modal}>
-					<button className={styles.close} onClick={close}>
-						<FaXmark />
-					</button>
-					{type == "configure" && <ConfigureMenu close={close} />}
-					{type == "filter" && <FilterMenu close={close} data={data} apply={apply} />}
-					{type == "export" && <ExportMenu close={close} />}
-				</div>
-			)}
-		</Popup>
+			<Popup trigger={button} position="right center" modal nested>
+				{(close) => (
+					<div className={styles.modal}>
+						<button className={styles.close} onClick={close}>
+							<FaXmark />
+						</button>
+						{type == "configure" && <ConfigureMenu close={close} />}
+						{type == "filter" && <FilterMenu close={close} data={data} apply={apply} />}
+						{type == "export" && <ExportMenu close={close} data={data}/>}
+					</div>
+				)}
+			</Popup>
 		</>
 	);
 }
