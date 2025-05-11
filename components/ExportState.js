@@ -4,9 +4,8 @@ const ExportContext = createContext();
 
 export function ExportState({ children }) {
     const [exportState, setExportState] = useState(false);
-    const [selectedData, setSelectedData] = useState({});
     return (
-        <ExportContext.Provider value={{ exportState, setExportState, selectedData, setSelectedData }}>
+        <ExportContext.Provider value={{ exportState, setExportState }}>
             {children}
         </ExportContext.Provider>
     );

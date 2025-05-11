@@ -83,34 +83,8 @@ function ActionButtons({ item }) {
 function SelectionButtons({ item }) {
 	const Popup = dynamic(() => import("./Popup"), { ssr: false });
 
-	// const { selectedData, setSelectedData } = useExportState();
-	// const { spotifyId } = item;
-
-	// const handleCheckboxChange = (e) => {
-	// 	const isChecked = e.target.checked;
-	// 	setSelectedData((prevData) => {
-	// 		const updatedData = { ...prevData };
-	// 		if (isChecked) {
-	// 			updatedData[spotifyId] = item;
-	// 		} else {
-	// 			delete updatedData[spotifyId];
-	// 		}
-	// 		return updatedData;
-	// 	});
-	// };
-
 	return (
 		<>
-			{/* <div className={`${styles.selectingBox} checkbox-wrapper`}>
-				<input
-					type="checkbox"
-					className="substituted"
-					id={`selected-${spotifyId}`}
-					checked={selectedData[spotifyId] !== undefined}
-					onChange={handleCheckboxChange}
-				/>
-				<label htmlFor={`selected-${spotifyId}`}></label>
-			</div> */}
 			<Popup button={
 				<a className={styles.exportButton}>
 					<div>Export</div>
@@ -442,18 +416,8 @@ function LoadingSearchContainer({ text }) {
 
 function SearchContainer({ onSearch, currentFilter, setFilter }) {
 	const Popup = dynamic(() => import("./Popup"), { ssr: false });
-	const { exportState, setExportState } = useExportState();
 	return (
 		<div id="searchContainer" className={styles.searchContainer}>
-			{/* {exportState &&
-				<Popup type="export" button={
-					<button className={styles.exportButton}>
-						<div className={styles.exportText}>
-							<TbTableExport /> Export
-						</div>
-					</button>}
-				/>
-			} */}
 			<input
 				id="listSearch"
 				placeholder="Search..."
