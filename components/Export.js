@@ -20,7 +20,6 @@ export function useExportData() {
         transition: Flip,
     }
     const exportData = () => {
-        console.log("Exporting data...");
         if (router.pathname == "/artist") {
             setExportState(!exportState);
         } else {
