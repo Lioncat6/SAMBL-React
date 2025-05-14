@@ -1,3 +1,7 @@
 module.exports = {
-    useFileSystemPublicRoutes: true 
+    useFileSystemPublicRoutes: true,
+    i18n: {
+        locales: ['en'],
+        defaultLocale: 'en',
+      },
 }

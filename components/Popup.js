@@ -5,7 +5,8 @@ import styles from "../styles/popups.module.css";
 import { useSettings } from "./SettingsContext";
 import { FaXmark, FaGear, FaFilter, FaCopy } from "react-icons/fa6";
 import { TbTableExport } from "react-icons/tb";
-import { useExportData } from "./Export";
+import { useExport } from "./ExportState"
+import { toast, Flip } from "react-toastify"
 
 function ConfigureMenu({ close }) {
 	const { settings, updateSettings } = useSettings();
@@ -145,51 +146,80 @@ function FilterMenu({ close, data, apply }) {
 	);
 }
 
-function ExportMenu({ close }) {
-	const exportData = useExportData();
-	console.log(exportData())
+
+function ExportMenu({ data, close }) {
+	let toastProperties = {
+		position: "top-left",
+		autoClose: 5000,
+		hideProgressBar: false,
+		closeOnClick: false,
+		pauseOnHover: true,
+		draggable: true,
+		progress: undefined,
+		transition: Flip,
+	}
+
+	function handleCopy(text, all) {
+		navigator.clipboard.writeText(text)
+		toast.info(`Copied ${all ? "All Properties" : "Property"} to Clipboard`, toastProperties)
+	}
 
 	return (
 		<>
 			{" "}
 			<div className={styles.header}>
 				{" "}
-				<TbTableExport /> Export Data{" "}
+				<TbTableExport /> Export Item{" "}
 			</div>
 			<div className={styles.content}>
-				<div className={styles.configureMenu}>
-
-				</div>
+				{Object.entries(data).map(([key, value]) => {
+					return (
+						<div key={key} className={styles.propertyRow}>
+							<div className={styles.property}>
+								<button
+									className={styles.copyButton}
+									onClick={() => handleCopy(String(value))}
+									title="Copy to Clipboard"
+								>
+									<FaCopy />
+								</button>{" "}
+								{key}
+							</div>
+							<div className={styles.propertyData}>{String(value)}</div>
+						</div>
+					);
+				})}
 			</div>
 			<div className={styles.actions}>
 				<button
 					className={styles.button}
 					onClick={() => {
-
+						handleCopy(JSON.stringify(data, null, 2), true);
+						
 					}}
 				>
-					<FaCopy />	Copy
+					<FaCopy /> Copy All
 				</button>
 			</div>
 		</>
-	)
+	);
 }
 
 export default function SAMBLPopup({ button, type, data, apply }) {
 	return (
 		<>
-		<Popup trigger={button} position="right center" modal nested>
-			{(close) => (
-				<div className={styles.modal}>
-					<button className={styles.close} onClick={close}>
-						<FaXmark />
-					</button>
-					{type == "configure" && <ConfigureMenu close={close} />}
-					{type == "filter" && <FilterMenu close={close} data={data} apply={apply} />}
-					{type == "export" && <ExportMenu close={close} />}
-				</div>
-			)}
-		</Popup>
+			<Popup trigger={button} position="right center" modal nested>
+				{(close) => (
+					<div className={styles.modal}>
+						<button className={styles.close} onClick={close}>
+							<FaXmark />
+						</button>
+						{type == "configure" && <ConfigureMenu close={close} />}
+						{type == "filter" && <FilterMenu close={close} data={data} apply={apply} />}
+						{type == "export" && <ExportMenu close={close} data={data} />}
+					</div>
+				)}
+			</Popup>
 		</>
 	);
 }

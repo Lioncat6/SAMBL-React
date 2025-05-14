@@ -4,9 +4,10 @@ import React, { useEffect, useState, memo } from "react";
 import { useSettings } from "./SettingsContext";
 import { FaBarcode } from "react-icons/fa6";
 import dynamic from "next/dynamic";
-import { useExport } from "./ExportProvider";
+import { useExport as useExportState } from "./ExportState";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer"
+import { TbTableExport } from "react-icons/tb";
 
 function AlbumIcons({ item }) {
 	const { spotifyId, spotifyUrl, spotifyReleaseDate, spotifyTrackCount, albumStatus, mbTrackCount, mbReleaseDate, mbid, albumIssues } = item;
@@ -43,17 +44,14 @@ function AlbumIcons({ item }) {
 					className={`${styles.dateMissing} ${albumStatus === "green" ? styles.dateMissingAvaliable : ""}`}
 					href={
 						albumStatus === "green"
-							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${spotifyReleaseDate.split("-")[0]}&events.0.date.month=${spotifyReleaseDate.split("-")[1]}&events.0.date.day=${
-									spotifyReleaseDate.split("-")[2]
-							  }&edit_note=${encodeURIComponent(`Added release date from Spotify using SAMBL: ${spotifyUrl}`)}`
+							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${spotifyReleaseDate.split("-")[0]}&events.0.date.month=${spotifyReleaseDate.split("-")[1]}&events.0.date.day=${spotifyReleaseDate.split("-")[2]
+							}&edit_note=${encodeURIComponent(`Added release date from Spotify using SAMBL: ${spotifyUrl}`)}`
 							: undefined
 					}
 					title={albumStatus === "green" ? "This release is missing a release date!\n[Click to Fix]" : "This release is missing a release date!"}
 					target={albumStatus === "green" ? "_blank" : undefined}
 					rel={albumStatus === "green" ? "noopener" : undefined}
-				>
-					Date Missing
-				</a>
+				></a>
 			)}
 			{albumIssues.includes("dateDiff") && <div className={styles.dateDiff} title={`This release has a differing release date! [SP: ${spotifyReleaseDate} MB: ${mbReleaseDate}]\n(This may indicate that you have to split a release.)`} />}
 		</div>
@@ -66,22 +64,39 @@ function ActionButtons({ item }) {
 
 	return (
 		<>
-			{settings.showATisket && (
-				<a className={styles.aTisketButton} href={`https://atisket.pulsewidth.org.uk/?spf_id=${spotifyId}&amp;preferred_vendor=spf`} target="_blank" rel="noopener noreferrer">
-					<div>A-tisket</div>
-				</a>
-			)}
-			{settings.showHarmony && (
-				<a className={styles.harmonyButton} href={`https://harmony.pulsewidth.org.uk/release?url=${spotifyUrl}&category=preferred`} target="_blank" rel="noopener noreferrer">
-					<div>Harmony</div>
-				</a>
-			)}
+			<div className={styles.actionButtons}>
+				{settings.showATisket && (
+					<a className={styles.aTisketButton} href={`https://atisket.pulsewidth.org.uk/?spf_id=${spotifyId}&amp;preferred_vendor=spf`} target="_blank" rel="noopener noreferrer">
+						<div>A-tisket</div>
+					</a>
+				)}
+				{settings.showHarmony && (
+					<a className={styles.harmonyButton} href={`https://harmony.pulsewidth.org.uk/release?url=${spotifyUrl}&category=preferred`} target="_blank" rel="noopener noreferrer">
+						<div>Harmony</div>
+					</a>
+				)}
+			</div>
 		</>
 	);
 }
 
+function SelectionButtons({ item }) {
+	const Popup = dynamic(() => import("./Popup"), { ssr: false });
+
+	return (
+		<>
+			<Popup button={
+				<a className={styles.exportButton}>
+					<div>Export</div>
+				</a>
+			} data={item} type="export" />
+		</>
+	);
+}
 
 const AlbumItem = memo(function AlbumItem({ item, selecting }) {
+	const { exportState } = useExportState();
+
 	const {
 		spotifyId,
 		spotifyName,
@@ -113,8 +128,8 @@ const AlbumItem = memo(function AlbumItem({ item, selecting }) {
 		albumStatus === "green"
 			? "This album has a MB release with a matching Spotify URL"
 			: albumStatus === "orange"
-			? "This album has a MB release with a matching name but no associated link"
-			: "This album has no MB release with a matching name or URL";
+				? "This album has a MB release with a matching name but no associated link"
+				: "This album has no MB release with a matching name or URL";
 
 	let data_params = {
 		"data-spotify-id": spotifyId,
@@ -140,62 +155,64 @@ const AlbumItem = memo(function AlbumItem({ item, selecting }) {
 
 	return (
 		<div className={`${styles.listItem} ${styles.album}`} {...data_params}>
-			{/* Status Pill */}
-			<div className={`${styles.statusPill} ${styles[albumStatus]}`} title={pillTooltipText}></div>
+			<div className={styles.innerItem}>
+				{/* Status Pill */}
+				<div className={`${styles.statusPill} ${styles[albumStatus]}`} title={pillTooltipText}></div>
 
-			{/* Album Cover */}
-			<div className={styles.albumCover}>
-				<a href={spotifyImageURL} target="_blank" rel="noopener noreferrer">
-					<img src={spotifyImageURL300px} alt={`${spotifyName} cover`} loading="lazy"/>
-				</a>
-			</div>
-
-			{/* Text Container */}
-			<div className={styles.textContainer}>
-				{/* Album Title */}
-				<div className={styles.albumTitle}>
-					<a href={spotifyUrl} target="_blank" rel="noopener noreferrer">
-						{spotifyName}
+				{/* Album Cover */}
+				<div className={styles.albumCover}>
+					<a href={spotifyImageURL} target="_blank" rel="noopener noreferrer">
+						<img src={spotifyImageURL300px} alt={`${spotifyName} cover`} loading="lazy" />
 					</a>
-					{albumMBUrl && (
-						<a href={albumMBUrl} target="_blank" rel="noopener noreferrer">
-							<img
-								className={styles.albumMB}
-								src={albumStatus === "green" ? "../assets/images/MusicBrainz_logo_icon.svg" : "../assets/images/MB_Error.svg"}
-								alt="MusicBrainz"
-								title={albumStatus === "green" ? "View on MusicBrainz" : "Warning: This could be the incorrect MB release for this album!"}
-							/>
+				</div>
+
+				{/* Text Container */}
+				<div className={styles.textContainer}>
+					{/* Album Title */}
+					<div className={styles.albumTitle}>
+						<a href={spotifyUrl} target="_blank" rel="noopener noreferrer">
+							{spotifyName}
 						</a>
-					)}
-				</div>
-
-				{/* Artists */}
-				<div className={styles.artists}>
-					{spotifyAlbumArtists.map((artist, index) => (
-						<span key={artist.id}>
-							{index > 0 && ", "}
-							<a href={artist.external_urls.spotify} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
-								{artist.name}
+						{albumMBUrl && (
+							<a href={albumMBUrl} target="_blank" rel="noopener noreferrer">
+								<img
+									className={styles.albumMB}
+									src={albumStatus === "green" ? "../assets/images/MusicBrainz_logo_icon.svg" : "../assets/images/MB_Error.svg"}
+									alt="MusicBrainz"
+									title={albumStatus === "green" ? "View on MusicBrainz" : "Warning: This could be the incorrect MB release for this album!"}
+								/>
 							</a>
-							<a href={`../newartist?spid=${artist.id}`} target="_blank" rel="noopener noreferrer">
-								<img className={styles.SAMBLicon} src="../assets/images/favicon.svg" alt="SAMBL" />
-							</a>
-						</span>
-					))}
-				</div>
-
-				{/* Album Info */}
-				<div className={styles.albumInfo}>
-					<div>
-						{spotifyReleaseDate} • {spotifyAlbumType.charAt(0).toUpperCase() + spotifyAlbumType.slice(1)} •{" "}
-						<span className={`${albumStatus === "red" ? "" : styles.hasTracks} ${highlightTracks ? styles.trackHighlight : ""}`} title={mbTrackString || ""}>
-							{spotifyTrackString}
-						</span>
+						)}
 					</div>
-					<AlbumIcons item={item} />
+
+					{/* Artists */}
+					<div className={styles.artists}>
+						{spotifyAlbumArtists.map((artist, index) => (
+							<span key={artist.id}>
+								{index > 0 && ", "}
+								<a href={artist.external_urls.spotify} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
+									{artist.name}
+								</a>
+								<a href={`../newartist?spid=${artist.id}`} target="_blank" rel="noopener noreferrer">
+									<img className={styles.SAMBLicon} src="../assets/images/favicon.svg" alt="SAMBL" />
+								</a>
+							</span>
+						))}
+					</div>
+
+					{/* Album Info */}
+					<div className={styles.albumInfo}>
+						<div>
+							{spotifyReleaseDate} • {spotifyAlbumType.charAt(0).toUpperCase() + spotifyAlbumType.slice(1)} •{" "}
+							<span className={`${albumStatus === "red" ? "" : styles.hasTracks} ${highlightTracks ? styles.trackHighlight : ""}`} title={mbTrackString || ""}>
+								{spotifyTrackString}
+							</span>
+						</div>
+						<AlbumIcons item={item} />
+					</div>
 				</div>
+				{exportState ? <SelectionButtons item={item} /> : <ActionButtons item={item} />}
 			</div>
-			{selecting ? "" : <ActionButtons item={item} />}
 		</div>
 	);
 });
@@ -316,50 +333,54 @@ function ListContainer({ items, type, text }) {
 function VirtualizedList({ items, type, text }) {
 	return (
 		<>
-		<div className={styles.virtualListContainer}>
-			<AutoSizer>
-				{({ height, width})=> 
-		<List
-			height={height} 
-			itemCount={items.length}
-			itemSize={69} //nice 
-			width={width}
-		>
-			{({ index, style }) => (
-				<div style={style}>
-					{type === "album" && <AlbumItem item={items[index]} />}
-					{type === "artist" && <ArtistItem item={items[index]} />}
-					{type === "mixed" && <GenericItem item={items[index]} />}
-				</div>
-			)}
-		</List>
-		}
-		</AutoSizer>
-		</div>
-		<div className={styles.statusText}>{text}</div>
+			<div className={styles.virtualListContainer}>
+				<AutoSizer>
+					{({ height, width }) =>
+						<List
+							height={height}
+							itemCount={items.length}
+							itemSize={69} //nice 
+							width={width}
+						>
+							{({ index, style }) => (
+								<div style={style}>
+									{type === "album" && <AlbumItem item={items[index]} />}
+									{type === "artist" && <ArtistItem item={items[index]} />}
+									{type === "mixed" && <GenericItem item={items[index]} />}
+								</div>
+							)}
+						</List>
+					}
+				</AutoSizer>
+			</div>
+			<div className={styles.statusText}>{text}</div>
 		</>
 	);
 }
 
 function LoadingItem() {
+	const { settings } = useSettings();
 	return (
 		<div className={styles.listItemContainer}>
 			<div className={`${styles.listItem} ${styles.skeleton}`}>
-				{/* Status Pill Placeholder */}
-				<div className={`${styles.statusPill} ${styles.skeletonPill}`}></div>
+				<div className={styles.innerItem}>
 
-				{/* Album Cover Placeholder */}
-				<div className={`${styles.albumCover} ${styles.skeletonCover}`}></div>
+					{/* Status Pill Placeholder */}
+					<div className={`${styles.statusPill} ${styles.skeletonPill}`}></div>
 
-				{/* Text Container Placeholder */}
-				<div className={`${styles.textContainer} ${styles.skeletonTextContainer}`}>
-					<div className={`${styles.skeletonText} ${styles.skeletonTitle}`}></div>
-					<div className={`${styles.skeletonText} ${styles.skeletonSubtitle}`}></div>
-					<div className={`${styles.skeletonText} ${styles.skeletonInfo}`}></div>
+					{/* Album Cover Placeholder */}
+					<div className={`${styles.albumCover} ${styles.skeletonCover}`}></div>
+
+					{/* Text Container Placeholder */}
+					<div className={`${styles.textContainer} ${styles.skeletonTextContainer}`}>
+						<div className={`${styles.skeletonText} ${styles.skeletonTitle}`}></div>
+						<div className={`${styles.skeletonText} ${styles.skeletonSubtitle}`}></div>
+						<div className={`${styles.skeletonText} ${styles.skeletonInfo}`}></div>
+					</div>
+					{/* Buttons Placeholder */}
+					{settings.showHarmony && <div className={`${styles.skeletonButton} ${styles.skeletonButton1}`}></div>}
+					{settings.showATisket && <div className={`${styles.skeletonButton} ${styles.skeletonButton2}`}></div>}
 				</div>
-				{/* Buttons Placeholder */}
-				<div className={`${styles.skeletonButton} ${styles.skeletonButton1}`}></div>
-				<div className={`${styles.skeletonButton} ${styles.skeletonButton2}`}></div>
 			</div>
 		</div>
 	);

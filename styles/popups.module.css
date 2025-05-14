@@ -33,6 +33,11 @@
     align-items: center;
 }
 
+.subHeader {
+    display: inline;
+    color: var(--foreground-tertiary);
+}
+
 .content {
     margin-top: 20px;
     margin-bottom: 20px;
@@ -74,4 +79,38 @@
 
 .info {
     cursor: help;
+}
+
+.propertyRow {
+display: flex;
+flex-direction: row;
+}
+
+.propertyData {
+    display: inline;
+    margin-left: 5px;
+    color: var(--foreground-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.property {
+    white-space: nowrap;
+}
+
+.property {
+    overflow: visible;
+    text-overflow: unset;
+}
+
+.copyButton {
+    background: transparent;
+    border: none;
+    transition: all 0.1s ease-in-out;
+}
+
+.copyButton:hover {
+    cursor: pointer;
+    color: var(--foreground-secondary)
 }
