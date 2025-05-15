@@ -17,14 +17,15 @@ async function fetchArtistData(spfId) {
 
 export async function getServerSideProps(context) {
 	const { spid, spids, artist_mbid, mbid } = context.query;
+	const splitSpids =  spids?.split(",");
 	if (!artist_mbid && !mbid) {
-		const response = await fetch(`http://localhost:3000/api/lookupArtist?spotifyId=${spid}`);
+		const response = await fetch(`http://localhost:3000/api/lookupArtist?spotifyId=${spid || splitSpids[0]}`);
 		if (response.ok) {
-			mbid = await response.json();
-			if (mbid) {
-				let destination = `/artist?spid=${spid}&artist_mbid=${mbid}`
-				if (!spid && spids) {
-					destination = `/artist?spids=${spids}&artist_mbid=${mbid}`
+			const fetchedMBid = await response.json();
+			if (fetchedMBid) {
+				let destination = `/artist?spid=${spid || splitSpids[0]}&artist_mbid=${fetchedMBid}`
+				if (!spid && splitSpids.length > 1) {
+					destination = `/artist?spids=${spids}&artist_mbid=${fetchedMBid}`
 				}
 				return {
 					redirect: {
@@ -35,12 +36,21 @@ export async function getServerSideProps(context) {
 			}
 		}
 	}
+	if (!spid && splitSpids.length == 1) {
+		destination = `/artist?spid=${splitSpids[0]}&artist_mbid=${artist_mbid || mbid}`
+		return {
+			redirect: {
+				destination: destination,
+				permanent: false,
+			},
+		};
+	}
 	try {
 		let data;
 		let artist;
 		if (!spid && spids) {
 			data = []
-			let spidArray = spids.split(",");
+			let spidArray = splitSpids;
 			for (let id of spidArray) {
 				data.push(await fetchArtistData(id));
 			}
