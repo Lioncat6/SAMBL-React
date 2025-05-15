@@ -97,6 +97,7 @@ function processData(sourceAlbums, mbAlbums) {
 		let spotifyImageURL = album.images[0]?.url || "";
 		let spotifyImageURL300px = album.images[1]?.url || spotifyImageURL;
 		let spotifyAlbumArtists = album.artists;
+		let spotifyArtistNames = album.artists.map(artist => artist.name);
 		let spotifyReleaseDate = album.release_date;
 		let spotifyTrackCount = album.total_tracks;
 		let spotifyAlbumType = album.album_type;
@@ -198,6 +199,7 @@ function processData(sourceAlbums, mbAlbums) {
 			spotifyImageURL,
 			spotifyImageURL300px,
 			spotifyAlbumArtists,
+			spotifyArtistNames,
 			spotifyReleaseDate,
 			spotifyTrackCount,
 			spotifyAlbumType,
