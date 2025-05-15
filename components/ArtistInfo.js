@@ -24,6 +24,11 @@ function UrlIcons({artist}) {
 	return (
 		<>
 			{artist.spotifyId && <SpotifyUrlContainer id={artist.spotifyId} />}
+			{artist.spotifyIds && 
+				artist.spotifyIds.map((spotifyId) =>
+					<SpotifyUrlContainer id={spotifyId} />
+				)
+			}
 			{artist.mbid && <MusicBrainzUrlContainer id={artist.mbid} />}
 		</>
 	);
@@ -46,7 +51,7 @@ export default function ArtistInfo({artist}) {
 				{artist.imageUrl && <ImageContainer url={artist.imageUrl} />}
 				<div id="artistTextContainer" className={styles.artistTextContainer}>
 					<div className={styles.nameContainer}>
-						<h1 id="artistName" className={styles.artistName}>{artist.name}</h1>
+						<h1 id="artistName" className={styles.artistName}>{artist.name || artist.names.join(" / ")}</h1>
 						<UrlIcons artist={artist} />
 					</div>
 					<h2 id="artistFollowerCount" className={styles.artistFollowerCount}>{artist.followers} Followers</h2>

@@ -13,7 +13,7 @@
 .spURLContainer {
 	display: flex;
 	flex-direction: row;
-	padding: 1.2vh 0 0 2%;
+	padding: 1.2vh 0 0 0;
 	margin-bottom: 0;
 }
 
@@ -55,6 +55,7 @@
 .artistName {
 	margin-bottom: 0;
 	text-wrap: nowrap;
+	margin-right: 5px;
 }
 
 .artistFollowerCount {

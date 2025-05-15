@@ -16,15 +16,19 @@ async function fetchArtistData(spfId) {
 }
 
 export async function getServerSideProps(context) {
-	const { spid, artist_mbid } = context.query;
-	if (!artist_mbid) {
+	const { spid, spids, artist_mbid, mbid } = context.query;
+	if (!artist_mbid && !mbid) {
 		const response = await fetch(`http://localhost:3000/api/lookupArtist?spotifyId=${spid}`);
 		if (response.ok) {
-			const mbid = await response.json();
+			mbid = await response.json();
 			if (mbid) {
+				let destination = `/artist?spid=${spid}&artist_mbid=${mbid}`
+				if (!spid && spids) {
+					destination = `/artist?spids=${spids}&artist_mbid=${mbid}`
+				}
 				return {
 					redirect: {
-						destination: `/artist?spid=${spid}&artist_mbid=${mbid}`,
+						destination: destination,
 						permanent: false,
 					},
 				};
@@ -32,17 +36,48 @@ export async function getServerSideProps(context) {
 		}
 	}
 	try {
-		const data = await fetchArtistData(spid);
-		const artist = {
-			name: data.name,
-			imageUrl: data.images[0]?.url || "",
-			genres: data.genres.join(", "),
-			followers: data.followers.total,
-			popularity: data.popularity,
-			spotifyId: spid,
-			mbid: artist_mbid || null,
-		};
-
+		let data;
+		let artist;
+		if (!spid && spids) {
+			data = []
+			let spidArray = spids.split(",");
+			for (let id of spidArray) {
+				data.push(await fetchArtistData(id));
+			}
+			const uniqueNames = [...new Set(data.map(artist => artist.name))];
+			const genres = [...new Set(data.flatMap(artist => artist.genres))].filter(genre => genre.trim() != "");
+			let mostPopularIndex = 0
+			let mostPopularity = 0
+			for (let artist in data) {
+				if (data[artist].popularity > mostPopularity) {
+					mostPopularIndex = artist;
+					mostPopularity = data[artist].popularity;
+				}
+			}
+			const totalFollowers = data.reduce(function (total, artist) { return total + artist.followers.total }, 0)
+			artist = {
+				names: uniqueNames,
+				name: uniqueNames.join(" / "),
+				imageUrl: data[mostPopularIndex].images[0]?.url || "",
+				genres: genres.join(", "),
+				followers: totalFollowers,
+				popularity: data[mostPopularIndex].popularity,
+				spotifyIds: spidArray,
+				mbid: artist_mbid || mbid || null,
+			};
+		} else {
+			data = await fetchArtistData(spid);
+			artist = {
+				name: data.name,
+				imageUrl: data.images[0]?.url || "",
+				genres: data.genres.join(", "),
+				followers: data.followers.total,
+				popularity: data.popularity,
+				spotifyId: spid,
+				mbid: artist_mbid || mbid || null,
+			};
+		}
+		console.log(artist)
 		return {
 			props: { artist },
 		};
@@ -256,7 +291,7 @@ export default function Artist({ artist }) {
 	const [statusText, setStatusText] = useState("Loading albums...");
 	// const { setExportData } = useExport(); // Access setExportData from context
 
-	let sourceAlbumCount = 999;
+	let sourceAlbumCount = -1;
 	let mbAlbumCount = -1;
 	let mbFeaturedAlbumCount = -1;
 	let sourceAlbums = [];
@@ -272,31 +307,38 @@ export default function Artist({ artist }) {
 			}
 		}
 
-		async function fetchSpotifyAlbums() {
-			let offset = 0;
+		async function fetchSpotifyAlbums(spids) {
 			let attempts = 0;
-			while (offset < sourceAlbumCount) {
-				try {
-					const data = await fetchSourceAlbums(artist.spotifyId, offset);
-					if (typeof data == "number") {
-						if (data == 404){
-							dispError("SpotifyId not found!")
-							return;
+			for (const spid of spids) {
+				let offset = 0;
+				let currentAlbumCount = 999
+				let fetchedAlbums = 0;
+				while (offset < currentAlbumCount) {
+					try {
+						const data = await fetchSourceAlbums(spid, offset);
+						if (typeof data === "number") {
+							if (data === 404) {
+								dispError(`Spotify ID ${spid} not found!`);
+								return;
+							}
+							throw new Error(`Error fetching Spotify albums: ${data}`);
 						}
-						throw new Error(`Error fetching Spotify albums: ${data}`);
+						sourceAlbums = [...sourceAlbums, ...data.items];
+						fetchedAlbums += data.items.length;
+						currentAlbumCount = data.total;
+						if (sourceAlbumCount < 0) { sourceAlbumCount = currentAlbumCount }
+						offset = fetchedAlbums;
+						updateLoadingText();
+					} catch (error) {
+						attempts++;
+						console.error("Error fetching albums:", error);
 					}
-					sourceAlbums = [...sourceAlbums, ...data.items];
-					sourceAlbumCount = data.total;
-					offset = sourceAlbums.length;
-					updateLoadingText();
-				} catch (error) {
-					attempts++;
-					console.error("Error fetching albums:", error);
+					if (attempts > 3) {
+						dispError("Failed to fetch Spotify albums");
+						break;
+					}
 				}
-				if (attempts > 3) {
-					dispError("Failed to fetch Spotify albums");
-					break;
-				}
+				sourceAlbumCount += currentAlbumCount;
 			}
 		}
 
@@ -307,7 +349,7 @@ export default function Artist({ artist }) {
 				try {
 					const data = await fetchMbArtistAlbums(artist.mbid, offset);
 					if (typeof data == "number") {
-						if (data == 404){
+						if (data == 404) {
 							dispError("MBID not found!")
 							return;
 						}
@@ -335,7 +377,7 @@ export default function Artist({ artist }) {
 				try {
 					const data = await fetchMbArtistFeaturedtAlbums(artist.mbid, offset);
 					if (typeof data == "number") {
-						if (data == 404){
+						if (data == 404) {
 							dispError("MBID not found!")
 							return;
 						}
@@ -357,10 +399,11 @@ export default function Artist({ artist }) {
 		}
 
 		async function loadAlbums() {
+			const spids = artist.spotifyIds ? artist.spotifyIds : [artist.spotifyId];
 			if (!artist.mbid) {
-				await fetchSpotifyAlbums();
+				await fetchSpotifyAlbums(spids);
 			} else {
-				await Promise.all([fetchSpotifyAlbums(), fetchMusicbrainzArtistAlbums(), fetchMusicBrainzFeaturedAlbums()]);
+				await Promise.all([fetchSpotifyAlbums(spids), fetchMusicbrainzArtistAlbums(), fetchMusicBrainzFeaturedAlbums()]);
 			}
 
 			let data = processData(sourceAlbums, mbAlbums);
@@ -376,10 +419,10 @@ export default function Artist({ artist }) {
 		<>
 			<Head>
 				<title>{`SAMBL • ${artist.name}`}</title>
-				<meta name="description" content={`View Artist • ${artist.name}  • ${artist.followers} Followers`} />
+				<meta name="description" content={`View Artist • ${artist.name} • ${artist.followers} Followers`} />
 				<meta property="og:image" content={artist.imageUrl} />
 				<meta property="og:title" content={`SAMBL • ${artist.name}`} />
-				<meta property="og:description" content={`View Artist • ${artist.name}  • ${artist.followers} Followers`} />
+				<meta property="og:description" content={`View Artist • ${artist.name} • ${artist.followers} Followers`} />
 			</Head>
 			{!artist.mbid && <Notice type={"noMBID"} data={artist} />}
 			<ArtistInfo artist={artist} />
