@@ -146,7 +146,7 @@ export default function Find() {
 	return (
 		<>
 			<Head>
-                <title>{"SAMBL • ​🅵🅸🅽🅳​"}</title>
+                <title>{"SAMBL • Find"}</title>
                 <meta name="description" content={`SAMBL - Find by ISRC, MBID, Barcode...`} />
             </Head>
 			<textarea id="findBox" rows={1} placeholder="Find by ISRC, MBID, Barcode..." defaultValue={""} />
