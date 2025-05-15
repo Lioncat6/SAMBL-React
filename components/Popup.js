@@ -7,8 +7,10 @@ import { FaXmark, FaGear, FaFilter, FaCopy } from "react-icons/fa6";
 import { TbTableExport } from "react-icons/tb";
 import { useExport } from "./ExportState"
 import { toast, Flip } from "react-toastify"
+import getConfig from 'next/config';
 
 function ConfigureMenu({ close }) {
+	const { publicRuntimeConfig } = getConfig();
 	const { settings, updateSettings } = useSettings();
 	const [showHarmony, setShowHarmony] = useState(settings.showHarmony);
 	const [showATisket, setShowATisket] = useState(settings.showATisket);
@@ -24,7 +26,7 @@ function ConfigureMenu({ close }) {
 			{" "}
 			<div className={styles.header}>
 				{" "}
-				<FaGear /> Configure SAMBL{" "}
+				<FaGear /> Configure SAMBL <p className={styles.version}>{publicRuntimeConfig?.version}</p>
 			</div>
 			<div className={styles.content}>
 				<div className={styles.configureMenu}>
