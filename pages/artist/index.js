@@ -87,7 +87,6 @@ export async function getServerSideProps(context) {
 				mbid: artist_mbid || mbid || null,
 			};
 		}
-		console.log(artist)
 		return {
 			props: { artist },
 		};

@@ -35,7 +35,6 @@ async function getIdBySpotifyId(spotifyId) {
 async function getIdsBySpotifyUrls(spotifyUrls) {
 	try {
 		const data = await mbApi.lookupUrl(spotifyUrls, ["artist-rels"]);
-		// console.log(data)
 		if (data.count === 0) {
 			return null; // No artist found
 		}
