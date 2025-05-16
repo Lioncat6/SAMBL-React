@@ -445,6 +445,10 @@ export default function ItemList({ items, type, text }) {
 	const [searchQuery, setSearchQuery] = useState(""); // State for search query
 	const [filteredItems, setFilteredItems] = useState(items || []); // State for filtered items
 	const [filter, setFilter] = useState({ showGreen: true, showOrange: true, showRed: true, showVarious: true, onlyIssues: false });
+	const { setAllItems } = useExportState();
+	if (items?.length > 0){
+		setAllItems(items);
+	}
 	useEffect(() => {
 		if (type !== "album") {
 			return;

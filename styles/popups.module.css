@@ -114,3 +114,9 @@ flex-direction: row;
     cursor: pointer;
     color: var(--foreground-secondary)
 }
+
+.version {
+    display: inline;
+    color: var(--foreground-tertiary);
+    font-size: small;
+}

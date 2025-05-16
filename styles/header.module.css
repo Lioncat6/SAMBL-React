@@ -152,6 +152,8 @@
 	color: var(--button-text);
 	text-align: center;
 	font-size: 13.33px;
+	display: flex;
+	align-items: center;
 }
 
 .toolsButton:hover {
@@ -185,10 +187,6 @@
 	flex-wrap: wrap;
 	align-content: center;
 	justify-content: right;
-}
-
-.buttonText {
-	transform: translateY(-2px);
 }
 
 .dropdownWrapper {

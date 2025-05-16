@@ -7,7 +7,7 @@ import { useExport } from "./ExportState";
 export function useExportData() {
     const router = useRouter();
 
-    const { exportState, setExportState } = useExport();
+    const { exportState, setExportState, allItems } = useExport();
 
     let toastProperties = {
         position: "top-left",
@@ -19,14 +19,29 @@ export function useExportData() {
         progress: undefined,
         transition: Flip,
     }
-    const exportData = () => {
+    const exportItems = () => {
         if (router.pathname == "/artist") {
             setExportState(!exportState);
+            if (!exportState){
+                toast.info("Revealing export buttons...", toastProperties)
+            } else {
+                toast.info("Hiding export buttons...", toastProperties)
+            }
         } else {
-            toast.warn("Data export is not avaliable on this page", toastProperties);
+            toast.warn("Individual data export is not avaliable on this page", toastProperties);
             return null;
         }
     };
 
-    return exportData;
+    const exportAllItems = () => {
+        if (router.pathname == "/artist") {
+            navigator.clipboard.writeText(JSON.stringify(allItems));
+            toast.info("Copied all items to clipboard", toastProperties)
+        } else {
+            toast.warn("Full data export is not avaliable on this page", toastProperties);
+            return null;
+        }
+    }
+
+    return {exportItems, exportAllItems};
 }
