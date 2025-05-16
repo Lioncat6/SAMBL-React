@@ -4,8 +4,9 @@ const ExportContext = createContext();
 
 export function ExportState({ children }) {
     const [exportState, setExportState] = useState(false);
+    const [allItems, setAllItems] = useState([]);
     return (
-        <ExportContext.Provider value={{ exportState, setExportState }}>
+        <ExportContext.Provider value={{ exportState, setExportState, allItems, setAllItems }}>
             {children}
         </ExportContext.Provider>
     );

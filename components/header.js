@@ -6,7 +6,7 @@ import { Description, Dialog, DialogPanel, DialogTitle } from '@headlessui/react
 
 import { FaMagnifyingGlass, FaGear } from "react-icons/fa6";
 import { FaTools, FaUser } from "react-icons/fa";
-import { TbTableExport } from "react-icons/tb";
+import { TbTableExport, TbPackageExport } from "react-icons/tb";
 
 
 import { useExportData } from "./Export";
@@ -14,7 +14,7 @@ import { useExportData } from "./Export";
 const Popup = dynamic(() => import("./Popup"), { ssr: false });
 
 export default function Header() {
-	const exportData = useExportData();
+	const {exportItems, exportAllItems} = useExportData();
 
 	return (
 		<>
@@ -37,8 +37,13 @@ export default function Header() {
 						</MenuButton>
 						<MenuItems className={styles.dropdownMenu} transition anchor="bottom end">
 							<MenuItem>
-								<div className={styles.menuItem} onClick={exportData}>
-									<TbTableExport /> Export Data
+								<div className={styles.menuItem} onClick={exportItems}>
+									<TbPackageExport /> Export Items
+								</div>
+							</MenuItem>
+							<MenuItem>
+								<div className={styles.menuItem} onClick={exportAllItems}>
+									<TbTableExport /> Export All Items
 								</div>
 							</MenuItem>
 							<MenuItem>
