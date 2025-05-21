@@ -128,7 +128,7 @@ export default async function handler(req, res) {
 						deezerData.album.cover_medium || "",
 						deezerData.title,
 						deezerData.contributors.map((contributor) => ({ name: contributor.name, link: contributor.link })),
-						[formatMS(deezerData.duration * 1000), deezerData.release_date, `Track ${deezerData.track_position}`],
+						[deezerData.release_date, formatMS(deezerData.duration * 1000), `Track ${deezerData.track_position}`],
 						deezerData.link
 					)
 				);
