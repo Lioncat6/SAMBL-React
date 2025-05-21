@@ -65,6 +65,7 @@ function ActionButtons({ item }) {
 	return (
 		<>
 			<div className={styles.actionButtons}>
+				{settings.showExport && <SelectionButtons item={item} />}
 				{settings.showATisket && (
 					<a className={styles.aTisketButton} href={`https://atisket.pulsewidth.org.uk/?spf_id=${spotifyId}&amp;preferred_vendor=spf`} target="_blank" rel="noopener noreferrer">
 						<div>A-tisket</div>

@@ -14,9 +14,10 @@ function ConfigureMenu({ close }) {
 	const { settings, updateSettings } = useSettings();
 	const [showHarmony, setShowHarmony] = useState(settings.showHarmony);
 	const [showATisket, setShowATisket] = useState(settings.showATisket);
+	const [showExport, setShowExport] = useState(settings.showExport);
 	const [listVirtualization, setListVirtualization] = useState(settings.listVirtualization);
 	const saveConfig = () => {
-		const newSettings = { showHarmony, showATisket, listVirtualization };
+		const newSettings = { showHarmony, showATisket, showExport, listVirtualization };
 		updateSettings(newSettings);
 		close();
 	};
@@ -37,6 +38,10 @@ function ConfigureMenu({ close }) {
 					<div className="checkbox-wrapper">
 						<input type="checkbox" id="showATisket" checked={showATisket} onChange={(e) => setShowATisket(e.target.checked)} className="substituted" />
 						<label htmlFor="showATisket">Show A-tisket Button</label>
+					</div>
+					<div className="checkbox-wrapper">
+						<input type="checkbox" id="showExport" checked={showExport} onChange={(e) => setShowExport(e.target.checked)} className="substituted" />
+						<label htmlFor="showExport">Always show export Button</label>
 					</div>
 					<br />
 					<div className="checkbox-wrapper">
