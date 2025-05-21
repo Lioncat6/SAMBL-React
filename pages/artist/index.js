@@ -37,7 +37,7 @@ export async function getServerSideProps(context) {
 		}
 	}
 	if (!spid && splitSpids.length == 1) {
-		destination = `/artist?spid=${splitSpids[0]}&artist_mbid=${artist_mbid || mbid}`
+		let destination = `/artist?spid=${splitSpids[0]}${(mbid || artist_mbid) ? `&artist_mbid=${artist_mbid || mbid}`: ""}`
 		return {
 			redirect: {
 				destination: destination,
