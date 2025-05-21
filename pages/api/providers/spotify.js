@@ -51,9 +51,9 @@ async function checkAccessToken() {
         tokenExpirationTime = currentTime + expiresIn * 1000;
 
         spotifyApi.setAccessToken(accessToken);
-        logger.debug("Access token refreshed successfully");
+        logger.debug("Spotify access token refreshed successfully");
     } catch (error) {
-        logger.error("Error refreshing access token:", error);
+        logger.error("Error refreshing Spotify access token:", error);
         // throw new Error("Failed to refresh access token");
     }
 }

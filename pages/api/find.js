@@ -1,5 +1,7 @@
 import spotify from "./providers/spotify";
 import musicbrainz from "./providers/musicbrainz";
+import musixmatch from "./providers/musixmatch";
+
 function createDataObject(source, imageUrl, title, artists, info, link) {
 	return {
 		source: source,
@@ -59,7 +61,7 @@ export default async function handler(req, res) {
 				}
 			}
 		} else if (type === "ISRC") {
-			const [spotifyData, mbData] = await Promise.all([spotify.getTrackByISRC(query), musicbrainz.getTrackByISRC(query)]);
+			const [spotifyData, mbData, mxmData] = await Promise.all([spotify.getTrackByISRC(query), musicbrainz.getTrackByISRC(query), musixmatch.getTrackByISRC(query)]);
 			if (spotifyData.tracks.items) {
 				spotifyData.tracks.items.forEach((track) => {
 					data.push(
@@ -93,6 +95,18 @@ export default async function handler(req, res) {
 						)
 					);
 				});
+			}
+			if (mxmData) {
+				data.push(
+					createDataObject(
+						"musixmatch",
+						mxmData.track.album.coverart_100x100 || "",
+						mxmData.track.track_name,
+						mxmData.track.artist_name,
+						[formatMS(mxmData.track.track_length*1000), mxmData.track.primary_genres.music_genre_list[0]?.music_genre, (mxmData.track.restricted == 1 && "Restricted")],
+						`https://www.musixmatch.com/lyrics/${mxmData.track.artist_name}/${mxmData.track.track_name}`
+					)
+				);
 			}
 		} else {
 			return res.status(400).json({ error: "Invalid type parameter" });

@@ -16,6 +16,7 @@ SPOTIFY_CLIENT_ID=<Spotify Client ID>
 SPOTIFY_CLIENT_SECRET=<Spotify Client Secret>
 SPOTIFY_REDIRECT_URI=<Spotify Redirect URI>
 CONTACT_INFO=<Contact email>
+MUSIXMATCH_API_KEY=<MusixMatch Api Key [Optional]>
 ```
 * The Spotify Redirect URI does not need to be a valid URL, but must match your Spotify developer application
 * The contact email is for MusicBrainz's api requirements
