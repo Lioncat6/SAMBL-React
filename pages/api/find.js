@@ -1,6 +1,7 @@
 import spotify from "./providers/spotify";
 import musicbrainz from "./providers/musicbrainz";
 import musixmatch from "./providers/musixmatch";
+import deezer from "./providers/deezer";
 
 function createDataObject(source, imageUrl, title, artists, info, link) {
 	return {
@@ -61,7 +62,7 @@ export default async function handler(req, res) {
 				}
 			}
 		} else if (type === "ISRC") {
-			const [spotifyData, mbData, mxmData] = await Promise.all([spotify.getTrackByISRC(query), musicbrainz.getTrackByISRC(query), musixmatch.getTrackByISRC(query)]);
+			const [spotifyData, mbData, mxmData, deezerData] = await Promise.all([spotify.getTrackByISRC(query), musicbrainz.getTrackByISRC(query), musixmatch.getTrackByISRC(query), deezer.getTrackByISRC(query)]);
 			if (spotifyData.tracks.items) {
 				spotifyData.tracks.items.forEach((track) => {
 					data.push(
@@ -102,9 +103,21 @@ export default async function handler(req, res) {
 						"musixmatch",
 						mxmData.track.album.coverart_100x100 || "",
 						mxmData.track.track_name,
-						mxmData.track.artist_name,
+						{name: mxmData.track.artist_name},
 						[formatMS(mxmData.track.track_length*1000), mxmData.track.primary_genres.music_genre_list[0]?.music_genre, (mxmData.track.restricted == 1 && "Restricted")],
 						`https://www.musixmatch.com/lyrics/${mxmData.track.artist_name}/${mxmData.track.track_name}`
+					)
+				);
+			}
+			if (deezerData) {
+				data.push(
+					createDataObject(
+						"deezer",
+						deezerData.album.cover_medium || "",
+						deezerData.title,
+						deezerData.contributors.map((contributor) => ({ name: contributor.name, link: contributor.link })),
+						[formatMS(deezerData.duration * 1000), deezerData.release_date, `Track ${deezerData.track_position}`],
+						deezerData.link
 					)
 				);
 			}

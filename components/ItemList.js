@@ -2,12 +2,12 @@ import styles from "../styles/itemList.module.css";
 import Link from "next/link";
 import React, { useEffect, useState, memo } from "react";
 import { useSettings } from "./SettingsContext";
-import { FaBarcode } from "react-icons/fa6";
+import { FaSquarePlus } from "react-icons/fa6";
 import dynamic from "next/dynamic";
 import { useExport as useExportState } from "./ExportState";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer"
-import { TbTableExport } from "react-icons/tb";
+import { FaDeezer, FaSpotify } from "react-icons/fa";
 
 function AlbumIcons({ item }) {
 	const { spotifyId, spotifyUrl, spotifyReleaseDate, spotifyTrackCount, albumStatus, mbTrackCount, mbReleaseDate, mbid, albumIssues } = item;
@@ -157,7 +157,11 @@ const AlbumItem = memo(function AlbumItem({ item, selecting }) {
 		<div className={`${styles.listItem} ${styles.album}`} {...data_params}>
 			<div className={styles.innerItem}>
 				{/* Status Pill */}
-				<div className={`${styles.statusPill} ${styles[albumStatus]}`} title={pillTooltipText}></div>
+				<div className={`${styles.statusPill} ${styles[albumStatus]}`} title={pillTooltipText}>
+					<div className={styles.pillIcon}>
+						+
+					</div>
+				</div>
 
 				{/* Album Cover */}
 				<div className={styles.albumCover}>
@@ -265,6 +269,7 @@ function Icon({ source }) {
 		<>
 			{source === "spotify" && <img className={styles.spotifyIcon} src="../assets/images/Spotify_icon.svg" />}
 			{source === "musicbrainz" && <img className={styles.mbIcon} src="../assets/images/MusicBrainz_logo_icon.svg" />}
+			{source === "deezer" && <FaDeezer className={styles.deezerIcon} />} 
 		</>
 	);
 }
@@ -446,7 +451,7 @@ export default function ItemList({ items, type, text }) {
 	const [filteredItems, setFilteredItems] = useState(items || []); // State for filtered items
 	const [filter, setFilter] = useState({ showGreen: true, showOrange: true, showRed: true, showVarious: true, onlyIssues: false });
 	const { setAllItems } = useExportState();
-	if (items?.length > 0){
+	if (items?.length > 0) {
 		setAllItems(items);
 	}
 	useEffect(() => {

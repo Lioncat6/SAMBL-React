@@ -13,6 +13,7 @@
 	"dependencies": {
 		"@headlessui/react": "^2.2.2",
 		"@types/react": "^19.1.2",
+		"deezer-public-api": "^1.0.4",
 		"log4js": "^6.6.0",
 		"musicbrainz-api": "^0.24.0",
 		"next": "^15.3.0",
