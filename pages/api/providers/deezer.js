@@ -13,9 +13,19 @@ async function getTrackByISRC(isrc) {
     }
 }
 
+async function getAlbumByUPC(upc) {
+    try {
+        const data = await deezerApi.album(`upc:${upc.replace(/^0+/, '')}`);
+        return data;
+    } catch (error) {
+        logger.error("Error fetching album by UPC:", error);
+        throw error;
+    }
+}
 
 const deezer = {
-    getTrackByISRC
+    getTrackByISRC,
+    getAlbumByUPC,
 };
 
 export default deezer;

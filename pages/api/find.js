@@ -31,7 +31,7 @@ export default async function handler(req, res) {
 		}
 		let data = [];
 		if (type === "UPC") {
-			const [spotifyData, mbData] = await Promise.all([spotify.getAlbumByUPC(query), musicbrainz.getAlbumByUPC(query)]);
+			const [spotifyData, mbData, deezerData] = await Promise.all([spotify.getAlbumByUPC(query), musicbrainz.getAlbumByUPC(query), deezer.getAlbumByUPC(query)]);
 			if (spotifyData.albums.items) {
 				spotifyData.albums.items.forEach((album) => {
 					data.push(
@@ -60,6 +60,18 @@ export default async function handler(req, res) {
 						)
 					);
 				}
+			}
+			if (deezerData) {
+				data.push(
+					createDataObject(
+						"deezer",
+						deezerData.cover_medium || "",
+						deezerData.title,
+						deezerData.contributors.map((contributor) => ({ name: contributor.name, link: contributor.link })),
+						[deezerData.release_date, `${deezerData.nb_tracks} tracks`, deezerData.type],
+						deezerData.link
+					)
+				);
 			}
 		} else if (type === "ISRC") {
 			const [spotifyData, mbData, mxmData, deezerData] = await Promise.all([spotify.getTrackByISRC(query), musicbrainz.getTrackByISRC(query), musixmatch.getTrackByISRC(query), deezer.getTrackByISRC(query)]);
