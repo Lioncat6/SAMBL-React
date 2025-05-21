@@ -7,7 +7,7 @@ if (!process.env.MUSIXMATCH_API_KEY) {
 } else {
     try {
         mxm = new Musixmatch(process.env.MUSIXMATCH_API_KEY);
-        testInfo = await mxm.artistGet(artist_id=37602084); //Rachie
+        testInfo = await mxm.artistGet("37602084"); //Rachie
     } catch (error) {
         mxm = null;
         logger.error("Error initializing Musixmatch API client:", error);
