@@ -34,7 +34,7 @@ export function useExportData() {
     };
 
     const exportAllItems = () => {
-        if (router.pathname == "/artist") {
+        if (router.pathname == "/artist" || router.pathname == "/find") {
             navigator.clipboard.writeText(JSON.stringify(allItems));
             toast.info("Copied all items to clipboard", toastProperties)
         } else {
