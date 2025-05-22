@@ -17,7 +17,7 @@ async function fetchArtistData(spfId) {
 
 export async function getServerSideProps(context) {
 	const { spid, spids, artist_mbid, mbid } = context.query;
-	const splitSpids =  spids?.split(",");
+	const splitSpids = spids?.split(",");
 	if (!artist_mbid && !mbid) {
 		const response = await fetch(`http://localhost:3000/api/lookupArtist?spotifyId=${spid || splitSpids[0]}`);
 		if (response.ok) {
@@ -37,7 +37,7 @@ export async function getServerSideProps(context) {
 		}
 	}
 	if (!spid && splitSpids.length == 1) {
-		let destination = `/artist?spid=${splitSpids[0]}${(mbid || artist_mbid) ? `&artist_mbid=${artist_mbid || mbid}`: ""}`
+		let destination = `/artist?spid=${splitSpids[0]}${(mbid || artist_mbid) ? `&artist_mbid=${artist_mbid || mbid}` : ""}`
 		return {
 			redirect: {
 				destination: destination,
@@ -193,6 +193,7 @@ function processData(sourceAlbums, mbAlbums) {
 
 		let mbTrackNames = [];
 		let mbTrackISRCs = [];
+		let mbISRCs = [];
 		let tracksWithoutISRCs = [];
 		for (let track in finalTracks) {
 			let titleString = finalTracks[track].title;
@@ -200,11 +201,10 @@ function processData(sourceAlbums, mbAlbums) {
 			if (ISRCs.length < 1) {
 				tracksWithoutISRCs.push(track);
 			} else {
-				for (let isrc in ISRCs) {
-					mbTrackISRCs.push(ISRCs[isrc]);
-				}
+				mbISRCs.push(...ISRCs);
 			}
 			mbTrackNames.push(titleString);
+			mbTrackISRCs.push({ name: titleString, isrcs: ISRCs })
 		}
 
 		if (albumStatus != "red") {
@@ -254,6 +254,7 @@ function processData(sourceAlbums, mbAlbums) {
 			mbid,
 			albumIssues,
 			mbTrackNames,
+			mbISRCs,
 			mbTrackISRCs,
 			tracksWithoutISRCs,
 			mbBarcode,
