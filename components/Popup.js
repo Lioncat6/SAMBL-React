@@ -8,6 +8,7 @@ import { TbTableExport } from "react-icons/tb";
 import { useExport } from "./ExportState"
 import { toast, Flip } from "react-toastify"
 import getConfig from 'next/config';
+import { MdOutlineAlbum } from "react-icons/md";
 
 function ConfigureMenu({ close }) {
 	const { publicRuntimeConfig } = getConfig();
@@ -167,8 +168,10 @@ function ExportMenu({ data, close }) {
 	}
 
 	function handleCopy(text, all) {
-		navigator.clipboard.writeText(text)
-		toast.info(`Copied ${all ? "All Properties" : "Property"} to Clipboard`, toastProperties)
+		if (text.length > 0) {
+			navigator.clipboard.writeText(text)
+			toast.info(`Copied ${all ? "All Properties" : "Property"} to Clipboard`, toastProperties)
+		}
 	}
 
 	return (
@@ -184,9 +187,9 @@ function ExportMenu({ data, close }) {
 						<div key={key} className={styles.propertyRow}>
 							<div className={styles.property}>
 								<button
-									className={styles.copyButton}
+									className={`${styles.copyButton} ${value.toString().length > 0 ? "" : styles.disabled}`}
 									onClick={() => handleCopy(Array.isArray(value) && typeof value[0] === "object" ? JSON.stringify(value, null, 2) : String(value))}
-									title="Copy to Clipboard"
+									title={value.length > 0 ? "Copy to Clipboard" : "No data available to copy"}
 								>
 									<FaCopy />
 								</button>{" "}
@@ -202,13 +205,67 @@ function ExportMenu({ data, close }) {
 					className={styles.button}
 					onClick={() => {
 						handleCopy(JSON.stringify(data, null, 2), true);
-						
+
 					}}
 				>
 					<FaCopy /> Copy All
 				</button>
 			</div>
 		</>
+	);
+}
+
+function TrackMenu({ data, close }) {
+	let toastProperties = {
+		position: "top-left",
+		autoClose: 5000,
+		hideProgressBar: false,
+		closeOnClick: false,
+		pauseOnHover: true,
+		draggable: true,
+		progress: undefined,
+		transition: Flip,
+	}
+
+	function handleCopy(text, all) {
+		if (text.length > 0) {
+			navigator.clipboard.writeText(text)
+			toast.info(`Copied ${all ? "All ISRCs" : "ISRCs"} to Clipboard`, toastProperties)
+		}
+	}
+	return (
+		<>
+			{" "}
+			<div className={styles.header}>
+				{" "}
+				<MdOutlineAlbum /> Tracks for {data.spotifyName}
+			</div>
+			<div className={styles.content}>
+				{Object.entries(data.mbTrackISRCs).map(([key, value]) => {
+					return (
+						<div key={key} className={styles.propertyRow}>
+							<div className={styles.property}>
+								<button
+									className={`${styles.copyButton} ${value.isrcs.length > 0 ? "" : styles.disabled}`}
+									onClick={() => handleCopy(Array.isArray(value.isrcs) && typeof value[0] === "object" ? JSON.stringify(value, null, 2) : String(value.isrcs))}
+									title={value.isrcs.length > 0 ? "Copy to Clipboard" : "No data available to copy"}
+								>
+									<FaCopy />
+								</button>{" "}
+								<div className={styles.trackNumber}>{(Number(key) + 1).toString().padStart(2, '0')}</div> {value.name}
+							</div>
+							<div className={styles.propertyData}>{Array.isArray(value) && typeof value[0] === "object" ? JSON.stringify(value, null, 2) : String(value.isrcs)}</div>
+						</div>
+					);
+				})}
+			</div>
+			<div className={styles.actions}>
+				<button className={styles.button} onClick={close}>
+					Close
+				</button>
+			</div >
+		</>
+
 	);
 }
 
@@ -224,6 +281,7 @@ export default function SAMBLPopup({ button, type, data, apply }) {
 						{type == "configure" && <ConfigureMenu close={close} />}
 						{type == "filter" && <FilterMenu close={close} data={data} apply={apply} />}
 						{type == "export" && <ExportMenu close={close} data={data} />}
+						{type == "track" && <TrackMenu close={close} data={data} />}
 					</div>
 				)}
 			</Popup>

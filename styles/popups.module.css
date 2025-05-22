@@ -87,21 +87,21 @@ flex-direction: row;
 }
 
 .propertyData {
-    display: inline;
+    display: inline-block;
     margin-left: 5px;
     color: var(--foreground-tertiary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 100%; 
 }
 
 .property {
     white-space: nowrap;
-}
-
-.property {
-    overflow: visible;
-    text-overflow: unset;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    flex-shrink: 0;
 }
 
 .copyButton {
@@ -119,4 +119,19 @@ flex-direction: row;
     display: inline;
     color: var(--foreground-tertiary);
     font-size: small;
+}
+
+.trackNumber {
+    display: inline;
+    color: var(--foreground-tertiary);
+    font-size: small;
+}
+
+.disabled {
+    color: var(--foreground-tertiary);
+}
+
+.disabled:hover {
+    cursor: not-allowed;
+    color: var(--foreground-tertiary);
 }
