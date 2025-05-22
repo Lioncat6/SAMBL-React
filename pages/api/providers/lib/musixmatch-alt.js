@@ -193,7 +193,6 @@ class MusixMatchAPI {
         url = url.replace(/%20/g, "+").replace(/ /g, "+");
         url = this.base_url + url;
         const signed_url = url + await this.generate_signature(url);
-        console.log(signed_url)
         const response = await axios.get(signed_url, { headers: this.headers, proxies: this.proxies, timeout: 10000 });
         return response.data;
     }
