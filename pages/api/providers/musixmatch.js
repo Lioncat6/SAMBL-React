@@ -1,9 +1,12 @@
 const { Musixmatch } = require('node-musixmatch-api');
 import logger from "../../../utils/logger";
+import musixmatchAlternate from "./musixmatch-alt"
 let mxm = null;
 
 if (!process.env.MUSIXMATCH_API_KEY) {
     logger.warn("MUSIXMATCH_API_KEY is not set. Musixmatch API client will not be initialized.");
+} else if (process.env.MUSIXMATCH_ALTERNATE === "1") {
+
 } else {
     try {
         mxm = new Musixmatch(process.env.MUSIXMATCH_API_KEY);
@@ -33,8 +36,16 @@ async function getTrackByISRC(isrc) {
     }
 }
 
-const musixmatch = {
-    getTrackByISRC
-};
+let musixmatch = null
+
+if (process.env.MUSIXMATCH_ALTERNATE === "1") {
+    logger.info("Using alternate Musixmatch implementation (musixmatch-alt).");
+    musixmatch = musixmatchAlternate;
+} else {
+    musixmatch = {
+        getTrackByISRC
+    };
+}
+
 
 export default musixmatch;

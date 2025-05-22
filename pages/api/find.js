@@ -2,6 +2,7 @@ import spotify from "./providers/spotify";
 import musicbrainz from "./providers/musicbrainz";
 import musixmatch from "./providers/musixmatch";
 import deezer from "./providers/deezer";
+import logger from "../../utils/logger";
 
 function createDataObject(source, imageUrl, title, artists, info, link) {
 	return {
@@ -113,11 +114,11 @@ export default async function handler(req, res) {
 				data.push(
 					createDataObject(
 						"musixmatch",
-						mxmData.track.album.coverart_100x100 || "",
+						mxmData.track.album_coverart_500x500 || mxmData.track.album_coverart_100x100 || "",
 						mxmData.track.track_name,
-						{name: mxmData.track.artist_name},
-						[formatMS(mxmData.track.track_length*1000), mxmData.track.primary_genres.music_genre_list[0]?.music_genre, (mxmData.track.restricted == 1 && "Restricted")],
-						`https://www.musixmatch.com/lyrics/${mxmData.track.artist_name}/${mxmData.track.track_name}`
+						[{name: mxmData.track.artist_name}],
+						[mxmData.track.first_release_date?.replace("T00:00:00Z", ""), formatMS(mxmData.track.track_length*1000), (mxmData.track.restricted == 1 && "Restricted"), (mxmData.track.has_lyrics == 0 && "Missing Lyrics")],
+						`https://www.musixmatch.com/lyrics/${mxmData.track.commontrack_vanity_id}`
 					)
 				);
 			}

@@ -271,6 +271,7 @@ function Icon({ source }) {
 			{source === "spotify" && <img className={styles.spotifyIcon} src="../assets/images/Spotify_icon.svg" />}
 			{source === "musicbrainz" && <img className={styles.mbIcon} src="../assets/images/MusicBrainz_logo_icon.svg" />}
 			{source === "deezer" && <FaDeezer className={styles.deezerIcon} />} 
+			{source === "musixmatch" && <img className={styles.musixMatchIcon} src="../assets/images/Musixmatch_logo_icon_only.svg" />}
 		</>
 	);
 }
