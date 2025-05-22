@@ -1,5 +1,9 @@
 import spotify from "./providers/spotify";
 import musicbrainz from "./providers/musicbrainz";
+import musixmatch from "./providers/musixmatch";
+import deezer from "./providers/deezer";
+import logger from "../../utils/logger";
+
 function createDataObject(source, imageUrl, title, artists, info, link) {
 	return {
 		source: source,
@@ -28,7 +32,7 @@ export default async function handler(req, res) {
 		}
 		let data = [];
 		if (type === "UPC") {
-			const [spotifyData, mbData] = await Promise.all([spotify.getAlbumByUPC(query), musicbrainz.getAlbumByUPC(query)]);
+			const [spotifyData, mbData, deezerData] = await Promise.all([spotify.getAlbumByUPC(query), musicbrainz.getAlbumByUPC(query), deezer.getAlbumByUPC(query)]);
 			if (spotifyData.albums.items) {
 				spotifyData.albums.items.forEach((album) => {
 					data.push(
@@ -58,8 +62,20 @@ export default async function handler(req, res) {
 					);
 				}
 			}
+			if (deezerData) {
+				data.push(
+					createDataObject(
+						"deezer",
+						deezerData.cover_medium || "",
+						deezerData.title,
+						deezerData.contributors.map((contributor) => ({ name: contributor.name, link: contributor.link })),
+						[deezerData.release_date, `${deezerData.nb_tracks} tracks`, deezerData.type],
+						deezerData.link
+					)
+				);
+			}
 		} else if (type === "ISRC") {
-			const [spotifyData, mbData] = await Promise.all([spotify.getTrackByISRC(query), musicbrainz.getTrackByISRC(query)]);
+			const [spotifyData, mbData, mxmData, deezerData] = await Promise.all([spotify.getTrackByISRC(query), musicbrainz.getTrackByISRC(query), musixmatch.getTrackByISRC(query), deezer.getTrackByISRC(query)]);
 			if (spotifyData.tracks.items) {
 				spotifyData.tracks.items.forEach((track) => {
 					data.push(
@@ -93,6 +109,30 @@ export default async function handler(req, res) {
 						)
 					);
 				});
+			}
+			if (mxmData) {
+				data.push(
+					createDataObject(
+						"musixmatch",
+						mxmData.track.album_coverart_500x500 || mxmData.track.album_coverart_100x100 || "",
+						mxmData.track.track_name,
+						[{name: mxmData.track.artist_name}],
+						[mxmData.track.first_release_date?.replace("T00:00:00Z", ""), formatMS(mxmData.track.track_length*1000), (mxmData.lyrics?.restricted == 1 && "Restricted"), (mxmData.lyrics?.verified == 0 && "Not Verified"), (mxmData.track.has_lyrics == 0 && "Missing Lyrics"), (mxmData.lyrics?.instumental == 1 && "Instrumental")],
+						`https://www.musixmatch.com/lyrics/${mxmData.track.commontrack_vanity_id}`
+					)
+				);
+			}
+			if (deezerData) {
+				data.push(
+					createDataObject(
+						"deezer",
+						deezerData.album.cover_medium || "",
+						deezerData.title,
+						deezerData.contributors.map((contributor) => ({ name: contributor.name, link: contributor.link })),
+						[deezerData.release_date, formatMS(deezerData.duration * 1000), `Track ${deezerData.track_position}`],
+						deezerData.link
+					)
+				);
 			}
 		} else {
 			return res.status(400).json({ error: "Invalid type parameter" });

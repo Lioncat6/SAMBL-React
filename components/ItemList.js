@@ -2,12 +2,13 @@ import styles from "../styles/itemList.module.css";
 import Link from "next/link";
 import React, { useEffect, useState, memo } from "react";
 import { useSettings } from "./SettingsContext";
-import { FaBarcode } from "react-icons/fa6";
+import { FaSquarePlus } from "react-icons/fa6";
 import dynamic from "next/dynamic";
 import { useExport as useExportState } from "./ExportState";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer"
-import { TbTableExport } from "react-icons/tb";
+import { FaDeezer, FaSpotify } from "react-icons/fa";
+import Popup from "reactjs-popup";
 
 function AlbumIcons({ item }) {
 	const { spotifyId, spotifyUrl, spotifyReleaseDate, spotifyTrackCount, albumStatus, mbTrackCount, mbReleaseDate, mbid, albumIssues } = item;
@@ -65,6 +66,7 @@ function ActionButtons({ item }) {
 	return (
 		<>
 			<div className={styles.actionButtons}>
+				{settings.showExport && <SelectionButtons item={item} />}
 				{settings.showATisket && (
 					<a className={styles.aTisketButton} href={`https://atisket.pulsewidth.org.uk/?spf_id=${spotifyId}&amp;preferred_vendor=spf`} target="_blank" rel="noopener noreferrer">
 						<div>A-tisket</div>
@@ -96,6 +98,7 @@ function SelectionButtons({ item }) {
 
 const AlbumItem = memo(function AlbumItem({ item, selecting }) {
 	const { exportState } = useExportState();
+	const Popup = dynamic(() => import("./Popup"), { ssr: false });
 
 	const {
 		spotifyId,
@@ -115,6 +118,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting }) {
 		albumIssues,
 		mbTrackNames,
 		mbTrackISRCs,
+		mbISRCs,
 		tracksWithoutISRCs,
 		highlightTracks,
 		mbBarcode,
@@ -149,6 +153,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting }) {
 		"data-album-issues": albumIssues,
 		"data-track-names": mbTrackNames,
 		"data-track-isrcs": mbTrackISRCs,
+		"data-isrcs": mbISRCs,
 		"data-tracks-without-isrcs": tracksWithoutISRCs,
 		"data-barcode": mbBarcode,
 	};
@@ -157,7 +162,9 @@ const AlbumItem = memo(function AlbumItem({ item, selecting }) {
 		<div className={`${styles.listItem} ${styles.album}`} {...data_params}>
 			<div className={styles.innerItem}>
 				{/* Status Pill */}
-				<div className={`${styles.statusPill} ${styles[albumStatus]}`} title={pillTooltipText}></div>
+				<div className={`${styles.statusPill} ${styles[albumStatus]}`} title={pillTooltipText}>
+
+				</div>
 
 				{/* Album Cover */}
 				<div className={styles.albumCover}>
@@ -204,9 +211,14 @@ const AlbumItem = memo(function AlbumItem({ item, selecting }) {
 					<div className={styles.albumInfo}>
 						<div>
 							{spotifyReleaseDate} • {spotifyAlbumType.charAt(0).toUpperCase() + spotifyAlbumType.slice(1)} •{" "}
-							<span className={`${albumStatus === "red" ? "" : styles.hasTracks} ${highlightTracks ? styles.trackHighlight : ""}`} title={mbTrackString || ""}>
-								{spotifyTrackString}
-							</span>
+							{albumStatus == "red" ?
+								<span className={`${highlightTracks ? styles.trackHighlight : ""}`} >
+									{spotifyTrackString}
+								</span>
+								: <Popup button={<span className={`${styles.hasTracks} ${highlightTracks ? styles.trackHighlight : ""}`} title={"[Click to view tracks]\n" + mbTrackString || ""}>
+									{spotifyTrackString}
+
+								</span>} type="track" data={item}></Popup>}
 						</div>
 						<AlbumIcons item={item} />
 					</div>
@@ -265,6 +277,8 @@ function Icon({ source }) {
 		<>
 			{source === "spotify" && <img className={styles.spotifyIcon} src="../assets/images/Spotify_icon.svg" />}
 			{source === "musicbrainz" && <img className={styles.mbIcon} src="../assets/images/MusicBrainz_logo_icon.svg" />}
+			{source === "deezer" && <FaDeezer className={styles.deezerIcon} />}
+			{source === "musixmatch" && <img className={styles.musixMatchIcon} src="../assets/images/Musixmatch_logo_icon_only.svg" />}
 		</>
 	);
 }
@@ -446,7 +460,7 @@ export default function ItemList({ items, type, text }) {
 	const [filteredItems, setFilteredItems] = useState(items || []); // State for filtered items
 	const [filter, setFilter] = useState({ showGreen: true, showOrange: true, showRed: true, showVarious: true, onlyIssues: false });
 	const { setAllItems } = useExportState();
-	if (items?.length > 0){
+	if (items?.length > 0) {
 		setAllItems(items);
 	}
 	useEffect(() => {

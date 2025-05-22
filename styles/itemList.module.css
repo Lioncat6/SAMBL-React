@@ -59,6 +59,8 @@
 	border-radius: 10px;
 	height: 64px;
 	margin: 3px 3px;
+	transition: 0.5s all;
+
 }
 
 .innerItem {
@@ -69,7 +71,6 @@
 
 .listItem:hover {
 	border: 1px solid var(--foreground-primary);
-	transition: 0.5s all;
 }
 
 .artistIcon img {
@@ -127,6 +128,7 @@
 
 .artistMB,
 .spotifyIcon,
+.musixMatchIcon,
 .mbIcon {
 	width: 16px;
 	height: 20px;
@@ -338,10 +340,10 @@
 	border-radius: 10px;
 	width: 60px;
 	height: 60px;
+	transition: 0.2s all;
 }
 
 .albumCover img:hover {
-	transition: 0.2s all;
 	filter: drop-shadow(0px 0px 5px #000000);
 }
 

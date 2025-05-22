@@ -6,6 +6,7 @@ export function SettingsProvider({ children }) {
     const [settings, setSettings] = useState({
         showHarmony: true,
         showATisket: true,
+        showExport: false,
         listVirtualization: true
     });
 
@@ -15,6 +16,7 @@ export function SettingsProvider({ children }) {
         setSettings({
             showHarmony: savedConfig.showHarmony !== undefined ? savedConfig.showHarmony : true,
             showATisket: savedConfig.showATisket !== undefined ? savedConfig.showATisket : true,
+            showExport: savedConfig.showExport !== undefined ? savedConfig.showExport : false,
             listVirtualization: savedConfig.listVirtualization !== undefined ? savedConfig.listVirtualization : true,
         });
     }, []);

@@ -28,8 +28,9 @@ async function serverFind(query, type) {
 export default function Find() {
 	const [results, setResults] = useState([]);
 	const [isLoading, setIsLoading] = useState(false); // State to manage loading
-
 	const router = useRouter();
+    const { query: urlQuery } = router.query;
+
 	let toastProperties = {
 		position: "top-left",
 		autoClose: 5000,
@@ -72,6 +73,10 @@ export default function Find() {
 	async function handleSearch() {
 		const query = document.getElementById("findBox").value.trim();
 		if (query !== "") {
+			if (urlQuery != query) {
+				router.push(`/find?query=${query}`);
+				return;
+			}
 			setIsLoading(true); // Set loading state to true
 			try {
 				const mbidPattern = /.*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.*/i;
@@ -143,6 +148,14 @@ export default function Find() {
 			document.removeEventListener("keydown", handleKeyDown);
 		};
 	}, []);
+
+	useEffect(() => {
+		if (urlQuery) {
+			document.getElementById("findBox").value = urlQuery;
+			handleSearch();
+		}
+	}, [urlQuery]);
+	
 	return (
 		<>
 			<Head>
