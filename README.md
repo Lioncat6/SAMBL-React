@@ -3,6 +3,15 @@ Streaming Artist MusicBrainz Lookup
 
 ## Looking for contributors!
   
+## Provider Status
+
+| Provider | ISRC Lookup | UPC Lookup | Entity Lookup | Artist Search | Album Matching |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| MusixMatch | ✅ | ✅ | ❌ | ❌ | N/A |
+| Spotify | ✅ | ✅ | ❌ | ✅ | ✅ |
+| Deezer | ✅ | ✅ | ❌ | ❌ | ❌ |
+| MusixMatch | ✅ | ❌ | ❌ | ❌ | ❌ |
+
 ### MetaBrainz Thread:
 
 https://community.metabrainz.org/t/sambl-spotify-artist-musicbrainz-lookup/716550
