@@ -126,6 +126,8 @@ export default async function handler(req, res) {
 							mxmData.lyrics?.published_status.toString().includes("5") && "Not Verified",
 							((mxmData.track.has_lyrics == 0 && mxmData.lyrics?.instrumental != 1) || !mxmData.lyrics)  && "Missing Lyrics",
 							mxmData.lyrics?.instrumental == 1 && "Instrumental",
+							(mxmData.track.commontrack_spotify_ids < 1) && "Missing Spotify ID",
+							(mxmData.track.commontrack_itunes_ids < 1) && "Missing Itunes ID",
 						],
 						`https://www.musixmatch.com/lyrics/${mxmData.track.commontrack_vanity_id}`,
 						[
