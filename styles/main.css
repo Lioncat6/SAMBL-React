@@ -528,9 +528,11 @@ iframe {
 .popup-content {
 	background: none !important;
 	border: none !important;
+	min-width: 380px
 }
 
 svg {
 	padding-top: 1px;
 	vertical-align: text-top;
 }
+
