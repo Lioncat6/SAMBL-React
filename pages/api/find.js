@@ -117,7 +117,7 @@ export default async function handler(req, res) {
 						mxmData.track.album_coverart_500x500 || mxmData.track.album_coverart_100x100 || "",
 						mxmData.track.track_name,
 						[{name: mxmData.track.artist_name}],
-						[mxmData.track.first_release_date?.replace("T00:00:00Z", ""), formatMS(mxmData.track.track_length*1000), (mxmData.lyrics?.restricted == 1 && "Restricted"), (mxmData.lyrics?.verified == 0 && "Not Verified"), (mxmData.track.has_lyrics == 0 && "Missing Lyrics"), (mxmData.lyrics?.instumental == 1 && "Instrumental")],
+						[mxmData.track.first_release_date?.replace("T00:00:00Z", ""), formatMS(mxmData.track.track_length*1000), (mxmData.lyrics?.restricted == 1 && "Restricted"), (mxmData.lyrics?.published_status.toString().includes("5") && "Not Verified"), (mxmData.track.has_lyrics == 0 && "Missing Lyrics"), (mxmData.lyrics?.instumental == 1 && "Instrumental")],
 						`https://www.musixmatch.com/lyrics/${mxmData.track.commontrack_vanity_id}`
 					)
 				);
