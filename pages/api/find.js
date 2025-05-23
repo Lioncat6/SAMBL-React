@@ -3,6 +3,7 @@ import musicbrainz from "./providers/musicbrainz";
 import musixmatch from "./providers/musixmatch";
 import deezer from "./providers/deezer";
 import logger from "../../utils/logger";
+import { createServerSearchParamsForServerPage } from "next/dist/server/request/search-params";
 
 function createDataObject(source, imageUrl, title, artists, info, link, extraInfo = null) {
 	return {
@@ -123,14 +124,14 @@ export default async function handler(req, res) {
 							formatMS(mxmData.track.track_length * 1000),
 							mxmData.lyrics?.restricted == 1 && "Restricted",
 							mxmData.lyrics?.published_status.toString().includes("5") && "Not Verified",
-							mxmData.track.has_lyrics == 0 && mxmData.lyrics?.instrumental != 1 && "Missing Lyrics",
+							((mxmData.track.has_lyrics == 0 && mxmData.lyrics?.instrumental != 1) || !mxmData.lyrics)  && "Missing Lyrics",
 							mxmData.lyrics?.instrumental == 1 && "Instrumental",
 						],
 						`https://www.musixmatch.com/lyrics/${mxmData.track.commontrack_vanity_id}`,
 						[
 							{
 								track_id: mxmData.track.track_id,
-								lyrics_id: mxmData.lyrics.lyrics_id,
+								lyrics_id: mxmData.lyrics?.lyrics_id,
 								album_id: mxmData.track.album_id,
 								artist_id: mxmData.track.artist_id,
 								artist_mbid: mxmData.track.artist_mbid,

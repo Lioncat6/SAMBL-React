@@ -81,7 +81,7 @@ class MusixMatchAPI {
     async get_secret() {
         const data = await axios.get(
             await this.get_latest_app(),
-            { headers: this.headers, proxies: this.proxies, timeout: 5000 }
+            { headers: this.headers, proxies: this.proxies, timeout: 10000 }
         );
         const javascript_code = data.data;
 
