@@ -6,7 +6,11 @@ let deezerApi = new DeezerPublicApi();
 async function getTrackByISRC(isrc) {
     try {
         const data = await deezerApi.track(`isrc:${isrc}`);
-        return data;
+        if (data.title) {
+            return data;
+        } else {
+            return null;
+        }
     } catch (error) {
         logger.error("Error fetching track by ISRC:", error);
         throw error;
@@ -16,7 +20,11 @@ async function getTrackByISRC(isrc) {
 async function getAlbumByUPC(upc) {
     try {
         const data = await deezerApi.album(`upc:${upc.replace(/^0+/, '')}`);
-        return data;
+        if (data.title) {
+            return data;
+        } else {
+            return null;
+        }
     } catch (error) {
         logger.error("Error fetching album by UPC:", error);
         throw error;
