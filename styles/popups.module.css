@@ -104,16 +104,57 @@ flex-direction: row;
     flex-shrink: 0;
 }
 
-.copyButton {
+.copyButton, .lookupButton {
     background: transparent;
     border: none;
     transition: all 0.1s ease-in-out;
 }
 
-.copyButton:hover {
+.lookupButton {
+    color: var(--foreground-primary);
+    padding: 1px 5px 1px 0;
+    font-size: small;
+}
+
+.copyButton:hover,
+.lookupButton:hover {
     cursor: pointer;
     color: var(--foreground-secondary)
 }
+
+.isrcDropdownWrapper {
+    display: inline;
+}
+
+.dropdownMenu {
+    position: absolute;
+    top: 100%; 
+    left: 0;
+    background-color: var(--background); 
+    border: 1px solid var(--button-border);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    padding: 8px 0; 
+}
+
+.dropdownMenu a, .dropdownMenu .menuItem {
+	font-family: Arial, sans-serif;
+    display: block;
+    padding: 8px 16px;
+    color: var(--button-text);
+    text-decoration: none;
+    font-size: 14px;
+	font-weight: normal;
+    transition: background-color 0.2s, color 0.2s;
+	cursor: pointer;
+}
+
+.dropdownMenu a:hover, .dropdownMenu .menuItem:hover {
+    background-color: #444;
+    color: #ffffff;
+}
+
 
 .version {
     display: inline;

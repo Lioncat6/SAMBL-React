@@ -285,7 +285,7 @@ function Icon({ source }) {
 
 function GenericItem({ item }) {
 	const { source, imageUrl, title, artists, info, link } = item;
-	let artistString = artists.map((artist, index) => (
+	let artistString = artists?.map((artist, index) => (
 		<>
 			{index > 0 && ", "}
 			<a href={artist.link} target="_blank" rel="noopener noreferrer" className={styles.artists}>

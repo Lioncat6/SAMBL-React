@@ -3,12 +3,13 @@ import "reactjs-popup/dist/index.css";
 import { useEffect, useState } from "react";
 import styles from "../styles/popups.module.css";
 import { useSettings } from "./SettingsContext";
-import { FaXmark, FaGear, FaFilter, FaCopy } from "react-icons/fa6";
+import { FaXmark, FaGear, FaFilter, FaCopy, FaMagnifyingGlass } from "react-icons/fa6";
 import { TbTableExport } from "react-icons/tb";
-import { useExport } from "./ExportState"
-import { toast, Flip } from "react-toastify"
-import getConfig from 'next/config';
+import { useExport } from "./ExportState";
+import { toast, Flip } from "react-toastify";
+import getConfig from "next/config";
 import { MdOutlineAlbum } from "react-icons/md";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 
 function ConfigureMenu({ close }) {
 	const { publicRuntimeConfig } = getConfig();
@@ -47,7 +48,9 @@ function ConfigureMenu({ close }) {
 					<br />
 					<div className="checkbox-wrapper">
 						<input type="checkbox" id="listVirtualization" checked={listVirtualization} onChange={(e) => setListVirtualization(e.target.checked)} className="substituted" />
-						<label htmlFor="listVirtualization" title="Enable list virtualization for artists over a certain amount of albums to speed up filtering. Disable for userscript compatibility." className={styles.info}>Enable List virtualization</label>
+						<label htmlFor="listVirtualization" title="Enable list virtualization for artists over a certain amount of albums to speed up filtering. Disable for userscript compatibility." className={styles.info}>
+							Enable List virtualization
+						</label>
 					</div>
 				</div>
 			</div>
@@ -154,7 +157,6 @@ function FilterMenu({ close, data, apply }) {
 	);
 }
 
-
 function ExportMenu({ data, close }) {
 	let toastProperties = {
 		position: "top-left",
@@ -165,12 +167,12 @@ function ExportMenu({ data, close }) {
 		draggable: true,
 		progress: undefined,
 		transition: Flip,
-	}
+	};
 
 	function handleCopy(text, all) {
 		if (text.length > 0) {
-			navigator.clipboard.writeText(text)
-			toast.info(`Copied ${all ? "All Properties" : "Property"} to Clipboard`, toastProperties)
+			navigator.clipboard.writeText(text);
+			toast.info(`Copied ${all ? "All Properties" : "Property"} to Clipboard`, toastProperties);
 		}
 	}
 
@@ -205,7 +207,6 @@ function ExportMenu({ data, close }) {
 					className={styles.button}
 					onClick={() => {
 						handleCopy(JSON.stringify(data, null, 2), true);
-
 					}}
 				>
 					<FaCopy /> Copy All
@@ -225,12 +226,12 @@ function TrackMenu({ data, close }) {
 		draggable: true,
 		progress: undefined,
 		transition: Flip,
-	}
+	};
 
 	function handleCopy(text, all) {
 		if (text.length > 0) {
-			navigator.clipboard.writeText(text)
-			toast.info(`Copied ${all ? "All ISRCs" : "ISRCs"} to Clipboard`, toastProperties)
+			navigator.clipboard.writeText(text);
+			toast.info(`Copied ${all ? "All ISRCs" : "ISRCs"} to Clipboard`, toastProperties);
 		}
 	}
 	return (
@@ -248,11 +249,38 @@ function TrackMenu({ data, close }) {
 								<button
 									className={`${styles.copyButton} ${value.isrcs.length > 0 ? "" : styles.disabled}`}
 									onClick={() => handleCopy(Array.isArray(value.isrcs) && typeof value[0] === "object" ? JSON.stringify(value, null, 2) : String(value.isrcs))}
-									title={value.isrcs.length > 0 ? "Copy to Clipboard" : "No data available to copy"}
+									title={value.isrcs.length > 0 ? "Copy to Clipboard" : "No data available"}
 								>
 									<FaCopy />
-								</button>{" "}
-								<div className={styles.trackNumber}>{(Number(key) + 1).toString().padStart(2, '0')}</div> {value.name}
+								</button>
+								{value.isrcs.length <= 1 ? (
+									<a
+										className={`${styles.lookupButton} ${value.isrcs.length > 0 ? "" : styles.disabled}`}
+										href={value.isrcs.length ? `/find?query=${encodeURIComponent(value.isrcs[0])}` : undefined}
+										target="_blank"
+										rel="noopener noreferrer"
+										title={value.isrcs.length > 0 ? "Lookup ISRC" : "No data available"}
+										style={{ pointerEvents: value.isrcs.length > 0 ? "auto" : "none" }}
+									>
+										<FaMagnifyingGlass />
+									</a>
+								) : (
+									<Menu as="div" className={styles.isrcDropdownWrapper}>
+										<MenuButton className={styles.lookupButton} title="Lookup ISRC">
+											<FaMagnifyingGlass />
+										</MenuButton>
+										<MenuItems className={styles.dropdownMenu} anchor="bottom end">
+											{value.isrcs.map((isrc, idx) => (
+												<MenuItem key={isrc}>
+													<a className={styles.menuItem} href={`/find?query=${encodeURIComponent(isrc)}`} target="_blank" rel="noopener noreferrer" >
+														{isrc}
+													</a>
+												</MenuItem>
+											))}
+										</MenuItems>
+									</Menu>
+								)}
+								<div className={styles.trackNumber}>{(Number(key) + 1).toString().padStart(2, "0")}</div> {value.name}
 							</div>
 							<div className={styles.propertyData}>{Array.isArray(value) && typeof value[0] === "object" ? JSON.stringify(value, null, 2) : String(value.isrcs)}</div>
 						</div>
@@ -263,9 +291,8 @@ function TrackMenu({ data, close }) {
 				<button className={styles.button} onClick={close}>
 					Close
 				</button>
-			</div >
+			</div>
 		</>
-
 	);
 }
 
