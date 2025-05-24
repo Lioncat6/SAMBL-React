@@ -134,6 +134,7 @@ export default async function handler(req, res) {
 								track_id: mxmData.track.track_id,
 								lyrics_id: mxmData.lyrics?.lyrics_id,
 								album_id: mxmData.track.album_id,
+								album_vanity_id: mxmData.track.album_vanity_id,
 								artist_id: mxmData.track.artist_id,
 								artist_mbid: mxmData.track.artist_mbid,
 								commontrack_id: mxmData.track.commontrack_id,
@@ -142,6 +143,7 @@ export default async function handler(req, res) {
 								commontrack_spotify_ids: mxmData.track.commontrack_spotify_ids,
 								commontrack_itunes_ids: mxmData.track.commontrack_itunes_ids,
 								explicit: mxmData.track.explicit,
+								updated_time: mxmData.track.updated_time,
 							},
 						]
 					)
