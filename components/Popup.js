@@ -249,7 +249,7 @@ function ExportMenu({ data, close }) {
 																)}
 																{subKey}
 															</strong>{" "}
-															{String(subValue)}
+															{typeof subValue == "object" && !Array.isArray(subValue) ? JSON.stringify(subValue) : String(subValue)}
 														</div>
 													))}
 												</div>
