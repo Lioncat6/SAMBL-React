@@ -20,7 +20,7 @@ export function useExportData() {
         transition: Flip,
     }
     const exportItems = () => {
-        if (router.pathname == "/artist") {
+        if (router.pathname == "/artist"  || router.pathname == "/find") {
             setExportState(!exportState);
             if (!exportState){
                 toast.info("Revealing export buttons...", toastProperties)

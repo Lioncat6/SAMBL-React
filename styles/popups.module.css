@@ -104,7 +104,7 @@ flex-direction: row;
     flex-shrink: 0;
 }
 
-.copyButton, .lookupButton {
+.copyButton, .lookupButton, .expandButton {
     background: transparent;
     border: none;
     transition: all 0.1s ease-in-out;
@@ -117,9 +117,14 @@ flex-direction: row;
 }
 
 .copyButton:hover,
-.lookupButton:hover {
+.lookupButton:hover,
+.expandButton:hover {
     cursor: pointer;
     color: var(--foreground-secondary)
+}
+
+.expandButton {
+    height: 1em;
 }
 
 .isrcDropdownWrapper {
@@ -175,4 +180,20 @@ flex-direction: row;
 .disabled:hover {
     cursor: not-allowed;
     color: var(--foreground-tertiary);
+}
+
+.subPropertyRow {
+    display: flex;
+    flex-direction: row;
+}
+
+.subPropertyDataKey {
+    display: inline;
+}
+
+.subKey {
+    color: var(--foreground-secondary);
+    display: flex;
+    align-items: center;
+    margin-right: 5px;
 }

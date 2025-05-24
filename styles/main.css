@@ -296,6 +296,10 @@ iframe {
 		min-width: 380px;
 		width: -webkit-fill-available;
 	}
+	.popup-content {
+		min-width: 380px !important;
+		width: 95% !important;
+	}
 }
 
 @media (max-width: 950px) {
@@ -528,7 +532,7 @@ iframe {
 .popup-content {
 	background: none !important;
 	border: none !important;
-	min-width: 380px
+	min-width: 500px;
 }
 
 svg {

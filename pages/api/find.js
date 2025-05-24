@@ -11,7 +11,7 @@ function createDataObject(source, imageUrl, title, artists, info, link, extraInf
 		imageUrl: imageUrl,
 		title: title,
 		artists: artists,
-		info: info,
+		info: info.filter(element => element),
 		link: link,
 		extraInfo: extraInfo,
 	};
