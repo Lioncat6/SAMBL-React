@@ -3,7 +3,6 @@ import musicbrainz from "./providers/musicbrainz";
 import musixmatch from "./providers/musixmatch";
 import deezer from "./providers/deezer";
 import logger from "../../utils/logger";
-import { createServerSearchParamsForServerPage } from "next/dist/server/request/search-params";
 
 function createDataObject(source, imageUrl, title, artists, info, link, extraInfo = null) {
 	return {
