@@ -3,7 +3,7 @@ import "reactjs-popup/dist/index.css";
 import { useEffect, useState } from "react";
 import styles from "../styles/popups.module.css";
 import { useSettings } from "./SettingsContext";
-import { FaXmark, FaGear, FaFilter, FaCopy, FaMagnifyingGlass } from "react-icons/fa6";
+import { FaXmark, FaGear, FaFilter, FaCopy, FaMagnifyingGlass, FaChevronDown, FaChevronRight } from "react-icons/fa6";
 import { TbTableExport } from "react-icons/tb";
 import { useExport } from "./ExportState";
 import { toast, Flip } from "react-toastify";
@@ -157,7 +157,7 @@ function FilterMenu({ close, data, apply }) {
 	);
 }
 
-function ExportMenu({ data, close }) {
+function CopyButton({ value }) {
 	let toastProperties = {
 		position: "top-left",
 		autoClose: 5000,
@@ -177,6 +177,36 @@ function ExportMenu({ data, close }) {
 	}
 
 	return (
+		<button
+			className={`${styles.copyButton} ${value?.toString().length > 0 ? "" : styles.disabled}`}
+			onClick={() => handleCopy(Array.isArray(value) && typeof value[0] === "object" ? JSON.stringify(value, null, 2) : String(value))}
+			title={value?.toString().length > 0 ? "Copy to Clipboard" : "No data available to copy"}
+			disabled={value?.toString().length > 0 ? false : true}
+		>
+			<FaCopy />
+		</button>
+	);
+}
+
+function ExportMenu({ data, close }) {
+	let toastProperties = {
+		position: "top-left",
+		autoClose: 5000,
+		hideProgressBar: false,
+		closeOnClick: false,
+		pauseOnHover: true,
+		draggable: true,
+		progress: undefined,
+		transition: Flip,
+	};
+	function handleCopy(text, all) {
+		if (text.length > 0) {
+			navigator.clipboard.writeText(text);
+			toast.info(`Copied ${all ? "All Properties" : "Property"} to Clipboard`, toastProperties);
+		}
+	}
+
+	return (
 		<>
 			{" "}
 			<div className={styles.header}>
@@ -185,21 +215,64 @@ function ExportMenu({ data, close }) {
 			</div>
 			<div className={styles.content}>
 				{Object.entries(data).map(([key, value]) => {
-					return (
-						<div key={key} className={styles.propertyRow}>
-							<div className={styles.property}>
-								<button
-									className={`${styles.copyButton} ${value.toString().length > 0 ? "" : styles.disabled}`}
-									onClick={() => handleCopy(Array.isArray(value) && typeof value[0] === "object" ? JSON.stringify(value, null, 2) : String(value))}
-									title={value.length > 0 ? "Copy to Clipboard" : "No data available to copy"}
-								>
-									<FaCopy />
-								</button>{" "}
-								{key}
+					// If value is an array of objects, display subkeys and values
+					if (Array.isArray(value) && value.length > 0 && typeof value[0] === "object" && !Array.isArray(value[0])) {
+						const [expanded, setExpanded] = useState(false);
+						return (
+							<div key={key} className={styles.propertyRow}>
+								<div className={styles.property}>
+									<CopyButton value={value} />
+									{key}
+								</div>
+								<button className={styles.expandButton} onClick={() => setExpanded(!expanded)} title={expanded ? "Collapse" : "Expand"}>
+									{expanded ? <FaChevronRight /> : <FaChevronDown />}
+								</button>
+								{expanded ? (
+									<div className={styles.propertyData}>
+										{value.map((subObj, subIndex) => (
+											<div key={subIndex} className={styles.subPropertyRow}>
+												{value.length > 1 && (
+													<div className={styles.subKey}>
+														<CopyButton value={JSON.stringify(subObj)} />
+														{String(subIndex)}
+													</div>
+												)}
+												<div className={styles.subPropertyDataColumn}>
+													{Object.entries(subObj).map(([subKey, subValue]) => (
+														<div key={subKey} className={styles.subPropertyData}>
+															<strong className={styles.subPropertyDataKey}>
+																{" "}
+																{value.length == 1 && (
+																	<div className={styles.subPropertyDataKey}>
+																		<CopyButton value={String(subValue)} />
+																	</div>
+																)}
+																{subKey}
+															</strong>{" "}
+															{typeof subValue == "object" && !Array.isArray(subValue) ? JSON.stringify(subValue) : String(subValue)}
+														</div>
+													))}
+												</div>
+											</div>
+										))}
+									</div>
+								) : (
+									<div className={styles.propertyData}>{!value ? "" : Array.isArray(value) && typeof value[0] === "object" ? JSON.stringify(value, null, 2) : String(value)}</div>
+								)}
 							</div>
-							<div className={styles.propertyData}>{Array.isArray(value) && typeof value[0] === "object" ? JSON.stringify(value, null, 2) : String(value)}</div>
-						</div>
-					);
+						);
+					} else {
+						return (
+							<div key={key} className={styles.propertyRow}>
+								<div className={styles.property}>
+									{" "}
+									<CopyButton value={value} />
+									{key}
+								</div>
+								<div className={styles.propertyData}>{!value ? "" : Array.isArray(value) && typeof value[0] === "object" ? JSON.stringify(value, null, 2) : String(value)}</div>
+							</div>
+						);
+					}
 				})}
 			</div>
 			<div className={styles.actions}>
@@ -272,7 +345,7 @@ function TrackMenu({ data, close }) {
 										<MenuItems className={styles.dropdownMenu} anchor="bottom end">
 											{value.isrcs.map((isrc, idx) => (
 												<MenuItem key={isrc}>
-													<a className={styles.menuItem} href={`/find?query=${encodeURIComponent(isrc)}`} target="_blank" rel="noopener noreferrer" >
+													<a className={styles.menuItem} href={`/find?query=${encodeURIComponent(isrc)}`} target="_blank" rel="noopener noreferrer">
 														{isrc}
 													</a>
 												</MenuItem>
