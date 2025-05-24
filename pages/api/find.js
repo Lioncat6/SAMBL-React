@@ -10,7 +10,7 @@ function createDataObject(source, imageUrl, title, artists, info, link, extraInf
 		imageUrl: imageUrl,
 		title: title,
 		artists: artists,
-		info: info,
+		info: info.filter(element => element),
 		link: link,
 		extraInfo: extraInfo,
 	};
@@ -123,14 +123,16 @@ export default async function handler(req, res) {
 							formatMS(mxmData.track.track_length * 1000),
 							mxmData.lyrics?.restricted == 1 && "Restricted",
 							mxmData.lyrics?.published_status.toString().includes("5") && "Not Verified",
-							mxmData.track.has_lyrics == 0 && mxmData.lyrics?.instrumental != 1 && "Missing Lyrics",
+							((mxmData.track.has_lyrics == 0 && mxmData.lyrics?.instrumental != 1) || !mxmData.lyrics)  && "Missing Lyrics",
 							mxmData.lyrics?.instrumental == 1 && "Instrumental",
+							(mxmData.track.commontrack_spotify_ids < 1) && "Missing Spotify ID",
+							(mxmData.track.commontrack_itunes_ids < 1) && "Missing Itunes ID",
 						],
 						`https://www.musixmatch.com/lyrics/${mxmData.track.commontrack_vanity_id}`,
 						[
 							{
 								track_id: mxmData.track.track_id,
-								lyrics_id: mxmData.lyrics.lyrics_id,
+								lyrics_id: mxmData.lyrics?.lyrics_id,
 								album_id: mxmData.track.album_id,
 								artist_id: mxmData.track.artist_id,
 								artist_mbid: mxmData.track.artist_mbid,
