@@ -1,7 +1,7 @@
 :root {
 	--background: #f9f9f9;
 	--foreground-primary: #000000;
-	--foreground-secondary: #333;
+	--foreground-secondary: #4a4a4a;
 	--foreground-tertiary: gray;
 	--foreground-quaternary: lightgray;
 	--scrollbar-active: #555;
@@ -19,7 +19,7 @@
 .dark {
 	--background: #1b1e1f;
 	--foreground-primary: #ffffff;
-	--foreground-secondary: #c0c0c0;
+	--foreground-secondary: #d2d2d2;
 	--scrollbar-active: #d3d3d3;
 	--scrollbar: #929292;
 	--nprogress-gradient: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #7f00ff, #ff00ff);
@@ -296,6 +296,10 @@ iframe {
 		min-width: 380px;
 		width: -webkit-fill-available;
 	}
+	.popup-content {
+		min-width: 380px !important;
+		width: 95% !important;
+	}
 }
 
 @media (max-width: 950px) {
@@ -528,7 +532,7 @@ iframe {
 .popup-content {
 	background: none !important;
 	border: none !important;
-	min-width: 380px
+	min-width: 500px;
 }
 
 svg {

@@ -6,7 +6,7 @@ import { FaSquarePlus } from "react-icons/fa6";
 import dynamic from "next/dynamic";
 import { useExport as useExportState } from "./ExportState";
 import { FixedSizeList as List } from "react-window";
-import AutoSizer from "react-virtualized-auto-sizer"
+import AutoSizer from "react-virtualized-auto-sizer";
 import { FaDeezer, FaSpotify } from "react-icons/fa";
 import Popup from "reactjs-popup";
 
@@ -45,8 +45,9 @@ function AlbumIcons({ item }) {
 					className={`${styles.dateMissing} ${albumStatus === "green" ? styles.dateMissingAvaliable : ""}`}
 					href={
 						albumStatus === "green"
-							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${spotifyReleaseDate.split("-")[0]}&events.0.date.month=${spotifyReleaseDate.split("-")[1]}&events.0.date.day=${spotifyReleaseDate.split("-")[2]
-							}&edit_note=${encodeURIComponent(`Added release date from Spotify using SAMBL: ${spotifyUrl}`)}`
+							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${spotifyReleaseDate.split("-")[0]}&events.0.date.month=${spotifyReleaseDate.split("-")[1]}&events.0.date.day=${
+									spotifyReleaseDate.split("-")[2]
+							  }&edit_note=${encodeURIComponent(`Added release date from Spotify using SAMBL: ${spotifyUrl}`)}`
 							: undefined
 					}
 					title={albumStatus === "green" ? "This release is missing a release date!\n[Click to Fix]" : "This release is missing a release date!"}
@@ -87,11 +88,15 @@ function SelectionButtons({ item }) {
 
 	return (
 		<>
-			<Popup button={
-				<a className={styles.exportButton}>
-					<div>Export</div>
-				</a>
-			} data={item} type="export" />
+			<Popup
+				button={
+					<a className={styles.exportButton}>
+						<div>Export</div>
+					</a>
+				}
+				data={item}
+				type="export"
+			/>
 		</>
 	);
 }
@@ -132,8 +137,8 @@ const AlbumItem = memo(function AlbumItem({ item, selecting }) {
 		albumStatus === "green"
 			? "This album has a MB release with a matching Spotify URL"
 			: albumStatus === "orange"
-				? "This album has a MB release with a matching name but no associated link"
-				: "This album has no MB release with a matching name or URL";
+			? "This album has a MB release with a matching name but no associated link"
+			: "This album has no MB release with a matching name or URL";
 
 	let data_params = {
 		"data-spotify-id": spotifyId,
@@ -162,9 +167,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting }) {
 		<div className={`${styles.listItem} ${styles.album}`} {...data_params}>
 			<div className={styles.innerItem}>
 				{/* Status Pill */}
-				<div className={`${styles.statusPill} ${styles[albumStatus]}`} title={pillTooltipText}>
-
-				</div>
+				<div className={`${styles.statusPill} ${styles[albumStatus]}`} title={pillTooltipText}></div>
 
 				{/* Album Cover */}
 				<div className={styles.albumCover}>
@@ -211,14 +214,19 @@ const AlbumItem = memo(function AlbumItem({ item, selecting }) {
 					<div className={styles.albumInfo}>
 						<div>
 							{spotifyReleaseDate} • {spotifyAlbumType.charAt(0).toUpperCase() + spotifyAlbumType.slice(1)} •{" "}
-							{albumStatus == "red" ?
-								<span className={`${highlightTracks ? styles.trackHighlight : ""}`} >
-									{spotifyTrackString}
-								</span>
-								: <Popup button={<span className={`${styles.hasTracks} ${highlightTracks ? styles.trackHighlight : ""}`} title={"[Click to view tracks]\n" + mbTrackString || ""}>
-									{spotifyTrackString}
-
-								</span>} type="track" data={item}></Popup>}
+							{albumStatus == "red" ? (
+								<span className={`${highlightTracks ? styles.trackHighlight : ""}`}>{spotifyTrackString}</span>
+							) : (
+								<Popup
+									button={
+										<span className={`${styles.hasTracks} ${highlightTracks ? styles.trackHighlight : ""}`} title={"[Click to view tracks]\n" + mbTrackString || ""}>
+											{spotifyTrackString}
+										</span>
+									}
+									type="track"
+									data={item}
+								></Popup>
+							)}
 						</div>
 						<AlbumIcons item={item} />
 					</div>
@@ -283,7 +291,24 @@ function Icon({ source }) {
 	);
 }
 
+function LinkButton({ item }) {
+		const { settings } = useSettings();
+
+	
+	return (
+		<div className={styles.actionButtons}>
+		{settings.showExport &&<SelectionButtons item={item} /> }
+		<a href={item.link} target="_blank" className={styles.viewButton}>
+			<div>
+				View <Icon source={item.source} />
+			</div>
+		</a>
+		</div>
+	);
+}
+
 function GenericItem({ item }) {
+	const { exportState } = useExportState();
 	const { source, imageUrl, title, artists, info, link } = item;
 	let artistString = artists?.map((artist, index) => (
 		<>
@@ -312,11 +337,7 @@ function GenericItem({ item }) {
 				<div className={styles.artistFollowers}>{artistString}</div>
 				<div className={styles.artistGenres}>{infoString}</div>
 			</div>
-			<a href={link} target="_blank" className={styles.viewButton}>
-				<div>
-					View <Icon source={source} />
-				</div>
-			</a>
+			{exportState ? <SelectionButtons item={item} /> : <LinkButton item={item} />}
 		</div>
 	);
 }
@@ -349,11 +370,11 @@ function VirtualizedList({ items, type, text }) {
 		<>
 			<div className={styles.virtualListContainer}>
 				<AutoSizer>
-					{({ height, width }) =>
+					{({ height, width }) => (
 						<List
 							height={height}
 							itemCount={items.length}
-							itemSize={69} //nice 
+							itemSize={69} //nice
 							width={width}
 						>
 							{({ index, style }) => (
@@ -364,7 +385,7 @@ function VirtualizedList({ items, type, text }) {
 								</div>
 							)}
 						</List>
-					}
+					)}
 				</AutoSizer>
 			</div>
 			<div className={styles.statusText}>{text}</div>
@@ -378,7 +399,6 @@ function LoadingItem() {
 		<div className={styles.listItemContainer}>
 			<div className={`${styles.listItem} ${styles.skeleton}`}>
 				<div className={styles.innerItem}>
-
 					{/* Status Pill Placeholder */}
 					<div className={`${styles.statusPill} ${styles.skeletonPill}`}></div>
 
@@ -521,7 +541,7 @@ export default function ItemList({ items, type, text }) {
 			{type === "album" && <SearchContainer onSearch={setSearchQuery} currentFilter={filter} setFilter={setFilter} />}
 			{type === "loadingAlbum" ? (
 				<LoadingContainer text={text} />
-			) : (items.length > 75 && settings.listVirtualization) ? ( // If over 200 albums, use the virtualized list. Reason why I don't want to always use it is because it scrolls less smooth
+			) : items.length > 75 && settings.listVirtualization ? ( // If over 200 albums, use the virtualized list. Reason why I don't want to always use it is because it scrolls less smooth
 				<VirtualizedList items={type === "album" ? filteredItems : itemArray} type={type} text={text} />
 			) : (
 				<ListContainer items={type === "album" ? filteredItems : itemArray} type={type} text={text} />
