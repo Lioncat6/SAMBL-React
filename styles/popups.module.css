@@ -189,6 +189,7 @@ flex-direction: row;
 
 .subPropertyDataKey {
     display: inline;
+    color: var(--foreground-secondary);
 }
 
 .subKey {

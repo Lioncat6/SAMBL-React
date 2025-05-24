@@ -240,7 +240,7 @@ function ExportMenu({ data, close }) {
 												<div className={styles.subPropertyDataColumn}>
 													{Object.entries(subObj).map(([subKey, subValue]) => (
 														<div key={subKey} className={styles.subPropertyData}>
-															<strong>
+															<strong className={styles.subPropertyDataKey}>
 																{" "}
 																{value.length == 1 && (
 																	<div className={styles.subPropertyDataKey}>
