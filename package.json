@@ -30,6 +30,10 @@
 		"reactjs-popup": "^2.0.6",
 		"spotify-web-api-node": "^5.0.0"
 	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Lioncat6/SAMBL-React"
+	},
 	"browserslist": {
 		"production": [
 			">0.2%",
