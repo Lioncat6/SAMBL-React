@@ -1,0 +1,180 @@
+openapi: 3.0.3
+info:
+  title: SAMBL-React API
+  version: 1.0.0
+servers:
+  - url: /api
+paths:
+  /ping:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Pong response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /find:
+    get:
+      summary: Find music data by query and type
+      parameters:
+        - in: query
+          name: query
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [UPC, ISRC]
+          required: true
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '400':
+          description: Missing or invalid parameters
+        '500':
+          description: Internal server error
+  /searchArtists:
+    get:
+      summary: Search for artists by name
+      parameters:
+        - in: query
+          name: query
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Artist search results
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Missing query parameter
+        '500':
+          description: Internal server error
+  /getArtistInfo:
+    get:
+      summary: Get Spotify artist info
+      parameters:
+        - in: query
+          name: spotifyId
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Artist info
+        '400':
+          description: Missing or malformed spotifyId
+        '404':
+          description: Artist not found
+        '500':
+          description: Internal server error
+  /lookupArtist:
+    get:
+      summary: Lookup MusicBrainz ID by Spotify ID
+      parameters:
+        - in: query
+          name: spotifyId
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: MusicBrainz ID or null
+        '400':
+          description: Missing or malformed spotifyId
+        '404':
+          description: Spotify artist not found
+        '500':
+          description: Internal server error
+  /getArtistAlbums:
+    get:
+      summary: Get Spotify artist albums
+      parameters:
+        - in: query
+          name: spotifyId
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: offset
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Albums list
+        '400':
+          description: Missing or malformed spotifyId
+        '500':
+          description: Internal server error
+  /getMusicBrainzAlbums:
+    get:
+      summary: Get MusicBrainz artist albums
+      parameters:
+        - in: query
+          name: mbid
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: offset
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Albums list
+        '400':
+          description: Missing or malformed mbid
+        '404':
+          description: Artist not found
+        '500':
+          description: Internal server error
+  /getMusicBrainzFeaturedAlbums:
+    get:
+      summary: Get MusicBrainz artist featured albums
+      parameters:
+        - in: query
+          name: mbid
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: offset
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Featured albums list
+        '400':
+          description: Missing or malformed mbid
+        '404':
+          description: Artist not found
+        '500':
+          description: Internal server error

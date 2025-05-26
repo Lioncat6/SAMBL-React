@@ -1,6 +1,6 @@
 {
 	"name": "sambl-client",
-	"version": "2.0.6",
+	"version": "2.0.7",
 	"main": "/src/index.js",
 	"scripts": {
 		"build": "next build",
@@ -29,6 +29,10 @@
 		"react-window": "^1.8.11",
 		"reactjs-popup": "^2.0.6",
 		"spotify-web-api-node": "^5.0.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Lioncat6/SAMBL-React"
 	},
 	"browserslist": {
 		"production": [
