@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /artist
+Allow: /newartist
+Allow: /find
+Disallow: /artist?
+Disallow: /newartist?
+Disallow: /find?
