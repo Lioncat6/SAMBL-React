@@ -1,7 +1,7 @@
 User-agent: *
 Allow: /artist
 Allow: /newartist
-Allow: /find
+Allow: /search
 Disallow: /artist?
 Disallow: /newartist?
-Disallow: /find?
+Disallow: /search?
