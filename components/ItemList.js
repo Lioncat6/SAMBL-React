@@ -9,6 +9,7 @@ import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FaDeezer, FaSpotify } from "react-icons/fa";
 import Popup from "reactjs-popup";
+import { FaAnglesRight, FaAnglesLeft } from "react-icons/fa6";
 
 function AlbumIcons({ item }) {
 	const { spotifyId, spotifyUrl, spotifyReleaseDate, spotifyTrackCount, albumStatus, mbTrackCount, mbReleaseDate, mbid, albumIssues } = item;
@@ -63,10 +64,15 @@ function AlbumIcons({ item }) {
 function ActionButtons({ item }) {
 	const { settings } = useSettings();
 	const { spotifyId, spotifyUrl } = item;
-
+	const [collapsed, setCollapsed] = useState(true);
+	function toggleState(){
+		setCollapsed(!collapsed);
+	}
 	return (
 		<>
 			<div className={styles.actionButtons}>
+				{<div className={`${collapsed ? styles.expand : styles.collapse}`} onClick={toggleState}>{collapsed ? <FaAnglesLeft /> : <FaAnglesRight />}</div>}
+				<div className={`${collapsed ? styles.collapsed : styles.expanded}`}>
 				{settings.showExport && <SelectionButtons item={item} />}
 				{settings.showATisket && (
 					<a className={styles.aTisketButton} href={`https://atisket.pulsewidth.org.uk/?spf_id=${spotifyId}&amp;preferred_vendor=spf`} target="_blank" rel="noopener noreferrer">
@@ -77,7 +83,7 @@ function ActionButtons({ item }) {
 					<a className={styles.harmonyButton} href={`https://harmony.pulsewidth.org.uk/release?url=${spotifyUrl}&category=preferred`} target="_blank" rel="noopener noreferrer">
 						<div>Harmony</div>
 					</a>
-				)}
+				)}</div>
 			</div>
 		</>
 	);
