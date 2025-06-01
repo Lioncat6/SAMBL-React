@@ -1,0 +1,43 @@
+.searchBox,
+.findBox {
+	font-size: 14px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	margin-bottom: 10px;
+	margin-top: 10px;
+	height: 18px;
+	resize: none;
+	background: transparent;
+    overflow: hidden;
+}
+
+
+.findBox {
+	height: 20px;
+}
+
+.searchButton,
+.findButton {
+	color: #fff;
+	border: none;
+	padding: 10px 20px;
+	font-size: 16px;
+	border-radius: 5px;
+	cursor: pointer;
+}
+
+.searchButton {
+	background-color: #0074d9;
+}
+
+.findButton {
+	background-color: cadetblue;
+}
+
+.searchButton:hover {
+	background-color: #0056b3;
+}
+
+.findButton:hover {
+	background-color: rgb(78, 131, 133);
+}
