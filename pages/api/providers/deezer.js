@@ -2,8 +2,19 @@ const DeezerPublicApi = require('deezer-public-api');
 import logger from "../../../utils/logger";
 
 let deezerApi = new DeezerPublicApi();
+let lastRefreshed = Date.now();
+
+async function refreshApi() {
+    const timeout = 60 * 60 * 1000 * 6;
+    if (Date.now() - lastRefreshed > timeout) {
+        deezerApi = new DeezerPublicApi();
+        lastRefreshed = Date.now();
+        logger.debug("Deezer API refreshed");
+    }
+}
 
 async function getTrackByISRC(isrc) {
+    await refreshApi();
     try {
         const data = await deezerApi.track(`isrc:${isrc}`);
         if (data.title) {
@@ -18,6 +29,7 @@ async function getTrackByISRC(isrc) {
 }
 
 async function getAlbumByUPC(upc) {
+    await refreshApi();
     try {
         const data = await deezerApi.album(`upc:${upc.replace(/^0+/, '')}`);
         if (data.title) {

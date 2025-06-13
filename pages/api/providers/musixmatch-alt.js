@@ -1,9 +1,23 @@
 import MusixMatchAPI from "./lib/musixmatch-alt";
 import logger from "../../../utils/logger";
 
-const mxmAPI = new MusixMatchAPI(null, process.env.MUSIXMATCH_API_KEY);
+let mxmAPI = new MusixMatchAPI(null, process.env.MUSIXMATCH_API_KEY);
+let lastRefreshed = Date.now();
+
+async function refreshApi() {
+    const timeout = 60 * 60 * 1000 * 12;
+    if (Date.now() - lastRefreshed > timeout) {
+        mxmAPI = new MusixMatchAPI(null, process.env.MUSIXMATCH_API_KEY);
+        lastRefreshed = Date.now();
+        logger.debug("MusixMatch Alt API refreshed");
+    }
+}
+
 async function getTrackByISRC(isrc) {
 	try {
+
+		await refreshApi();
+
 		const trackData = await mxmAPI.get_track(null, isrc);
 		if (trackData.message.body?.track) {
 			const lyricsData = await mxmAPI.get_track_lyrics(null, isrc);
