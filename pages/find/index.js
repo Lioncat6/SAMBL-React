@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { toast, Flip } from 'react-toastify';
-import { FaMagnifyingGlass } from "react-icons/fa6";
 import ItemList from "../../components/ItemList";
 import Head from "next/head";
+import SearchBox from "../../components/SearchBox";
+import { FaWindowRestore } from "react-icons/fa6";
 
 async function serverFind(query, type) {
 	return new Promise((resolve) => {
@@ -71,12 +72,8 @@ export default function Find() {
 	}
 
 	async function handleSearch() {
-		const query = document.getElementById("findBox").value.trim();
+		const query = urlQuery;
 		if (query !== "") {
-			if (urlQuery != query) {
-				router.push(`/find?query=${query}`);
-				return;
-			}
 			setIsLoading(true); // Set loading state to true
 			try {
 				const mbidPattern = /.*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.*/i;
@@ -119,64 +116,43 @@ export default function Find() {
 		}
 	}
 
-	async function checkArtist(spfId) {
-		const response = await fetch(`/api/lookupArtist?spotifyId=${spfId}`);
-		if (response.ok) {
-			const mbid = await response.json();
-			if (mbid) {
-				router.push(`/artist?spid=${spfId}&artist_mbid=${mbid}`);
-			} else {
-				router.push(`/newartist?spid=${spfId}`);
-			}
-		} else {
-			dispError("Spotify artist not found!", "error");
-		}
-	}
-
 	useEffect(() => {
-		function handleKeyDown(e) {
-			if (e.keyCode === 13) {
-				// Enter key
-				e.preventDefault();
+		const handleRouteChange = (url) => {
+			// If the route is /find, run the search regardless of query change
+			if (url.startsWith("/find")) {
+				const findBox = document.getElementById("findBox");
+				if (findBox) {
+					findBox.value = router.query.query || "";
+				}
 				handleSearch();
 			}
-		}
-
-		document.addEventListener("keydown", handleKeyDown);
-
-		return () => {
-			document.removeEventListener("keydown", handleKeyDown);
 		};
-	}, []);
 
-	useEffect(() => {
-		if (urlQuery) {
-			document.getElementById("findBox").value = urlQuery;
+		// Initial run
+		if (router.query.query) {
+			const findBox = document.getElementById("findBox");
+			if (findBox) {
+				findBox.value = router.query.query || "";
+			}
 			handleSearch();
 		}
-	}, [urlQuery]);
-	
+
+		// Listen for route changes
+		router.events.on("routeChangeComplete", handleRouteChange);
+
+		return () => {
+			router.events.off("routeChangeComplete", handleRouteChange);
+		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [router.query.query]);
+
 	return (
 		<>
 			<Head>
                 <title>{"SAMBL • Find"}</title>
                 <meta name="description" content={`SAMBL - Find by ISRC, MBID, Barcode...`} />
             </Head>
-			<textarea id="findBox" rows={1} placeholder="Find by ISRC, MBID, Barcode..." defaultValue={""} />
-			<button type="button" className="findButton" id="searchEnter" onClick={handleSearch}>
-				{isLoading ? (
-					<div className="lds-ellipsis">
-						<div></div>
-						<div></div>
-						<div></div>
-						<div></div>
-					</div>
-				) : (
-					<>
-						<FaMagnifyingGlass /> Find
-					</>
-				)}
-			</button>
+			<SearchBox type="find" />
 			<div id="contentContainer">
 				<div id="loadingMsg" />
 				{(results.length > 0) && <ItemList type={"mixed"} items={results} />}

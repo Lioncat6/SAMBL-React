@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import ItemList from "../../components/ItemList";
 import Head from 'next/head';
+import SearchBox from '../../components/SearchBox';
 
 async function getItems(query) {
     const response = await fetch(`http://localhost:3000/api/searchArtists?query=${query}`);
@@ -41,6 +42,8 @@ export default function search({ items }) {
             <div className="titleContainer">
                 <h1 id="searchFor">Search Results for "{query}"</h1>
             </div>
+            <SearchBox />
+            <br />
             <div id="contentContainer">
                 <div id="loadingContainer" />
                 <div id="loadingText" />
