@@ -4,11 +4,18 @@ import { toast, Flip } from "react-toastify";
 import { FaMagnifyingGlass } from "react-icons/fa6";
 
 import styles from "../styles/SearchBox.module.css";
-
 function SearchBox() {
 	const [loadingState, setLoadingState] = useState(false);
-
+	const [inputValue, setInputValue] = useState("");
 	const router = useRouter();
+
+	useEffect(() => {
+		// Populate box if URL has a query param
+		if (router && router.query && router.query.query) {
+			setInputValue(router.query.query);
+		}
+	}, [router.query]);
+
 	function dispError(message, type = "warn") {
 		let toastProperties = {
 			position: "top-left",
@@ -18,7 +25,6 @@ function SearchBox() {
 			pauseOnHover: true,
 			draggable: true,
 			progress: undefined,
-
 			transition: Flip,
 		};
 		if (type === "error") {
@@ -26,12 +32,11 @@ function SearchBox() {
 		} else {
 			toast.warn(message, toastProperties);
 		}
-
 		setLoadingState(false);
 	}
 
 	async function handleSearch() {
-		const query = document.getElementById("searchbox").value.trim();
+		const query = inputValue.trim();
 		setLoadingState(true);
 		if (query !== "") {
 			const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -94,7 +99,7 @@ function SearchBox() {
 		return () => {
 			document.removeEventListener("keydown", handleKeyDown);
 		};
-	}, []);
+	}, [inputValue]);
 
 	useEffect(() => {
 		// Handle resetting loading state
@@ -107,10 +112,17 @@ function SearchBox() {
 
 	return (
 		<>
-			<textarea id="searchbox" className={styles.searchBox} rows={1} placeholder="Search for artist or enter id/url..." defaultValue={""} />
+			<textarea
+				id="searchbox"
+				className={styles.searchBox}
+				rows={1}
+				placeholder="Search for artist or enter id/url..."
+				value={inputValue}
+				onChange={e => setInputValue(e.target.value)}
+			/>
 			<button type="button" className={styles.searchButton} id="searchEnter" onClick={handleSearch}>
 				{loadingState ? (
-					<div class="lds-ellipsis">
+					<div className="lds-ellipsis">
 						<div></div>
 						<div></div>
 						<div></div>
