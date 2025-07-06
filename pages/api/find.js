@@ -10,7 +10,7 @@ function createDataObject(source, imageUrl, title, artists, info, link, extraInf
 		imageUrl: imageUrl,
 		title: title,
 		artists: artists,
-		info: info.filter(element => element),
+		info: info.filter((element) => element),
 		link: link,
 		extraInfo: extraInfo,
 	};
@@ -31,12 +31,28 @@ export default async function handler(req, res) {
 		if (!type) {
 			return res.status(400).json({ error: "Parameter `type` is required" });
 		}
-		let data = [];
+		let resultItems = [];
+		let issues = [];
+
+		const catchIssue = async (provider, fn, ...args) => {
+			try {
+				return await fn(...args);
+			} catch (error) {
+				issues.push({ provider, error: error.message || error.toString() });
+				return null;
+			}
+		};
+
 		if (type === "UPC") {
-			const [spotifyData, mbData, deezerData] = await Promise.all([spotify.getAlbumByUPC(query), musicbrainz.getAlbumByUPC(query), deezer.getAlbumByUPC(query)]);
-			if (spotifyData.albums.items) {
+			const [spotifyData, mbData, deezerData] = await Promise.all([
+				catchIssue("spotify", spotify.getAlbumByUPC, query), 
+				catchIssue("musicbrainz", musicbrainz.getAlbumByUPC, query), 
+				catchIssue("deezer", deezer.getAlbumByUPC, query)
+			]);
+
+			if (spotifyData?.albums.items) {
 				spotifyData.albums.items.forEach((album) => {
-					data.push(
+					resultItems.push(
 						createDataObject(
 							"spotify",
 							album.images[0].url || "",
@@ -48,10 +64,10 @@ export default async function handler(req, res) {
 					);
 				});
 			}
-			if (mbData.releases) {
+			if (mbData?.releases) {
 				for (const album of mbData.releases) {
 					let imageData = await musicbrainz.getCoverByMBID(album.id);
-					data.push(
+					resultItems.push(
 						createDataObject(
 							"musicbrainz",
 							imageData.images[0]?.thumbnails?.large || "",
@@ -63,8 +79,8 @@ export default async function handler(req, res) {
 					);
 				}
 			}
-			if (deezerData) {
-				data.push(
+			if (deezerData?.title) {
+				resultItems.push(
 					createDataObject(
 						"deezer",
 						deezerData.cover_medium || "",
@@ -76,10 +92,16 @@ export default async function handler(req, res) {
 				);
 			}
 		} else if (type === "ISRC") {
-			const [spotifyData, mbData, mxmData, deezerData] = await Promise.all([spotify.getTrackByISRC(query), musicbrainz.getTrackByISRC(query), musixmatch.getTrackByISRC(query), deezer.getTrackByISRC(query)]);
-			if (spotifyData.tracks.items) {
+			const [spotifyData, mbData, mxmData, deezerData] = await Promise.all([
+				catchIssue("spotify", spotify.getTrackByISRC, query), 
+				catchIssue("musicbrainz", musicbrainz.getTrackByISRC, query), 
+				catchIssue("musixmatch", musixmatch.getTrackByISRC, query),
+				catchIssue("deezer", deezer.getTrackByISRC, query),
+			]);
+
+			if (spotifyData?.tracks.items) {
 				spotifyData.tracks.items.forEach((track) => {
-					data.push(
+					resultItems.push(
 						createDataObject(
 							"spotify",
 							track.album.images[0].url || "",
@@ -91,7 +113,7 @@ export default async function handler(req, res) {
 					);
 				});
 			}
-			if (mbData.recordings) {
+			if (mbData?.recordings) {
 				mbData.recordings.forEach((track) => {
 					let initialReleaseDate = null;
 					track["releases"].forEach((release) => {
@@ -99,7 +121,7 @@ export default async function handler(req, res) {
 							initialReleaseDate = release["date"];
 						}
 					});
-					data.push(
+					resultItems.push(
 						createDataObject(
 							"musicbrainz",
 							"",
@@ -111,8 +133,9 @@ export default async function handler(req, res) {
 					);
 				});
 			}
-			if (mxmData) {
-				data.push(
+			console.log("MXM Data:", mxmData);
+			if (mxmData?.track) {
+				resultItems.push(
 					createDataObject(
 						"musixmatch",
 						mxmData.track.album_coverart_500x500 || mxmData.track.album_coverart_100x100 || "",
@@ -123,10 +146,10 @@ export default async function handler(req, res) {
 							formatMS(mxmData.track.track_length * 1000),
 							mxmData.lyrics?.restricted == 1 && "Restricted",
 							mxmData.lyrics?.published_status.toString().includes("5") && "Not Verified",
-							((mxmData.track.has_lyrics == 0 && mxmData.lyrics?.instrumental != 1) || !mxmData.lyrics)  && "Missing Lyrics",
+							((mxmData.track.has_lyrics == 0 && mxmData.lyrics?.instrumental != 1) || !mxmData.lyrics) && "Missing Lyrics",
 							mxmData.lyrics?.instrumental == 1 && "Instrumental",
-							(mxmData.track.commontrack_spotify_ids < 1) && "Missing Spotify ID",
-							(mxmData.track.commontrack_itunes_ids < 1) && "Missing Itunes ID",
+							mxmData.track.commontrack_spotify_ids < 1 && "Missing Spotify ID",
+							mxmData.track.commontrack_itunes_ids < 1 && "Missing Itunes ID",
 						],
 						`https://www.musixmatch.com/lyrics/${mxmData.track.commontrack_vanity_id}`,
 						[
@@ -149,8 +172,8 @@ export default async function handler(req, res) {
 					)
 				);
 			}
-			if (deezerData) {
-				data.push(
+			if (deezerData?.album) {
+				resultItems.push(
 					createDataObject(
 						"deezer",
 						deezerData.album.cover_medium || "",
@@ -164,7 +187,7 @@ export default async function handler(req, res) {
 		} else {
 			return res.status(400).json({ error: "Invalid type parameter" });
 		}
-		res.status(200).json(data);
+		res.status(200).json({ data: resultItems, issues: issues });
 	} catch (error) {
 		res.status(500).json({ error: "Internal Server Error", details: error.message });
 	}

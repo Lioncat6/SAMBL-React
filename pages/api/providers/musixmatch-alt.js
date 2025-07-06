@@ -28,6 +28,7 @@ async function getTrackByISRC(isrc) {
 		} else {
 			if (trackData.message.header?.status_code === 401) {
 				logger.warn(`Recieved 401 from MusixMatch. Reason: ${trackData.message.header?.hint}`);
+				throw new Error(`Recieved 401 from MusixMatch. Reason: ${trackData.message.header?.hint}`);
 			}
 			return null;
 		}
