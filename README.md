@@ -27,6 +27,7 @@ SPOTIFY_REDIRECT_URI=<Spotify Redirect URI>
 CONTACT_INFO=<Contact email>
 MUSIXMATCH_API_KEY=<MusixMatch Api Key or browser cookie [Optional]>
 MUSIXMATCH_ALTERNATE=<Bool 1 or 0>
+NEXT_PUBLIC_MASTODON_URL=<Mastodon URL [Optional]>
 ```
 * The Spotify Redirect URI does not need to be a valid URL, but must match your Spotify developer application
 * The contact email is for MusicBrainz's api requirements
