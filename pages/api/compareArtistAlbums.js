@@ -13,18 +13,18 @@ async function fetchSourceAlbums(artistId, offset = 0) {
 }
 
 async function fetchMbArtistAlbums(mbid, offset = 0, full = false) {
-	return await musicbrainz.getArtistAlbums(mbid, offset, 100, full ? ["url-rels", "recordings", "isrcs"] : []);
+	return await musicbrainz.getArtistAlbums(mbid, offset, 100, full ? ["url-rels", "recordings", "isrcs"] : ["url-rels"]);
 }
 
 async function fetchMbArtistFeaturedAlbums(mbid, offset = 0, full = false) {
-	return await musicbrainz.getArtistFeaturedAlbums(mbid, offset, 100, full ? ["url-rels", "recordings", "isrcs"] : []);
+	return await musicbrainz.getArtistFeaturedAlbums(mbid, offset, 100, full ? ["url-rels", "recordings", "isrcs"] : ["url-rels"]);
 }
 
 async function getBySourceAlbumLink(links) {
 	return await musicbrainz.getAlbumsBySourceUrls(links, ["release-rels"]);
 }
 
-function processData(sourceAlbums, mbAlbums, quick = false) {
+function processData(sourceAlbums, mbAlbums, quick = false, full = false) {
 	let albumData = [];
 	let green = 0;
 	let red = 0;
@@ -110,7 +110,7 @@ function processData(sourceAlbums, mbAlbums, quick = false) {
 			if (!mbBarcode || mbBarcode == null) {
 				albumIssues.push("noUPC");
 			}
-			if ((mbTrackCount != spotifyTrackCount) && !quick) {
+			if (mbTrackCount != spotifyTrackCount && !quick && full) {
 				albumIssues.push("trackDiff");
 			}
 			if (mbReleaseDate == "" || mbReleaseDate == undefined || !mbReleaseDate) {
@@ -282,18 +282,18 @@ export default async function handler(req, res) {
 		for (let relation of url.relations) {
 			let release = relation.release;
 			if (release) {
-                release.relations = [
-                    {
-                        url: {
-                            resource: urlResaource,
-                            id: urlId,
-                        },
-                    },
-                ];
+				release.relations = [
+					{
+						url: {
+							resource: urlResaource,
+							id: urlId,
+						},
+					},
+				];
 				releases.push(release);
 			}
 		}
-        return releases;
+		return releases;
 	}
 
 	async function fetchMusicBrainzAlbumsBySourceUrls(sourceAlbumUrls) {
@@ -309,8 +309,8 @@ export default async function handler(req, res) {
 					}
 					throw new Error(`Error fetching MusicBrainz albums by source URLs: ${data}`);
 				}
-				mbAlbums = [...mbAlbums, ...data.urls.flatMap((url) => (processUrlObject(url)))];
-				offset+=100;
+				mbAlbums = [...mbAlbums, ...data.urls.flatMap((url) => processUrlObject(url))];
+				offset += 100;
 			} catch (error) {
 				attempts++;
 				console.error("Error fetching albums:", error);
@@ -327,6 +327,7 @@ export default async function handler(req, res) {
 		// Check for 'quick' or 'full' in the query string
 		const quick = Object.prototype.hasOwnProperty.call(req.query, "quick");
 		const full = Object.prototype.hasOwnProperty.call(req.query, "full");
+		const raw = Object.prototype.hasOwnProperty.call(req.query, "raw");
 
 		if (!spotifyId || !spotify.validateSpotifyId(spotifyId)) {
 			return res.status(400).json({ error: "Parameter `spotifyId` is missing or malformed" });
@@ -344,7 +345,10 @@ export default async function handler(req, res) {
 		} else {
 			await Promise.all([fetchSpotifyAlbums([spotifyId]), fetchMusicbrainzArtistAlbums(mbid, full), fetchMusicBrainzFeaturedAlbums(mbid, full)]);
 		}
-		let data = await processData(sourceAlbums, mbAlbums, quick);
+		if (raw) {
+			return res.status(200).json({ sourceAlbums: sourceAlbums, mbAlbums: mbAlbums });
+		}
+		let data = await processData(sourceAlbums, mbAlbums, quick, full);
 		res.status(200).json(data);
 	} catch (error) {
 		logger.error("Error in matchArtistAlbumLinks API", error);
