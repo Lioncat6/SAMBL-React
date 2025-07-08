@@ -49,10 +49,24 @@ async function getIdsBySpotifyUrls(spotifyUrls) {
 	}
 }
 
-async function getArtistAlbums(mbid, offset = 0, limit = 100) {
+async function getAlbumsBySourceUrls(sourceUrls, inc = ["release-rels"]) {
+	console.log("fbsurl")
+	try {
+		const data = await mbApi.lookupUrl(sourceUrls, inc);
+		if (data.count === 0) {
+			return null; // No albums found
+		}
+		return data;
+	} catch (error) {
+		logger.error("Failed to fetch albums by Source URLs", error);
+		throw new Error(error.message);
+	}
+}
+
+async function getArtistAlbums(mbid, offset = 0, limit = 100, inc = ["url-rels", "recordings", "isrcs"]) {
 	try {
 		// const data = await mbApi.browse('release', {artist: mbid, limit: limit, offset: offset});
-		const data = await mbApi.browse("release", { artist: mbid, limit: limit, offset: offset }, ["url-rels", "recordings", "isrcs"]);
+		const data = await mbApi.browse("release", { artist: mbid, limit: limit, offset: offset }, inc);
 		checkError(data);
 		return data;
 	} catch (error) {
@@ -61,10 +75,10 @@ async function getArtistAlbums(mbid, offset = 0, limit = 100) {
 	}
 }
 
-async function getArtistFeaturedAlbums(mbid, offset = 0, limit = 100) {
+async function getArtistFeaturedAlbums(mbid, offset = 0, limit = 100, inc = ["url-rels", "recordings", "isrcs"]) {
 	try {
 		// const data = await mbApi.browse('release', {track_artist: mbid, limit: limit, offset: offset});
-		const data = await mbApi.browse("release", { track_artist: mbid, limit: limit, offset: offset }, ["url-rels", "recordings", "isrcs"]);
+		const data = await mbApi.browse("release", { track_artist: mbid, limit: limit, offset: offset }, inc);
 		checkError(data);
 		return data;
 	} catch (error) {
@@ -114,7 +128,8 @@ const musicbrainz = {
 	getAlbumByUPC,
 	getTrackByISRC,
 	getCoverByMBID,
-	validateMBID
+	validateMBID,
+	getAlbumsBySourceUrls,
 };
 
 export default musicbrainz;

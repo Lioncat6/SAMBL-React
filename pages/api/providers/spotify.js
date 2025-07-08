@@ -12,9 +12,18 @@ let accessToken = null;
 let tokenExpirationTime = null;
 
 function validateSpotifyId(spotifyId) {
-    const spfPattern = /^[A-Za-z0-9]{22}$/; // Corrected regex pattern
-    return spfPattern.test(spotifyId); // Call test on the regex, not the string
+    const spfPattern = /[A-Za-z0-9]{22}/;
+    return spfPattern.test(spotifyId); 
 }
+
+function extractSpotifyIdFromUrl(url) {
+    const spfPattern = /[A-Za-z0-9]{22}$/;
+    const match = url.match(spfPattern);
+    if (match && match[0]) {
+        return match[0]; 
+    }
+}
+
 
 async function withRetry(apiCall, retries = 3, delay = 1000) {
     for (let attempt = 1; attempt <= retries; attempt++) {
@@ -131,7 +140,8 @@ const spotify = {
     getArtistAlbums,
     getAlbumByUPC,
     getTrackByISRC,
-    validateSpotifyId 
+    validateSpotifyId,
+    extractSpotifyIdFromUrl
 };
 
 export default spotify;
