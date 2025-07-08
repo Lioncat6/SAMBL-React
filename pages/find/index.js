@@ -64,10 +64,19 @@ export default function Find() {
 	}
 
 	function handleResults(results){
-		if (results.length > 0) {
-			setResults(results);
+		let data = results.data || [];
+		let issues = results.issues || [];
+
+		if (data.length > 0) {
+			setResults(data);
 		} else {
 			dispError("No results found!");
+		}
+
+		if (issues.length > 0) {
+			issues.forEach((issue) => {
+				dispError(`Error with provider ${issue.provider}: ${issue.error}`, "error");
+			});
 		}
 	}
 

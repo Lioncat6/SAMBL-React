@@ -6,6 +6,8 @@ import Notice from "../../components/notices";
 
 import { toast, Flip } from "react-toastify";
 
+import normalizeText from "../../utils/normalizeText";
+
 async function fetchArtistData(spfId) {
 	const response = await fetch(`http://localhost:3000/api/getArtistInfo?spotifyId=${spfId}`);
 	if (response.ok) {
@@ -272,14 +274,6 @@ function processData(sourceAlbums, mbAlbums) {
 	};
 }
 
-function normalizeText(text) {
-	let normalizedText = text.toUpperCase().replace(/\s/g, "");
-	let textRemovedChars = normalizedText.replace(/['’!?.,:;(){}\[\]<>\/\\|_\-+=*&^%$#@~`“”«»„“”¿¡]/g, "");
-	if (textRemovedChars == "") {
-		textRemovedChars = normalizedText;
-	}
-	return textRemovedChars;
-}
 
 function dispError(message) {
 	let toastProperties = {

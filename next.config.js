@@ -8,5 +8,6 @@ module.exports = {
   },
   publicRuntimeConfig: {
     version,
+    masondonUrl: process.env.NEXT_PUBLIC_MASTODON_URL
   },
 }
