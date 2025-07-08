@@ -50,7 +50,6 @@ async function getIdsBySpotifyUrls(spotifyUrls) {
 }
 
 async function getAlbumsBySourceUrls(sourceUrls, inc = ["release-rels"]) {
-	console.log("fbsurl")
 	try {
 		const data = await mbApi.lookupUrl(sourceUrls, inc);
 		if (data.count === 0) {

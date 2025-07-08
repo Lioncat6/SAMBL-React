@@ -300,7 +300,6 @@ export default async function handler(req, res) {
 		let offset = 0;
 		let attempts = 0;
 		while (offset < sourceAlbumUrls.length) {
-            console.log(offset)
 			let currentUrls = sourceAlbumUrls.slice(offset, offset + 100);
 			try {
 				const data = await getBySourceAlbumLink(currentUrls);
