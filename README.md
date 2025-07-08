@@ -36,7 +36,9 @@ NEXT_PUBLIC_MASTODON_URL=<Mastodon URL [Optional]>
 ## API Docs
 
 ### Officially Supported API endpoints
-These API endpoints were created with public use in mind and will be fully supported for the foreseeable future
+These API endpoints were created with public use in mind and will be fully supported for the foreseeable future.
+
+The api root is `/api/` (Ex: `https://sambl.lioncat6.com/api/find`)
 
  - `/find`
    - `query` (string) [R]
