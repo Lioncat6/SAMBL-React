@@ -1,25 +1,34 @@
-import logger from './logger'
+import logger from "./logger";
 
 const NodeCache = require("node-cache");
 
 const requestCache = new NodeCache();
 
-export default function withCache(func, ttl = 60 * 60) {
-	return async function (...args) {
-		const cacheKey = `${func.name}-${JSON.stringify(args)}`;
-		const cachedResult = requestCache.get(cacheKey);
-		if (cachedResult) {
-            logger.debug(`Returned cached result for ${func.name}`);
-			return cachedResult;
-		}
+export default function withCache(func, options) {
+    let { ttl = 60 * 60, namespace = "", noCache = false } = options;
+    return async function (...args) {
+        let skipCache = noCache;
+        // If last arg is an object and has noCache, use it and remove it from args
+        if (args.length && typeof args[args.length - 1] === "object" && args[args.length - 1]?.noCache) {
+            skipCache = true;
+            args = args.slice(0, -1); // Remove the last argument (the options object)
+        }
+        const cacheKey = `${namespace ? namespace + ":" : ""}${func.name}-${JSON.stringify(args)}`;
 
-		try {
-			const result = await func(...args);
-			requestCache.set(cacheKey, result, ttl);
-			return result;
-		} catch (error) {
-			// Don't cache on error, just rethrow
-			throw error;
-		}
-	};
+        if (!skipCache) {
+            const cachedResult = requestCache.get(cacheKey);
+            if (cachedResult) {
+                logger.debug(`Returned cached result for ${cacheKey}`);
+                return cachedResult;
+            }
+        }
+
+        try {
+            const result = await func(...args);
+            requestCache.set(cacheKey, result, ttl);
+            return result;
+        } catch (error) {
+            throw error;
+        }
+    };
 }

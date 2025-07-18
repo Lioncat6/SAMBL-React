@@ -2,6 +2,8 @@ import MusixMatchAPI from "./lib/musixmatch-alt";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 
+const namespace = "musixmatch";
+
 let mxmAPI = new MusixMatchAPI(null, process.env.MUSIXMATCH_API_KEY);
 let lastRefreshed = Date.now();
 
@@ -40,7 +42,7 @@ async function getTrackByISRC(isrc) {
 }
 
 const musixmatch = {
-	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 10 }),
+	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 10,  namespace: namespace }),
 };
 
 export default musixmatch;

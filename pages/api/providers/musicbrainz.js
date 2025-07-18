@@ -2,6 +2,8 @@ import { MusicBrainzApi, CoverArtArchiveApi } from "musicbrainz-api";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 
+const namespace = "musicbrainz";
+
 const coverArtArchiveApiClient = new CoverArtArchiveApi();
 const mbApi = new MusicBrainzApi({
 	appName: process.env.REACT_APP_NAME,
@@ -89,7 +91,7 @@ async function getArtistFeaturedAlbums(mbid, offset = 0, limit = 100, inc = ["ur
 
 async function getAlbumByUPC(upc) {
 	try {
-		const data = await mbApi.search("release", { query: `barcode:${upc}`, inc: ["artist-rels"] }, { limit: 20 });
+		const data = await mbApi.search("release", { query: `barcode:${upc}`, inc: ["artist-rels"],  limit: 20 });
 		checkError(data);
 		return data;
 	} catch (error) {
@@ -100,7 +102,7 @@ async function getAlbumByUPC(upc) {
 
 async function getTrackByISRC(isrc) {
 	try {
-		const data = await mbApi.search("recording", { query: `isrc:${isrc}`, inc: ["artist-rels"] }, { limit: 20 });
+		const data = await mbApi.search("recording", { query: `isrc:${isrc}`, inc: ["artist-rels"],  limit: 20 });
 		checkError(data);
 		return data;
 	} catch (error) {
@@ -119,16 +121,40 @@ async function getCoverByMBID(mbid) {
 	}
 }
 
+async function serachForAlbumByArtistAndTitle(mbid, title) {
+	try {
+		const data = await mbApi.search("release", { query: `arid:${mbid} AND release:${title}`, inc: ["artist-rels"],  limit: 20 });
+		checkError(data);
+		return data;
+	} catch (error) {
+		logger.error("Failed to search for album by artist and title", error);
+		throw new Error(error.message);
+	}
+}
+
+async function getAlbumByMBID(mbid, inc = ["artist-rels", "recordings", "isrcs"]) {
+	try {
+		const data = await mbApi.lookup("release", mbid, inc);
+		checkError(data);
+		return data;
+	} catch (error) {
+		logger.error("Failed to fetch album by MBID", error);
+		throw new Error(error.message);
+	}
+}
+
 const musicbrainz = {
-	getIdBySpotifyId: withCache(getIdBySpotifyId, { ttl: 60 * 5 }),
-	getIdsBySpotifyUrls: withCache(getIdsBySpotifyUrls, { ttl: 60 * 5 }),
-	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 5 }),
-	getArtistFeaturedAlbums: withCache(getArtistFeaturedAlbums, { ttl: 60 * 5 }),
-	getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 5 }),
-	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 5 }),
-	getCoverByMBID: withCache(getCoverByMBID, { ttl: 60 * 5 }),
+	getIdBySpotifyId: withCache(getIdBySpotifyId, { ttl: 60 * 5,  namespace: namespace }),
+	getIdsBySpotifyUrls: withCache(getIdsBySpotifyUrls, { ttl: 60 * 5,  namespace: namespace }),
+	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 5,  namespace: namespace }),
+	getArtistFeaturedAlbums: withCache(getArtistFeaturedAlbums, { ttl: 60 * 5,  namespace: namespace }),
+	getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 5,  namespace: namespace }),
+	getAlbumByMBID: withCache(getAlbumByMBID, { ttl: 60 * 5,  namespace: namespace }),
+	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 5,  namespace: namespace }),
+	getCoverByMBID: withCache(getCoverByMBID, { ttl: 60 * 5,  namespace: namespace }),
 	validateMBID,
-	getAlbumsBySourceUrls: withCache(getAlbumsBySourceUrls, { ttl: 60 * 5 }),
+	getAlbumsBySourceUrls: withCache(getAlbumsBySourceUrls, { ttl: 60 * 5,  namespace: namespace }),
+	serachForAlbumByArtistAndTitle: withCache(serachForAlbumByArtistAndTitle, { ttl: 60 * 5,  namespace: namespace }),
 };
 
 export default musicbrainz;

@@ -3,6 +3,8 @@ import logger from "../../../utils/logger";
 import musixmatchAlternate from "./musixmatch-alt"
 import withCache from "../../../utils/cache";
 
+const namespace = "musixmatch";
+
 let mxm = null;
 
 if (!process.env.MUSIXMATCH_API_KEY) {
@@ -45,7 +47,7 @@ if (process.env.MUSIXMATCH_ALTERNATE === "1") {
     musixmatch = musixmatchAlternate;
 } else {
     musixmatch = {
-        getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 10 }),
+        getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 10,  namespace: namespace }),
     };
 }
 

@@ -10,6 +10,8 @@ import AutoSizer from "react-virtualized-auto-sizer";
 import { FaDeezer, FaSpotify } from "react-icons/fa";
 import Popup from "reactjs-popup";
 import { FaAnglesRight, FaAnglesLeft } from "react-icons/fa6";
+import { IoMdRefresh } from "react-icons/io";
+import { toast, Flip } from "react-toastify";
 
 function AlbumIcons({ item }) {
 	const { spotifyId, spotifyUrl, spotifyReleaseDate, spotifyTrackCount, albumStatus, mbTrackCount, mbReleaseDate, mbid, albumIssues } = item;
@@ -107,9 +109,41 @@ function SelectionButtons({ item }) {
 	);
 }
 
-const AlbumItem = memo(function AlbumItem({ item, selecting }) {
+const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
+	const [isLoading, setIsLoading] = useState(false);
 	const { exportState } = useExportState();
 	const Popup = dynamic(() => import("./Popup"), { ssr: false });
+
+	let toastProperties = {
+		position: "top-left",
+		autoClose: 5000,
+		hideProgressBar: false,
+		closeOnClick: false,
+		pauseOnHover: true,
+		draggable: true,
+		progress: undefined,
+
+		transition: Flip,
+	}
+	async function dispError(message, type = "warn") {
+
+		if (type === "error") {
+			toast.error(message, toastProperties);
+		} else {
+			toast.warn(message, toastProperties);
+		}
+
+		setIsLoading(false); 
+
+	}	
+	async function dispPromise(promise, message) {
+		return toast.promise(promise, {
+			pending: message,
+			error: "Data not found!"
+		}, toastProperties).finally(() => {
+			setIsLoading(false); 
+		});
+	}
 
 	const {
 		spotifyId,
@@ -126,6 +160,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting }) {
 		mbTrackCount,
 		mbReleaseDate,
 		mbid,
+		currentArtistMBID,
 		albumIssues,
 		mbTrackNames,
 		mbTrackISRCs,
@@ -134,6 +169,20 @@ const AlbumItem = memo(function AlbumItem({ item, selecting }) {
 		highlightTracks,
 		mbBarcode,
 	} = item;
+
+
+	
+	async function refreshData() {
+		setIsLoading(true)
+		const response = await dispPromise(fetch(`/api/compareSingleAlbum?spotifyId=${spotifyId}&mbid=${currentArtistMBID}`));
+		if (response.ok) {
+			const updatedItem = await response.json();
+			console.log(updatedItem)
+			if (onUpdate) onUpdate(updatedItem);
+		} else {
+			dispError("Failed to refresh album data!", "error");
+		}
+	}
 
 	const spotifyTrackString = spotifyTrackCount > 1 ? `${spotifyTrackCount} Tracks` : "1 Track";
 
@@ -199,6 +248,9 @@ const AlbumItem = memo(function AlbumItem({ item, selecting }) {
 								/>
 							</a>
 						)}
+						<div className={`${styles.refreshIcon} ${isLoading && styles.loading}`} onClick={refreshData} title="Refresh Album Data">
+							<IoMdRefresh />
+						</div>
 					</div>
 
 					{/* Artists */}
@@ -348,12 +400,12 @@ function GenericItem({ item }) {
 	);
 }
 
-function ListBuilder({ items, type }) {
+function ListBuilder({ items, type, onItemUpdate }) {
 	return (
 		<>
 			{items.map((item, index) => (
 				<div id={index} key={index} className={styles.itemContainer}>
-					{type == "album" && <AlbumItem item={item} />}
+					{type == "album" && <AlbumItem item={item} onUpdate={onItemUpdate} />}
 					{type == "artist" && <ArtistItem item={item} />}
 					{type == "mixed" && <GenericItem item={item} />}
 				</div>
@@ -362,16 +414,16 @@ function ListBuilder({ items, type }) {
 	);
 }
 
-function ListContainer({ items, type, text }) {
+function ListContainer({ items, type, text, onItemUpdate}) {
 	return (
 		<>
-			<div className={styles.listContainer}>{items && <ListBuilder items={items} type={type} />}</div>
+			<div className={styles.listContainer}>{items && <ListBuilder items={items} type={type} onItemUpdate={onItemUpdate} />}</div>
 			<div className={styles.statusText}>{text}</div>
 		</>
 	);
 }
 
-function VirtualizedList({ items, type, text }) {
+function VirtualizedList({ items, type, text, onItemUpdate }) {
 	return (
 		<>
 			<div className={styles.virtualListContainer}>
@@ -385,7 +437,7 @@ function VirtualizedList({ items, type, text }) {
 						>
 							{({ index, style }) => (
 								<div style={style}>
-									{type === "album" && <AlbumItem item={items[index]} />}
+									{type === "album" && <AlbumItem item={items[index]} onUpdate={onItemUpdate} />}
 									{type === "artist" && <ArtistItem item={items[index]} />}
 									{type === "mixed" && <GenericItem item={items[index]} />}
 								</div>
@@ -484,17 +536,23 @@ export default function ItemList({ items, type, text }) {
 	const { settings } = useSettings();
 	const [searchQuery, setSearchQuery] = useState(""); // State for search query
 	const [filteredItems, setFilteredItems] = useState(items || []); // State for filtered items
+	const [currentItems, setCurrentItems] = useState(items || []);
 	const [filter, setFilter] = useState({ showGreen: true, showOrange: true, showRed: true, showVarious: true, onlyIssues: false });
 	const { setAllItems } = useExportState();
-	if (items?.length > 0) {
-		setAllItems(items);
+	if (currentItems?.length > 0) {
+		setAllItems(currentItems);
 	}
+
+	useEffect(() => {
+		setCurrentItems(items || []);
+	}, [items]);
+
 	useEffect(() => {
 		if (type !== "album") {
 			return;
 		}
 
-		let updatedItems = items;
+		let updatedItems = currentItems;
 
 		// Search
 		if (searchQuery.trim() !== "") {
@@ -536,21 +594,27 @@ export default function ItemList({ items, type, text }) {
 		if (updatedItems != filteredItems) {
 			setFilteredItems(updatedItems);
 		}
-	}, [searchQuery, filter, items, type]);
+	}, [searchQuery, filter, currentItems, type]);
 
 	let itemArray = [];
 	if (type != "album" && type != "loadingAlbum") {
-		itemArray = Array.isArray(items) ? items : Object.values(items);
+		itemArray = Array.isArray(currentItems) ? currentItems : Object.values(currentItems);
 	}
+
+	 const handleItemUpdate = (updatedItem) => {
+        setCurrentItems((prev) =>
+            prev.map((item) => item.spotifyId === updatedItem.spotifyId ? updatedItem : item)
+        );
+    };
 	return (
 		<div className={styles.listWrapper}>
 			{type === "album" && <SearchContainer onSearch={setSearchQuery} currentFilter={filter} setFilter={setFilter} />}
 			{type === "loadingAlbum" ? (
 				<LoadingContainer text={text} />
 			) : items.length > 75 && settings.listVirtualization ? ( // If over 200 albums, use the virtualized list. Reason why I don't want to always use it is because it scrolls less smooth
-				<VirtualizedList items={type === "album" ? filteredItems : itemArray} type={type} text={text} />
+				<VirtualizedList items={type === "album" ? filteredItems : itemArray} type={type} text={text} onItemUpdate={handleItemUpdate} />
 			) : (
-				<ListContainer items={type === "album" ? filteredItems : itemArray} type={type} text={text} />
+				<ListContainer items={type === "album" ? filteredItems : itemArray} type={type} text={text} onItemUpdate={handleItemUpdate} />
 			)}
 		</div>
 	);

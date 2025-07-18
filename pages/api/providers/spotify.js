@@ -2,6 +2,8 @@ import SpotifyWebApi from "spotify-web-api-node";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 
+const namespace = "spotify";
+
 const spotifyApi = new SpotifyWebApi({
     clientId: process.env.SPOTIFY_CLIENT_ID,
     clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
@@ -134,13 +136,25 @@ async function getTrackByISRC(isrc) {
     }
 }
 
+async function getAlbumBySpotifyId(spotifyId) {
+    try {
+        await checkAccessToken();
+        const data = await spotifyApi.getAlbum(spotifyId);
+        return data.body;
+    } catch (error) {
+        logger.error("Error fetching album by Spotify ID:", error);
+        throw new Error("Failed to fetch album by Spotify ID");
+    }
+}
+
 
 const spotify = {
-    getArtistById: withCache(getArtistById, { ttl: 60 * 30 }),
-    searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30 }),
-    getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 30 }),
-    getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 30 }),
-    getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 30 }),
+    getArtistById: withCache(getArtistById, { ttl: 60 * 30,  namespace: namespace }),
+    searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30,  namespace: namespace }),
+    getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 30,  namespace: namespace }),
+    getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 30,  namespace: namespace }),
+    getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 30,  namespace: namespace }),
+    getAlbumBySpotifyId: withCache(getAlbumBySpotifyId, { ttl: 60 * 30,  namespace: namespace }),
     validateSpotifyId,
     extractSpotifyIdFromUrl
 };
