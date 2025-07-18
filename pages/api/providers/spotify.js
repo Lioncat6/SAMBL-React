@@ -1,5 +1,6 @@
 import SpotifyWebApi from "spotify-web-api-node";
 import logger from "../../../utils/logger";
+import withCache from "../../../utils/cache";
 
 const spotifyApi = new SpotifyWebApi({
     clientId: process.env.SPOTIFY_CLIENT_ID,
@@ -135,11 +136,11 @@ async function getTrackByISRC(isrc) {
 
 
 const spotify = {
-    getArtistById,
-    searchByArtistName,
-    getArtistAlbums,
-    getAlbumByUPC,
-    getTrackByISRC,
+    getArtistById: withCache(getArtistById, { ttl: 60 * 30 }),
+    searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30 }),
+    getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 30 }),
+    getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 30 }),
+    getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 30 }),
     validateSpotifyId,
     extractSpotifyIdFromUrl
 };

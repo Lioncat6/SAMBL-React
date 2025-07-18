@@ -1,5 +1,6 @@
 import { MusicBrainzApi, CoverArtArchiveApi } from "musicbrainz-api";
 import logger from "../../../utils/logger";
+import withCache from "../../../utils/cache";
 
 const coverArtArchiveApiClient = new CoverArtArchiveApi();
 const mbApi = new MusicBrainzApi({
@@ -9,12 +10,12 @@ const mbApi = new MusicBrainzApi({
 });
 
 function checkError(data) {
-    if (data.error) {
-        throw new Error(data.error);
-    }
+	if (data.error) {
+		throw new Error(data.error);
+	}
 }
 
-function validateMBID(mbid){
+function validateMBID(mbid) {
 	const mbidPattern = /.*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.*/i;
 	return mbidPattern.test(mbid);
 }
@@ -118,17 +119,16 @@ async function getCoverByMBID(mbid) {
 	}
 }
 
-
 const musicbrainz = {
-	getIdBySpotifyId: getIdBySpotifyId,
-	getIdsBySpotifyUrls: getIdsBySpotifyUrls,
-	getArtistAlbums,
-	getArtistFeaturedAlbums,
-	getAlbumByUPC,
-	getTrackByISRC,
-	getCoverByMBID,
+	getIdBySpotifyId: withCache(getIdBySpotifyId, { ttl: 60 * 5 }),
+	getIdsBySpotifyUrls: withCache(getIdsBySpotifyUrls, { ttl: 60 * 5 }),
+	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 5 }),
+	getArtistFeaturedAlbums: withCache(getArtistFeaturedAlbums, { ttl: 60 * 5 }),
+	getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 5 }),
+	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 5 }),
+	getCoverByMBID: withCache(getCoverByMBID, { ttl: 60 * 5 }),
 	validateMBID,
-	getAlbumsBySourceUrls,
+	getAlbumsBySourceUrls: withCache(getAlbumsBySourceUrls, { ttl: 60 * 5 }),
 };
 
 export default musicbrainz;

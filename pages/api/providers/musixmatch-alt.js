@@ -39,7 +39,7 @@ async function getTrackByISRC(isrc) {
 }
 
 const musixmatch = {
-	getTrackByISRC,
+	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 10 }),
 };
 
 export default musixmatch;

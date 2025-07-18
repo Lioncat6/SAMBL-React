@@ -133,7 +133,6 @@ export default async function handler(req, res) {
 					);
 				});
 			}
-			console.log("MXM Data:", mxmData);
 			if (mxmData?.track) {
 				resultItems.push(
 					createDataObject(
