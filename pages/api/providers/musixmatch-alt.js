@@ -1,5 +1,6 @@
 import MusixMatchAPI from "./lib/musixmatch-alt";
 import logger from "../../../utils/logger";
+import withCache from "../../../utils/cache";
 
 let mxmAPI = new MusixMatchAPI(null, process.env.MUSIXMATCH_API_KEY);
 let lastRefreshed = Date.now();
