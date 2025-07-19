@@ -126,23 +126,17 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 		transition: Flip,
 	}
 	async function dispError(message, type = "warn") {
-
 		if (type === "error") {
 			toast.error(message, toastProperties);
 		} else {
 			toast.warn(message, toastProperties);
 		}
-
-		setIsLoading(false); 
-
 	}	
 	async function dispPromise(promise, message) {
 		return toast.promise(promise, {
 			pending: message,
 			error: "Data not found!"
-		}, toastProperties).finally(() => {
-			setIsLoading(false); 
-		});
+		}, toastProperties).finally(() => {});
 	}
 
 	const {
@@ -174,7 +168,8 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 	
 	async function refreshData() {
 		setIsLoading(true)
-		const response = await dispPromise(fetch(`/api/compareSingleAlbum?spotifyId=${spotifyId}&mbid=${currentArtistMBID}`));
+		const response = await dispPromise(fetch(`/api/compareSingleAlbum?spotifyId=${spotifyId}&mbid=${currentArtistMBID}`), "Refreshing album...");
+		setIsLoading(false); 
 		if (response.ok) {
 			const updatedItem = await response.json();
 			console.log(updatedItem)

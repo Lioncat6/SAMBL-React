@@ -24,12 +24,11 @@ export default async function handler(req, res) {
         let mbAlbum = null;
         let urlResults = (await musicbrainz.getAlbumsBySourceUrls([spotifyAlbum.external_urls.spotify], ["release-rels"], { noCache: true })).urls[0];
         if (urlResults && urlResults?.relations.length > 0) {
-            mbAlbum = await musicbrainz.getAlbumByMBID(urlResults.relations[0].release.id, ["artist-rels", "recordings", "isrcs"], { noCache: true });
-            console.log(mbAlbum)
+            mbAlbum = await musicbrainz.getAlbumByMBID(urlResults.relations[0].release.id, ["url-rels", "recordings", "isrcs"], { noCache: true });
         } else {
             let mbSearch = await musicbrainz.serachForAlbumByArtistAndTitle(mbid, spotifyAlbum.name)
             if (mbSearch && mbSearch?.releases.length > 0) {
-                mbAlbum = await musicbrainz.getAlbumByMBID(mbSearch.releases[0].id, ["artist-rels", "recordings", "isrcs"], { noCache: true });
+                mbAlbum = await musicbrainz.getAlbumByMBID(mbSearch.releases[0].id, ["url-rels", "recordings", "isrcs"], { noCache: true });
             }
         }
 
