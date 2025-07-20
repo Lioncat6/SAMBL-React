@@ -29,21 +29,34 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
         let finalTracks = [];
         let mbBarcode = "";
         mbAlbums.forEach((mbAlbum) => {
-            let mbReleaseName = mbAlbum.title;
-            let mbReleaseUrls = mbAlbum.relations || [];
-            let MBTrackCount = mbAlbum.media?.reduce((count, media) => count + media["track-count"], 0);
-            let MBReleaseDate = mbAlbum.date;
-            let MBReleaseUPC = mbAlbum.barcode;
-            let hasCoverArt = mbAlbum["cover-art-archive"]?.front || false;
-            var MBTracks = [];
-            mbAlbum.media?.forEach((media) => {
-                if (media.tracks) {
-                    MBTracks = [...MBTracks, ...media.tracks];
-                }
-            });
-            mbReleaseUrls.forEach((relation) => {
-                if (relation.url.resource == spotifyUrl) {
-                    albumStatus = "green";
+            if (mbAlbum?.name) {
+                let mbReleaseName = mbAlbum.title;
+                let mbReleaseUrls = mbAlbum.relations || [];
+                let MBTrackCount = mbAlbum.media?.reduce((count, media) => count + media["track-count"], 0);
+                let MBReleaseDate = mbAlbum.date;
+                let MBReleaseUPC = mbAlbum.barcode;
+                let hasCoverArt = mbAlbum["cover-art-archive"]?.front || false;
+                var MBTracks = [];
+                mbAlbum.media?.forEach((media) => {
+                    if (media.tracks) {
+                        MBTracks = [...MBTracks, ...media.tracks];
+                    }
+                });
+                mbReleaseUrls.forEach((relation) => {
+                    if (relation.url.resource == spotifyUrl) {
+                        albumStatus = "green";
+                        mbid = mbAlbum.id;
+                        albumMBUrl = `https://musicbrainz.org/release/${mbid}`;
+                        mbTrackCount = MBTrackCount;
+                        mbReleaseDate = MBReleaseDate;
+                        finalHasCoverArt = hasCoverArt;
+                        finalTracks = MBTracks;
+                        mbBarcode = MBReleaseUPC;
+                    }
+                });
+
+                if (albumStatus === "red" && normalizeText(mbReleaseName) === normalizeText(spotifyName)) {
+                    albumStatus = "orange";
                     mbid = mbAlbum.id;
                     albumMBUrl = `https://musicbrainz.org/release/${mbid}`;
                     mbTrackCount = MBTrackCount;
@@ -52,17 +65,6 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
                     finalTracks = MBTracks;
                     mbBarcode = MBReleaseUPC;
                 }
-            });
-
-            if (albumStatus === "red" && normalizeText(mbReleaseName) === normalizeText(spotifyName)) {
-                albumStatus = "orange";
-                mbid = mbAlbum.id;
-                albumMBUrl = `https://musicbrainz.org/release/${mbid}`;
-                mbTrackCount = MBTrackCount;
-                mbReleaseDate = MBReleaseDate;
-                finalHasCoverArt = hasCoverArt;
-                finalTracks = MBTracks;
-                mbBarcode = MBReleaseUPC;
             }
         });
 
