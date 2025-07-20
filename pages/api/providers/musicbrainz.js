@@ -143,18 +143,50 @@ async function getAlbumByMBID(mbid, inc = ["artist-rels", "recordings", "isrcs"]
 	}
 }
 
+async function getArtistFeaturedReleaseCount(mbid) {
+	try {
+		const data = await mbApi.browse("release", { track_artist: mbid, limit: 1 });
+		checkError(data);
+		console.log(data)
+		if (!data["release-count"]){
+			return null;
+		}
+		return data["release-count"];
+	} catch (error) {
+		logger.error("Failed to fetch artist featured release count", error);
+		throw new Error(error.message);
+	}
+}
+
+async function getArtistReleaseCount(mbid) {
+	try {
+		const data = await mbApi.browse("release", { artist: mbid, limit: 1 });
+		checkError(data);
+		if (!data["release-count"]){
+			return null;
+		}
+		return data["release-count"];
+	} catch (error) {
+		logger.error("Failed to fetch artist release count", error);
+		throw new Error(error.message);
+	}
+}
+
 const musicbrainz = {
-	getIdBySpotifyId: withCache(getIdBySpotifyId, { ttl: 60 * 5,  namespace: namespace }),
-	getIdsBySpotifyUrls: withCache(getIdsBySpotifyUrls, { ttl: 60 * 5,  namespace: namespace }),
-	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 5,  namespace: namespace }),
-	getArtistFeaturedAlbums: withCache(getArtistFeaturedAlbums, { ttl: 60 * 5,  namespace: namespace }),
-	getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 5,  namespace: namespace }),
-	getAlbumByMBID: withCache(getAlbumByMBID, { ttl: 60 * 5,  namespace: namespace }),
-	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 5,  namespace: namespace }),
-	getCoverByMBID: withCache(getCoverByMBID, { ttl: 60 * 5,  namespace: namespace }),
+	getIdBySpotifyId: withCache(getIdBySpotifyId, { ttl: 60 * 15,  namespace: namespace }),
+	getIdsBySpotifyUrls: withCache(getIdsBySpotifyUrls, { ttl: 60 * 15,  namespace: namespace }),
+	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 15,  namespace: namespace }),
+	getArtistFeaturedAlbums: withCache(getArtistFeaturedAlbums, { ttl: 60 * 15,  namespace: namespace }),
+	getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 15,  namespace: namespace }),
+	getAlbumByMBID: withCache(getAlbumByMBID, { ttl: 60 * 15,  namespace: namespace }),
+	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 15,  namespace: namespace }),
+	getCoverByMBID: withCache(getCoverByMBID, { ttl: 60 * 15,  namespace: namespace }),
 	validateMBID,
-	getAlbumsBySourceUrls: withCache(getAlbumsBySourceUrls, { ttl: 60 * 5,  namespace: namespace }),
-	serachForAlbumByArtistAndTitle: withCache(serachForAlbumByArtistAndTitle, { ttl: 60 * 5,  namespace: namespace }),
+	getAlbumsBySourceUrls: withCache(getAlbumsBySourceUrls, { ttl: 60 * 15,  namespace: namespace }),
+	serachForAlbumByArtistAndTitle: withCache(serachForAlbumByArtistAndTitle, { ttl: 60 * 15,  namespace: namespace }),
+	getArtistFeaturedReleaseCount: withCache(getArtistFeaturedReleaseCount, { ttl: 60 * 15,  namespace: namespace }),
+	getArtistReleaseCount: withCache(getArtistReleaseCount, { ttl: 60 * 15,  namespace: namespace }),
+	
 };
 
 export default musicbrainz;

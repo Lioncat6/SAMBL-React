@@ -686,8 +686,8 @@
 }
 
 .refreshIcon {
-	color: var(--foreground-tertiary);
-	transition: color 0.2s ease-in-out;
+	color: transparent;
+	transition: color 0.5s ease-in-out;
 	display: inline-block;
 }
 
@@ -698,12 +698,13 @@
 }
 
 .refreshIcon:hover {
-	color: var(--foreground-primary);
+	color: var(--foreground-primary) !important;
 	cursor: pointer;
 }
 
 .refreshIcon.loading > svg {
 	animation: rotate 1s linear infinite;
+	color: var(--foreground-primary);
 }
 
 @keyframes rotate {
@@ -713,4 +714,8 @@
 	100% {
 		transform: rotate(360deg);
 	}
+}
+
+.listItem:hover .refreshIcon {
+	color: var(--foreground-tertiary);
 }
