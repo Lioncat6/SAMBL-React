@@ -29,7 +29,7 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
         let finalTracks = [];
         let mbBarcode = "";
         mbAlbums.forEach((mbAlbum) => {
-            if (mbAlbum?.name) {
+            if (mbAlbum?.title) {
                 let mbReleaseName = mbAlbum.title;
                 let mbReleaseUrls = mbAlbum.relations || [];
                 let MBTrackCount = mbAlbum.media?.reduce((count, media) => count + media["track-count"], 0);
