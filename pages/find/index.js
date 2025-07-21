@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { toast, Flip } from 'react-toastify';
+import { toast, Flip } from "react-toastify";
 import ItemList from "../../components/ItemList";
 import Head from "next/head";
 import SearchBox from "../../components/SearchBox";
 import { FaWindowRestore } from "react-icons/fa6";
+import clientFetch from "../../utils/clientFind";
 
 async function serverFind(query, type) {
 	return new Promise((resolve) => {
@@ -26,11 +27,22 @@ async function serverFind(query, type) {
 	});
 }
 
+async function clientFind(query, type) {
+	const response = await fetch(`/api/clientFind?query=${query}&type=${type}`);
+
+	if (response.ok) {
+		const data = await response.json();
+		return await clientFetch(data.urls);
+	} else {
+		throw new Error("Failed to fetch data from clientFind API");
+	}
+}
+
 export default function Find() {
 	const [results, setResults] = useState([]);
 	const [isLoading, setIsLoading] = useState(false); // State to manage loading
 	const router = useRouter();
-    const { query: urlQuery } = router.query;
+	const { query: urlQuery } = router.query;
 
 	let toastProperties = {
 		position: "top-left",
@@ -42,30 +54,35 @@ export default function Find() {
 		progress: undefined,
 
 		transition: Flip,
-	}
+	};
 	function dispError(message, type = "warn") {
-
 		if (type === "error") {
 			toast.error(message, toastProperties);
 		} else {
 			toast.warn(message, toastProperties);
 		}
 
-		setIsLoading(false); 
-
-	}	
+		setIsLoading(false);
+	}
 	function dispPromise(promise, message) {
-		return toast.promise(promise, {
-			pending: message,
-			error: "Data not found!"
-		}, toastProperties).finally(() => {
-			setIsLoading(false); 
-		});
+		return toast
+			.promise(
+				promise,
+				{
+					pending: message,
+					error: "Data not found!",
+				},
+				toastProperties
+			)
+			.finally(() => {
+				setIsLoading(false);
+			});
 	}
 
-	function handleResults(results){
-		let data = results.data || [];
-		let issues = results.issues || [];
+	function handleResults(results) {
+		console.log("Results:", results);
+		let data = results?.data || [];
+		let issues = results?.issues || [];
 
 		if (data.length > 0) {
 			setResults(data);
@@ -80,6 +97,30 @@ export default function Find() {
 		}
 	}
 
+	function mergeData(serverData, clientData) {
+		console.log(serverData, clientData);
+		let mergedData = { data: [], issues: [] };
+		if (serverData.data) {
+			mergedData.data = [...serverData.data];
+			mergedData.issues = [...serverData.issues];
+		}
+		if (clientData.data) {
+			mergedData.data = [...mergedData.data, ...clientData.data];
+		}
+		return mergedData;
+	}
+
+	async function isrcFind(query) {
+		try {
+			const results = await Promise.all([serverFind(query, "ISRC"), clientFind(query, "ISRC")]);
+			console.log( results)
+			return mergeData(results[0], results[1]);
+		} catch (error) {
+			dispError("An error occurred while searching by ISRC.", "error");
+			return { data: [], issues: [] };
+		}
+	}
+
 	async function handleSearch() {
 		const query = urlQuery;
 		if (query !== "") {
@@ -91,8 +132,6 @@ export default function Find() {
 				const upcPattern = /^\d{12,14}$/;
 				const urlPattern = /^(https?|http):\/\/[^\s/$.?#].[^\s]*$/i;
 
-
-
 				if (mbidPattern.test(query)) {
 					dispError("This finding method isn't supported yet. Try using a barcode or ISRC!");
 					// const matchedQuery = query.match(mbidPattern)[0];
@@ -103,20 +142,20 @@ export default function Find() {
 					// handleResults(await dispPromise(serverFind(matchedQuery, "SPID"), "Finding by Spotify ID..."));
 				} else if (isrcPattern.test(query)) {
 					const matchedQuery = query.match(isrcPattern)[0];
-					handleResults(await dispPromise(serverFind(matchedQuery, "ISRC"), "Finding by ISRC..."));
+					handleResults(await dispPromise(isrcFind(matchedQuery), "Finding by ISRC..."));
 				} else if (urlPattern.test(query)) {
 					dispError("This finding method isn't supported yet. Try using a barcode or ISRC!");
 					// const matchedQuery = query.match(urlPattern)[0];
 					// handleResults(await dispPromise(serverFind(matchedQuery, "URL"), "Finding by URL..."));
 				} else if (upcPattern.test(query)) {
-					const matchedQuery = query.match(upcPattern)[0]; 
+					const matchedQuery = query.match(upcPattern)[0];
 					handleResults(await dispPromise(serverFind(matchedQuery, "UPC"), "Finding by Barcode..."));
-				}
-				else {
+				} else {
 					dispError("Invalid input format. Please enter a valid ISRC, MBID, Barcode, or Spotify link.");
 				}
 			} catch (error) {
-				dispError("An error occurred while searching.", "error");
+				console.error("An error occurred while searching:", error);
+				dispError("An error occurred while searching", "error");
 			} finally {
 				setIsLoading(false); // Set loading state to false
 			}
@@ -158,14 +197,13 @@ export default function Find() {
 	return (
 		<>
 			<Head>
-                <title>{"SAMBL • Find"}</title>
-                <meta name="description" content={`SAMBL - Find by ISRC, MBID, Barcode...`} />
-            </Head>
+				<title>{"SAMBL • Find"}</title>
+				<meta name="description" content={`SAMBL - Find by ISRC, MBID, Barcode...`} />
+			</Head>
 			<SearchBox type="find" />
 			<div id="contentContainer">
 				<div id="loadingMsg" />
-				{(results.length > 0) && <ItemList type={"mixed"} items={results} />}
-
+				{results.length > 0 && <ItemList type={"mixed"} items={results} />}
 			</div>
 		</>
 	);

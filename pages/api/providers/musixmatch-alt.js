@@ -41,8 +41,22 @@ async function getTrackByISRC(isrc) {
 	}
 }
 
+async function clientGetTrackByISRC(isrc) {
+	try {
+		await refreshApi();
+		let urls = []
+		urls.push(await mxmAPI.get_track(null, isrc, true));
+		urls.push(await mxmAPI.get_track_lyrics(null, isrc, true));
+		return urls;
+	} catch (error) {
+		logger.error("Error fetching track by ISRC:", error);
+		throw error;
+	}
+}
+
 const musixmatch = {
 	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 10,  namespace: namespace }),
+	clientGetTrackByISRC: withCache(clientGetTrackByISRC, { ttl: 60 * 10, namespace: namespace }),
 };
 
 export default musixmatch;

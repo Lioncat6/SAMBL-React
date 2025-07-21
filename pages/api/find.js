@@ -92,10 +92,11 @@ export default async function handler(req, res) {
 				);
 			}
 		} else if (type === "ISRC") {
-			const [spotifyData, mbData, mxmData, deezerData] = await Promise.all([
+			// const [spotifyData, mbData, mxmData, deezerData] = await Promise.all([
+			const [spotifyData, mbData, deezerData] = await Promise.all([
 				catchIssue("spotify", spotify.getTrackByISRC, query), 
 				catchIssue("musicbrainz", musicbrainz.getTrackByISRC, query), 
-				catchIssue("musixmatch", musixmatch.getTrackByISRC, query),
+				// catchIssue("musixmatch", musixmatch.getTrackByISRC, query),
 				catchIssue("deezer", deezer.getTrackByISRC, query),
 			]);
 
@@ -133,44 +134,44 @@ export default async function handler(req, res) {
 					);
 				});
 			}
-			if (mxmData?.track) {
-				resultItems.push(
-					createDataObject(
-						"musixmatch",
-						mxmData.track.album_coverart_500x500 || mxmData.track.album_coverart_100x100 || "",
-						mxmData.track.track_name,
-						[{ name: mxmData.track.artist_name, link: `https://www.musixmatch.com/artist/${mxmData.track.artist_id}` }],
-						[
-							mxmData.track.first_release_date?.replace("T00:00:00Z", ""),
-							formatMS(mxmData.track.track_length * 1000),
-							mxmData.lyrics?.restricted == 1 && "Restricted",
-							mxmData.lyrics?.published_status.toString().includes("5") && "Not Verified",
-							((mxmData.track.has_lyrics == 0 && mxmData.lyrics?.instrumental != 1) || !mxmData.lyrics) && "Missing Lyrics",
-							mxmData.lyrics?.instrumental == 1 && "Instrumental",
-							mxmData.track.commontrack_spotify_ids < 1 && "Missing Spotify ID",
-							mxmData.track.commontrack_itunes_ids < 1 && "Missing Itunes ID",
-						],
-						`https://www.musixmatch.com/lyrics/${mxmData.track.commontrack_vanity_id}`,
-						[
-							{
-								track_id: mxmData.track.track_id,
-								lyrics_id: mxmData.lyrics?.lyrics_id,
-								album_id: mxmData.track.album_id,
-								album_vanity_id: mxmData.track.album_vanity_id,
-								artist_id: mxmData.track.artist_id,
-								artist_mbid: mxmData.track.artist_mbid,
-								commontrack_id: mxmData.track.commontrack_id,
-								track_mbid: mxmData.track.track_mbid,
-								track_spotify_id: mxmData.track.track_spotify_id,
-								commontrack_spotify_ids: mxmData.track.commontrack_spotify_ids,
-								commontrack_itunes_ids: mxmData.track.commontrack_itunes_ids,
-								explicit: mxmData.track.explicit,
-								updated_time: mxmData.track.updated_time,
-							},
-						]
-					)
-				);
-			}
+			// if (mxmData?.track) {
+			// 	resultItems.push(
+			// 		createDataObject(
+			// 			"musixmatch",
+			// 			mxmData.track.album_coverart_500x500 || mxmData.track.album_coverart_100x100 || "",
+			// 			mxmData.track.track_name,
+			// 			[{ name: mxmData.track.artist_name, link: `https://www.musixmatch.com/artist/${mxmData.track.artist_id}` }],
+			// 			[
+			// 				mxmData.track.first_release_date?.replace("T00:00:00Z", ""),
+			// 				formatMS(mxmData.track.track_length * 1000),
+			// 				mxmData.lyrics?.restricted == 1 && "Restricted",
+			// 				mxmData.lyrics?.published_status.toString().includes("5") && "Not Verified",
+			// 				((mxmData.track.has_lyrics == 0 && mxmData.lyrics?.instrumental != 1) || !mxmData.lyrics) && "Missing Lyrics",
+			// 				mxmData.lyrics?.instrumental == 1 && "Instrumental",
+			// 				mxmData.track.commontrack_spotify_ids < 1 && "Missing Spotify ID",
+			// 				mxmData.track.commontrack_itunes_ids < 1 && "Missing Itunes ID",
+			// 			],
+			// 			`https://www.musixmatch.com/lyrics/${mxmData.track.commontrack_vanity_id}`,
+			// 			[
+			// 				{
+			// 					track_id: mxmData.track.track_id,
+			// 					lyrics_id: mxmData.lyrics?.lyrics_id,
+			// 					album_id: mxmData.track.album_id,
+			// 					album_vanity_id: mxmData.track.album_vanity_id,
+			// 					artist_id: mxmData.track.artist_id,
+			// 					artist_mbid: mxmData.track.artist_mbid,
+			// 					commontrack_id: mxmData.track.commontrack_id,
+			// 					track_mbid: mxmData.track.track_mbid,
+			// 					track_spotify_id: mxmData.track.track_spotify_id,
+			// 					commontrack_spotify_ids: mxmData.track.commontrack_spotify_ids,
+			// 					commontrack_itunes_ids: mxmData.track.commontrack_itunes_ids,
+			// 					explicit: mxmData.track.explicit,
+			// 					updated_time: mxmData.track.updated_time,
+			// 				},
+			// 			]
+			// 		)
+			// 	);
+			// }
 			if (deezerData?.album) {
 				resultItems.push(
 					createDataObject(

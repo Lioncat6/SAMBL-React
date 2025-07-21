@@ -112,72 +112,72 @@ class MusixMatchAPI {
         return signature;
     }
 
-    async search_tracks(track_query, page = 1) {
+    async search_tracks(track_query, page = 1, clientFind = false) {
         const url = `${EndPoints.SEARCH_TRACK}?app_id=web-desktop-app-v1.0&format=json&q=${encodeURIComponent(track_query)}&f_has_lyrics=true&page_size=100&page=${page}`;
-        return await this.make_request(url);
+        return await this.make_request(url, clientFind);
     }
 
-    async get_track(track_id = null, track_isrc = null) {
+    async get_track(track_id = null, track_isrc = null, clientFind = false) {
         if (!(track_id || track_isrc)) {
             throw new Error("Either track_id or track_isrc must be provided.");
         }
 
         const param = track_id ? `track_id=${track_id}` : `track_isrc=${track_isrc}`;
         const url = `${EndPoints.GET_TRACK}?app_id=web-desktop-app-v1.0&format=json&${param}`;
-        return await this.make_request(url);
+        return await this.make_request(url, clientFind);
     }
 
-    async get_track_lyrics(track_id = null, track_isrc = null) {
+    async get_track_lyrics(track_id = null, track_isrc = null, clientFind = false) {
         if (!(track_id || track_isrc)) {
             throw new Error("Either track_id or track_isrc must be provided.");
         }
 
         const param = track_id ? `track_id=${track_id}` : `track_isrc=${track_isrc}`;
         const url = `${EndPoints.GET_TRACK_LYRICS}?app_id=web-desktop-app-v1.0&format=json&${param}`;
-        return await this.make_request(url);
+        return await this.make_request(url, clientFind);
     }
 
-    async get_artist_chart(country = "US", page = 1) {
+    async get_artist_chart(country = "US", page = 1, clientFind = false) {
         const url = `${EndPoints.GET_ARTIST_CHART}?app_id=web-desktop-app-v1.0&format=json&page_size=100&country=${country}&page=${page}`;
-        return await this.make_request(url);
+        return await this.make_request(url, clientFind);
     }
 
-    async get_track_chart(country = "US", page = 1) {
+    async get_track_chart(country = "US", page = 1, clientFind = false) {
         const url = `${EndPoints.GET_TRACT_CHART}?app_id=web-desktop-app-v1.0&format=json&page_size=100&country=${country}&page=${page}`;
-        return await this.make_request(url);
+        return await this.make_request(url, clientFind);
     }
 
-    async search_artist(query, page = 1) {
+    async search_artist(query, page = 1, clientFind = false) {
         const url = `${EndPoints.SEARCH_ARTIST}?app_id=web-desktop-app-v1.0&format=json&q_artist=${encodeURIComponent(query)}&page_size=100&page=${page}`;
-        return await this.make_request(url);
+        return await this.make_request(url, clientFind);
     }
 
-    async get_artist(artist_id) {
+    async get_artist(artist_id, clientFind = false) {
         const url = `${EndPoints.GET_ARTIST}?app_id=web-desktop-app-v1.0&format=json&artist_id=${artist_id}`;
-        return await this.make_request(url);
+        return await this.make_request(url, clientFind);
     }
 
-    async get_artist_albums(artist_id, page = 1) {
+    async get_artist_albums(artist_id, page = 1, clientFind = false) {
         const url = `${EndPoints.GET_ARTIST_ALBUMS}?app_id=web-desktop-app-v1.0&format=json&artist_id=${artist_id}&page_size=100&page=${page}`;
-        return await this.make_request(url);
+        return await this.make_request(url, clientFind);
     }
 
-    async get_album(album_id) {
+    async get_album(album_id, clientFind = false) {
         const url = `${EndPoints.GET_ALBUM}?app_id=web-desktop-app-v1.0&format=json&album_id=${album_id}`;
-        return await this.make_request(url);
+        return await this.make_request(url, clientFind);
     }
 
-    async get_album_tracks(album_id, page = 1) {
+    async get_album_tracks(album_id, page = 1, clientFind = false) {
         const url = `${EndPoints.GET_ALBUM_TRACKS}?app_id=web-desktop-app-v1.0&format=json&album_id=${album_id}&page_size=100&page=${page}`;
-        return await this.make_request(url);
+        return await this.make_request(url, clientFind);
     }
 
-    async get_track_lyrics_translation(track_id, selected_language) {
+    async get_track_lyrics_translation(track_id, selected_language, clientFind = false) {
         const url = `${EndPoints.GET_TRACK_LYRICS_TRANSLATION}?app_id=web-desktop-app-v1.0&format=json&track_id=${track_id}&selected_language=${selected_language}`;
-        return await this.make_request(url);
+        return await this.make_request(url, clientFind);
     }
 
-    async get_track_richsync(commontrack_id = null, track_id = null, track_isrc = null, f_richsync_length = null, f_richsync_length_max_deviation = null) {
+    async get_track_richsync(commontrack_id = null, track_id = null, track_isrc = null, f_richsync_length = null, f_richsync_length_max_deviation = null, clientFind = false) {
         const base_url = `${EndPoints.GET_TRACK_RICHSYNC}?app_id=web-desktop-app-v1.0&format=json`;
 
         if (commontrack_id) base_url += `&commontrack_id=${commontrack_id}`;
@@ -189,10 +189,13 @@ class MusixMatchAPI {
         return await this.make_request(base_url);
     }
 
-    async make_request(url) {
+    async make_request(url, clientFind = false) {
         url = url.replace(/%20/g, "+").replace(/ /g, "+");
         url = this.base_url + url;
         const signed_url = url + await this.generate_signature(url);
+        if (clientFind) {
+            return signed_url; // Return the signed URL for client-side use
+        }
         const response = await axios.get(signed_url, { headers: this.headers, proxies: this.proxies, timeout: 10000 });
         return response.data;
     }
