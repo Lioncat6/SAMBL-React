@@ -7,7 +7,7 @@ Streaming Artist MusicBrainz Lookup
 
 | Provider | ISRC Lookup | UPC Lookup | Entity Lookup | Artist Search | Album Matching |
 |:---:|:---:|:---:|:---:|:---:|:---:|
-| MusixMatch | ✅ | ✅ | ❌ | ❌ | N/A |
+| MusicBrainz | ✅ | ✅ | ❌ | ❌ | N/A |
 | Spotify | ✅ | ✅ | ❌ | ✅ | ✅ |
 | Deezer | ✅ | ✅ | ❌ | ❌ | ❌ |
 | MusixMatch | ✅ | ❌ | ❌ | ❌ | ❌ |
