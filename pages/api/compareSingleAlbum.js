@@ -31,7 +31,6 @@ export default async function handler(req, res) {
                 mbAlbum = await musicbrainz.getAlbumByMBID(mbSearch.releases[0].id, ["url-rels", "recordings", "isrcs"], { noCache: true });
             }
         }
-
         let albumData = processData([spotifyAlbum], [mbAlbum], mbid);
         if (albumData?.albumData && albumData?.albumData.length > 0) {
             res.status(200).json(albumData.albumData[0]);

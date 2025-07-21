@@ -184,7 +184,6 @@ export default async function handler(req, res) {
 		const quick = Object.prototype.hasOwnProperty.call(req.query, "quick");
 		const full = Object.prototype.hasOwnProperty.call(req.query, "full");
 		const raw = Object.prototype.hasOwnProperty.call(req.query, "raw");
-
 		if (!spotifyId || !spotify.validateSpotifyId(spotifyId)) {
 			return res.status(400).json({ error: "Parameter `spotifyId` is missing or malformed" });
 		} else {
@@ -204,6 +203,7 @@ export default async function handler(req, res) {
 		if (raw) {
 			return res.status(200).json({ sourceAlbums: sourceAlbums, mbAlbums: mbAlbums });
 		}
+		logger.debug("Processing data");
 		let data = await processData(sourceAlbums, mbAlbums, mbid, quick, full);
 		res.status(200).json(data);
 	} catch (error) {

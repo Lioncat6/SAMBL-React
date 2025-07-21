@@ -18,7 +18,7 @@ export default function withCache(func, options) {
         if (!skipCache) {
             const cachedResult = requestCache.get(cacheKey);
             if (cachedResult) {
-                logger.debug(`Returned cached result for ${cacheKey}`);
+                logger.debug(`Returned cached result for ${namespace ? namespace + ":" : ""}${func.name}`);
                 return cachedResult;
             }
         }

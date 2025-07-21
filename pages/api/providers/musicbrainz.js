@@ -147,7 +147,6 @@ async function getArtistFeaturedReleaseCount(mbid) {
 	try {
 		const data = await mbApi.browse("release", { track_artist: mbid, limit: 1 });
 		checkError(data);
-		console.log(data)
 		if (!data["release-count"]){
 			return null;
 		}
@@ -184,8 +183,8 @@ const musicbrainz = {
 	validateMBID,
 	getAlbumsBySourceUrls: withCache(getAlbumsBySourceUrls, { ttl: 60 * 15,  namespace: namespace }),
 	serachForAlbumByArtistAndTitle: withCache(serachForAlbumByArtistAndTitle, { ttl: 60 * 15,  namespace: namespace }),
-	getArtistFeaturedReleaseCount: withCache(getArtistFeaturedReleaseCount, { ttl: 60 * 15,  namespace: namespace }),
-	getArtistReleaseCount: withCache(getArtistReleaseCount, { ttl: 60 * 15,  namespace: namespace }),
+	getArtistFeaturedReleaseCount: withCache(getArtistFeaturedReleaseCount, { ttl: 60 * 60,  namespace: namespace }),
+	getArtistReleaseCount: withCache(getArtistReleaseCount, { ttl: 60 * 60,  namespace: namespace }),
 	
 };
 

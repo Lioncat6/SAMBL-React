@@ -2,12 +2,14 @@ import musicbrainz from "./providers/musicbrainz";
 
 export default async function handler(req, res) {
     try {
-        const { mbid, featured } = req.query;
+        const { mbid } = req.query;
+        const featured = Object.prototype.hasOwnProperty.call(req.query, "featured");
+
         if (!mbid || !musicbrainz.validateMBID(mbid)) {
             return res.status(400).json({ error: "Parameter `mbid` is missing or malformed" });
         }
 
-        const releaseCount = await musicbrainz.getArtistReleaseCount(mbid);
+        let releaseCount = await musicbrainz.getArtistReleaseCount(mbid);
         if (releaseCount === null) {
             return res.status(404).json({ error: "Artist not found" });
         }

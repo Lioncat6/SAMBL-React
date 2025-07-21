@@ -7,7 +7,8 @@ export function SettingsProvider({ children }) {
         showHarmony: true,
         showATisket: true,
         showExport: false,
-        listVirtualization: true
+        listVirtualization: true,
+        quickFetchThreshold: 500
     });
 
     useEffect(() => {
@@ -18,6 +19,7 @@ export function SettingsProvider({ children }) {
             showATisket: savedConfig.showATisket !== undefined ? savedConfig.showATisket : true,
             showExport: savedConfig.showExport !== undefined ? savedConfig.showExport : false,
             listVirtualization: savedConfig.listVirtualization !== undefined ? savedConfig.listVirtualization : true,
+            quickFetchThreshold: savedConfig.quickFetchThreshold !== undefined ? savedConfig.quickFetchThreshold : 500,
         });
     }, []);
 
