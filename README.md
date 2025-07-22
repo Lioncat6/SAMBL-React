@@ -54,6 +54,11 @@ The API root is `/api/` (Ex: `https://sambl.lioncat6.com/api/find`)
 - `full` (boolean)  
   - Adds inc parameters to the MusicBrainz query. (Does not affect quick mode)
 
+#### `/compareSingleAlbum`
+  - `spotifyId` (Spotify album ID or URL) **[Required]**
+  - `mbid` (MusicBrainz album ID)
+    - Optional, improves matching if provided.
+
 ---
 
 ### Unsupported API endpoints
