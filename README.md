@@ -38,26 +38,49 @@ NEXT_PUBLIC_MASTODON_URL=<Mastodon URL [Optional]>
 ### Officially Supported API endpoints
 These API endpoints were created with public use in mind and will be fully supported for the foreseeable future.
 
-The api root is `/api/` (Ex: `https://sambl.lioncat6.com/api/find`)
+The API root is `/api/` (Ex: `https://sambl.lioncat6.com/api/find`)
 
- - `/find`
-   - `query` (string) [R]
-   - `type` <UPC or ISRC> [R]
- - `/compareArtistAlbums` (beta)
-   - `spotifyId` <Spotify ID> [R]
-   - `mbid` <MBID>
-     - Only neccesary if you want to check if the associated albums are linked to that artist
-   - `quick` (bool)
-     - Uses URL matching to check for spotify album links in MusicBrainz. This returns faster, but contains less information, removing the orange album status.
-   - `full` (bool)
-     - Adds inc parameters to the MusicBrainz query. (Does not affect quick mode)
+#### `/find`
+- `query` (string) **[Required]**  
+- `type` (`UPC` or `ISRC`) **[Required]**  
+  - Looks up tracks or albums by barcode (UPC) or ISRC across Spotify, MusicBrainz, Deezer, and MusixMatch (ISRC only).
+
+#### `/compareArtistAlbums` (beta)
+- `spotifyId` (Spotify ID or URL) **[Required]**
+- `mbid` (MusicBrainz artist ID)  
+  - Only necessary if you want to check if the associated albums are linked to that artist.
+- `quick` (boolean)  
+  - Uses URL matching to check for Spotify album links in MusicBrainz. This returns faster, but contains less information, removing the orange album status.
+- `full` (boolean)  
+  - Adds inc parameters to the MusicBrainz query. (Does not affect quick mode)
+
+---
 
 ### Unsupported API endpoints
-These API endpoints were created for internal use but are publically accessible for the time being. Note that these may change unexpectedly and without warning
+These API endpoints were created for internal use but are publicly accessible for the time being. Note that these may change unexpectedly and without warning.
 
- - `getArtistAlbums`
- - `getArtistInfo`
- - `getMusicBrainzAlbums`
- - `getMusicBrainzFeaturedAlbums`
- - `lookupArtist`
- - `searchArtists`
+- `/getArtistAlbums`
+  - `spotifyId` (Spotify ID or URL) **[Required]**
+  - `offset` (number)
+  - `limit` (number)
+- `/getArtistInfo`
+  - `spotifyId` (Spotify ID or URL) **[Required]**
+- `/getMusicBrainzAlbums`
+  - `mbid` (MusicBrainz artist ID) **[Required]**
+  - `offset` (number)
+  - `limit` (number)
+- `/getMusicBrainzFeaturedAlbums`
+  - `mbid` (MusicBrainz artist ID) **[Required]**
+  - `offset` (number)
+  - `limit` (number)
+- `/lookupArtist`
+  - `spotifyId` (Spotify ID or URL) **[Required]**
+- `/searchArtists`
+  - `query` (string) **[Required]**
+- `/getArtistReleaseCount`
+  - `mbid` (MusicBrainz artist ID) **[Required]**
+  - `featured` (boolean)
+- `/ping`
+  - Health check endpoint, returns `{ message: "Pong" }`
+
+See each endpoint's source in [`/pages/api/`](pages/api/) for
