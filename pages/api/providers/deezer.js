@@ -1,5 +1,8 @@
 const DeezerPublicApi = require('deezer-public-api');
 import logger from "../../../utils/logger";
+import withCache from "../../../utils/cache";
+
+const namespace = "deezer";
 
 let deezerApi = new DeezerPublicApi();
 let lastRefreshed = Date.now();
@@ -44,8 +47,8 @@ async function getAlbumByUPC(upc) {
 }
 
 const deezer = {
-    getTrackByISRC,
-    getAlbumByUPC,
+    getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 30,  namespace: namespace }),
+    getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 30,  namespace: namespace }),
 };
 
 export default deezer;

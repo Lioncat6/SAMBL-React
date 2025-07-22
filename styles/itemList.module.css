@@ -9,7 +9,7 @@
 }
 
 .virtualListContainer {
-	overflow: hidden
+	overflow: hidden;
 }
 
 .listWrapper {
@@ -60,7 +60,6 @@
 	height: 64px;
 	margin: 3px 3px;
 	transition: 0.5s all;
-
 }
 
 .innerItem {
@@ -168,7 +167,7 @@
 	opacity: 0.4;
 }
 
-.listItem>* {
+.listItem > * {
 	position: relative;
 	z-index: 2;
 }
@@ -315,7 +314,7 @@
 
 .hasTracks {
 	cursor: help;
-	transition: all .2s ease-in-out;
+	transition: all 0.2s ease-in-out;
 }
 
 .trackHighlight {
@@ -354,7 +353,6 @@
 	width: 0;
 	flex-basis: content;
 	margin-right: 10px;
-
 }
 
 .albumTitle {
@@ -370,7 +368,7 @@
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	color: var(--foreground-secondary)
+	color: var(--foreground-secondary);
 }
 
 .albumTitle .albumMB {
@@ -409,7 +407,6 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-
 
 @keyframes textColorShimmer {
 	0% {
@@ -450,7 +447,6 @@
 	margin: 2px 0 0 0;
 }
 
-
 .skeletonTextContainer {
 	padding: 8px 0 0 8px;
 	display: flex;
@@ -458,9 +454,7 @@
 	flex-basis: content;
 	margin-right: 10px;
 	flex-grow: 1;
-
 }
-
 
 .textContaskeletonTextContaineriner {
 	padding: 8px 0 0 8px;
@@ -468,7 +462,6 @@
 	flex-direction: column;
 	width: calc(100% - 260px);
 }
-
 
 .skeletonText {
 	height: 12px;
@@ -516,10 +509,7 @@
 .skeletonPill,
 .skeletonButton {
 	animation: skeletonShimmer 1.5s infinite linear;
-	background: linear-gradient(90deg,
-			var(--skeleton) 25%,
-			var(--skeleton-highlight) 50%,
-			var(--skeleton) 75%);
+	background: linear-gradient(90deg, var(--skeleton) 25%, var(--skeleton-highlight) 50%, var(--skeleton) 75%);
 	background-size: 200% 100%;
 }
 
@@ -598,7 +588,6 @@
 	min-height: 16px;
 }
 
-
 .numDiff {
 	color: red;
 	margin-left: 5px;
@@ -652,7 +641,6 @@
 }
 
 @media (max-width: 1100px) {
-
 	.collapse,
 	.expand {
 		opacity: 100% !important;
@@ -695,5 +683,39 @@
 	overflow: hidden;
 	transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 	max-width: 1000px;
+}
 
+.refreshIcon {
+	color: transparent;
+	transition: color 0.5s ease-in-out;
+	display: inline-block;
+}
+
+.refreshIcon > svg {
+	transform-origin: 8px 9px;
+	display: block;
+	margin: auto;
+}
+
+.refreshIcon:hover {
+	color: var(--foreground-primary) !important;
+	cursor: pointer;
+}
+
+.refreshIcon.loading > svg {
+	animation: rotate 1s linear infinite;
+	color: var(--foreground-primary);
+}
+
+@keyframes rotate {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+.listItem:hover .refreshIcon {
+	color: var(--foreground-tertiary);
 }

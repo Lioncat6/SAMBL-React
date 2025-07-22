@@ -198,3 +198,22 @@ flex-direction: row;
     align-items: center;
     margin-right: 5px;
 }
+
+.settingsInput {
+    font-size: 14px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	margin-bottom: 10px;
+	margin-top: 10px;
+	height: 18px;
+	resize: none;
+	background: transparent;
+    overflow: hidden;
+    width: auto;
+}
+
+.settingsInputWrapper {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}

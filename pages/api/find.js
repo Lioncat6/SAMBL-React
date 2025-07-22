@@ -99,7 +99,7 @@ export default async function handler(req, res) {
 				catchIssue("deezer", deezer.getTrackByISRC, query),
 			]);
 
-			if (spotifyData?.tracks.items) {
+			if (spotifyData?.tracks?.items) {
 				spotifyData.tracks.items.forEach((track) => {
 					resultItems.push(
 						createDataObject(
@@ -133,7 +133,6 @@ export default async function handler(req, res) {
 					);
 				});
 			}
-			console.log("MXM Data:", mxmData);
 			if (mxmData?.track) {
 				resultItems.push(
 					createDataObject(
@@ -189,6 +188,7 @@ export default async function handler(req, res) {
 		}
 		res.status(200).json({ data: resultItems, issues: issues });
 	} catch (error) {
+		logger.error("Error in find API", error);
 		res.status(500).json({ error: "Internal Server Error", details: error.message });
 	}
 }

@@ -18,8 +18,9 @@ function ConfigureMenu({ close }) {
 	const [showATisket, setShowATisket] = useState(settings.showATisket);
 	const [showExport, setShowExport] = useState(settings.showExport);
 	const [listVirtualization, setListVirtualization] = useState(settings.listVirtualization);
+	const [quickFetchThreshold, setQuickFetchThreshold] = useState(settings.quickFetchThreshold);
 	const saveConfig = () => {
-		const newSettings = { showHarmony, showATisket, showExport, listVirtualization };
+		const newSettings = { showHarmony, showATisket, showExport, listVirtualization, quickFetchThreshold };
 		updateSettings(newSettings);
 		close();
 	};
@@ -52,6 +53,13 @@ function ConfigureMenu({ close }) {
 							Enable List virtualization
 						</label>
 					</div>
+					<div className={styles.settingsInputWrapper}>
+						<input className={styles.settingsInput} type="number" id="quickFetchThreshold" value={quickFetchThreshold} onChange={(e) => setQuickFetchThreshold(Number(e.target.value))}/>
+						<label htmlFor="quickFetchThreshold">
+							Quick Fetch Threshold (Albums)
+						</label>
+					</div>
+
 				</div>
 			</div>
 			<div className={styles.actions}>

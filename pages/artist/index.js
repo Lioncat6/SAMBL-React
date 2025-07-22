@@ -3,10 +3,11 @@ import ArtistInfo from "../../components/ArtistInfo";
 import Head from "next/head";
 import ItemList from "../../components/ItemList";
 import Notice from "../../components/notices";
-
+import { useRouter } from "next/router";
+import { useSettings } from "../../components/SettingsContext";
 import { toast, Flip } from "react-toastify";
 
-import normalizeText from "../../utils/normalizeText";
+import processData from "../../utils/processAlbumData";
 
 async function fetchArtistData(spfId) {
 	const response = await fetch(`http://localhost:3000/api/getArtistInfo?spotifyId=${spfId}`);
@@ -25,9 +26,9 @@ export async function getServerSideProps(context) {
 		if (response.ok) {
 			const fetchedMBid = await response.json();
 			if (fetchedMBid) {
-				let destination = `/artist?spid=${spid || splitSpids[0]}&artist_mbid=${fetchedMBid}`
+				let destination = `/artist?spid=${spid || splitSpids[0]}&artist_mbid=${fetchedMBid}`;
 				if (!spid && splitSpids.length > 1) {
-					destination = `/artist?spids=${spids}&artist_mbid=${fetchedMBid}`
+					destination = `/artist?spids=${spids}&artist_mbid=${fetchedMBid}`;
 				}
 				return {
 					redirect: {
@@ -39,7 +40,7 @@ export async function getServerSideProps(context) {
 		}
 	}
 	if (!spid && splitSpids.length == 1) {
-		let destination = `/artist?spid=${splitSpids[0]}${(mbid || artist_mbid) ? `&artist_mbid=${artist_mbid || mbid}` : ""}`
+		let destination = `/artist?spid=${splitSpids[0]}${mbid || artist_mbid ? `&artist_mbid=${artist_mbid || mbid}` : ""}`;
 		return {
 			redirect: {
 				destination: destination,
@@ -51,22 +52,24 @@ export async function getServerSideProps(context) {
 		let data;
 		let artist;
 		if (!spid && spids) {
-			data = []
+			data = [];
 			let spidArray = splitSpids;
 			for (let id of spidArray) {
 				data.push(await fetchArtistData(id));
 			}
-			const uniqueNames = [...new Set(data.map(artist => artist.name))];
-			const genres = [...new Set(data.flatMap(artist => artist.genres))].filter(genre => genre.trim() != "");
-			let mostPopularIndex = 0
-			let mostPopularity = 0
+			const uniqueNames = [...new Set(data.map((artist) => artist.name))];
+			const genres = [...new Set(data.flatMap((artist) => artist.genres))].filter((genre) => genre.trim() != "");
+			let mostPopularIndex = 0;
+			let mostPopularity = 0;
 			for (let artist in data) {
 				if (data[artist].popularity > mostPopularity) {
 					mostPopularIndex = artist;
 					mostPopularity = data[artist].popularity;
 				}
 			}
-			const totalFollowers = data.reduce(function (total, artist) { return total + artist.followers.total }, 0)
+			const totalFollowers = data.reduce(function (total, artist) {
+				return total + artist.followers.total;
+			}, 0);
 			artist = {
 				names: uniqueNames,
 				name: uniqueNames.join(" / "),
@@ -127,169 +130,52 @@ async function fetchMbArtistFeaturedtAlbums(mbid, offset = 0) {
 	});
 }
 
-function processData(sourceAlbums, mbAlbums) {
-	let albumData = [];
-	let green = 0;
-	let red = 0;
-	let orange = 0;
-	let total = 0;
-
-	sourceAlbums.forEach((album) => {
-		let albumStatus = "red";
-		let albumMBUrl = "";
-		let spotifyId = album.id;
-		let spotifyName = album.name;
-		let spotifyUrl = album.external_urls.spotify;
-		let spotifyImageURL = album.images[0]?.url || "";
-		let spotifyImageURL300px = album.images[1]?.url || spotifyImageURL;
-		let spotifyAlbumArtists = album.artists;
-		let spotifyArtistNames = album.artists.map(artist => artist.name);
-		let spotifyReleaseDate = album.release_date;
-		let spotifyTrackCount = album.total_tracks;
-		let spotifyAlbumType = album.album_type;
-
-		let mbTrackCount = 0;
-		let mbReleaseDate = "";
-		let mbid = "";
-		let finalHasCoverArt = false;
-		let albumIssues = [];
-		let finalTracks = [];
-		let mbBarcode = "";
-		mbAlbums.forEach((mbAlbum) => {
-			let mbReleaseName = mbAlbum.title;
-			let mbReleaseUrls = mbAlbum.relations || [];
-			let MBTrackCount = mbAlbum.media?.reduce((count, media) => count + media["track-count"], 0);
-			let MBReleaseDate = mbAlbum.date;
-			let MBReleaseUPC = mbAlbum.barcode;
-			let hasCoverArt = mbAlbum["cover-art-archive"]?.front || false;
-			var MBTracks = [];
-			mbAlbum.media?.forEach((media) => {
-				if (media.tracks) {
-					MBTracks = [...MBTracks, ...media.tracks];
-				}
-			});
-			mbReleaseUrls.forEach((relation) => {
-				if (relation.url.resource == spotifyUrl) {
-					albumStatus = "green";
-					mbid = mbAlbum.id;
-					albumMBUrl = `https://musicbrainz.org/release/${mbid}`;
-					mbTrackCount = MBTrackCount;
-					mbReleaseDate = MBReleaseDate;
-					finalHasCoverArt = hasCoverArt;
-					finalTracks = MBTracks;
-					mbBarcode = MBReleaseUPC;
-				}
-			});
-
-			if (albumStatus === "red" && normalizeText(mbReleaseName) === normalizeText(spotifyName)) {
-				albumStatus = "orange";
-				mbid = mbAlbum.id;
-				albumMBUrl = `https://musicbrainz.org/release/${mbid}`;
-				mbTrackCount = MBTrackCount;
-				mbReleaseDate = MBReleaseDate;
-				finalHasCoverArt = hasCoverArt;
-				finalTracks = MBTracks;
-				mbBarcode = MBReleaseUPC;
-			}
-		});
-
-		let mbTrackNames = [];
-		let mbTrackISRCs = [];
-		let mbISRCs = [];
-		let tracksWithoutISRCs = [];
-		for (let track in finalTracks) {
-			let titleString = finalTracks[track].title;
-			let ISRCs = finalTracks[track].recording.isrcs;
-			if (ISRCs.length < 1) {
-				tracksWithoutISRCs.push(track);
-			} else {
-				mbISRCs.push(...ISRCs);
-			}
-			mbTrackNames.push(titleString);
-			mbTrackISRCs.push({ name: titleString, isrcs: ISRCs })
-		}
-
-		if (albumStatus != "red") {
-			if (!mbBarcode || mbBarcode == null) {
-				albumIssues.push("noUPC");
-			}
-			if (mbTrackCount != spotifyTrackCount) {
-				albumIssues.push("trackDiff");
-			}
-			if (mbReleaseDate == "" || mbReleaseDate == undefined || !mbReleaseDate) {
-				albumIssues.push("noDate");
-			} else if (mbReleaseDate != spotifyReleaseDate) {
-				albumIssues.push("dateDiff");
-			}
-			if (!finalHasCoverArt) {
-				albumIssues.push("noCover");
-			}
-			if (tracksWithoutISRCs.length > 0) {
-				albumIssues.push("missingISRCs");
-			}
-		}
-
-		total++;
-		if (albumStatus === "green") {
-			green++;
-		} else if (albumStatus === "orange") {
-			orange++;
-		} else {
-			red++;
-		}
-
-		albumData.push({
-			spotifyId,
-			spotifyName,
-			spotifyUrl,
-			spotifyImageURL,
-			spotifyImageURL300px,
-			spotifyAlbumArtists,
-			spotifyArtistNames,
-			spotifyReleaseDate,
-			spotifyTrackCount,
-			spotifyAlbumType,
-			albumStatus,
-			albumMBUrl,
-			mbTrackCount,
-			mbReleaseDate,
-			mbid,
-			albumIssues,
-			mbTrackNames,
-			mbISRCs,
-			mbTrackISRCs,
-			tracksWithoutISRCs,
-			mbBarcode,
-		});
-	});
-
-	let statusText = `Albums on MusicBrainz: ${green}/${total} ~ ${orange} albums have matching names but no associated link`;
-	return {
-		albumData,
-		statusText,
-		green,
-		orange,
-		red,
-		total,
-	};
+async function fetchArtistReleaseCount(mbid) {
+	const response = await fetch(`/api/getArtistReleaseCount?mbid=${mbid}&featured`);
+	if (response.ok) {
+		return await response.json();
+	} else {
+		throw new Error("Failed to fetch artist release count");
+	}
 }
 
+let toastProperties = {
+	position: "top-left",
+	autoClose: 5000,
+	hideProgressBar: false,
+	closeOnClick: false,
+	pauseOnHover: true,
+	draggable: true,
+	progress: undefined,
 
-function dispError(message) {
-	let toastProperties = {
-		position: "top-left",
-		autoClose: 5000,
-		hideProgressBar: false,
-		closeOnClick: false,
-		pauseOnHover: true,
-		draggable: true,
-		progress: undefined,
-		transition: Flip,
-	};
-	toast.error(message, toastProperties);
+	transition: Flip,
+};
+async function dispError(message, type = "error") {
+	if (type === "error") {
+		toast.error(message, toastProperties);
+	} else {
+		toast.warn(message, toastProperties);
+	}
+}
+async function dispPromise(promise, message) {
+	return toast
+		.promise(
+			promise,
+			{
+				pending: message,
+				error: "Data not found!",
+			},
+			toastProperties
+		)
+		.finally(() => {});
 }
 
 export default function Artist({ artist }) {
+	const { settings } = useSettings();
+	const router = useRouter();
+	const { quickFetch } = router.query;
+
+	const [isQuickFetched, setIsQuickFetched] = useState(false);
 	const [albums, setAlbums] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [statusText, setStatusText] = useState("Loading albums...");
@@ -315,7 +201,7 @@ export default function Artist({ artist }) {
 			let attempts = 0;
 			for (const spid of spids) {
 				let offset = 0;
-				let currentAlbumCount = 999
+				let currentAlbumCount = 999;
 				let fetchedAlbums = 0;
 				while (offset < currentAlbumCount) {
 					try {
@@ -330,7 +216,9 @@ export default function Artist({ artist }) {
 						sourceAlbums = [...sourceAlbums, ...data.items];
 						fetchedAlbums += data.items.length;
 						currentAlbumCount = data.total;
-						if (sourceAlbumCount < 0) { sourceAlbumCount = currentAlbumCount }
+						if (sourceAlbumCount < 0) {
+							sourceAlbumCount = currentAlbumCount;
+						}
 						offset = fetchedAlbums;
 						updateLoadingText();
 					} catch (error) {
@@ -354,7 +242,7 @@ export default function Artist({ artist }) {
 					const data = await fetchMbArtistAlbums(artist.mbid, offset);
 					if (typeof data == "number") {
 						if (data == 404) {
-							dispError("MBID not found!")
+							dispError("MBID not found!");
 							return;
 						}
 						throw new Error(`Error fetching MusicBrainz albums: ${data}`);
@@ -382,7 +270,7 @@ export default function Artist({ artist }) {
 					const data = await fetchMbArtistFeaturedtAlbums(artist.mbid, offset);
 					if (typeof data == "number") {
 						if (data == 404) {
-							dispError("MBID not found!")
+							dispError("MBID not found!");
 							return;
 						}
 						throw new Error(`Error fetching MusicBrainz Featured albums: ${data}`);
@@ -402,19 +290,67 @@ export default function Artist({ artist }) {
 			}
 		}
 
+		async function quickFetchAlbums(spid, mbid) {
+			let attempts = 0;
+			while (attempts < 3) {
+				try {
+					const response = await fetch(`/api/compareArtistAlbums?spotifyId=${spid}&mbid=${mbid}&quick`);
+					if (response.ok) {
+						return await response.json();
+					} else {
+						throw new Error("Failed to fetch artist albums");
+					}
+				} catch (error) {
+					attempts++;
+					if (attempts >= 3) {
+						throw error;
+					}
+				}
+			}
+			throw new Error("Maximum Quick Fetch attempts exceeded");
+		}
+
+		async function shouldQuickfetch() {
+			if (artist.mbid) {
+				const releaseCount = await fetchArtistReleaseCount(artist.mbid);
+				console.log(settings);
+				if (releaseCount.releaseCount > settings.quickFetchThreshold) {
+					setIsQuickFetched(true);
+					return true;
+				}
+			}
+			return false;
+		}
+
+		async function fetchAlbums(spids) {
+			await Promise.all([fetchSpotifyAlbums(spids), fetchMusicbrainzArtistAlbums(), fetchMusicBrainzFeaturedAlbums()]);
+		}
+
 		async function loadAlbums() {
 			const spids = artist.spotifyIds ? artist.spotifyIds : [artist.spotifyId];
+			let didQuickFetch = false;
 			if (!artist.mbid) {
 				await fetchSpotifyAlbums(spids);
 			} else {
-				await Promise.all([fetchSpotifyAlbums(spids), fetchMusicbrainzArtistAlbums(), fetchMusicBrainzFeaturedAlbums()]);
+				if (spids.length > 1 || quickFetch) {
+					await fetchAlbums(spids);
+				} else {
+					didQuickFetch = await shouldQuickfetch();
+					if (!didQuickFetch) {
+						await fetchAlbums(spids);
+					}
+				}
 			}
 
-			let data = processData(sourceAlbums, mbAlbums);
+			let data;
+			if (didQuickFetch) {
+				data = await dispPromise(quickFetchAlbums(spids[0], artist.mbid), "Quick Fetching albums...");
+			} else {
+				data = processData(sourceAlbums, mbAlbums, artist.mbid);
+			}
 			setStatusText(data.statusText);
 			setAlbums(data.albumData);
 			setLoading(false);
-			// setExportData(data.albumData);
 		}
 		loadAlbums();
 	}, [artist.spotifyId]);
@@ -429,6 +365,7 @@ export default function Artist({ artist }) {
 				<meta property="og:description" content={`View Artist • ${artist.name} • ${artist.followers} Followers`} />
 			</Head>
 			{!artist.mbid && <Notice type={"noMBID"} data={artist} />}
+			{isQuickFetched && <Notice type={"quickFetched"} />}
 			<ArtistInfo artist={artist} />
 			<div id="contentContainer">{loading ? <ItemList type={"loadingAlbum"} text={statusText} /> : <ItemList type={"album"} items={albums} text={statusText} />}</div>
 		</>
