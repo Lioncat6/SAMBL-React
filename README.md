@@ -56,8 +56,7 @@ The API root is `/api/` (Ex: `https://sambl.lioncat6.com/api/find`)
 
 #### `/compareSingleAlbum`
   - `spotifyId` (Spotify album ID or URL) **[Required]**
-  - `mbid` (MusicBrainz album ID)
-    - Optional, improves matching if provided.
+  - `mbid` (MusicBrainz artist ID) **[Required]**
 
 ---
 
