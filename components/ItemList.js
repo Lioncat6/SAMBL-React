@@ -67,25 +67,30 @@ function ActionButtons({ item }) {
 	const { settings } = useSettings();
 	const { spotifyId, spotifyUrl } = item;
 	const [collapsed, setCollapsed] = useState(true);
-	function toggleState(){
+	function toggleState() {
 		setCollapsed(!collapsed);
 	}
 	return (
 		<>
 			<div className={styles.actionButtons}>
-				{<div className={`${collapsed ? styles.expand : styles.collapse}`} onClick={toggleState}>{collapsed ? <FaAnglesLeft /> : <FaAnglesRight />}</div>}
+				{
+					<div className={`${collapsed ? styles.expand : styles.collapse}`} onClick={toggleState}>
+						{collapsed ? <FaAnglesLeft /> : <FaAnglesRight />}
+					</div>
+				}
 				<div className={`${collapsed ? styles.collapsed : styles.expanded}`}>
-				{settings.showExport && <SelectionButtons item={item} />}
-				{settings.showATisket && (
-					<a className={styles.aTisketButton} href={`https://atisket.pulsewidth.org.uk/?spf_id=${spotifyId}&amp;preferred_vendor=spf`} target="_blank" rel="noopener noreferrer">
-						<div>A-tisket</div>
-					</a>
-				)}
-				{settings.showHarmony && (
-					<a className={styles.harmonyButton} href={`https://harmony.pulsewidth.org.uk/release?url=${spotifyUrl}&category=preferred`} target="_blank" rel="noopener noreferrer">
-						<div>Harmony</div>
-					</a>
-				)}</div>
+					{settings.showExport && <SelectionButtons item={item} />}
+					{settings.showATisket && (
+						<a className={styles.aTisketButton} href={`https://atisket.pulsewidth.org.uk/?spf_id=${spotifyId}&amp;preferred_vendor=spf`} target="_blank" rel="noopener noreferrer">
+							<div>A-tisket</div>
+						</a>
+					)}
+					{settings.showHarmony && (
+						<a className={styles.harmonyButton} href={`https://harmony.pulsewidth.org.uk/release?url=${spotifyUrl}&category=preferred`} target="_blank" rel="noopener noreferrer">
+							<div>Harmony</div>
+						</a>
+					)}
+				</div>
 			</div>
 		</>
 	);
@@ -124,19 +129,25 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 		progress: undefined,
 
 		transition: Flip,
-	}
+	};
 	async function dispError(message, type = "warn") {
 		if (type === "error") {
 			toast.error(message, toastProperties);
 		} else {
 			toast.warn(message, toastProperties);
 		}
-	}	
+	}
 	async function dispPromise(promise, message) {
-		return toast.promise(promise, {
-			pending: message,
-			error: "Data not found!"
-		}, toastProperties).finally(() => {});
+		return toast
+			.promise(
+				promise,
+				{
+					pending: message,
+					error: "Data not found!",
+				},
+				toastProperties
+			)
+			.finally(() => {});
 	}
 
 	const {
@@ -164,15 +175,13 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 		mbBarcode,
 	} = item;
 
-
-	
 	async function refreshData() {
-		setIsLoading(true)
+		setIsLoading(true);
 		const response = await dispPromise(fetch(`/api/compareSingleAlbum?spotifyId=${spotifyId}&mbid=${currentArtistMBID}`), "Refreshing album...");
-		setIsLoading(false); 
+		setIsLoading(false);
 		if (response.ok) {
 			const updatedItem = await response.json();
-			console.log(updatedItem)
+			console.log(updatedItem);
 			if (onUpdate) onUpdate(updatedItem);
 		} else {
 			dispError("Failed to refresh album data!", "error");
@@ -345,17 +354,16 @@ function Icon({ source }) {
 }
 
 function LinkButton({ item }) {
-		const { settings } = useSettings();
+	const { settings } = useSettings();
 
-	
 	return (
 		<div className={styles.actionButtons}>
-		{settings.showExport &&<SelectionButtons item={item} /> }
-		<a href={item.link} target="_blank" className={styles.viewButton}>
-			<div>
-				View <Icon source={item.source} />
-			</div>
-		</a>
+			{settings.showExport && <SelectionButtons item={item} />}
+			<a href={item.link} target="_blank" className={styles.viewButton}>
+				<div>
+					View <Icon source={item.source} />
+				</div>
+			</a>
 		</div>
 	);
 }
@@ -409,7 +417,7 @@ function ListBuilder({ items, type, onItemUpdate }) {
 	);
 }
 
-function ListContainer({ items, type, text, onItemUpdate}) {
+function ListContainer({ items, type, text, onItemUpdate }) {
 	return (
 		<>
 			<div className={styles.listContainer}>{items && <ListBuilder items={items} type={type} onItemUpdate={onItemUpdate} />}</div>
@@ -473,10 +481,10 @@ function LoadingItem() {
 	);
 }
 
-function LoadingContainer({ text }) {
+function LoadingContainer({ text, showRefresh = false }) {
 	return (
 		<>
-			<LoadingSearchContainer text={text} />
+			<LoadingSearchContainer text={text} showRefresh={showRefresh} />
 			<div className={styles.listSkeletonContainer}>
 				{Array.from({ length: 13 }).map((_, index) => (
 					<LoadingItem key={index} />
@@ -486,7 +494,23 @@ function LoadingContainer({ text }) {
 	);
 }
 
-function LoadingSearchContainer({ text }) {
+function RefreshButton({refresh, showRefresh = false}) {
+	if (refresh != undefined) {
+		return (
+			<button id="refreshButton" className={styles.refreshButton} onClick={refresh}>
+					<IoMdRefresh />
+				</button>
+		)
+	} else if (showRefresh) {
+		return (
+			<button id="refreshButton" className={styles.refreshButton}>
+				<IoMdRefresh />
+			</button>
+		);
+	}
+}
+
+function LoadingSearchContainer({ text, showRefresh = false }) {
 	return (
 		<>
 			<div id="searchContainer" className={styles.searchContainer}>
@@ -496,12 +520,13 @@ function LoadingSearchContainer({ text }) {
 						Filter
 					</div>
 				</button>
+				<RefreshButton showRefresh={showRefresh} />
 			</div>
 		</>
 	);
 }
 
-function SearchContainer({ onSearch, currentFilter, setFilter }) {
+function SearchContainer({ onSearch, currentFilter, setFilter, refresh }) {
 	const Popup = dynamic(() => import("./Popup"), { ssr: false });
 	return (
 		<div id="searchContainer" className={styles.searchContainer}>
@@ -523,11 +548,12 @@ function SearchContainer({ onSearch, currentFilter, setFilter }) {
 				data={currentFilter}
 				apply={(newFilter) => setFilter(newFilter)}
 			/>
+			<RefreshButton refresh={refresh} />
 		</div>
 	);
 }
 
-export default function ItemList({ items, type, text }) {
+export default function ItemList({ items, type, text, refresh }) {
 	const { settings } = useSettings();
 	const [searchQuery, setSearchQuery] = useState(""); // State for search query
 	const [filteredItems, setFilteredItems] = useState(items || []); // State for filtered items
@@ -596,16 +622,14 @@ export default function ItemList({ items, type, text }) {
 		itemArray = Array.isArray(currentItems) ? currentItems : Object.values(currentItems);
 	}
 
-	 const handleItemUpdate = (updatedItem) => {
-        setCurrentItems((prev) =>
-            prev.map((item) => item.spotifyId === updatedItem.spotifyId ? updatedItem : item)
-        );
-    };
+	const handleItemUpdate = (updatedItem) => {
+		setCurrentItems((prev) => prev.map((item) => (item.spotifyId === updatedItem.spotifyId ? updatedItem : item)));
+	};
 	return (
 		<div className={styles.listWrapper}>
-			{type === "album" && <SearchContainer onSearch={setSearchQuery} currentFilter={filter} setFilter={setFilter} />}
+			{type === "album" && <SearchContainer onSearch={setSearchQuery} currentFilter={filter} setFilter={setFilter} refresh={refresh} />}
 			{type === "loadingAlbum" ? (
-				<LoadingContainer text={text} />
+				<LoadingContainer text={text} showRefresh={refresh != undefined} />
 			) : items.length > 75 && settings.listVirtualization ? ( // If over 200 albums, use the virtualized list. Reason why I don't want to always use it is because it scrolls less smooth
 				<VirtualizedList items={type === "album" ? filteredItems : itemArray} type={type} text={text} onItemUpdate={handleItemUpdate} />
 			) : (
