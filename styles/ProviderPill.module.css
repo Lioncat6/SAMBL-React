@@ -1,0 +1,41 @@
+.ProviderPill {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--foreground-secondary);
+    height: 32px;
+    border-radius: 10px;
+    display: flex;
+	flex-direction:row;
+	left: 0;
+	position: absolute;
+	max-width: 38vw;
+	min-width: min-content;
+	flex-wrap: wrap;
+	align-content: center;
+	justify-content: right;
+    margin: 20px;
+    padding: 5px
+}
+
+.provider {
+    border-radius: 50px;
+    width: 30px;
+    height: 30px;
+    border: none;
+    align-items: center;
+    background-color: var(--foreground-background);
+}
+
+.provider:hover {
+    background-color: var(--foreground-quaternary);
+}
+
+.SelectedProvider {
+    position: absolute;
+    pointer-events: none;
+    border-radius: 50px;
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--foreground-primary);
+    align-items: center;
+}

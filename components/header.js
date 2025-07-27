@@ -7,6 +7,7 @@ import { FaMagnifyingGlass, FaGear } from "react-icons/fa6";
 import { FaTools, FaUser } from "react-icons/fa";
 import { TbTableExport, TbPackageExport } from "react-icons/tb";
 
+import ProviderPill from "./ProviderPill";
 
 import { useExportData } from "./Export";
 
@@ -18,6 +19,7 @@ export default function Header() {
 	return (
 		<>
 			<header className={styles.header}>
+				<ProviderPill />
 				<Link className={styles.samblWrapper} href="/">
 					<div className={styles.imagewrapper}>
 						<img src="assets/images/favicon.svg" alt="SAMBL Logo" className={styles.logo} />
