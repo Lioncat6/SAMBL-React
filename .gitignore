@@ -16,3 +16,5 @@ yarn-debug.log*
 yarn-error.log*
 config.js
 .env
+.lastlockhash
+.lastversion
