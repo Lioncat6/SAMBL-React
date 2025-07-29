@@ -10,7 +10,7 @@ import { toast, Flip } from "react-toastify";
 import processData from "../../utils/processAlbumData";
 
 async function fetchArtistData(spfId) {
-	const response = await fetch(`http://localhost:3000/api/getArtistInfo?spotifyId=${spfId}`);
+	const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?spotifyId=${spfId}`);
 	if (response.ok) {
 		return await response.json();
 	} else {
@@ -22,7 +22,7 @@ export async function getServerSideProps(context) {
 	const { spid, spids, artist_mbid, mbid } = context.query;
 	const splitSpids = spids?.split(",");
 	if (!artist_mbid && !mbid) {
-		const response = await fetch(`http://localhost:3000/api/lookupArtist?spotifyId=${spid || splitSpids[0]}`);
+		const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/lookupArtist?spotifyId=${spid || splitSpids[0]}`);
 		if (response.ok) {
 			const fetchedMBid = await response.json();
 			if (fetchedMBid) {
