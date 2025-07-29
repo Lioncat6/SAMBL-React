@@ -2,6 +2,7 @@
 // Stater for the pterodactyl panel. Should work in other applications, however.
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { spawn } = require('child_process');
 
 if (fs.existsSync('.env') && !process.env.FORCE_IGNORE_ENV) {
@@ -16,10 +17,23 @@ if (fs.existsSync('.env') && !process.env.FORCE_IGNORE_ENV) {
 const pkg = require('./package.json');
 const currentVersion = pkg.version;
 const versionFile = path.resolve('.lastversion');
-let lastVersion = null;
+const lockFile = path.resolve('package-lock.json');
+const lockHashFile = path.resolve('.lastlockhash');
 
+let lastVersion = null;
 if (fs.existsSync(versionFile)) {
   lastVersion = fs.readFileSync(versionFile, 'utf8').trim();
+}
+
+let lastLockHash = null;
+if (fs.existsSync(lockHashFile)) {
+  lastLockHash = fs.readFileSync(lockHashFile, 'utf8').trim();
+}
+
+function getLockHash() {
+  if (!fs.existsSync(lockFile)) return null;
+  const content = fs.readFileSync(lockFile);
+  return crypto.createHash('sha256').update(content).digest('hex');
 }
 
 function runStep(name, cmd, args, onSuccess) {
@@ -42,13 +56,27 @@ function runStep(name, cmd, args, onSuccess) {
   });
 }
 
-if (lastVersion !== currentVersion) {
-  console.log(`🟡 Version changed: ${lastVersion || 'none'} → ${currentVersion}`);
-  runStep('Build', 'npm', ['run', 'build'], () => {
-    fs.writeFileSync(versionFile, currentVersion);
+const currentLockHash = getLockHash();
+if (currentLockHash !== lastLockHash) {
+  console.log(`🟡 package-lock.json changed → installing dependencies`);
+  runStep('Install', 'npm', ['install'], () => {
+    fs.writeFileSync(lockHashFile, currentLockHash);
+    proceedWithBuildAndStart();
   });
 } else {
-  console.log(`🟡 Version unchanged (${currentVersion}). Skipping build.`);
+  console.log('🟢 Dependencies unchanged → skipping install');
+  proceedWithBuildAndStart();
 }
 
-runStep('Start', 'npm', ['start', '--', '-p', '25565']);
+function proceedWithBuildAndStart() {
+  if (lastVersion !== currentVersion) {
+    console.log(`🟡 Version changed: ${lastVersion || 'none'} → ${currentVersion}`);
+    runStep('Build', 'npm', ['run', 'build'], () => {
+      fs.writeFileSync(versionFile, currentVersion);
+      runStep('Start', 'npm', ['start', '--', '-p', '25565']);
+    });
+  } else {
+    console.log(`🟢 Version unchanged (${currentVersion}) → skipping build`);
+    runStep('Start', 'npm', ['start', '--', '-p', '25565']);
+  }
+}
