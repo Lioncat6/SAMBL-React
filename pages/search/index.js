@@ -4,7 +4,7 @@ import Head from 'next/head';
 import SearchBox from '../../components/SearchBox';
 
 async function getItems(query) {
-    const response = await fetch(`http://localhost:3000/api/searchArtists?query=${query}`);
+    const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/searchArtists?query=${query}`);
     if (response.ok) {
         const data = await response.json();
         return data; 
