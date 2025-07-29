@@ -15,6 +15,7 @@ if (fs.existsSync('.env') && !process.env.FORCE_IGNORE_ENV) {
 }
 
 const pkg = require('./package.json');
+const port = process.env.PORT || '3000';
 const currentVersion = pkg.version;
 const versionFile = path.resolve('.lastversion');
 const lockFile = path.resolve('package-lock.json');
@@ -73,7 +74,7 @@ function proceedWithBuildAndStart() {
     console.log(`🟡 Version changed: ${lastVersion || 'none'} → ${currentVersion}`);
     runStep('Build', 'npm', ['run', 'build'], () => {
       fs.writeFileSync(versionFile, currentVersion);
-      runStep('Start', 'npm', ['start', '--', '-p', '25565']);
+      runStep('Start', 'npm', ['start', '--', '-p', port]);
     });
   } else {
     console.log(`🟢 Version unchanged (${currentVersion}) → skipping build`);
