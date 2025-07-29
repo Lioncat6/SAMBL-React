@@ -78,6 +78,6 @@ function proceedWithBuildAndStart() {
     });
   } else {
     console.log(`🟢 Version unchanged (${currentVersion}) → skipping build`);
-    runStep('Start', 'npm', ['start', '--', '-p', '25565']);
+    runStep('Start', 'npm', ['start', '--', '-p', port]);
   }
 }
