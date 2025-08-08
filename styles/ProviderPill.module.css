@@ -14,9 +14,10 @@
 	align-content: center;
 	justify-content: right;
     margin: 20px;
-    padding: 5px
+    padding: 5px;
+    overflow: hidden;
+    flex-wrap: nowrap;
 }
-
 .provider {
     border-radius: 50px;
     width: 30px;
@@ -24,10 +25,7 @@
     border: none;
     align-items: center;
     background-color: var(--foreground-background);
-}
-
-.provider:hover {
-    background-color: var(--foreground-quaternary);
+    transition: color 0.3s ease, filter 0.3s ease;
 }
 
 .SelectedProvider {
@@ -36,6 +34,67 @@
     border-radius: 50px;
     width: 30px;
     height: 30px;
-    border: 1px solid var(--foreground-primary);
+    border: 1px solid currentColor;
     align-items: center;
+    transition: color .5s ease, filter 0.3s ease, left 0.3s cubic-bezier(0.4,0,0.2,1);
+    filter: blur(0.2px) drop-shadow(0 0 1px currentColor);
+    animation: overlayFade 0.5s forwards;
+}
+
+/* Provider color definitions */
+
+.spotify {
+    color: var(--spotify-green);
+}
+
+.itunes {
+    color: var(--itunes-red);
+}
+
+.tidal {
+    color: var(--tidal-black);
+}
+
+.deezer {
+    color: var(--deezer-purple);
+}
+
+/* Makes it where you only have to define the color with the provider namespace */
+.provider:not(.selected):not(:hover) {
+    color: var(--foreground-primary) !important;
+}
+
+.provider.selected {
+    filter: blur(0.2px) drop-shadow(0 0 5px currentColor);
+}
+
+.provider:hover {
+    animation: logoShake 0.3s ease-in-out, colorPulse 0.6s infinite alternate;
+}
+
+@keyframes logoShake {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(5deg); }
+    50% { transform: rotate(-5deg); }
+    75% { transform: rotate(5deg); }
+    100% { transform: rotate(0deg); }
+}
+
+@keyframes colorPulse {
+    0% {
+        filter: blur(0.2px) drop-shadow(0 0 1px currentColor);
+    }
+    100% {
+        filter: blur(0.2px) drop-shadow(0 0 5px currentColor);
+    }
+}
+
+
+@keyframes overlayFade {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
 }

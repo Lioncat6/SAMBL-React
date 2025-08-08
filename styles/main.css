@@ -14,6 +14,11 @@
 	--toolsButton: #000f52;
 	--configButton: #522e00;
 	--savedArtists: #00631c;
+	/* Provider Colors */
+	--spotify-green: #1db954;
+	--itunes-red: #FF0436;
+	--tidal-black: #000000;
+	--deezer-purple: #a238ff;
 }
 
 .dark {
@@ -29,6 +34,7 @@
 	--toolsButton: #5d7aff;
 	--configButton: #905100;
 	--savedArtists: #00a62f;
+	--tidal-black: #ffffff;
 }
 
 #main {

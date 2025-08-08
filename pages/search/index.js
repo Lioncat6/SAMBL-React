@@ -15,6 +15,7 @@ async function getItems(query) {
 
 export async function getServerSideProps(context) {
     const { query } = context.query;
+    console.log(context)
 
     try {
         const items = await getItems(query);
