@@ -300,7 +300,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 
 function AddButton({ item }) {
 	return (
-		<Link className={styles.viewButton} href={`/newartist?spid=${item.spotifyId}`}>
+		<Link className={styles.viewButton} href={`/newartist?spid=${item.id}`}>
 			<div>
 				Add <img className={styles.artistMB} src="../assets/images/MusicBrainz_logo_icon.svg"></img>
 			</div>
@@ -310,7 +310,7 @@ function AddButton({ item }) {
 
 function ViewButton({ item }) {
 	return (
-		<Link className={styles.viewButton} href={`/artist?spid=${item.spotifyId}&artist_mbid=${item.mbid}`}>
+		<Link className={styles.viewButton} href={`/artist?spid=${item.id}&artist_mbid=${item.mbid}`}>
 			<div>View Artist</div>
 		</Link>
 	);
@@ -328,12 +328,12 @@ function ArtistItem({ item }) {
 			)}
 			<div className={styles.textContainer}>
 				<div className={styles.artistName}>
-					<a href={`https://open.spotify.com/artist/${item.spotifyId}`} target="_blank">
+					<a href={item.url} target="_blank">
 						{item.name}
 					</a>
 				</div>
-				<div className={styles.artistFollowers}>{item.followers} Followers</div>
-				<div className={styles.artistGenres}>{item.genres}</div>
+				<div className={styles.artistFollowers}>{item.followers}</div>
+				<div className={styles.artistGenres}>{item.info}</div>
 			</div>
 
 			{item.mbid == null ? <AddButton item={item} /> : <ViewButton item={item} />}
