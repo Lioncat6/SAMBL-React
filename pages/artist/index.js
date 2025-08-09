@@ -171,7 +171,7 @@ async function dispPromise(promise, message) {
 }
 
 export default function Artist({ artist }) {
-	const { settings } = useSettings();
+	const { settings, loading: waitingForMount } = useSettings();
 	const router = useRouter();
 	const { quickFetch } = router.query;
 	const [isQuickFetched, setIsQuickFetched] = useState(false);
@@ -319,10 +319,19 @@ export default function Artist({ artist }) {
 		}
 
 		async function shouldQuickfetch() {
-			if (artist.mbid) {
+			if (waitingForMount) {
+				await new Promise((resolve) => {
+					const interval = setInterval(() => {
+						if (!waitingForMount) {
+							clearInterval(interval);
+							resolve();
+						}
+					}, 50);
+				});
+			}
+			if (artist.mbid && settings?.quickFetchThreshold > 0) {
 				const releaseCount = await fetchArtistReleaseCount(artist.mbid);
-				console.log(settings);
-				if (releaseCount.releaseCount > settings.quickFetchThreshold) {
+				if (releaseCount.releaseCount > settings?.quickFetchThreshold) {
 					setIsQuickFetched(true);
 					return true;
 				}
@@ -362,7 +371,7 @@ export default function Artist({ artist }) {
 		}
 		loadAlbums();
 		Artist.loadAlbums = loadAlbums;
-	}, [artist.spotifyId]);
+	}, [artist.spotifyId, waitingForMount]);
 
 	async function refreshAlbums() {
 		setLoading(true);

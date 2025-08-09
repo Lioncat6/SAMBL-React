@@ -1,6 +1,4 @@
-import Popup from "reactjs-popup";
-import "reactjs-popup/dist/index.css";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Fragment, cloneElement } from "react";
 import styles from "../styles/popups.module.css";
 import { useSettings } from "./SettingsContext";
 import { FaXmark, FaGear, FaFilter, FaCopy, FaMagnifyingGlass, FaChevronDown, FaChevronRight } from "react-icons/fa6";
@@ -9,7 +7,7 @@ import { useExport } from "./ExportState";
 import { toast, Flip } from "react-toastify";
 import getConfig from "next/config";
 import { MdOutlineAlbum } from "react-icons/md";
-import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { Dialog, Transition, Menu, MenuButton, MenuItem, MenuItems, TransitionChild, DialogPanel } from "@headlessui/react";
 
 function ConfigureMenu({ close }) {
 	const { publicRuntimeConfig } = getConfig();
@@ -54,12 +52,9 @@ function ConfigureMenu({ close }) {
 						</label>
 					</div>
 					<div className={styles.settingsInputWrapper}>
-						<input className={styles.settingsInput} type="number" id="quickFetchThreshold" value={quickFetchThreshold} onChange={(e) => setQuickFetchThreshold(Number(e.target.value))}/>
-						<label htmlFor="quickFetchThreshold">
-							Quick Fetch Threshold (Albums)
-						</label>
+						<input className={styles.settingsInput} type="number" id="quickFetchThreshold" value={quickFetchThreshold} onChange={(e) => setQuickFetchThreshold(Number(e.target.value))} />
+						<label htmlFor="quickFetchThreshold">Quick Fetch Threshold (Albums)</label>
 					</div>
-
 				</div>
 			</div>
 			<div className={styles.actions}>
@@ -378,21 +373,52 @@ function TrackMenu({ data, close }) {
 }
 
 export default function SAMBLPopup({ button, type, data, apply }) {
+	const [isOpen, setIsOpen] = useState(false);
+
+	function closeModal() {
+		setIsOpen(false);
+	}
+
+	function openModal(e) {
+		e?.preventDefault?.();
+		setIsOpen(true);
+	}
+
 	return (
 		<>
-			<Popup trigger={button} position="right center" modal nested>
-				{(close) => (
-					<div className={styles.modal}>
-						<button className={styles.close} onClick={close}>
-							<FaXmark />
-						</button>
-						{type == "configure" && <ConfigureMenu close={close} />}
-						{type == "filter" && <FilterMenu close={close} data={data} apply={apply} />}
-						{type == "export" && <ExportMenu close={close} data={data} />}
-						{type == "track" && <TrackMenu close={close} data={data} />}
+			{/* Render the trigger button */}
+			{button &&
+				// Clone the passed element and add onClick
+				typeof button === "object" && button !== null && "type" in button
+					? (
+						// React element: clone and add onClick
+						// eslint-disable-next-line react/jsx-props-no-spreading
+						cloneElement(button, { onClick: openModal })
+					)
+					: (
+						// Not a React element: fallback to span
+						<span onClick={openModal}>{button}</span>
+					)
+			}
+
+			<Transition appear show={isOpen} as={Fragment}>
+				<Dialog as="div" className={styles.dialogRoot} onClose={closeModal}>
+					<div className={styles.dialogBackdrop} aria-hidden="true" />
+					<div className={styles.dialogContainer}>
+						<TransitionChild as={Fragment} enter={styles.dialogEnter} enterFrom={styles.dialogEnterFrom} enterTo={styles.dialogEnterTo} leave={styles.dialogLeave} leaveFrom={styles.dialogLeaveFrom} leaveTo={styles.dialogLeaveTo}>
+							<DialogPanel className={styles.modal}>
+								<button className={styles.close} onClick={closeModal}>
+									<FaXmark />
+								</button>
+								{type === "configure" && <ConfigureMenu close={closeModal} />}
+								{type === "filter" && <FilterMenu close={closeModal} data={data} apply={apply} />}
+								{type === "export" && <ExportMenu close={closeModal} data={data} />}
+								{type === "track" && <TrackMenu close={closeModal} data={data} />}
+							</DialogPanel>
+						</TransitionChild>
 					</div>
-				)}
-			</Popup>
+				</Dialog>
+			</Transition>
 		</>
 	);
 }

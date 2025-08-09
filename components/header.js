@@ -11,7 +11,9 @@ import ProviderPill from "./ProviderPill";
 
 import { useExportData } from "./Export";
 
-const Popup = dynamic(() => import("./Popup"), { ssr: false });
+import Popup from "./Popup"
+
+// const Popup = dynamic(() => import("./Popup"), { ssr: false });
 
 export default function Header() {
 	const {exportItems, exportAllItems} = useExportData();

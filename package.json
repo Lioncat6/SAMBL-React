@@ -28,7 +28,6 @@
 		"react-toastify": "^11.0.5",
 		"react-virtualized-auto-sizer": "^1.0.26",
 		"react-window": "^1.8.11",
-		"reactjs-popup": "^2.0.6",
 		"spotify-web-api-node": "^5.0.0"
 	},
 	"repository": {

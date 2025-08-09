@@ -8,7 +8,6 @@ import { useExport as useExportState } from "./ExportState";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FaDeezer, FaSpotify } from "react-icons/fa";
-import Popup from "reactjs-popup";
 import { FaAnglesRight, FaAnglesLeft } from "react-icons/fa6";
 import { IoMdRefresh } from "react-icons/io";
 import { toast, Flip } from "react-toastify";
@@ -79,13 +78,13 @@ function ActionButtons({ item }) {
 					</div>
 				}
 				<div className={`${collapsed ? styles.collapsed : styles.expanded}`}>
-					{settings.showExport && <SelectionButtons item={item} />}
-					{settings.showATisket && (
+					{settings?.showExport && <SelectionButtons item={item} />}
+					{settings?.showATisket && (
 						<a className={styles.aTisketButton} href={`https://atisket.pulsewidth.org.uk/?spf_id=${spotifyId}&amp;preferred_vendor=spf`} target="_blank" rel="noopener noreferrer">
 							<div>A-tisket</div>
 						</a>
 					)}
-					{settings.showHarmony && (
+					{settings?.showHarmony && (
 						<a className={styles.harmonyButton} href={`https://harmony.pulsewidth.org.uk/release?url=${spotifyUrl}&category=preferred`} target="_blank" rel="noopener noreferrer">
 							<div>Harmony</div>
 						</a>
@@ -358,7 +357,7 @@ function LinkButton({ item }) {
 
 	return (
 		<div className={styles.actionButtons}>
-			{settings.showExport && <SelectionButtons item={item} />}
+			{settings?.showExport && <SelectionButtons item={item} />}
 			<a href={item.link} target="_blank" className={styles.viewButton}>
 				<div>
 					View <Icon source={item.source} />
@@ -473,8 +472,8 @@ function LoadingItem() {
 						<div className={`${styles.skeletonText} ${styles.skeletonInfo}`}></div>
 					</div>
 					{/* Buttons Placeholder */}
-					{settings.showHarmony && <div className={`${styles.skeletonButton} ${styles.skeletonButton1}`}></div>}
-					{settings.showATisket && <div className={`${styles.skeletonButton} ${styles.skeletonButton2}`}></div>}
+					{settings?.showHarmony && <div className={`${styles.skeletonButton} ${styles.skeletonButton1}`}></div>}
+					{settings?.showATisket && <div className={`${styles.skeletonButton} ${styles.skeletonButton2}`}></div>}
 				</div>
 			</div>
 		</div>
@@ -554,7 +553,7 @@ function SearchContainer({ onSearch, currentFilter, setFilter, refresh }) {
 }
 
 export default function ItemList({ items, type, text, refresh }) {
-	const { settings } = useSettings();
+	const { settings  } = useSettings();
 	const [searchQuery, setSearchQuery] = useState(""); // State for search query
 	const [filteredItems, setFilteredItems] = useState(items || []); // State for filtered items
 	const [currentItems, setCurrentItems] = useState(items || []);
@@ -630,7 +629,7 @@ export default function ItemList({ items, type, text, refresh }) {
 			{type === "album" && <SearchContainer onSearch={setSearchQuery} currentFilter={filter} setFilter={setFilter} refresh={refresh} />}
 			{type === "loadingAlbum" ? (
 				<LoadingContainer text={text} showRefresh={refresh != undefined} />
-			) : items.length > 75 && settings.listVirtualization ? ( // If over 200 albums, use the virtualized list. Reason why I don't want to always use it is because it scrolls less smooth
+			) : items.length > 75 && settings?.listVirtualization ? ( // If over 200 albums, use the virtualized list. Reason why I don't want to always use it is because it scrolls less smooth
 				<VirtualizedList items={type === "album" ? filteredItems : itemArray} type={type} text={text} onItemUpdate={handleItemUpdate} />
 			) : (
 				<ListContainer items={type === "album" ? filteredItems : itemArray} type={type} text={text} onItemUpdate={handleItemUpdate} />
