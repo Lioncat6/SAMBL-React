@@ -4,6 +4,7 @@ import withCache from "../../../utils/cache";
 
 const namespace = "spotify";
 
+
 const spotifyApi = new SpotifyWebApi({
 	clientId: process.env.SPOTIFY_CLIENT_ID,
 	clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
@@ -153,7 +154,8 @@ function formatArtistObject(rawObject) {
 		imageUrl: rawObject.images[0]?.url || "",
 		info: rawObject.genres.join(", "), // Convert genres array to a string
 		followers: `${rawObject.followers.total} Followers`,
-		spotifyId: rawObject.id,
+		id: rawObject.id,
+		type: namespace,
 	};
 }
 

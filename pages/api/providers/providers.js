@@ -2,7 +2,8 @@ import spotify from "./spotify";
 import musicbrainz from "./musicbrainz";
 import musixmatch from "./musixmatch";
 import deezer from "./deezer";
-
+import tidal from "./tidal"
+import logger from "../../../utils/logger";
 
 function parseProvider(rawProvider, capabilities) {
     let provider = spotify;
@@ -12,6 +13,9 @@ function parseProvider(rawProvider, capabilities) {
             break;
         case "musixmatch":
             provider = musixmatch;
+            break;
+        case "tidal":
+            provider = tidal;
             break;
         case "deezer":
             provider = deezer;
@@ -26,7 +30,6 @@ function parseProvider(rawProvider, capabilities) {
     }
     return provider;
 }
-
 
 const providers = {
     parseProvider

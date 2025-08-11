@@ -22,11 +22,11 @@ const providers = [
 		namespace: "tidal",
 		icon: <SiTidal />,
 	},
-	{
-		name: "Apple Music",
-		namespace: "itunes",
-		icon: <SiItunes />,
-	},
+	// {
+	// 	name: "Apple Music",
+	// 	namespace: "itunes",
+	// 	icon: <SiItunes />,
+	// },
 ];
 
 function LoadingPill() {

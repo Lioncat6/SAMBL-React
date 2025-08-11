@@ -8,6 +8,7 @@ import { useExport as useExportState } from "./ExportState";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FaDeezer, FaSpotify } from "react-icons/fa";
+import { SiTidal } from "react-icons/si";
 import { FaAnglesRight, FaAnglesLeft } from "react-icons/fa6";
 import { IoMdRefresh } from "react-icons/io";
 import { toast, Flip } from "react-toastify";
@@ -180,7 +181,6 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 		setIsLoading(false);
 		if (response.ok) {
 			const updatedItem = await response.json();
-			console.log(updatedItem);
 			if (onUpdate) onUpdate(updatedItem);
 		} else {
 			dispError("Failed to refresh album data!", "error");
@@ -348,6 +348,7 @@ function Icon({ source }) {
 			{source === "musicbrainz" && <img className={styles.mbIcon} src="../assets/images/MusicBrainz_logo_icon.svg" />}
 			{source === "deezer" && <FaDeezer className={styles.deezerIcon} />}
 			{source === "musixmatch" && <img className={styles.musixMatchIcon} src="../assets/images/Musixmatch_logo_icon_only.svg" />}
+			{source === "tidal" && <SiTidal className={styles.tidalIcon} />}
 		</>
 	);
 }

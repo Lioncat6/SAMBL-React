@@ -1,0 +1,211 @@
+import { credentialsProvider, init as initAuth } from '@tidal-music/auth';
+import { createAPIClient } from '@tidal-music/api';
+import logger from "../../../utils/logger";
+import withCache from "../../../utils/cache";
+import 'localstorage-polyfill'
+
+const namespace = "tidal";
+
+
+let credentials = null;
+const listeners = [];
+
+const nodeCredentialsProvider = {
+    bus: (callback) => {
+        listeners.push(callback);
+    },
+    getCredentials: async () => credentials,
+    // Helper for updating credentials and notifying listeners
+    _setCredentials: (newCreds) => {
+        credentials = newCreds;
+        const event = { 
+            type: 'CredentialsUpdatedMessage', 
+            payload: credentials 
+        };
+        listeners.forEach(fn => fn(event));
+    }
+};
+
+const tidalClientId = process.env.TIDAL_CLIENT_ID;
+const tidalClientSecret = process.env.TIDAL_CLIENT_SECRET;
+
+// Code permanently borrowed from https://github.com/kellnerd/harmony/tree
+// Credit to @kellnerd and @outsidecontext
+async function requestAccessToken() {
+    // See https://developer.tidal.com/documentation/api-sdk/api-sdk-quick-start
+    const url = 'https://auth.tidal.com/v1/oauth2/token';
+    const auth = btoa(`${tidalClientId}:${tidalClientSecret}`);
+    const body = new URLSearchParams();
+    body.append('grant_type', 'client_credentials');
+    body.append('client_id', tidalClientId);
+
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Basic ${auth}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: body,
+    });
+
+    const content = await response.json();
+    return {
+        accessToken: content?.access_token,
+        validUntilTimestamp: Date.now() + (content.expires_in * 1000),
+        expiresIn: content.expires_in,
+    };
+}
+
+
+
+let tidalApi = null;
+let validUntilTimestamp = null;
+
+async function refreshApi() {
+    if (!validUntilTimestamp || Date.now() > validUntilTimestamp || nodeCredentialsProvider.getCredentials() === null || tidalApi === null) {
+        const tokenData = await requestAccessToken();
+        nodeCredentialsProvider._setCredentials({ clientId: tidalClientId, clientSecret: tidalClientSecret, token: tokenData.accessToken, expires: tokenData.expiresIn });
+        validUntilTimestamp = tokenData.validUntilTimestamp;
+        tidalApi = createAPIClient(nodeCredentialsProvider);
+    }
+}
+
+
+refreshApi();
+
+
+async function getTrackByISRC(isrc) {
+	await refreshApi();
+	try {
+		let data = await tidalApi.GET(`/tracks?countryCode=US&filter[isrc]=${isrc}&include=albums.coverArt&include=artists&include=albums`);
+        if (data.data) {
+            return JSON.parse(JSON.stringify(data.data));
+        } else {
+            return null;
+        }
+	} catch (error) {
+		logger.error("Error fetching track by ISRC:", error);
+		throw error;
+	}
+}
+
+async function getAlbumByUPC(upc) {
+	await refreshApi();
+	try {
+		let data = await tidalApi.GET(`/albums?countryCode=US&filter[barcodeId]=${upc}&include=coverArt&include=artists`);
+        if (data.data) {
+            return JSON.parse(JSON.stringify(data.data));
+        } else {
+            return null;
+        }
+	} catch (error) {
+		logger.error("Error fetching album by UPC:", error);
+		throw error;
+	}
+}
+
+async function searchByArtistName(query) {
+    await refreshApi();
+    try {
+        const data = await tidalApi.GET(`/searchResults/${encodeURIComponent(query)}?countryCode=US&include=artists&include=artists.profileArt&include=artists.albums&include=albums.artists&include=albums.coverArt&include=artists.albums.coverArt`);
+
+        if (data?.data.included && data?.data.included.length > 0) {
+            return JSON.parse(JSON.stringify(data)); // Tidal Moment
+        } else {
+            return {};
+        }
+    } catch (error) {
+        logger.error("Error searching for artist:", error);
+        throw error;
+    }
+}
+
+
+
+
+function formatArtistSearchData(rawData) {
+    const included = rawData.data.included;
+    const artists = included.filter(obj => obj.type === "artists");
+    const albums = included.filter(obj => obj.type === "albums");
+    const artworks = included.filter(obj => obj.type === "artworks");
+    const artworkMap = Object.fromEntries(artworks.map(a => [a.id, a]));
+
+    for (let artist of artists) {
+        let coverArtUrl = null;
+        let topAlbumPopularity = -1;
+        let bestAlbumDate = null;
+
+        // Check for profileArt
+        if (artist.relationships?.profileArt?.data?.length) {
+            const artId = artist.relationships.profileArt.data[0].id;
+            const art = artworkMap[artId];
+            if (art?.attributes?.files?.length) {
+                coverArtUrl = [...art.attributes.files].sort((a, b) => b.meta.width - a.meta.width)[0].href;
+            }
+        }
+
+        // Fallback to album cover
+        if (!coverArtUrl) {
+            for (let album of albums) {
+                if (album.relationships?.artists?.data?.some(a => a.id === artist.id)) {
+                    const popularity = album.attributes?.popularity ?? 0;
+                    const releaseDate = album.attributes?.releaseDate ?? "1970-01-01";
+
+                    // Choose higher popularity, or more recent date on tie
+                    if (
+                        popularity > topAlbumPopularity ||
+                        (popularity === topAlbumPopularity &&
+                         new Date(releaseDate) > new Date(bestAlbumDate))
+                    ) {
+                        topAlbumPopularity = popularity;
+                        bestAlbumDate = releaseDate;
+
+                        const coverArtIds = Array.isArray(album.relationships?.coverArt?.data)
+                            ? album.relationships.coverArt.data.map(ca => ca.id)
+                            : album.relationships?.coverArt?.data?.id
+                              ? [album.relationships.coverArt.data.id]
+                              : [];
+
+                        for (let id of coverArtIds) {
+                            const art = artworkMap[id];
+                            if (art?.attributes?.files?.length) {
+                                coverArtUrl = [...art.attributes.files].sort((a, b) => b.meta.width - a.meta.width)[0].href;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        artist.imageUrl = coverArtUrl;
+    }
+    return artists;
+}
+
+function formatArtistObject(rawObject) {
+    return {
+        name: rawObject.attributes.name,
+        url: getArtistUrl(rawObject),
+        imageUrl: rawObject.imageUrl || '',
+        info: '',
+        followers: `${(rawObject.attributes.popularity * 100).toFixed(0)}% Popularity`,
+        id: rawObject.id,
+        type: namespace,
+    };
+}
+
+function getArtistUrl(artist) {
+    return `https://tidal.com/artist/${artist.id}`;
+}
+
+let tidal = {
+    getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 30, namespace: namespace }),
+    getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 30, namespace: namespace }),
+    searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30, namespace: namespace }),
+    formatArtistSearchData,
+    formatArtistObject,
+    getArtistUrl,
+};
+
+export default tidal;

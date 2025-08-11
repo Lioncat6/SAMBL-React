@@ -2,6 +2,7 @@ import spotify from "./providers/spotify";
 import musicbrainz from "./providers/musicbrainz";
 import musixmatch from "./providers/musixmatch";
 import deezer from "./providers/deezer";
+import tidal from "./providers/tidal";
 import logger from "../../utils/logger";
 
 function createDataObject(source, imageUrl, title, artists, info, link, extraInfo = null) {
@@ -20,6 +21,10 @@ function formatMS(ms) {
 	const minutes = Math.floor(ms / 60000);
 	const seconds = Math.floor((ms % 60000) / 1000);
 	return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
+
+function firstCapitalize(str) {
+	return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }
 
 export default async function handler(req, res) {
@@ -44,10 +49,11 @@ export default async function handler(req, res) {
 		};
 
 		if (type === "UPC") {
-			const [spotifyData, mbData, deezerData] = await Promise.all([
-				catchIssue("spotify", spotify.getAlbumByUPC, query), 
-				catchIssue("musicbrainz", musicbrainz.getAlbumByUPC, query), 
-				catchIssue("deezer", deezer.getAlbumByUPC, query)
+			const [spotifyData, mbData, deezerData, tidalData] = await Promise.all([
+				catchIssue("spotify", spotify.getAlbumByUPC, query, { noCache: true }),
+				catchIssue("musicbrainz", musicbrainz.getAlbumByUPC, query, { noCache: true }),
+				catchIssue("deezer", deezer.getAlbumByUPC, query, { noCache: true }),
+				catchIssue("tidal", tidal.getAlbumByUPC, query, { noCache: true }),
 			]);
 
 			if (spotifyData?.albums.items) {
@@ -58,7 +64,7 @@ export default async function handler(req, res) {
 							album.images[0].url || "",
 							album.name,
 							album.artists.map((artist) => ({ name: artist.name, link: artist.external_urls.spotify })),
-							[album.release_date, `${album.total_tracks} tracks`, album.type],
+							[album.release_date, `${album.total_tracks} tracks`, firstCapitalize(album.type)],
 							album.external_urls.spotify
 						)
 					);
@@ -73,7 +79,7 @@ export default async function handler(req, res) {
 							imageData.images[0]?.thumbnails?.large || "",
 							album.title,
 							album["artist-credit"].map((artist) => ({ name: artist.name, link: `https://musicbrainz.org/artist/${artist.artist.id}` })),
-							[album.date, `${album["track-count"]} tracks`, album["release-group"]["primary-type"]],
+							[album.date, `${album["track-count"]} tracks`, firstCapitalize(album["release-group"]["primary-type"])],
 							`https://musicbrainz.org/release/${album.id}`
 						)
 					);
@@ -86,17 +92,52 @@ export default async function handler(req, res) {
 						deezerData.cover_medium || "",
 						deezerData.title,
 						deezerData.contributors.map((contributor) => ({ name: contributor.name, link: contributor.link })),
-						[deezerData.release_date, `${deezerData.nb_tracks} tracks`, deezerData.type],
+						[deezerData.release_date, `${deezerData.nb_tracks} tracks`, firstCapitalize(deezerData.type)],
 						deezerData.link
 					)
 				);
 			}
+			if (tidalData?.data[0]?.attributes?.title) {
+				const artists = tidalData.included.filter((obj) => obj.type === "artists");
+				let artistMap = Object.fromEntries(artists.map((artist) => [artist.id, artist]));
+				const artworks = tidalData.included.filter((obj) => obj.type === "artworks");
+				let artworkMap = Object.fromEntries(artworks.map((artwork) => [artwork.id, artwork]));
+
+				function getArtworkUrl(artworkId) {
+					return artworkMap[artworkId]?.attributes?.files[0]?.href || "";
+				}
+
+				function getArtists(artistIds) {
+					let artistDict = [];
+					artistIds.forEach((id) => {
+						const artist = artistMap[id];
+						if (artist) {
+							artistDict.push({ name: artist.attributes.name, link: `https://tidal.com/artist/${artist.id}` });
+						}
+					});
+					return artistDict;
+				}
+
+				tidalData.data.forEach((album) => {
+					resultItems.push(
+						createDataObject(
+							"tidal",
+							getArtworkUrl(album.relationships?.coverArt?.data[0]?.id) || "",
+							album.attributes?.title || "",
+							getArtists(album.relationships?.artists?.data.map((artist) => artist.id)) || [],
+							[album.attributes?.releaseDate, `${album.attributes?.numberOfItems} tracks`, firstCapitalize(album.attributes?.type)],
+							`https://tidal.com/album/${album.id}`
+						)
+					);
+				});
+			}
 		} else if (type === "ISRC") {
-			const [spotifyData, mbData, mxmData, deezerData] = await Promise.all([
-				catchIssue("spotify", spotify.getTrackByISRC, query), 
-				catchIssue("musicbrainz", musicbrainz.getTrackByISRC, query), 
+			const [spotifyData, mbData, mxmData, deezerData, tidalData] = await Promise.all([
+				catchIssue("spotify", spotify.getTrackByISRC, query),
+				catchIssue("musicbrainz", musicbrainz.getTrackByISRC, query),
 				catchIssue("musixmatch", musixmatch.getTrackByISRC, query),
 				catchIssue("deezer", deezer.getTrackByISRC, query),
+				catchIssue("tidal", tidal.getTrackByISRC, query),
 			]);
 
 			if (spotifyData?.tracks?.items) {
@@ -107,8 +148,23 @@ export default async function handler(req, res) {
 							track.album.images[0].url || "",
 							track.name,
 							track.artists.map((artist) => ({ name: artist.name, link: artist.external_urls.spotify })),
-							[track.album.release_date, formatMS(track.duration_ms), `Track ${track.track_number}`],
-							track.external_urls.spotify
+							[track.album.release_date, formatMS(track.duration_ms), `Track ${track.track_number}`, track.album.name],
+							track.external_urls.spotify,
+							[
+								{
+									track_id: track.id,
+									album_id: track.album.id,
+									album_url: track.album.external_urls.spotify,
+									disc_number: track.disc_number,
+									track_number: track.track_number,
+									explicit: track.explicit,
+									popularity: track.popularity,
+									preview_url: track.preview_url,
+									is_playable: track.is_playable,
+									album_is_playable: track.album.is_playable,
+									album_type: track.album.album_type
+								}
+							]
 						)
 					);
 				});
@@ -127,7 +183,7 @@ export default async function handler(req, res) {
 							"",
 							track.title,
 							track["artist-credit"].map((artist) => ({ name: artist.name, link: `https://musicbrainz.org/artist/${artist.artist.id}` })),
-							[initialReleaseDate, formatMS(track.length), `${track["releases"].length} releases`, track.video && "Video"],
+							[initialReleaseDate, formatMS(track.length), `${track["releases"].length} Releases`, track.video && "Video"],
 							`https://musicbrainz.org/recording/${track.id}`
 						)
 					);
@@ -170,6 +226,66 @@ export default async function handler(req, res) {
 						]
 					)
 				);
+			}
+			if (tidalData?.data[0]?.attributes?.title) {
+				const artists = tidalData.included.filter((obj) => obj.type === "artists");
+				let artistMap = Object.fromEntries(artists.map((artist) => [artist.id, artist]));
+				const artworks = tidalData.included.filter((obj) => obj.type === "artworks");
+				let artworkMap = Object.fromEntries(artworks.map((artwork) => [artwork.id, artwork]));
+				const albums = tidalData.included.filter((obj) => obj.type === "albums");
+				let albumMap = Object.fromEntries(albums.map((album) => [album.id, album]));
+
+				function formatDuration(duration) {
+					// Handles ISO 8601 duration strings like "PT4M8S"
+					const match = /^PT(?:(\d+)M)?(?:(\d+)S)?$/.exec(duration);
+					if (!match) return duration;
+					const minutes = parseInt(match[1] || "0", 10);
+					const seconds = parseInt(match[2] || "0", 10);
+					return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+				}
+
+				function getArtworkUrl(artworkId) {
+					return artworkMap[artworkId]?.attributes?.files[0]?.href || "";
+				}
+
+				function getArtists(artistIds) {
+					let artistDict = [];
+					artistIds.forEach((id) => {
+						const artist = artistMap[id];
+						if (artist) {
+							artistDict.push({ name: artist.attributes.name, link: `https://tidal.com/artist/${artist.id}` });
+						}
+					});
+					return artistDict;
+				}
+
+				function getMostRecentAlbum(albumIds) {
+					let mostRecent = null;
+					albumIds.forEach((id) => {
+						const album = albumMap[id];
+						if (album) {
+							const releaseDate = new Date(album.attributes.releaseDate);
+							if (!mostRecent || releaseDate.getTime() > new Date(mostRecent.attributes.releaseDate).getTime()) {
+								mostRecent = album;
+							}
+						}
+					});
+					return mostRecent;
+				}
+
+				tidalData.data.forEach((track) => {
+					let mostRecentAlbum = getMostRecentAlbum(track.relationships?.albums?.data.map((album) => album.id));
+					resultItems.push(
+						createDataObject(
+							"tidal",
+							getArtworkUrl(mostRecentAlbum?.relationships?.coverArt?.data[0]?.id) || "",
+							track.attributes?.title || "",
+							getArtists(track.relationships?.artists?.data.map((artist) => artist.id)) || [],
+							[mostRecentAlbum?.attributes?.releaseDate, formatDuration(track?.attributes?.duration), `${track?.relationships?.albums?.data.length} Album${track?.relationships?.albums?.data.length !== 1 ? "s" : ""}`, ],
+							`https://tidal.com/track/${track.id}`
+						)
+					);
+				});
 			}
 			if (deezerData?.album) {
 				resultItems.push(

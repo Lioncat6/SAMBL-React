@@ -51,5 +51,4 @@ if (process.env.MUSIXMATCH_ALTERNATE === "1") {
     };
 }
 
-
 export default musixmatch;

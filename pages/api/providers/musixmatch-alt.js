@@ -22,7 +22,6 @@ if (
 
 function initMxM(proxies) { 
 	if (proxies != {}) {
-		console.log(proxies)
 		return new MusixMatchAPI(proxies, process.env.MUSIXMATCH_API_KEY);
 	} else {
 		return new MusixMatchAPI(null, process.env.MUSIXMATCH_API_KEY);

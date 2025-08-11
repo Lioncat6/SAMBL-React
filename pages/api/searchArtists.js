@@ -8,7 +8,7 @@ export default async function handler(req, res) {
         if (!query) {
             return res.status(400).json({ error: "Parameter `query` is required" });
         }
-        let sourceProvider = providers.parseProvider(provider);
+        let sourceProvider = providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject", "getArtistUrl"]);
         let results = await sourceProvider.searchByArtistName(query);
         let artistUrls = [];
         let artistData = {}

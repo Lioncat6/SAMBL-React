@@ -66,10 +66,14 @@ function formatArtistSearchData(rawData) {
 }
 
 function formatArtistObject(rawObject) {
+	let imageUrl = rawObject.picture_big;
+	if (imageUrl.includes("/artist//")) {
+		imageUrl = rawObject.picture;
+	}
 	return {
 		name: rawObject.name,
 		url: getArtistUrl(rawObject),
-		imageUrl: rawObject.picture_big || "",
+		imageUrl: imageUrl || "",
 		info: `${rawObject.nb_album} albums`,
 		followers: `${rawObject.nb_fan} fans`,
 		id: rawObject.id,
