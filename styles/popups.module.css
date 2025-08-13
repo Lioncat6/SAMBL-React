@@ -190,6 +190,8 @@ flex-direction: row;
 
 .isrcDropdownWrapper {
     display: inline;
+    z-index: 1002;
+    position: relative;
 }
 
 .dropdownMenu {
@@ -200,7 +202,7 @@ flex-direction: row;
     border: 1px solid var(--button-border);
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
+    z-index: 1003;
     padding: 8px 0; 
 }
 
