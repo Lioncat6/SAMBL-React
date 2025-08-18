@@ -26,12 +26,53 @@ async function serverFind(query, type) {
 	});
 }
 
+async function getISRCFromURL(url) {
+	return new Promise((resolve) => {
+		fetch(`/api/getTrackISRCs?url=${encodeURIComponent(url)}`)
+			.then((response) => {
+				if (response.ok) {
+					return response.json();
+				} else {
+					return null;
+				}
+			})
+			.then((data) => {
+				resolve(data);
+			})
+			.catch((error) => {
+				console.error("Error fetching data:", error);
+				resolve([]);
+			});
+	});
+}
+
+async function getUPCFromURL(url) {
+	return new Promise((resolve) => {
+		fetch(`/api/getAlbumUPCs?url=${encodeURIComponent(url)}`)
+			.then((response) => {
+				if (response.ok) {
+					return response.json();
+				} else {
+					return null;
+				}
+			})
+			.then((data) => {
+				resolve(data);
+			})
+			.catch((error) => {
+				console.error("Error fetching data:", error);
+				resolve([]);
+			});
+	});
+}
+
 export default function Find() {
 	const [results, setResults] = useState([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const router = useRouter();
 	const { query: urlQuery } = router.query;
 	const lastSearchedQuery = useRef(null);
+	const lastSearchTime = useRef(0);
 
 	let toastProperties = {
 		position: "top-left",
@@ -87,9 +128,18 @@ export default function Find() {
 
 	async function handleSearch() {
 		const query = urlQuery;
+		const queryTime = Date.now();
 		if (query !== "") {
-			if (query?.trim() !== "" && query !== undefined) {
+			if (
+				query?.trim() !== "" &&
+				query !== undefined &&
+				(
+					query !== lastSearchedQuery.current ||
+					queryTime - lastSearchTime.current >= 500
+				)
+			) {
 				lastSearchedQuery.current = query;
+				lastSearchTime.current = queryTime;
 				setIsLoading(true);
 				try {
 					const mbidPattern = /.*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.*/i;
@@ -98,28 +148,39 @@ export default function Find() {
 					const upcPattern = /^\d{12,14}$/;
 					const urlPattern = /^(https?|http):\/\/[^\s/$.?#].[^\s]*$/i;
 
-					if (mbidPattern.test(query)) {
-						dispError("This finding method isn't supported yet. Try using a barcode or ISRC!");
-						// const matchedQuery = query.match(mbidPattern)[0];
-						// handleResults(await dispPromise(serverFind(matchedQuery, "MBID"), "Finding by MBID..."));
-					} else if (spfPattern.test(query)) {
-						dispError("This finding method isn't supported yet. Try using a barcode or ISRC!");
-						// const matchedQuery = query.match(spfPattern)[0];
-						// handleResults(await dispPromise(serverFind(matchedQuery, "SPID"), "Finding by Spotify ID..."));
-					} else if (isrcPattern.test(query)) {
+					if (isrcPattern.test(query)) {
 						const matchedQuery = query.match(isrcPattern)[0];
 						handleResults(await dispPromise(serverFind(matchedQuery, "ISRC"), "Finding by ISRC..."));
 					} else if (urlPattern.test(query)) {
-						dispError("This finding method isn't supported yet. Try using a barcode or ISRC!");
-						// const matchedQuery = query.match(urlPattern)[0];
-						// handleResults(await dispPromise(serverFind(matchedQuery, "URL"), "Finding by URL..."));
+						if (query.includes("/track") || query.includes("/recording")) {
+							let response = await dispPromise(getISRCFromURL(query), "Looking up ISRC...");
+							if (response.isrcs.length > 0) {
+								router.push(`find?query=${response.isrcs[0]}`);
+							} else {
+								dispError("No ISRC found for this URL");
+							}
+						} else if (query.includes("/album") || query.includes("/release/")) {
+							let response = await dispPromise(getUPCFromURL(query), "Looking up Barcode...");
+							if (response.upcs.length > 0) {
+								router.push(`find?query=${response.upcs[0]}`);
+							} else {
+								dispError("No Barcode found for this URL");
+							}
+						} else if (query.includes("/artist")) {
+							dispError("This finding method isn't supported yet. Try using a barcode or ISRC!");
+						} else {
+							dispError("This URL is currently not supported. Please enter a valid provider track or album URL.");
+						}
 					} else if (upcPattern.test(query)) {
 						const matchedQuery = query.match(upcPattern)[0];
 						handleResults(await dispPromise(serverFind(matchedQuery, "UPC"), "Finding by Barcode..."));
+					} else if (mbidPattern.test(query) || spfPattern.test(query)) {
+						dispError("Please enter a full URL for the MBID or Spotify ID!");
 					} else {
 						dispError("Invalid input format. Please enter a valid ISRC, MBID, Barcode, or Spotify link.");
 					}
 				} catch (error) {
+					console.error("Error occurred while searching:", error);
 					dispError("An error occurred while searching.", "error");
 				} finally {
 					setIsLoading(false);

@@ -47,6 +47,7 @@ if (process.env.MUSIXMATCH_ALTERNATE === "1") {
     musixmatch = musixmatchAlternate;
 } else {
     musixmatch = {
+        namespace,
         getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 10,  namespace: namespace }),
     };
 }

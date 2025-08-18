@@ -9,6 +9,9 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: "Parameter `query` is required" });
         }
         let sourceProvider = providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject", "getArtistUrl"]);
+        if (!sourceProvider) {
+            return res.status(400).json({ error: `Provider \`${provider}\` does not support this operation` });
+        }
         let results = await sourceProvider.searchByArtistName(query);
         let artistUrls = [];
         let artistData = {}

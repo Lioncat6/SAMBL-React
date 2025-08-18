@@ -17,7 +17,7 @@ export default async function handler(req, res) {
 			return res.status(400).json({ error: "Parameter `mbid` is missing or malformed" });
 		}
 
-        let spotifyAlbum = await spotify.getAlbumBySpotifyId(spotifyId, { noCache: true });
+        let spotifyAlbum = await spotify.getAlbumById(spotifyId, { noCache: true });
         if (!spotifyAlbum) {
             return res.status(404).json({ error: "Spotify album not found" });
         }

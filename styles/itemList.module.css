@@ -291,6 +291,7 @@
 	white-space: nowrap;
 	margin-left: auto;
 	font-weight: normal;
+	cursor: pointer;
 }
 
 .aTisketButton {
@@ -314,11 +315,11 @@
 }
 
 .exportButton:hover {
-	border: 1px solid #003a26;
+	border: 1px solid var(--foreground-secondary);
 	transition: 0.2s all;
-	background-color: #15dd9a;
+	background-color: #15dd9a8f;
 	text-decoration: none;
-	color: #003a26;
+	color: var(--foreground-secondary);
 }
 
 .hasTracks {

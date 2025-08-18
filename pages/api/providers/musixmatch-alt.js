@@ -65,7 +65,10 @@ async function getTrackByISRC(isrc) {
 	}
 }
 
+
+
 const musixmatch = {
+	namespace,
 	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 10,  namespace: namespace }),
 };
 

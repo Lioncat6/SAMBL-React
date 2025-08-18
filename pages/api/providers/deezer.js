@@ -61,6 +61,48 @@ async function searchByArtistName(query) {
 	}
 }
 
+async function getAlbumById(deezerId) {
+	await refreshApi();
+	try {
+		const data = await deezerApi.album(deezerId);
+		if (data.title) {
+			return data;
+		} else {
+			return null;
+		}
+	} catch (error) {
+		logger.error("Error fetching album by ID:", error);
+		throw error;
+	}
+}
+
+async function getTrackById(deezerId) {
+	await refreshApi();
+	try {
+		const data = await deezerApi.track(deezerId);
+		if (data.title) {
+			return data;
+		} else {
+			return null;
+		}
+	} catch (error) {
+		logger.error("Error fetching track by ID:", error);
+		throw error;
+	}
+}
+
+function getTrackISRCs(track) {
+	if (!track) return null;
+	let isrcs = track?.isrc ? [track.isrc] : [];
+	return isrcs;
+}
+
+function getAlbumUPCs(album) {
+	if (!album) return null;
+	let upcs = album?.upc ? [album.upc] : [];
+	return upcs;
+}
+
 function formatArtistSearchData(rawData) {
 	return rawData.data;
 }
@@ -85,13 +127,31 @@ function getArtistUrl(artist) {
 	return artist.link || `https://www.deezer.com/artist/${artist.id}`;
 }
 
+function parseUrl(url) {
+	const regex = /(?:www\.)?deezer\.com\/(artist|track|album)\/(\d+)/;
+	const match = url.match(regex);
+	if (match) {
+		return {
+			type: match[1],
+			id: match[2],
+		};
+	}
+	return null;
+}
+
 const deezer = {
+	namespace,
 	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 30, namespace: namespace }),
 	getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 30, namespace: namespace }),
     searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30,  namespace: namespace }),
+	getAlbumById: withCache(getAlbumById, { ttl: 60 * 30, namespace: namespace }),
+	getTrackById: withCache(getTrackById, { ttl: 60 * 30, namespace: namespace }),
 	formatArtistSearchData,
     formatArtistObject,
-    getArtistUrl
+    getArtistUrl,
+	getTrackISRCs,
+	getAlbumUPCs,
+	parseUrl
 };
 
 export default deezer;

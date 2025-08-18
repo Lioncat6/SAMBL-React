@@ -5,34 +5,59 @@ import deezer from "./deezer";
 import tidal from "./tidal"
 import logger from "../../../utils/logger";
 
+const providerList = [
+    spotify,
+    musicbrainz,
+    musixmatch,
+    deezer,
+    tidal
+];
+
 function parseProvider(rawProvider, capabilities) {
     let provider = spotify;
-    switch (rawProvider) {
-        case "musicbrainz":
-            provider = musicbrainz;
-            break;
-        case "musixmatch":
-            provider = musixmatch;
-            break;
-        case "tidal":
-            provider = tidal;
-            break;
-        case "deezer":
-            provider = deezer;
-            break;
+
+    if (typeof rawProvider === "string") {
+        providerList.forEach(p => {
+            if (p.namespace == rawProvider) {
+                provider = p;
+            }
+        });
+    } else {
+        provider = rawProvider;
     }
+
     if (capabilities && capabilities.length > 0) {
         for (const capability of capabilities) {
             if (!provider[capability]) {
-                throw new Error(`Provider ${provider} does not support capability: ${capability}`);
+                return false;
             }
         }
     }
     return provider;
 }
 
+function getUrlInfo(url) {
+    let urlInfo = null;
+
+    providerList.forEach(p => {
+        if (p.parseUrl) {
+            let match = p.parseUrl(url);
+            if (match) {
+                urlInfo = {
+                    provider: p,
+                    id: match.id,
+                    type: match.type
+                };
+            }
+        }
+    });
+
+    return urlInfo;
+}
+
 const providers = {
-    parseProvider
+    parseProvider,
+    getUrlInfo
 };
 
 export default providers;

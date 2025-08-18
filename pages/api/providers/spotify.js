@@ -133,7 +133,7 @@ async function getTrackByISRC(isrc) {
 	}
 }
 
-async function getAlbumBySpotifyId(spotifyId) {
+async function getAlbumById(spotifyId) {
 	try {
 		await checkAccessToken();
 		const data = await spotifyApi.getAlbum(spotifyId);
@@ -142,6 +142,29 @@ async function getAlbumBySpotifyId(spotifyId) {
 		logger.error("Error fetching album by Spotify ID:", error);
 		throw new Error("Failed to fetch album by Spotify ID");
 	}
+}
+
+async function getTrackById(spotifyId) {
+	try {
+		await checkAccessToken();
+		const data = await spotifyApi.getTrack(spotifyId);
+		return data.body;
+	} catch (error) {
+		logger.error("Error fetching track by Spotify ID:", error);
+		throw new Error("Failed to fetch track by Spotify ID");
+	}
+}
+
+function getTrackISRCs(track) {
+	if (!track) return null;
+	let isrcs = track?.external_ids?.isrc ? [track.external_ids.isrc] : [];
+	return isrcs;
+}
+
+function getAlbumUPCs(album) {
+	if (!album) return null;
+	let upcs = album?.external_ids?.upc ? [album.external_ids.upc] : [];
+	return upcs;
 }
 
 function formatArtistSearchData(rawData) {
@@ -163,18 +186,35 @@ function getArtistUrl(artist) {
 	return artist.external_urls.spotify || `https://open.spotify.com/artist/${artist.id}`;
 }
 
+function parseUrl(url) {
+	const regex = /(?:www\.)?open\.spotify\.com\/(artist|track|album)\/([A-Za-z0-9]{22})/;
+	const match = url.match(regex);
+	if (match) {
+		return {
+			type: match[1],
+			id: match[2],
+		};
+	}
+	return null;
+}
+
 const spotify = {
+	namespace,
 	getArtistById: withCache(getArtistById, { ttl: 60 * 30, namespace: namespace }),
 	searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30, namespace: namespace }),
 	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 30, namespace: namespace }),
 	getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 30, namespace: namespace }),
 	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 30, namespace: namespace }),
-	getAlbumBySpotifyId: withCache(getAlbumBySpotifyId, { ttl: 60 * 30, namespace: namespace }),
+	getAlbumById: withCache(getAlbumById, { ttl: 60 * 30, namespace: namespace }),
+	getTrackById: withCache(getTrackById, { ttl: 60 * 30, namespace: namespace }),
 	validateSpotifyId,
 	extractSpotifyIdFromUrl,
 	formatArtistSearchData,
 	formatArtistObject,
 	getArtistUrl,
+	getTrackISRCs,
+	getAlbumUPCs,
+	parseUrl
 };
 
 export default spotify;
