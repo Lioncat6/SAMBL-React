@@ -388,22 +388,23 @@ export default function SAMBLPopup({ button, type, data, apply }) {
 		<>
 			{/* Render the trigger button */}
 			{button &&
-				// Clone the passed element and add onClick
-				typeof button === "object" && button !== null && "type" in button
-					? (
-						// React element: clone and add onClick
-						// eslint-disable-next-line react/jsx-props-no-spreading
-						cloneElement(button, { onClick: openModal })
-					)
-					: (
-						// Not a React element: fallback to span
-						<span onClick={openModal}>{button}</span>
-					)
-			}
+			// Clone the passed element and add onClick
+			typeof button === "object" &&
+			button !== null &&
+			"type" in button ? (
+				// React element: clone and add onClick
+				// eslint-disable-next-line react/jsx-props-no-spreading
+				cloneElement(button, { onClick: openModal })
+			) : (
+				// Not a React element: fallback to span
+				<span onClick={openModal}>{button}</span>
+			)}
 
 			<Transition appear show={isOpen} as={Fragment}>
 				<Dialog as="div" className={styles.dialogRoot} onClose={closeModal}>
-					<div className={styles.dialogBackdrop} aria-hidden="true" />
+					<TransitionChild as={Fragment} enter={styles.overlayEnter} enterFrom={styles.overlayEnterFrom} enterTo={styles.overlayEnterTo} leave={styles.overlayLeave} leaveFrom={styles.overlayLeaveFrom} leaveTo={styles.overlayLeaveTo}>
+						<div className={styles.dialogBackdrop} aria-hidden="true" />
+					</TransitionChild>
 					<div className={styles.dialogContainer}>
 						<TransitionChild as={Fragment} enter={styles.dialogEnter} enterFrom={styles.dialogEnterFrom} enterTo={styles.dialogEnterTo} leave={styles.dialogLeave} leaveFrom={styles.dialogLeaveFrom} leaveTo={styles.dialogLeaveTo}>
 							<DialogPanel className={styles.modal}>

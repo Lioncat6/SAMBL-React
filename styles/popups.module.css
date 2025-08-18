@@ -54,6 +54,25 @@
     transform: scale(0.95);
 }
 
+.overlayEnter {
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.overlayEnterFrom {
+    opacity: 0;
+}
+.overlayEnterTo {
+    opacity: 1;
+}
+.overlayLeave {
+    transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.overlayLeaveFrom {
+    opacity: 1;
+}
+.overlayLeaveTo {
+    opacity: 0;
+}
+
 /* Popup modal content */
 .modal {
     font-family: Arial, sans-serif;
