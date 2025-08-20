@@ -1,8 +1,10 @@
 const DeezerPublicApi = require("deezer-public-api");
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
-
+import ErrorHandler from "../../../utils/errorHandler";
 const namespace = "deezer";
+
+const err = new ErrorHandler(namespace);
 
 let deezerApi = new DeezerPublicApi();
 let lastRefreshed = Date.now();
@@ -26,8 +28,8 @@ async function getTrackByISRC(isrc) {
 			return null;
 		}
 	} catch (error) {
-		logger.error("Error fetching track by ISRC:", error);
-		throw error;
+		err.handleError("Error fetching track by ISRC:", error);
+		
 	}
 }
 
@@ -41,8 +43,8 @@ async function getAlbumByUPC(upc) {
 			return null;
 		}
 	} catch (error) {
-		logger.error("Error fetching album by UPC:", error);
-		throw error;
+		err.handleError("Error fetching album by UPC:", error);
+		
 	}
 }
 
@@ -56,8 +58,8 @@ async function searchByArtistName(query) {
             return null;
         }
 	} catch (error) {
-		logger.error("Error searching for artist:", error);
-		throw error;
+		err.handleError("Error searching for artist:", error);
+		
 	}
 }
 
@@ -71,8 +73,8 @@ async function getAlbumById(deezerId) {
 			return null;
 		}
 	} catch (error) {
-		logger.error("Error fetching album by ID:", error);
-		throw error;
+		err.handleError("Error fetching album by ID:", error);
+		
 	}
 }
 
@@ -86,8 +88,23 @@ async function getTrackById(deezerId) {
 			return null;
 		}
 	} catch (error) {
-		logger.error("Error fetching track by ID:", error);
-		throw error;
+		err.handleError("Error fetching track by ID:", error);
+		
+	}
+}
+
+async function getArtistById(deezerId) {
+	await refreshApi();
+	try {
+		const data = await deezerApi.artist(deezerId);
+		if (data.name) {
+			return data;
+		} else {
+			return null;
+		}
+	} catch (error) {
+		err.handleError("Error fetching artist by ID:", error);
+		
 	}
 }
 
@@ -107,6 +124,10 @@ function formatArtistSearchData(rawData) {
 	return rawData.data;
 }
 
+function formatArtistLookupData(rawData) {
+	return rawData;
+}
+
 function formatArtistObject(rawObject) {
 	let imageUrl = rawObject.picture_big;
 	if (imageUrl.includes("/artist//")) {
@@ -116,8 +137,11 @@ function formatArtistObject(rawObject) {
 		name: rawObject.name,
 		url: getArtistUrl(rawObject),
 		imageUrl: imageUrl || "",
+		relevance: `${rawObject.nb_fan} fans`,
 		info: `${rawObject.nb_album} albums`,
-		followers: `${rawObject.nb_fan} fans`,
+		genres: null,
+		followers: rawObject.nb_fan,
+		popularity: null,
 		id: rawObject.id,
 		type: namespace,
 	};
@@ -139,6 +163,10 @@ function parseUrl(url) {
 	return null;
 }
 
+function createUrl(type, id) {
+	return `https://www.deezer.com/${type}/${id}`;
+}
+
 const deezer = {
 	namespace,
 	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 30, namespace: namespace }),
@@ -146,12 +174,15 @@ const deezer = {
     searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30,  namespace: namespace }),
 	getAlbumById: withCache(getAlbumById, { ttl: 60 * 30, namespace: namespace }),
 	getTrackById: withCache(getTrackById, { ttl: 60 * 30, namespace: namespace }),
+	getArtistById: withCache(getArtistById, { ttl: 60 * 30, namespace: namespace }),
 	formatArtistSearchData,
+	formatArtistLookupData,
     formatArtistObject,
     getArtistUrl,
 	getTrackISRCs,
 	getAlbumUPCs,
-	parseUrl
+	parseUrl,
+	createUrl
 };
 
 export default deezer;

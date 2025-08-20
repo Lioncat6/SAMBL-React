@@ -24,10 +24,10 @@ function MusicBrainzUrlContainer({ id }) {
 function UrlIcons({ artist }) {
 	return (
 		<>
-			{artist.spotifyId && <SpotifyUrlContainer id={artist.spotifyId} />}
-			{artist.spotifyIds &&
-				artist.spotifyIds.map((spotifyId) =>
-					<SpotifyUrlContainer id={spotifyId} />
+			{artist.provider_id && <SpotifyUrlContainer id={artist.provider_id} />}
+			{artist.provider_ids &&
+				artist.provider_ids.map((providerId) =>
+					<SpotifyUrlContainer id={providerId} />
 				)
 			}
 			{artist.mbid && <MusicBrainzUrlContainer id={artist.mbid} />}

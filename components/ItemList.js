@@ -300,7 +300,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 
 function AddButton({ item }) {
 	return (
-		<Link className={styles.viewButton} href={`/newartist?spid=${item.id}`}>
+		<Link className={styles.viewButton} href={`/newartist?provider_id=${item.provider_id}&provider=${item.provider}`}>
 			<div>
 				Add <img className={styles.artistMB} src="../assets/images/MusicBrainz_logo_icon.svg"></img>
 			</div>
@@ -310,7 +310,7 @@ function AddButton({ item }) {
 
 function ViewButton({ item }) {
 	return (
-		<Link className={styles.viewButton} href={`/artist?spid=${item.id}&artist_mbid=${item.mbid}`}>
+		<Link className={styles.viewButton} href={`/artist?provider_id=${item.provider_id}&provider=${item.provider}&artist_mbid=${item.mbid}`}>
 			<div>View Artist</div>
 		</Link>
 	);
@@ -332,7 +332,7 @@ function ArtistItem({ item }) {
 						{item.name}
 					</a>
 				</div>
-				<div className={styles.artistFollowers}>{item.followers}</div>
+				<div className={styles.artistFollowers}>{item.relevance}</div>
 				<div className={styles.artistGenres}>{item.info}</div>
 			</div>
 

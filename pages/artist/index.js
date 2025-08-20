@@ -9,8 +9,8 @@ import { toast, Flip } from "react-toastify";
 
 import processData from "../../utils/processAlbumData";
 
-async function fetchArtistData(spfId) {
-	const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?spotifyId=${spfId}`);
+async function fetchArtistData(id, provider) {
+	const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?provider_id=${id}&provider=${provider}`);
 	if (response.ok) {
 		return await response.json();
 	} else {
@@ -19,15 +19,21 @@ async function fetchArtistData(spfId) {
 }
 
 export async function getServerSideProps(context) {
-	const { spid, spids, artist_mbid, mbid } = context.query;
-	const splitSpids = spids?.split(",");
+	let { spid, spids, artist_mbid, mbid, provider_id, provider_ids, provider, pid, pids } = context.query;
+	if (spid) provider_id = spid;
+	if (spids) provider_ids = spids;
+	if ((spid || spids) && !provider) provider = "spotify";
+	if (pid) provider_id = pid;
+	if (pids) provider_ids = pids;
+
+	const splitIds = provider_ids?.split(",");
 	if (!artist_mbid && !mbid) {
-		const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/lookupArtist?spotifyId=${spid || splitSpids[0]}`);
+		const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/lookupArtist?spotifyId=${spid || splitIds[0]}`);
 		if (response.ok) {
 			const fetchedMBid = await response.json();
 			if (fetchedMBid) {
-				let destination = `/artist?spid=${spid || splitSpids[0]}&artist_mbid=${fetchedMBid}`;
-				if (!spid && splitSpids.length > 1) {
+				let destination = `/artist?spid=${provider_id || splitIds[0]}&artist_mbid=${fetchedMBid}`;
+				if (!spid && splitIds.length > 1) {
 					destination = `/artist?spids=${spids}&artist_mbid=${fetchedMBid}`;
 				}
 				return {
@@ -39,8 +45,8 @@ export async function getServerSideProps(context) {
 			}
 		}
 	}
-	if (!spid && splitSpids.length == 1) {
-		let destination = `/artist?spid=${splitSpids[0]}${mbid || artist_mbid ? `&artist_mbid=${artist_mbid || mbid}` : ""}`;
+	if (!provider_id && splitIds.length == 1) {
+		let destination = `/artist?spid=${splitIds[0]}${mbid || artist_mbid ? `&artist_mbid=${artist_mbid || mbid}` : ""}`;
 		return {
 			redirect: {
 				destination: destination,
@@ -51,11 +57,11 @@ export async function getServerSideProps(context) {
 	try {
 		let data;
 		let artist;
-		if (!spid && spids) {
+		if (!provider_id && provider_ids) {
 			data = [];
-			let spidArray = splitSpids;
-			for (let id of spidArray) {
-				data.push(await fetchArtistData(id));
+			let pIDArray = splitIds;
+			for (let id of pIDArray) {
+				data.push((await fetchArtistData(id, provider)).providerData);
 			}
 			const uniqueNames = [...new Set(data.map((artist) => artist.name))];
 			const genres = [...new Set(data.flatMap((artist) => artist.genres))].filter((genre) => genre.trim() != "");
@@ -77,18 +83,20 @@ export async function getServerSideProps(context) {
 				genres: genres.join(", "),
 				followers: totalFollowers,
 				popularity: data[mostPopularIndex].popularity,
-				spotifyIds: spidArray,
+				provider_ids: pIDArray,
+				provider: provider || "spotify",
 				mbid: artist_mbid || mbid || null,
 			};
 		} else {
-			data = await fetchArtistData(spid);
+			data = (await fetchArtistData(provider_id, provider)).providerData;
 			artist = {
 				name: data.name,
-				imageUrl: data.images[0]?.url || "",
-				genres: data.genres.join(", "),
-				followers: data.followers.total,
+				imageUrl: data.imageUrl || "",
+				genres: data.genres ? data.genres.join(", ") : "",
+				followers: data.followers,
 				popularity: data.popularity,
-				spotifyId: spid,
+				provider_id: provider_id,
+				provider: provider || "spotify",
 				mbid: artist_mbid || mbid || null,
 			};
 		}
@@ -344,7 +352,7 @@ export default function Artist({ artist }) {
 		}
 
 		async function loadAlbums(bypassCache = false) {
-			const spids = artist.spotifyIds ? artist.spotifyIds : [artist.spotifyId];
+			const spids = artist.provider_ids ? artist.provider_ids : [artist.provider_id];
 			let didQuickFetch = false;
 			if (!artist.mbid) {
 				await fetchSpotifyAlbums(spids, bypassCache);
@@ -371,7 +379,7 @@ export default function Artist({ artist }) {
 		}
 		loadAlbums();
 		Artist.loadAlbums = loadAlbums;
-	}, [artist.spotifyId, waitingForMount]);
+	}, [artist.provider_id, waitingForMount]);
 
 	async function refreshAlbums() {
 		setLoading(true);

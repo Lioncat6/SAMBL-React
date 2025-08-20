@@ -150,6 +150,21 @@ async function getTrackById(tidalId) {
     }
 }
 
+async function getArtistById(tidalId) {
+    await refreshApi();
+    try {
+        const data = await tidalApi.GET(`/artists/${tidalId}?countryCode=US&include=artists&include=artists.profileArt&include=artists.albums&include=albums.artists&include=albums.coverArt&include=artists.albums.coverArt`);
+        if (data.data) {
+            return JSON.parse(JSON.stringify(data));
+        } else {
+            return null;
+        }
+    } catch (error) {
+        logger.error("Error fetching artist by ID:", error);
+        throw error;
+    }
+}
+
 function getTrackISRCs(data) {
     if (!data) return null;
     let isrcs = data?.data?.attributes?.isrc ? [data.data.attributes.isrc] : [];
@@ -222,13 +237,21 @@ function formatArtistSearchData(rawData) {
     return artists;
 }
 
+function formatArtistLookupData(rawData) {
+    let queryArtist = rawData.data.links.self.match(/\/artists\/(\d+)/)[1];
+    return formatArtistSearchData(rawData).filter(artist => artist.id === queryArtist)[0];
+}
+
 function formatArtistObject(rawObject) {
     return {
         name: rawObject.attributes.name,
         url: getArtistUrl(rawObject),
         imageUrl: rawObject.imageUrl || '',
+        relevance: `${(rawObject.attributes.popularity * 100).toFixed(0)}% Popularity`,
         info: '',
-        followers: `${(rawObject.attributes.popularity * 100).toFixed(0)}% Popularity`,
+        genres: null,
+        followers: null,
+        popularity: rawObject.attributes.popularity * 100,
         id: rawObject.id,
         type: namespace,
     };
@@ -250,6 +273,9 @@ function parseUrl(url) {
     return null;
 }
 
+function createUrl(type, id) {
+    return `https://tidal.com/${type}/${id}`;
+}
 
 let tidal = {
     namespace,
@@ -258,12 +284,15 @@ let tidal = {
     searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30, namespace: namespace }),
     getAlbumById: withCache(getAlbumById, { ttl: 60 * 30, namespace: namespace }),
     getTrackById: withCache(getTrackById, { ttl: 60 * 30, namespace: namespace }),
+    getArtistById: withCache(getArtistById, { ttl: 60 * 30, namespace: namespace }),
     formatArtistSearchData,
+    formatArtistLookupData,
     formatArtistObject,
     getArtistUrl,
     getTrackISRCs,
     getAlbumUPCs,
-    parseUrl
+    parseUrl,
+    createUrl
 };
 
 export default tidal;

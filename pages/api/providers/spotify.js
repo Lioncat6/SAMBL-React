@@ -1,9 +1,11 @@
 import SpotifyWebApi from "spotify-web-api-node";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
+import ErrorHandler from "../../../utils/errorHandler";
 
 const namespace = "spotify";
 
+const err = new ErrorHandler(namespace);
 
 const spotifyApi = new SpotifyWebApi({
 	clientId: process.env.SPOTIFY_CLIENT_ID,
@@ -36,8 +38,7 @@ async function withRetry(apiCall, retries = 3, delay = 1000) {
 				logger.warn(`Retrying API call (attempt ${attempt} of ${retries})...`);
 				await new Promise((resolve) => setTimeout(resolve, delay));
 			} else {
-				logger.error("API call failed after retries:", error);
-				throw error;
+				err.handleError("API call failed after retries:", error);
 			}
 		}
 	}
@@ -58,19 +59,16 @@ async function checkAccessToken() {
 		accessToken = tokenData.body["access_token"];
 		const expiresIn = tokenData.body["expires_in"];
 		tokenExpirationTime = currentTime + expiresIn * 1000;
-
 		spotifyApi.setAccessToken(accessToken);
 		logger.debug("Spotify access token refreshed successfully");
 	} catch (error) {
-		logger.error("Error refreshing Spotify access token:", error);
-		// throw new Error("Failed to refresh access token");
+		err.handleError("Error refreshing Spotify access token:", error);
 	}
 }
 
 async function getArtistById(spotifyId) {
 	try {
 		await checkAccessToken();
-
 		// Fetch artist data
 		const data = await spotifyApi.getArtist(spotifyId);
 		if (data.statusCode === 404) {
@@ -78,58 +76,51 @@ async function getArtistById(spotifyId) {
 		}
 		return data.body;
 	} catch (error) {
-		logger.error("Error fetching artist data:", error);
-		throw new Error("Failed to fetch artist data");
+		err.handleError("Error fetching artist data:", error);
 	}
 }
 
 async function searchByArtistName(artistName) {
 	try {
 		await checkAccessToken();
-
 		// Fetch artist data
 		const data = await spotifyApi.searchArtists(artistName);
 		return data.body;
 	} catch (error) {
-		logger.error("Error searching for artist:", error);
-		throw new Error("Failed to search for artist");
+		err.handleError("Error searching for artist:", error);
+
 	}
 }
 
 async function getArtistAlbums(spotifyId, offset = 0, limit = 50) {
 	try {
 		await checkAccessToken();
-
 		// Fetch artist albums
 		const data = await spotifyApi.getArtistAlbums(spotifyId, { limit: limit, offset: offset });
 		return data.body;
 	} catch (error) {
-		logger.error("Error fetching artist albums:", error);
-		throw new Error("Failed to fetch artist albums");
+		err.handleError("Error fetching artist albums:", error);
+
 	}
 }
 
 async function getAlbumByUPC(upc) {
 	try {
 		await checkAccessToken();
-
 		const data = await spotifyApi.searchAlbums(`upc:${upc}`, { limit: 20 });
 		return data.body;
 	} catch (error) {
-		logger.error("Error fetching album data:", error);
-		throw new Error("Failed to fetch album data");
+		err.handleError("Error fetching album data:", error);
 	}
 }
 
 async function getTrackByISRC(isrc) {
 	try {
 		await checkAccessToken();
-
 		const data = await spotifyApi.searchTracks(`isrc:${isrc}`, { limit: 20 });
 		return data.body;
 	} catch (error) {
-		logger.error("Error fetching track data:", error);
-		throw new Error("Failed to fetch track data");
+		err.handleError("Error fetching track data:", error);
 	}
 }
 
@@ -139,8 +130,7 @@ async function getAlbumById(spotifyId) {
 		const data = await spotifyApi.getAlbum(spotifyId);
 		return data.body;
 	} catch (error) {
-		logger.error("Error fetching album by Spotify ID:", error);
-		throw new Error("Failed to fetch album by Spotify ID");
+		err.handleError("Error fetching album by Spotify ID:", error);
 	}
 }
 
@@ -150,8 +140,7 @@ async function getTrackById(spotifyId) {
 		const data = await spotifyApi.getTrack(spotifyId);
 		return data.body;
 	} catch (error) {
-		logger.error("Error fetching track by Spotify ID:", error);
-		throw new Error("Failed to fetch track by Spotify ID");
+		err.handleError("Error fetching track by Spotify ID:", error);
 	}
 }
 
@@ -170,13 +159,21 @@ function getAlbumUPCs(album) {
 function formatArtistSearchData(rawData) {
 	return rawData.artists.items;
 }
+
+function formatArtistLookupData(rawData) {
+	return rawData;
+}
+
 function formatArtistObject(rawObject) {
 	return {
 		name: rawObject.name,
 		url: getArtistUrl(rawObject),
 		imageUrl: rawObject.images[0]?.url || "",
+		relevance: `${rawObject.followers.total} Followers`,
 		info: rawObject.genres.join(", "), // Convert genres array to a string
-		followers: `${rawObject.followers.total} Followers`,
+		genres: rawObject.genres,
+		followers: rawObject.followers.total,
+		popularity: rawObject.popularity,
 		id: rawObject.id,
 		type: namespace,
 	};
@@ -198,6 +195,10 @@ function parseUrl(url) {
 	return null;
 }
 
+function createUrl(type, id) {
+	return `https://open.spotify.com/${type}/${id}`;
+}
+
 const spotify = {
 	namespace,
 	getArtistById: withCache(getArtistById, { ttl: 60 * 30, namespace: namespace }),
@@ -210,11 +211,13 @@ const spotify = {
 	validateSpotifyId,
 	extractSpotifyIdFromUrl,
 	formatArtistSearchData,
+	formatArtistLookupData,
 	formatArtistObject,
 	getArtistUrl,
 	getTrackISRCs,
 	getAlbumUPCs,
-	parseUrl
+	parseUrl,
+	createUrl
 };
 
 export default spotify;
