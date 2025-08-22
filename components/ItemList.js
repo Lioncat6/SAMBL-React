@@ -151,15 +151,16 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 	}
 
 	const {
-		spotifyId,
-		spotifyName,
-		spotifyUrl,
-		spotifyImageURL,
-		spotifyImageURL300px,
-		spotifyAlbumArtists,
-		spotifyReleaseDate,
-		spotifyTrackCount,
-		spotifyAlbumType,
+		provider,
+		id,
+		name,
+		url,
+		imageUrl,
+		imageUrlSmall,
+		albumArtists,
+		releaseDate,
+		trackCount,
+		albumType,
 		albumStatus,
 		albumMBUrl,
 		mbTrackCount,
@@ -177,7 +178,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 
 	async function refreshData() {
 		setIsLoading(true);
-		const response = await dispPromise(fetch(`/api/compareSingleAlbum?spotifyId=${spotifyId}&mbid=${currentArtistMBID}`), "Refreshing album...");
+		const response = await dispPromise(fetch(`/api/compareSingleAlbum?spotifyId=${id}&mbid=${currentArtistMBID}`), "Refreshing album...");
 		setIsLoading(false);
 		if (response.ok) {
 			const updatedItem = await response.json();
@@ -187,7 +188,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 		}
 	}
 
-	const spotifyTrackString = spotifyTrackCount > 1 ? `${spotifyTrackCount} Tracks` : "1 Track";
+	const spotifyTrackString = trackCount > 1 ? `${trackCount} Tracks` : "1 Track";
 
 	const mbTrackString = mbTrackNames.map((track) => track).join("\n");
 
@@ -199,16 +200,16 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 			: "This album has no MB release with a matching name or URL";
 
 	let data_params = {
-		"data-spotify-id": spotifyId,
-		"data-spotify-name": spotifyName,
-		"data-spotify-url": spotifyUrl,
-		"data-spotify-image-url": spotifyImageURL,
-		"data-spotify-image-url-300px": spotifyImageURL300px,
-		"data-spotify-album-artists": spotifyAlbumArtists.map((artist) => artist.name).join(", "),
-		"data-spotify-album-artist-ids": spotifyAlbumArtists.map((artist) => artist.id).join(", "),
-		"data-spotify-release-date": spotifyReleaseDate,
-		"data-spotify-track-count": spotifyTrackCount,
-		"data-spotify-album-type": spotifyAlbumType,
+		"data-spotify-id": id,
+		"data-spotify-name": name,
+		"data-spotify-url": url,
+		"data-spotify-image-url": imageUrl,
+		"data-spotify-image-url-300px": imageUrlSmall,
+		"data-spotify-album-artists": albumArtists.map((artist) => artist.name).join(", "),
+		"data-spotify-album-artist-ids": albumArtists.map((artist) => artist.id).join(", "),
+		"data-spotify-release-date": releaseDate,
+		"data-spotify-track-count": trackCount,
+		"data-spotify-album-type": albumType,
 		"data-status": albumStatus,
 		"data-track-count": mbTrackCount,
 		"data-release-date": mbReleaseDate,
@@ -229,8 +230,8 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 
 				{/* Album Cover */}
 				<div className={styles.albumCover}>
-					<a href={spotifyImageURL} target="_blank" rel="noopener noreferrer">
-						<img src={spotifyImageURL300px} alt={`${spotifyName} cover`} loading="lazy" />
+					<a href={imageUrl} target="_blank" rel="noopener noreferrer">
+						<img src={imageUrlSmall} alt={`${name} cover`} loading="lazy" />
 					</a>
 				</div>
 
@@ -238,8 +239,8 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 				<div className={styles.textContainer}>
 					{/* Album Title */}
 					<div className={styles.albumTitle}>
-						<a href={spotifyUrl} target="_blank" rel="noopener noreferrer">
-							{spotifyName}
+						<a href={url} target="_blank" rel="noopener noreferrer">
+							{name}
 						</a>
 						{albumMBUrl && (
 							<a href={albumMBUrl} target="_blank" rel="noopener noreferrer">
@@ -258,7 +259,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 
 					{/* Artists */}
 					<div className={styles.artists}>
-						{spotifyAlbumArtists.map((artist, index) => (
+						{albumArtists.map((artist, index) => (
 							<span key={artist.id}>
 								{index > 0 && ", "}
 								<a href={artist.external_urls.spotify} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
@@ -274,7 +275,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 					{/* Album Info */}
 					<div className={styles.albumInfo}>
 						<div>
-							{spotifyReleaseDate} • {spotifyAlbumType.charAt(0).toUpperCase() + spotifyAlbumType.slice(1)} •{" "}
+							{releaseDate} • {albumType.charAt(0).toUpperCase() + albumType.slice(1)} •{" "}
 							{albumStatus == "red" ? (
 								<span className={`${highlightTracks ? styles.trackHighlight : ""}`}>{spotifyTrackString}</span>
 							) : (
@@ -300,7 +301,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 
 function AddButton({ item }) {
 	return (
-		<Link className={styles.viewButton} href={`/newartist?provider_id=${item.provider_id}&provider=${item.provider}`}>
+		<Link className={styles.viewButton} href={`/newartist?id=${item.provider_id}&type=${item.provider}`}>
 			<div>
 				Add <img className={styles.artistMB} src="../assets/images/MusicBrainz_logo_icon.svg"></img>
 			</div>
@@ -310,7 +311,7 @@ function AddButton({ item }) {
 
 function ViewButton({ item }) {
 	return (
-		<Link className={styles.viewButton} href={`/artist?provider_id=${item.provider_id}&provider=${item.provider}&artist_mbid=${item.mbid}`}>
+		<Link className={styles.viewButton} href={`/artist?provider_id=${item.id}&provider=${item.type}&artist_mbid=${item.mbid}`}>
 			<div>View Artist</div>
 		</Link>
 	);
@@ -581,7 +582,7 @@ export default function ItemList({ items, type, text, refresh }) {
 			updatedItems = updatedItems
 				.map((item) => {
 					const matchesTrack = item.mbTrackNames.some((track) => track.toLowerCase().includes(lowerCaseQuery));
-					const matchesTitle = item.spotifyName.toLowerCase().includes(lowerCaseQuery);
+					const matchesTitle = item.name.toLowerCase().includes(lowerCaseQuery);
 
 					return {
 						...item,
@@ -589,7 +590,7 @@ export default function ItemList({ items, type, text, refresh }) {
 					};
 				})
 				.filter((item) => {
-					return item.spotifyName.toLowerCase().includes(lowerCaseQuery) || item.spotifyAlbumArtists.some((artist) => artist.name.toLowerCase().includes(lowerCaseQuery)) || item.highlightTracks;
+					return item.name.toLowerCase().includes(lowerCaseQuery) || item.albumArtists.some((artist) => artist.name.toLowerCase().includes(lowerCaseQuery)) || item.highlightTracks;
 				});
 		}
 

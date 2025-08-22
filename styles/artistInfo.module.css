@@ -1,7 +1,14 @@
 .spIcon,
-.mbIcon {
+.mbIcon,
+.iconWrapper,
+.deezerIcon {
 	width: 40px;
 	max-height: 10vh;
+}
+
+.iconWrapper > svg {
+	width: 100%;
+	height: 100%;
 }
 
 .nameContainer {
@@ -10,14 +17,18 @@
 	justify-content: center;
 }
 
-.spURLContainer {
+.spURLContainer,
+.deezerURLContainer,
+.tidalURLContainer {
 	display: flex;
 	flex-direction: row;
 	padding: 1.2vh 0 0 0;
 	margin-bottom: 0;
 }
 
-.spURLContainer a {
+.spURLContainer a,
+.deezerURLContainer a,
+.tidalURLContainer a {
 	padding: 0 3px 0 0;
 }
 

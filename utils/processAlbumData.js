@@ -10,16 +10,19 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
     sourceAlbums.forEach((album) => {
         let albumStatus = "red";
         let albumMBUrl = "";
-        let spotifyId = album.id;
-        let spotifyName = album.name;
-        let spotifyUrl = album.external_urls.spotify;
-        let spotifyImageURL = album.images[0]?.url || "";
-        let spotifyImageURL300px = album.images[1]?.url || spotifyImageURL;
-        let spotifyAlbumArtists = album.artists;
-        let spotifyArtistNames = album.artists.map((artist) => artist.name);
-        let spotifyReleaseDate = album.release_date;
-        let spotifyTrackCount = album.total_tracks;
-        let spotifyAlbumType = album.album_type;
+
+        //Provider data
+        let provider = album.provider;
+        let providerId = album.id;
+        let providerAlbumName = album.name;
+        let providerUrl = album.external_urls.spotify;
+        let providerAlbumImage = album.images[0]?.url || "";
+        let providerAlbumImageSmall = album.images[1]?.url || providerAlbumImage;
+        let providerAlbumArtists = album.artists;
+        let providerArtistNames = album.artists.map((artist) => artist.name);
+        let providerReleaseDate = album.release_date;
+        let providerTrackCount = album.total_tracks;
+        let providerAlbumType = album.album_type;
 
         let mbTrackCount = 0;
         let mbReleaseDate = "";
@@ -43,7 +46,7 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
                     }
                 });
                 mbReleaseUrls.forEach((relation) => {
-                    if (relation.url.resource == spotifyUrl) {
+                    if (relation.url.resource == providerUrl) {
                         albumStatus = "green";
                         mbid = mbAlbum.id;
                         albumMBUrl = `https://musicbrainz.org/release/${mbid}`;
@@ -55,7 +58,7 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
                     }
                 });
 
-                if (albumStatus === "red" && normalizeText(mbReleaseName) === normalizeText(spotifyName)) {
+                if (albumStatus === "red" && normalizeText(mbReleaseName) === normalizeText(providerAlbumName)) {
                     albumStatus = "orange";
                     mbid = mbAlbum.id;
                     albumMBUrl = `https://musicbrainz.org/release/${mbid}`;
@@ -88,12 +91,12 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
             if (!mbBarcode || mbBarcode == null) {
                 albumIssues.push("noUPC");
             }
-            if (mbTrackCount != spotifyTrackCount && !quick && full) {
+            if (mbTrackCount != providerTrackCount && !quick && full) {
                 albumIssues.push("trackDiff");
             }
             if (mbReleaseDate == "" || mbReleaseDate == undefined || !mbReleaseDate) {
                 albumIssues.push("noDate");
-            } else if (mbReleaseDate != spotifyReleaseDate) {
+            } else if (mbReleaseDate != providerReleaseDate) {
                 albumIssues.push("dateDiff");
             }
             if (!finalHasCoverArt && !quick) {
@@ -114,16 +117,17 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
         }
 
         albumData.push({
-            spotifyId,
-            spotifyName,
-            spotifyUrl,
-            spotifyImageURL,
-            spotifyImageURL300px,
-            spotifyAlbumArtists,
-            spotifyArtistNames,
-            spotifyReleaseDate,
-            spotifyTrackCount,
-            spotifyAlbumType,
+            provider: provider,
+            id: providerId,
+            name: providerAlbumName,
+            url: providerUrl,
+            imageUrl: providerAlbumImage,
+            imageUrlSmall: providerAlbumImageSmall,
+            albumArtists: providerAlbumArtists,
+            artistNames: providerArtistNames,
+            releaseDate: providerReleaseDate,
+            trackCount: providerTrackCount,
+            albumType: providerAlbumType,
             albumStatus,
             albumMBUrl,
             mbTrackCount,

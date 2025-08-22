@@ -199,6 +199,35 @@ function createUrl(type, id) {
 	return `https://open.spotify.com/${type}/${id}`;
 }
 
+function formatAlbumObject(album) {
+	//Provider data
+	let provider = namespace;
+	let providerId = album.id;
+	let providerAlbumName = album.name;
+	let providerUrl = album.external_urls.spotify;
+	let providerAlbumImage = album.images[0]?.url || "";
+	let providerAlbumImageSmall = album.images[1]?.url || providerAlbumImage;
+	let providerAlbumArtists = album.artists;
+
+	return {
+		provider: provider,
+		id: providerId,
+		name: providerAlbumName,
+		url: providerUrl,
+		imageUrl: providerAlbumImage,
+		imageUrlSmall: providerAlbumImageSmall,
+		albumArtists: album.artists.map((artist) => ({
+			name: artist.name,
+			url: artist.external_urls.spotify,
+			imageUrl: artist.images[0]?.url || "",
+		})),
+		artistNames: album.artists.map((artist) => artist.name),
+		releaseDate: album.release_date,
+		trackCount: album.total_tracks,
+		albumType: album.album_type,
+	};
+}
+
 const spotify = {
 	namespace,
 	getArtistById: withCache(getArtistById, { ttl: 60 * 30, namespace: namespace }),

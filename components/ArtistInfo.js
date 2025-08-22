@@ -1,4 +1,6 @@
 import styles from "../styles/artistInfo.module.css";
+import { FaSpotify, FaDeezer } from "react-icons/fa6";
+import { SiTidal } from "react-icons/si";
 import { LuImageUp } from "react-icons/lu";
 
 function SpotifyUrlContainer({ id }) {
@@ -9,6 +11,43 @@ function SpotifyUrlContainer({ id }) {
 			</a>
 		</div>
 	);
+}
+
+function TidalUrlContainer({ id }) {
+	return (
+		<div className={styles.tidalURLContainer}>
+			<a id="tidalURL" target="_blank" href={"https://tidal.com/artist/" + id}>
+				<div className={styles.iconWrapper}>
+					<SiTidal className={styles.tidalIcon} />
+				</div>
+			</a>
+		</div>
+	);
+}
+
+function DeezerUrlContainer({ id }) {
+	return (
+		<div className={styles.deezerURLContainer}>
+			<a id="deezerUrl" target="_blank" href={"https://www.deezer.com/artist/" + id}>
+				<img alt="Deezer Icon" className={styles.deezerIcon} src="../assets/images/Deezer_icon.svg" />
+			</a>
+		</div>
+	);
+}
+
+function UrlContainer({ id, provider }) {
+	switch (provider) {
+		case "spotify":
+			return <SpotifyUrlContainer id={id} />;
+		case "tidal":
+			return <TidalUrlContainer id={id} />;
+		case "deezer":
+			return <DeezerUrlContainer id={id} />;
+		case "musicbrainz":
+			return <MusicBrainzUrlContainer id={id} />;
+		default:
+			return null;
+	}
 }
 
 function MusicBrainzUrlContainer({ id }) {
@@ -24,10 +63,10 @@ function MusicBrainzUrlContainer({ id }) {
 function UrlIcons({ artist }) {
 	return (
 		<>
-			{artist.provider_id && <SpotifyUrlContainer id={artist.provider_id} />}
+			{artist.provider_id && <UrlContainer id={artist.provider_id} provider={artist.provider} />}
 			{artist.provider_ids &&
 				artist.provider_ids.map((providerId) =>
-					<SpotifyUrlContainer id={providerId} />
+					<UrlContainer id={providerId} provider={artist.provider} />
 				)
 			}
 			{artist.mbid && <MusicBrainzUrlContainer id={artist.mbid} />}
@@ -57,6 +96,23 @@ function ImageContainer({ artist }) {
 	)
 }
 
+function PopularityContainer({ artist }) {
+	return (
+		<div id="artistPopularityContainer" className={styles.artistPopularityContainer} title={'Popularity: ' + artist.popularity + '%'}>
+			<div id="artistPopularity" className={styles.artistPopularity}>Popularity:</div>
+			<div id="artistPopularityBar" className={styles.artistPopularityBar}>
+				<div id="artistPopularityFill" className={styles.artistPopularityFill} style={{ width: `${artist.popularity}%` }} />
+			</div>
+		</div>
+	);
+}
+
+function FollowerContainer({ artist }) {
+	return (
+		<h2 id="artistFollowerCount" className={styles.artistFollowerCount}>{artist.followers} Followers</h2>
+	);
+}
+
 export default function ArtistInfo({ artist }) {
 	return (
 		<>
@@ -67,14 +123,9 @@ export default function ArtistInfo({ artist }) {
 						<h1 id="artistName" className={styles.artistName}>{artist.name || artist.names.join(" / ")}</h1>
 						<UrlIcons artist={artist} />
 					</div>
-					<h2 id="artistFollowerCount" className={styles.artistFollowerCount}>{artist.followers} Followers</h2>
+					{artist.followers && <FollowerContainer artist={artist} />}
 					<div id="artistGenres" className={styles.artistGenres}>{artist.genres}</div>
-					<div id="artistPopularityContainer" className={styles.artistPopularityContainer} title={'Popularity: ' + artist.popularity + '%'}>
-						<div id="artistPopularity" className={styles.artistPopularity}>Popularity:</div>
-						<div id="artistPopularityBar" className={styles.artistPopularityBar}>
-							<div id="artistPopularityFill" className={styles.artistPopularityFill} style={{ width: `${artist.popularity}%` }} />
-						</div>
-					</div>
+					{artist.popularity && <PopularityContainer artist={artist} />}
 				</div>
 			</div>
 		</>

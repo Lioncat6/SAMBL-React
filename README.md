@@ -7,10 +7,10 @@ Streaming Artist MusicBrainz Lookup
 
 | Provider | ISRC Lookup | UPC Lookup | Entity Lookup | Artist Search | Album Matching |
 |:---:|:---:|:---:|:---:|:---:|:---:|
-| MusicBrainz | ✅ | ✅ | ❌ | ❌ | N/A |
-| Spotify | ✅ | ✅ | ❌ | ✅ | ✅ |
-| Deezer | ✅ | ✅ | ❌ | ✅ | ⚠️ |
-| Tidal | ✅ | ✅ | ❌ | ✅ | ⚠️ |
+| MusicBrainz | ✅ | ✅ | ✅ | ❌ | N/A |
+| Spotify | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Deezer | ✅ | ✅ | ✅ | ✅ | ⚠️ |
+| Tidal | ✅ | ✅ | ✅ | ✅ | ⚠️ |
 | MusixMatch | ✅ | ❌ | ❌ | ❌ | ❌ |
 
 ### MetaBrainz Thread:
