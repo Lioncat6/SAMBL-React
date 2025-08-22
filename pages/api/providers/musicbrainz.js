@@ -163,7 +163,7 @@ async function getArtistReleaseCount(mbid) {
 	try {
 		const data = await mbApi.browse("release", { artist: mbid, limit: 1 });
 		checkError(data);
-		if (!data["release-count"]) {
+		if (data["release-count"] == undefined || data["release-count"] == null) {
 			return null;
 		}
 		return data["release-count"];
