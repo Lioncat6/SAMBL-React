@@ -200,22 +200,13 @@ function createUrl(type, id) {
 }
 
 function formatAlbumObject(album) {
-	//Provider data
-	let provider = namespace;
-	let providerId = album.id;
-	let providerAlbumName = album.name;
-	let providerUrl = album.external_urls.spotify;
-	let providerAlbumImage = album.images[0]?.url || "";
-	let providerAlbumImageSmall = album.images[1]?.url || providerAlbumImage;
-	let providerAlbumArtists = album.artists;
-
 	return {
-		provider: provider,
-		id: providerId,
-		name: providerAlbumName,
-		url: providerUrl,
-		imageUrl: providerAlbumImage,
-		imageUrlSmall: providerAlbumImageSmall,
+		provider: namespace,
+		id: album.id,
+		name: album.name,
+		url: album.external_urls.spotify,
+		imageUrl: album.images[0]?.url || "",
+		imageUrlSmall: album.images[1]?.url || album.images[0]?.url || "",
 		albumArtists: album.artists.map((artist) => ({
 			name: artist.name,
 			url: artist.external_urls.spotify,

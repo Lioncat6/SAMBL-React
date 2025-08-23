@@ -33,7 +33,7 @@ export async function getServerSideProps(context) {
 			const fetchedMBid = await response.json();
 			if (fetchedMBid) {
 				let destination = `/artist?spid=${provider_id || splitIds[0]}&artist_mbid=${fetchedMBid}`;
-				if (!spid && splitIds.length > 1) {
+				if (!spid && splitIds?.length > 1) {
 					destination = `/artist?spids=${spids}&artist_mbid=${fetchedMBid}`;
 				}
 				return {
@@ -45,7 +45,7 @@ export async function getServerSideProps(context) {
 			}
 		}
 	}
-	if (!provider_id && splitIds.length == 1) {
+	if (!provider_id && splitIds?.length == 1) {
 		let destination = `/artist?spid=${splitIds[0]}${mbid || artist_mbid ? `&artist_mbid=${artist_mbid || mbid}` : ""}`;
 		return {
 			redirect: {

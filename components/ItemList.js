@@ -14,14 +14,14 @@ import { IoMdRefresh } from "react-icons/io";
 import { toast, Flip } from "react-toastify";
 
 function AlbumIcons({ item }) {
-	const { spotifyId, spotifyUrl, spotifyReleaseDate, spotifyTrackCount, albumStatus, mbTrackCount, mbReleaseDate, mbid, albumIssues } = item;
+	const { id, url, releaseDate, trackCount, albumStatus, mbTrackCount, mbReleaseDate, mbid, albumIssues } = item;
 	return (
 		<div className={styles.iconContainer}>
 			{albumIssues.includes("noUPC") && <img className={styles.upcIcon} src="../assets/images/noUPC.svg" title="This release is missing a UPC/Barcode!" alt="Missing UPC" />}
 			{albumIssues.includes("missingISRCs") && (
 				<a
 					className={albumStatus === "green" ? styles.isrcTextAvaliable : styles.isrcText}
-					href={albumStatus === "green" ? `https://isrchunt.com/spotify/importisrc?releaseId=${spotifyId}` : undefined}
+					href={albumStatus === "green" ? `https://isrchunt.com/spotify/importisrc?releaseId=${id}` : undefined}
 					target={albumStatus === "green" ? "_blank" : undefined}
 					rel={albumStatus === "green" ? "noopener" : undefined}
 					title={albumStatus === "green" ? "This release has missing ISRCs! [Click to Fix]" : "This release has missing ISRCs!"}
@@ -39,7 +39,7 @@ function AlbumIcons({ item }) {
 				/>
 			)}
 			{albumIssues.includes("trackDiff") && (
-				<div className={styles.numDiff} title={`This release has a differing track count! [SP: ${spotifyTrackCount} MB: ${mbTrackCount}]`}>
+				<div className={styles.numDiff} title={`This release has a differing track count! [SP: ${trackCount} MB: ${mbTrackCount}]`}>
 					#
 				</div>
 			)}
@@ -48,9 +48,9 @@ function AlbumIcons({ item }) {
 					className={`${styles.dateMissing} ${albumStatus === "green" ? styles.dateMissingAvaliable : ""}`}
 					href={
 						albumStatus === "green"
-							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${spotifyReleaseDate.split("-")[0]}&events.0.date.month=${spotifyReleaseDate.split("-")[1]}&events.0.date.day=${
-									spotifyReleaseDate.split("-")[2]
-							  }&edit_note=${encodeURIComponent(`Added release date from Spotify using SAMBL: ${spotifyUrl}`)}`
+							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${releaseDate.split("-")[0]}&events.0.date.month=${releaseDate.split("-")[1]}&events.0.date.day=${
+									releaseDate.split("-")[2]
+							  }&edit_note=${encodeURIComponent(`Added release date from Spotify using SAMBL: ${url}`)}`
 							: undefined
 					}
 					title={albumStatus === "green" ? "This release is missing a release date!\n[Click to Fix]" : "This release is missing a release date!"}
@@ -58,14 +58,14 @@ function AlbumIcons({ item }) {
 					rel={albumStatus === "green" ? "noopener" : undefined}
 				></a>
 			)}
-			{albumIssues.includes("dateDiff") && <div className={styles.dateDiff} title={`This release has a differing release date! [SP: ${spotifyReleaseDate} MB: ${mbReleaseDate}]\n(This may indicate that you have to split a release.)`} />}
+			{albumIssues.includes("dateDiff") && <div className={styles.dateDiff} title={`This release has a differing release date! [SP: ${releaseDate} MB: ${mbReleaseDate}]\n(This may indicate that you have to split a release.)`} />}
 		</div>
 	);
 }
 
 function ActionButtons({ item }) {
 	const { settings } = useSettings();
-	const { spotifyId, spotifyUrl } = item;
+	const { url } = item;
 	const [collapsed, setCollapsed] = useState(true);
 	function toggleState() {
 		setCollapsed(!collapsed);
@@ -81,12 +81,12 @@ function ActionButtons({ item }) {
 				<div className={`${collapsed ? styles.collapsed : styles.expanded}`}>
 					{settings?.showExport && <SelectionButtons item={item} />}
 					{settings?.showATisket && (
-						<a className={styles.aTisketButton} href={`https://atisket.pulsewidth.org.uk/?spf_id=${spotifyId}&amp;preferred_vendor=spf`} target="_blank" rel="noopener noreferrer">
+						<a className={styles.aTisketButton} href={`https://atisket.pulsewidth.org.uk/?url=${url}`} target="_blank" rel="noopener noreferrer">
 							<div>A-tisket</div>
 						</a>
 					)}
 					{settings?.showHarmony && (
-						<a className={styles.harmonyButton} href={`https://harmony.pulsewidth.org.uk/release?url=${spotifyUrl}&category=preferred`} target="_blank" rel="noopener noreferrer">
+						<a className={styles.harmonyButton} href={`https://harmony.pulsewidth.org.uk/release?url=${url}&category=preferred`} target="_blank" rel="noopener noreferrer">
 							<div>Harmony</div>
 						</a>
 					)}
@@ -624,7 +624,7 @@ export default function ItemList({ items, type, text, refresh }) {
 	}
 
 	const handleItemUpdate = (updatedItem) => {
-		setCurrentItems((prev) => prev.map((item) => (item.spotifyId === updatedItem.spotifyId ? updatedItem : item)));
+		setCurrentItems((prev) => prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)));
 	};
 	return (
 		<div className={styles.listWrapper}>
