@@ -7,6 +7,20 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
     let orange = 0;
     let total = 0;
 
+    //     export type AlbumObject = {
+    //     provider: string;
+    //     id: string;
+    //     name: string;
+    //     url: string;
+    //     imageUrl: string;
+    //     imageUrlSmall: string;
+    //     albumArtists: AlbumArtistObject[];
+    //     artistNames: string[];
+    //     releaseDate: string;
+    //     trackCount: number;
+    //     albumType: string;
+    // };
+    //
     sourceAlbums.forEach((album) => {
         let albumStatus = "red";
         let albumMBUrl = "";
@@ -15,14 +29,14 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
         let provider = album.provider;
         let providerId = album.id;
         let providerAlbumName = album.name;
-        let providerUrl = album.external_urls.spotify;
-        let providerAlbumImage = album.images[0]?.url || "";
-        let providerAlbumImageSmall = album.images[1]?.url || providerAlbumImage;
-        let providerAlbumArtists = album.artists;
-        let providerArtistNames = album.artists.map((artist) => artist.name);
-        let providerReleaseDate = album.release_date;
-        let providerTrackCount = album.total_tracks;
-        let providerAlbumType = album.album_type;
+        let providerUrl = album.url;
+        let providerAlbumImage = album.imageUrl || "";
+        let providerAlbumImageSmall = album.imageUrlSmall || providerAlbumImage;
+        let providerAlbumArtists = album.albumArtists;
+        let providerArtistNames = album.artistNames;
+        let providerReleaseDate = album.releaseDate;
+        let providerTrackCount = album.trackCount;
+        let providerAlbumType = album.albumType;
 
         let mbTrackCount = 0;
         let mbReleaseDate = "";

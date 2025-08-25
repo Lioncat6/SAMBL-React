@@ -199,6 +199,27 @@ function createUrl(type, id) {
 	return `https://open.spotify.com/${type}/${id}`;
 }
 
+function formatAlbumGetData(rawData) {
+	const nextIntRegex = /offset=(\d+)/;
+	return {
+		count: rawData.total,
+		current: rawData.offset,
+		next: rawData.next ? rawData.next?.match(nextIntRegex)[1] : null,
+		albums: rawData.items,
+	};
+}
+
+function formatAlbumArtistObject(artist) {
+	return {
+		name: artist.name,
+		url: getArtistUrl(artist),
+		imageUrl: "",
+		imageUrlSmall: "",
+		id: artist.id,
+		type: namespace,
+	};
+}
+
 function formatAlbumObject(album) {
 	return {
 		provider: namespace,
@@ -207,11 +228,7 @@ function formatAlbumObject(album) {
 		url: album.external_urls.spotify,
 		imageUrl: album.images[0]?.url || "",
 		imageUrlSmall: album.images[1]?.url || album.images[0]?.url || "",
-		albumArtists: album.artists.map((artist) => ({
-			name: artist.name,
-			url: artist.external_urls.spotify,
-			imageUrl: artist.images[0]?.url || "",
-		})),
+		albumArtists: album.artists.map(formatAlbumArtistObject),
 		artistNames: album.artists.map((artist) => artist.name),
 		releaseDate: album.release_date,
 		trackCount: album.total_tracks,
@@ -233,6 +250,8 @@ const spotify = {
 	formatArtistSearchData,
 	formatArtistLookupData,
 	formatArtistObject,
+	formatAlbumGetData,
+	formatAlbumObject,
 	getArtistUrl,
 	getTrackISRCs,
 	getAlbumUPCs,

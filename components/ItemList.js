@@ -262,7 +262,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 						{albumArtists.map((artist, index) => (
 							<span key={artist.id}>
 								{index > 0 && ", "}
-								<a href={artist.external_urls.spotify} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
+								<a href={artist.url} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
 									{artist.name}
 								</a>
 								<a href={`../newartist?spid=${artist.id}`} target="_blank" rel="noopener noreferrer">
@@ -311,7 +311,7 @@ function AddButton({ item }) {
 
 function ViewButton({ item }) {
 	return (
-		<Link className={styles.viewButton} href={`/artist?provider_id=${item.id}&provider=${item.type}&artist_mbid=${item.mbid}`}>
+		<Link className={styles.viewButton} href={`/artist?provider_id=${item.id}&provider=${item.provider}&artist_mbid=${item.mbid}`}>
 			<div>View Artist</div>
 		</Link>
 	);

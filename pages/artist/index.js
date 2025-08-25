@@ -111,8 +111,8 @@ export async function getServerSideProps(context) {
 	}
 }
 
-async function fetchsourceAlbums(artistId, offset = 0, bypassCache = false) {
-	return fetch(`/api/getArtistAlbums?spotifyId=${artistId}&offset=${offset}&limit=50${bypassCache ? "&forceRefresh" : ""}`).then((response) => {
+async function fetchSourceAlbums(providerId, provider, offset = 0, bypassCache = false) {
+	return fetch(`/api/getArtistAlbums?provider_id=${providerId}&provider=${provider}&offset=${offset}&limit=50${bypassCache ? "&forceRefresh" : ""}`).then((response) => {
 		if (!response.ok) {
 			return response.status;
 		}
@@ -171,7 +171,7 @@ async function dispPromise(promise, message) {
 			promise,
 			{
 				pending: message,
-				error: "Data not found!",
+				error: "An error occured while quick fetching!",
 			},
 			toastProperties
 		)
@@ -213,29 +213,29 @@ export default function Artist({ artist }) {
 			}
 		}
 
-		async function fetchSpotifyAlbums(spids, bypassCache = false) {
+		async function fetchProviderAlbums(pids, provider, bypassCache = false) {
 			let attempts = 0;
-			for (const spid of spids) {
+			for (const pid of pids) {
 				let offset = 0;
 				let currentAlbumCount = 999;
 				let fetchedAlbums = 0;
-				while (offset < currentAlbumCount) {
+				while (offset != null) {
 					try {
-						const data = await fetchsourceAlbums(spid, offset, bypassCache);
+						const data = await fetchSourceAlbums(pid, provider, offset, bypassCache);
 						if (typeof data === "number") {
 							if (data === 404) {
-								dispError(`Spotify ID ${spid} not found!`);
+								dispError(`Spotify ID ${pid} not found!`);
 								return;
 							}
 							throw new Error(`Error fetching Spotify albums: ${data}`);
 						}
-						sourceAlbums.current = [...sourceAlbums.current, ...data.items];
-						fetchedAlbums += data.items.length;
-						currentAlbumCount = data.total;
+						sourceAlbums.current = [...sourceAlbums.current, ...data.albums];
+						fetchedAlbums += data.albums.length;
+						currentAlbumCount = data.count;
 						if (sourceAlbumCount < 0) {
 							sourceAlbumCount = currentAlbumCount;
 						}
-						offset = fetchedAlbums;
+						offset = data.next;
 						updateLoadingText();
 					} catch (error) {
 						attempts++;
@@ -306,11 +306,11 @@ export default function Artist({ artist }) {
 			}
 		}
 
-		async function quickFetchAlbums(spid, mbid, bypassCache = false) {
+		async function quickFetchAlbums(pId, provider, mbid, bypassCache = false) {
 			let attempts = 0;
 			while (attempts < 3) {
 				try {
-					const response = await fetch(`/api/compareArtistAlbums?spotifyId=${spid}&mbid=${mbid}&quick${bypassCache ? "&forceRefresh" : ""}`);
+					const response = await fetch(`/api/compareArtistAlbums?provider_id=${pId}&provider=${provider}&mbid=${mbid}&quick${bypassCache ? "&forceRefresh" : ""}`);
 					if (response.ok) {
 						return await response.json();
 					} else {
@@ -347,29 +347,29 @@ export default function Artist({ artist }) {
 			return false;
 		}
 
-		async function fetchAlbums(spids, bypassCache = false) {
-			await Promise.all([fetchSpotifyAlbums(spids, bypassCache), fetchMusicbrainzArtistAlbums(bypassCache), fetchMusicBrainzFeaturedAlbums(bypassCache)]);
+		async function fetchAlbums(pids, provider, bypassCache = false) {
+			await Promise.all([fetchProviderAlbums(pids, provider, bypassCache), fetchMusicbrainzArtistAlbums(bypassCache), fetchMusicBrainzFeaturedAlbums(bypassCache)]);
 		}
 
 		async function loadAlbums(bypassCache = false) {
-			const spids = artist.provider_ids ? artist.provider_ids : [artist.provider_id];
+			const providerIds = artist.provider_ids ? artist.provider_ids : [artist.provider_id];
 			let didQuickFetch = false;
 			if (!artist.mbid) {
-				await fetchSpotifyAlbums(spids, bypassCache);
+				await fetchProviderAlbums(providerIds, artist.provider, bypassCache);
 			} else {
-				if (spids.length > 1 || quickFetch) {
-					await fetchAlbums(spids, bypassCache);
+				if (providerIds.length > 1 || quickFetch) {
+					await fetchAlbums(providerIds, artist.provider, bypassCache);
 				} else {
 					didQuickFetch = await shouldQuickfetch();
 					if (!didQuickFetch) {
-						await fetchAlbums(spids, bypassCache);
+						await fetchAlbums(providerIds, artist.provider, bypassCache);
 					}
 				}
 			}
 
 			let data;
 			if (didQuickFetch) {
-				data = await dispPromise(quickFetchAlbums(spids[0], artist.mbid, bypassCache), "Quick Fetching albums...");
+				data = await dispPromise(quickFetchAlbums(providerIds[0], artist.provider, artist.mbid, bypassCache), "Quick Fetching albums...");
 			} else {
 				data = processData(sourceAlbums.current, mbAlbums.current, artist.mbid);
 			}

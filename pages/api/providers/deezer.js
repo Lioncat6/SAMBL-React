@@ -128,22 +128,92 @@ function formatArtistLookupData(rawData) {
 	return rawData;
 }
 
-function formatArtistObject(rawObject) {
-	let imageUrl = rawObject.picture_big;
+function formatArtistObject(artist) {
+	let imageUrl = artist.picture_big;
 	if (imageUrl.includes("/artist//")) {
-		imageUrl = rawObject.picture;
+		imageUrl = artist.picture;
 	}
 	return {
-		name: rawObject.name,
-		url: getArtistUrl(rawObject),
+		name: artist.name,
+		url: getArtistUrl(artist),
 		imageUrl: imageUrl || "",
-		relevance: `${rawObject.nb_fan} fans`,
-		info: `${rawObject.nb_album} albums`,
+		relevance: `${artist.nb_fan} fans`,
+		info: `${artist.nb_album} albums`,
 		genres: null,
-		followers: rawObject.nb_fan,
+		followers: artist.nb_fan,
 		popularity: null,
-		id: rawObject.id,
-		type: namespace,
+		id: artist.id,
+		provider: namespace,
+	};
+}
+
+function formatAlbumArtistObject(artist) {
+	return {
+		name: artist.name,
+		url: artist.link,
+		imageUrl: artist.picture_xl || "",
+		imageUrlSmall: artist.picture_medium || "",
+		id: artist.id,
+		provider: namespace,
+	};
+}
+
+async function getArtistAlbumsInternal(artistId) {
+	try {
+		let artistAlbumData = await deezerApi.artist.albums(artistId, 9999, 0);
+		return artistAlbumData;
+	} catch {
+		return null;
+	}
+}
+
+async function getArtistAlbums(artistId, offset, limit) {
+	try {
+		let artistAlbumData = await deezer.getArtistAlbumsInternal(artistId);
+		let artistAlbumMap = Object.fromEntries(artistAlbumData.data.map(album => [album.id, album]));
+		let artistName = (await deezer.getArtistById(artistId)).name;
+		let searchAlbumData = await deezerApi.search.album(`artist:"${artistName}"`, null, 9999, offset);
+
+		searchAlbumData.data.forEach(album => {
+			let artistAlbum = artistAlbumMap[album.id];
+			if (!artistAlbum) {
+				searchAlbumData.data = searchAlbumData.data.filter(a => a.id !== album.id);
+				return;
+			}
+			if (artistAlbum) {
+				album.release_date = artistAlbum.release_date;
+				album.fans = artistAlbum.fans;
+			}
+		});
+		return searchAlbumData;
+	} catch (error) {
+		err.handleError("Error fetching artist albums:", error);
+	}
+}
+
+function formatAlbumGetData(rawData) {
+	const nextIntRegex = /index=(\d+)/;
+	return {
+		count: rawData.total,
+		current: !(rawData.prev) ? 0 : rawData.prev.match(nextIntRegex) ? parseInt(rawData.prev.match(nextIntRegex)[1]) + rawData.data.length : 0,
+		next: rawData.next ? rawData.next.match(nextIntRegex)[1] : null,
+		albums: rawData.data,
+	};
+}
+
+function formatAlbumObject(album) {
+	return {
+		provider: namespace,
+		id: album.id,
+		name: album.title,
+		url: album.link,
+		imageUrl: album.cover_xl || "",
+		imageUrlSmall: album.cover_medium || "",
+		albumArtists: album.artist ? [formatAlbumArtistObject(album.artist)] : [],
+		artistNames: album.artist ? album.artist.name : "",
+		releaseDate: album.release_date,
+		trackCount: album.nb_tracks,
+		albumType: album.record_type,
 	};
 }
 
@@ -175,9 +245,14 @@ const deezer = {
 	getAlbumById: withCache(getAlbumById, { ttl: 60 * 30, namespace: namespace }),
 	getTrackById: withCache(getTrackById, { ttl: 60 * 30, namespace: namespace }),
 	getArtistById: withCache(getArtistById, { ttl: 60 * 30, namespace: namespace }),
+	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 30, namespace: namespace }),
+	getArtistAlbumsInternal: withCache(getArtistAlbumsInternal, { ttl: 60 * 30, namespace: namespace }),
 	formatArtistSearchData,
 	formatArtistLookupData,
     formatArtistObject,
+	formatAlbumArtistObject,
+	formatAlbumGetData,
+	formatAlbumObject,
     getArtistUrl,
 	getTrackISRCs,
 	getAlbumUPCs,

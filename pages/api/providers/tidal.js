@@ -2,7 +2,6 @@ import { credentialsProvider, init as initAuth } from '@tidal-music/auth';
 import { createAPIClient } from '@tidal-music/api';
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
-import 'localstorage-polyfill'
 
 const namespace = "tidal";
 
