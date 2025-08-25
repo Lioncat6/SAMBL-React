@@ -199,7 +199,6 @@ function formatAlbumGetData(rawData) {
         album.attributes.coverArt = artworkMap[album.relationships?.coverArt?.data[0]?.id] || null;
     }
 
-    console.log(rawData.data.links)
 	return {
 		count: null,
 		current: rawData.data.links?.self?.match(currentPage) ? rawData.data.links?.self?.match(currentPage)[1] : null,
@@ -209,7 +208,6 @@ function formatAlbumGetData(rawData) {
 }
 
 function formatAlbumObject(album) {
-    console.log(album)
 	return {
 		provider: namespace,
 		id: album.id,
@@ -226,7 +224,6 @@ function formatAlbumObject(album) {
 }
 
 function formatAlbumArtistObject(artist) {
-    console.log(artist)
     return {
         provider: namespace,
         id: artist.id,
