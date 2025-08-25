@@ -5,7 +5,7 @@ import { getTraceEvents } from "next/dist/trace";
 
 export default async function handler(req, res) {
     try {
-        let { id, provider, url } = req.query;
+        let { provider_id, provider, url } = req.query;
         if (!id && !url) {
             return res.status(400).json({ error: "Parameter `id` or `url` is required" });
         }
