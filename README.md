@@ -9,7 +9,7 @@ Streaming Artist MusicBrainz Lookup
 |:---:|:---:|:---:|:---:|:---:|:---:|
 | MusicBrainz | ✅ | ✅ | ✅ | ❌ | N/A |
 | Spotify | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Deezer | ✅ | ✅ | ✅ | ✅ | ⚠️ |
+| Deezer | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Tidal | ✅ | ✅ | ✅ | ✅ | ⚠️ |
 | MusixMatch | ✅ | ❌ | ❌ | ❌ | ❌ |
 
