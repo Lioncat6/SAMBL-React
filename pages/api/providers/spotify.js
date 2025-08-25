@@ -175,7 +175,7 @@ function formatArtistObject(rawObject) {
 		followers: rawObject.followers.total,
 		popularity: rawObject.popularity,
 		id: rawObject.id,
-		type: namespace,
+		provider: namespace,
 	};
 }
 

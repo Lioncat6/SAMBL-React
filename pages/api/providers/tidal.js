@@ -124,7 +124,13 @@ async function getAlbumById(tidalId) {
     try {
         const data = await tidalApi.GET(`/albums/${tidalId}?countryCode=US&include=coverArt&include=artists`);
         if (data.data) {
-            return JSON.parse(JSON.stringify(data.data));
+            let included = data.data.included;
+            const artists = included.filter(obj => obj.type === "artists");
+            const artworks = included.filter(obj => obj.type === "artworks");
+            let album = data.data.data;
+            album.attributes.artists = artists;
+            album.attributes.coverArt = artworks[0];
+            return JSON.parse(JSON.stringify(data.data.data))
         } else {
             return null;
         }
@@ -162,6 +168,73 @@ async function getArtistById(tidalId) {
         logger.error("Error fetching artist by ID:", error);
         throw error;
     }
+}
+
+async function getArtistAlbums(artistId, offset, limit) {
+    await refreshApi();
+    try {
+        const data = await tidalApi.GET(`/artists/${artistId}/relationships/albums?countryCode=US&include=albums&include=albums.coverArt&include=albums.artists${(offset && offset !=0) ? `&page[cursor]=${offset}` : ''}`);
+        if (data.data) {
+            return JSON.parse(JSON.stringify(data));
+        } else {
+            return null;
+        }
+    } catch (error) {
+        logger.error("Error fetching artist albums:", error);
+        throw error;
+    }
+}
+
+function formatAlbumGetData(rawData) {
+	const currentPage = /%5Bcursor%5D=([a-zA-Z0-9]+)/;
+    const included = rawData.data.included;
+    const artists = included.filter(obj => obj.type === "artists");
+    const artistMap = Object.fromEntries(artists.map(a => [a.id, a]));
+    const albums = included.filter(obj => obj.type === "albums");
+    const artworks = included.filter(obj => obj.type === "artworks");
+    const artworkMap = Object.fromEntries(artworks.map(a => [a.id, a]));
+
+    for (let album of albums) {
+        album.attributes.artists = album.relationships?.artists?.data.map(a => artistMap[a.id]) || [];
+        album.attributes.coverArt = artworkMap[album.relationships?.coverArt?.data[0]?.id] || null;
+    }
+
+    console.log(rawData.data.links)
+	return {
+		count: null,
+		current: rawData.data.links?.self?.match(currentPage) ? rawData.data.links?.self?.match(currentPage)[1] : null,
+		next: rawData.data.links?.meta?.nextCursor || null,
+		albums: albums,
+	};
+}
+
+function formatAlbumObject(album) {
+    console.log(album)
+	return {
+		provider: namespace,
+		id: album.id,
+		name: album.attributes.title,
+		url: `https://tidal.com/album/${album.id}`,
+		imageUrl: album.attributes?.coverArt?.attributes?.files[0]?.href || "",
+		imageUrlSmall: album.attributes?.coverArt?.attributes?.files[5]?.href || "",
+		albumArtists: album.attributes.artists.map(formatAlbumArtistObject),
+		artistNames: album.attributes.artists.map(artist => artist.attributes.name).join(", "),
+		releaseDate: album.attributes.releaseDate,
+		trackCount: album.attributes.numberOfItems,
+		albumType: album.attributes.type,
+	};
+}
+
+function formatAlbumArtistObject(artist) {
+    console.log(artist)
+    return {
+        provider: namespace,
+        id: artist.id,
+        name: artist.attributes.name,
+        url: artist.attributes.link,
+        imageUrl: artist.attributes.profileArt || "",
+        imageUrlSmall: artist.attributes.profileArt || "",
+    };
 }
 
 function getTrackISRCs(data) {
@@ -252,7 +325,7 @@ function formatArtistObject(rawObject) {
         followers: null,
         popularity: rawObject.attributes.popularity * 100,
         id: rawObject.id,
-        type: namespace,
+        provider: namespace,
     };
 }
 
@@ -284,9 +357,13 @@ let tidal = {
     getAlbumById: withCache(getAlbumById, { ttl: 60 * 30, namespace: namespace }),
     getTrackById: withCache(getTrackById, { ttl: 60 * 30, namespace: namespace }),
     getArtistById: withCache(getArtistById, { ttl: 60 * 30, namespace: namespace }),
+    getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 30, namespace: namespace }),
     formatArtistSearchData,
     formatArtistLookupData,
     formatArtistObject,
+    formatAlbumGetData,
+    formatAlbumArtistObject,
+    formatAlbumObject,
     getArtistUrl,
     getTrackISRCs,
     getAlbumUPCs,
