@@ -178,7 +178,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 
 	async function refreshData() {
 		setIsLoading(true);
-		const response = await dispPromise(fetch(`/api/compareSingleAlbum?spotifyId=${id}&mbid=${currentArtistMBID}`), "Refreshing album...");
+		const response = await dispPromise(fetch(`/api/compareSingleAlbum?provider_id=${id}&provider=${provider}&mbid=${currentArtistMBID}`), "Refreshing album...");
 		setIsLoading(false);
 		if (response.ok) {
 			const updatedItem = await response.json();

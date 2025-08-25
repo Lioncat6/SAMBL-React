@@ -158,34 +158,35 @@ function formatAlbumArtistObject(artist) {
 	};
 }
 
-async function getArtistAlbumsInternal(artistId) {
-	try {
-		let artistAlbumData = await deezerApi.artist.albums(artistId, 9999, 0);
-		return artistAlbumData;
-	} catch {
-		return null;
-	}
-}
-
 async function getArtistAlbums(artistId, offset, limit) {
+	const nextIntRegex = /index=(\d+)/;
 	try {
-		let artistAlbumData = await deezer.getArtistAlbumsInternal(artistId);
-		let artistAlbumMap = Object.fromEntries(artistAlbumData.data.map(album => [album.id, album]));
-		let artistName = (await deezer.getArtistById(artistId)).name;
-		let searchAlbumData = await deezerApi.search.album(`artist:"${artistName}"`, null, 9999, offset);
-
-		searchAlbumData.data.forEach(album => {
-			let artistAlbum = artistAlbumMap[album.id];
-			if (!artistAlbum) {
-				searchAlbumData.data = searchAlbumData.data.filter(a => a.id !== album.id);
-				return;
+		let artistAlbumData = await await deezerApi.artist.albums(artistId, 9999, 0);
+		let artistData = await deezer.getArtistById(artistId);
+		let next = 0;
+		let searchAlbums = []
+		while (next != null) {
+			let searchAlbumData = await deezerApi.search.album(`artist:"${artistData.name}"`, null, 9999, next);
+			if (searchAlbumData && searchAlbumData.data) {
+				searchAlbums.push(...searchAlbumData.data);
+				next = searchAlbumData.next ? searchAlbumData.next.match(nextIntRegex)[1] : null;
+			} else {
+				next = null;
 			}
-			if (artistAlbum) {
-				album.release_date = artistAlbum.release_date;
-				album.fans = artistAlbum.fans;
+		}
+		let searchAlbumMap = Object.fromEntries(searchAlbums.map(album => [album.id, album]));
+
+		artistAlbumData.data.forEach(album => {
+			let searchAlbum = searchAlbumMap[album.id];
+			if (!searchAlbum) {
+				album.artist = artistData;
+			}
+			if (searchAlbum) {
+				album.artist = searchAlbum.artist;
+				album.nb_tracks = searchAlbum.nb_tracks;
 			}
 		});
-		return searchAlbumData;
+		return artistAlbumData;
 	} catch (error) {
 		err.handleError("Error fetching artist albums:", error);
 	}
@@ -209,8 +210,8 @@ function formatAlbumObject(album) {
 		url: album.link,
 		imageUrl: album.cover_xl || "",
 		imageUrlSmall: album.cover_medium || "",
-		albumArtists: album.artist ? [formatAlbumArtistObject(album.artist)] : [],
-		artistNames: album.artist ? album.artist.name : "",
+		albumArtists: album.contributors && album.contributors.length > 0 ? album.contributors.map(formatAlbumArtistObject) : album.artist ? [formatAlbumArtistObject(album.artist)] : [],
+		artistNames: album.contributors && album.contributors.length > 0 ? album.contributors.map(artist => artist.name).join(", ") : album.artist ? album.artist.name : "",
 		releaseDate: album.release_date,
 		trackCount: album.nb_tracks,
 		albumType: album.record_type,
@@ -246,7 +247,6 @@ const deezer = {
 	getTrackById: withCache(getTrackById, { ttl: 60 * 30, namespace: namespace }),
 	getArtistById: withCache(getArtistById, { ttl: 60 * 30, namespace: namespace }),
 	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 30, namespace: namespace }),
-	getArtistAlbumsInternal: withCache(getArtistAlbumsInternal, { ttl: 60 * 30, namespace: namespace }),
 	formatArtistSearchData,
 	formatArtistLookupData,
     formatArtistObject,
