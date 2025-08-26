@@ -209,7 +209,7 @@ export default function Artist({ artist }) {
 					setStatusText(`Loading albums from musicbrainz... ${parseInt(mbAlbums.current.length)}/${Number(mbAlbumCount) + Number(mbFeaturedAlbumCount)}`);
 				}
 			} else {
-				setStatusText(`Loading albums from spotify... ${sourceAlbums.current.length}/${sourceAlbumCount}`);
+				setStatusText(`Loading albums from ${artist.provider}... ${sourceAlbums.current.length}${sourceAlbumCount ? `/${sourceAlbumCount}`: ""}`);
 			}
 		}
 
