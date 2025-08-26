@@ -22,11 +22,11 @@ export async function getServerSideProps(context) {
     try {
         const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/lookupArtist?provider_id=${provider_id}&provider=${provider}`);
         if (response.ok) {
-            const mbid = await response.json();
+            const { mbid } = await response.json();
             if (mbid) {
                 return {
                     redirect: {
-                        destination: `/artist?provider_id=${provider_id}&provider${provider}&artist_mbid=${mbid}`,
+                        destination: `/artist?provider_id=${provider_id}&provider=${provider}&artist_mbid=${mbid}`,
                         permanent: false,
                     },
                 };
@@ -35,15 +35,8 @@ export async function getServerSideProps(context) {
 
         const data = (await fetchArtistData(provider_id, provider)).providerData;
 
-        const artist = {
-				name: data.name,
-				imageUrl: data.imageUrl || "",
-				genres: data.genres ? data.genres.join(", ") : "",
-				followers: data.followers,
-				popularity: data.popularity,
-				provider_id: provider_id,
-				provider: provider || "spotify",
-			};
+        const artist = data;
+        data.provider_id = data.id;
 
         return {
             props: { artist },

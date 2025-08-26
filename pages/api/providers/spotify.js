@@ -216,7 +216,7 @@ function formatAlbumArtistObject(artist) {
 		imageUrl: "",
 		imageUrlSmall: "",
 		id: artist.id,
-		type: namespace,
+		provider: namespace,
 	};
 }
 

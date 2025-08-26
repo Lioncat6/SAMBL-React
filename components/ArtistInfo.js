@@ -76,7 +76,7 @@ function UrlIcons({ artist }) {
 
 function ImageContainer({ artist }) {
 	const { mbid, imageUrl } = artist;
-	let editNote = `Artist image imported from ''SAMBL''%0A'''Provider:''' Spotify%0A'''Source:''' ${imageUrl}`
+	let editNote = `Artist image imported from ''SAMBL''%0A'''Provider:''' ${artist.provider}%0A'''Source:''' ${imageUrl}`
 	let importUrl = `https://musicbrainz.org/artist/${mbid}/edit?edit-artist.url.0.text=https://web.archive.org/web/0/${imageUrl}&edit-artist.url.0.link_type_id=173&edit-artist.edit_note=${editNote}`
 	return (
 		<div id="artistImageContainer" className={styles.artistImageContainer}>
@@ -97,20 +97,35 @@ function ImageContainer({ artist }) {
 }
 
 function PopularityContainer({ artist }) {
-	return (
-		<div id="artistPopularityContainer" className={styles.artistPopularityContainer} title={'Popularity: ' + artist.popularity + '%'}>
-			<div id="artistPopularity" className={styles.artistPopularity}>Popularity:</div>
-			<div id="artistPopularityBar" className={styles.artistPopularityBar}>
-				<div id="artistPopularityFill" className={styles.artistPopularityFill} style={{ width: `${artist.popularity}%` }} />
+	if (artist.popularity != null) {
+		return (
+			<div id="artistPopularityContainer" className={styles.artistPopularityContainer} title={'Popularity: ' + artist.popularity + '%'}>
+				<div id="artistPopularity" className={styles.artistPopularity}>Popularity:</div>
+				<div id="artistPopularityBar" className={styles.artistPopularityBar}>
+					<div id="artistPopularityFill" className={styles.artistPopularityFill} style={{ width: `${artist.popularity}%` }} />
+				</div>
 			</div>
-		</div>
-	);
+		);
+	}
+	return null;
 }
 
 function FollowerContainer({ artist }) {
-	return (
-		<h2 id="artistFollowerCount" className={styles.artistFollowerCount}>{artist.followers} Followers</h2>
-	);
+	if (artist.followers != null && artist.followers != "NaN") {
+		return (
+			<h2 id="artistFollowerCount" className={styles.artistFollowerCount}>{artist.followers} Followers</h2>
+		);
+	}
+	return null;
+}
+
+function GenresContainer({ artist }) {
+	if (artist.genres != null) {
+		return (
+			<div id="artistGenres" className={styles.artistGenres}>{artist.genres}</div>
+		);
+	}
+	return null;
 }
 
 export default function ArtistInfo({ artist }) {
@@ -120,12 +135,12 @@ export default function ArtistInfo({ artist }) {
 				{artist.imageUrl && <ImageContainer artist={artist}/>}
 				<div id="artistTextContainer" className={styles.artistTextContainer}>
 					<div className={styles.nameContainer}>
-						<h1 id="artistName" className={styles.artistName}>{artist.name || artist.names.join(" / ")}</h1>
+						<h1 id="artistName" className={styles.artistName}>{artist.name || artist.names?.join(" / ")}</h1>
 						<UrlIcons artist={artist} />
 					</div>
-					{artist.followers && <FollowerContainer artist={artist} />}
-					<div id="artistGenres" className={styles.artistGenres}>{artist.genres}</div>
-					{artist.popularity && <PopularityContainer artist={artist} />}
+					<FollowerContainer artist={artist} />
+					<GenresContainer artist={artist} />
+					<PopularityContainer artist={artist} />
 				</div>
 			</div>
 		</>

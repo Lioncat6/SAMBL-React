@@ -265,7 +265,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 								<a href={artist.url} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
 									{artist.name}
 								</a>
-								<a href={`../newartist?spid=${artist.id}`} target="_blank" rel="noopener noreferrer">
+								<a href={`../newartist?provider_id=${artist.id}&provider=${artist.provider}`} target="_blank" rel="noopener noreferrer">
 									<img className={styles.SAMBLicon} src="../assets/images/favicon.svg" alt="SAMBL" />
 								</a>
 							</span>

@@ -6,10 +6,10 @@ import { getTraceEvents } from "next/dist/trace";
 export default async function handler(req, res) {
     try {
         let { provider_id, provider, url } = req.query;
-        if (!id && !url) {
+        if (!provider_id && !url) {
             return res.status(400).json({ error: "Parameter `id` or `url` is required" });
         }
-        if (id && !provider) {
+        if (provider_id && !provider) {
             return res.status(400).json({ error: "Parameter `provider` is required when using `id`" });
         }
         let sourceProvider = null;
@@ -21,7 +21,7 @@ export default async function handler(req, res) {
             if (urlInfo.type !== "track" && urlInfo.type !== "recording") {
                 return res.status(400).json({ error: `Invalid URL type. Expected a track URL.` });
             }
-            id = urlInfo.id;
+            provider_id = urlInfo.id;
             provider = urlInfo.provider.namespace;
             sourceProvider = providers.parseProvider(urlInfo.provider, ["getTrackById", "getTrackISRCs"]);
         } else {
@@ -31,7 +31,7 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: `Provider \`${provider}\` does not support this operation` });
         }
         
-        let results = await sourceProvider.getTrackById(id);
+        let results = await sourceProvider.getTrackById(provider_id);
         let isrcs = sourceProvider.getTrackISRCs(results);
         if (isrcs == null) {
             return res.status(404).json({ error: "Track not found!" });

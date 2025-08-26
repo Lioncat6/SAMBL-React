@@ -28,13 +28,13 @@ export async function getServerSideProps(context) {
 
 	const splitIds = provider_ids?.split(",");
 	if (!artist_mbid && !mbid) {
-		const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/lookupArtist?spotifyId=${spid || splitIds[0]}`);
+		const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/lookupArtist?provider_id=${provider_id || splitIds[0]}&provider=${provider}`);
 		if (response.ok) {
-			const fetchedMBid = await response.json();
+			const { mbid: fetchedMBid } = await response.json();
 			if (fetchedMBid) {
-				let destination = `/artist?spid=${provider_id || splitIds[0]}&artist_mbid=${fetchedMBid}`;
+				let destination = `/artist?provider_id=${provider_id || splitIds[0]}&provider=${provider}&artist_mbid=${fetchedMBid}`;
 				if (!spid && splitIds?.length > 1) {
-					destination = `/artist?spids=${spids}&artist_mbid=${fetchedMBid}`;
+					destination = `/artist?provider_ids=${provider_ids}&provider=${provider}&artist_mbid=${fetchedMBid}`;
 				}
 				return {
 					redirect: {
@@ -74,12 +74,12 @@ export async function getServerSideProps(context) {
 				}
 			}
 			const totalFollowers = data.reduce(function (total, artist) {
-				return total + artist.followers.total;
+				return total + artist.followers;
 			}, 0);
 			artist = {
 				names: uniqueNames,
 				name: uniqueNames.join(" / "),
-				imageUrl: data[mostPopularIndex].images[0]?.url || "",
+				imageUrl: data[mostPopularIndex].imageUrl || "",
 				genres: genres.join(", "),
 				followers: totalFollowers,
 				popularity: data[mostPopularIndex].popularity,

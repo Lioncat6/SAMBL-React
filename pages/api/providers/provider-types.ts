@@ -8,7 +8,7 @@ export type ArtistObject = {
     followers: number;
     popularity: number;
     id: string;
-    type: string;
+    provider: string;
 };
 
 export type AlbumArtistObject = {
@@ -17,7 +17,7 @@ export type AlbumArtistObject = {
     imageUrl: string;
     imageUrlSmall: string;
     id: string;
-    type: string;
+    provider: string;
 };
 
 export type AlbumObject = {

@@ -15,6 +15,9 @@ export default async function handler(req, res) {
             if (!urlInfo) {
                 return res.status(400).json({ error: "Invalid URL" });
             }
+            if (urlInfo.type != "artist"){
+                return res.status(400).json({ error: "Only artist links are currently supported here" });
+            }
             provider_id = urlInfo.id;
             provider = urlInfo.provider.namespace;
         }
@@ -31,7 +34,8 @@ export default async function handler(req, res) {
         const providerUrl = providerObj.createUrl("artist", provider_id)
         let mbData = null;
         mbData = await musicbrainz.getArtistByUrl(providerUrl, { noCache: forceRefresh });
-        return res.status(200).json((mbData?.id || null));
+        let mbid = mbData?.id || null;
+        return res.status(200).json({ mbid, provider, provider_id });
 
     } catch (error) {
         return res.status(500).json({ error: "Internal Server Error", details: error.message });
