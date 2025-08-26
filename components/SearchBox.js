@@ -41,6 +41,7 @@ function SearchBox() {
 		if (query !== "") {
 			const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 			const spfPattern = /^[A-Za-z0-9]{22}$/;
+			const urlPattern = /^(https?|http):\/\/[^\s/$.?#].[^\s]*$/i;
 
 			if (query.includes("https://open.spotify.com/artist/")) {
 				const match = query.match(/\/artist\/([^/?]+)/);
@@ -70,13 +71,13 @@ function SearchBox() {
 	}
 
 	async function checkArtist(spfId) {
-		const response = await fetch(`/api/lookupArtist?spotifyId=${spfId}`);
+		const response = await fetch(`/api/lookupArtist?provider_id=${spfId}&provider=spotify`);
 		if (response.ok) {
 			const mbid = await response.json();
 			if (mbid) {
-				router.push(`/artist?spid=${spfId}&artist_mbid=${mbid}`);
+				router.push(`/artist?provider_id=${spfId}&provider=spotify&artist_mbid=${mbid}`);
 			} else {
-				router.push(`/newartist?spid=${spfId}`);
+				router.push(`/newartist?provider_id=${spfId}&provider=spotify`);
 			}
 		} else {
 			dispError("Spotify artist not found!", "error");

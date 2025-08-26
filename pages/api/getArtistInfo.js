@@ -32,7 +32,7 @@ export default async function handler(req, res) {
         const providerUrl = providerObj.createUrl("artist", provider_id)
         let mbData = null;
         if (incMBData) {
-            mbData = await musicbrainz.getArtistByUrl(providerUrl, ["url-rels", "recordings", "isrcs"], { noCache: forceRefresh });
+            mbData = await musicbrainz.getArtistByUrl(providerUrl, ["url-rels"], { noCache: forceRefresh });
             return res.status(200).json({ providerData, mbData });
         }
         return res.status(200).json({ providerData });
