@@ -25,7 +25,7 @@ export default async function handler(req, res) {
             provider = urlInfo.provider.namespace;
             sourceProvider = providers.parseProvider(urlInfo.provider, ["getTrackById", "getTrackISRCs"]);
         } else {
-            sourceProvider = providers.parseProvider(provider, ["getAlbumById", "getAlbumUPCs"]);
+            sourceProvider = providers.parseProvider(provider, ["getTrackById", "getTrackISRCs"]);
         }
         if (!sourceProvider) {
             return res.status(400).json({ error: `Provider \`${provider}\` does not support this operation` });
