@@ -41,45 +41,32 @@ function SearchBox() {
 		if (query !== "") {
 			const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 			const spfPattern = /^[A-Za-z0-9]{22}$/;
+			const urlPattern = /^(https?|http):\/\/[^\s/$.?#].[^\s]*$/i;
 
-			if (query.includes("https://open.spotify.com/artist/")) {
-				const match = query.match(/\/artist\/([^/?]+)/);
-				if (match) {
-					const spfId = match[1];
-					await checkArtist(spfId);
-				} else {
-					dispError("Invalid Spotify artist link!");
-				}
-			} else if (spfPattern.test(query)) {
-				const spfId = query;
-				await checkArtist(spfId);
-			} else if (uuidPattern.test(query)) {
-				dispError("MB Lookup isn't currently supported; Please enter a Spotify artist link instead!");
-			} else if (query.includes("https://open.spotify.com/")) {
-				dispError("This type of link isn't currently supported; Please enter a Spotify artist link instead!");
+			if (urlPattern.test(query)) {
+				checkArtist(query);
+			} else if (spfPattern.test(query) || uuidPattern.test(query)) {
+				dispError("This type of lookup is currently unsupported. Please enter a provider link instead!");
 			} else {
-				if (query.includes("https")) {
-					dispError("This type of link isn't currently supported!");
-				} else {
-					router.push(`/search?query=${encodeURIComponent(query)}`);
-				}
+				router.push(`/search?query=${encodeURIComponent(query)}`);
 			}
 		} else {
 			dispError("Please enter a query");
 		}
 	}
 
-	async function checkArtist(spfId) {
-		const response = await fetch(`/api/lookupArtist?spotifyId=${spfId}`);
+	async function checkArtist(url) {
+		const response = await fetch(`/api/lookupArtist?url=${encodeURIComponent(url)}`);
 		if (response.ok) {
-			const mbid = await response.json();
+			const { mbid, provider, provider_id } = await response.json();
 			if (mbid) {
-				router.push(`/artist?spid=${spfId}&artist_mbid=${mbid}`);
+				router.push(`/artist?provider_id=${provider_id}&provider=${provider}&artist_mbid=${mbid}`);
 			} else {
-				router.push(`/newartist?spid=${spfId}`);
+				router.push(`/newartist?provider_id=${provider_id}&provider=${provider}`);
 			}
 		} else {
-			dispError("Spotify artist not found!", "error");
+			let body = await response.json()
+			dispError(body.error || "An error occured while looking up this URL!", "error");
 		}
 	}
 
@@ -116,7 +103,7 @@ function SearchBox() {
 				id="searchbox"
 				className={styles.searchBox}
 				rows={1}
-				placeholder="Search for artist or enter id/url..."
+				placeholder="Search for artist or enter provider url..."
 				value={inputValue}
 				onChange={e => setInputValue(e.target.value)}
 			/>

@@ -8,20 +8,20 @@ import { useExport as useExportState } from "./ExportState";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FaDeezer, FaSpotify } from "react-icons/fa";
-import Popup from "reactjs-popup";
+import { SiTidal } from "react-icons/si";
 import { FaAnglesRight, FaAnglesLeft } from "react-icons/fa6";
 import { IoMdRefresh } from "react-icons/io";
 import { toast, Flip } from "react-toastify";
 
 function AlbumIcons({ item }) {
-	const { spotifyId, spotifyUrl, spotifyReleaseDate, spotifyTrackCount, albumStatus, mbTrackCount, mbReleaseDate, mbid, albumIssues } = item;
+	const { id, url, releaseDate, trackCount, albumStatus, mbTrackCount, mbReleaseDate, mbid, albumIssues } = item;
 	return (
 		<div className={styles.iconContainer}>
 			{albumIssues.includes("noUPC") && <img className={styles.upcIcon} src="../assets/images/noUPC.svg" title="This release is missing a UPC/Barcode!" alt="Missing UPC" />}
 			{albumIssues.includes("missingISRCs") && (
 				<a
 					className={albumStatus === "green" ? styles.isrcTextAvaliable : styles.isrcText}
-					href={albumStatus === "green" ? `https://isrchunt.com/spotify/importisrc?releaseId=${spotifyId}` : undefined}
+					href={albumStatus === "green" ? `https://isrchunt.com/spotify/importisrc?releaseId=${id}` : undefined}
 					target={albumStatus === "green" ? "_blank" : undefined}
 					rel={albumStatus === "green" ? "noopener" : undefined}
 					title={albumStatus === "green" ? "This release has missing ISRCs! [Click to Fix]" : "This release has missing ISRCs!"}
@@ -39,7 +39,7 @@ function AlbumIcons({ item }) {
 				/>
 			)}
 			{albumIssues.includes("trackDiff") && (
-				<div className={styles.numDiff} title={`This release has a differing track count! [SP: ${spotifyTrackCount} MB: ${mbTrackCount}]`}>
+				<div className={styles.numDiff} title={`This release has a differing track count! [SP: ${trackCount} MB: ${mbTrackCount}]`}>
 					#
 				</div>
 			)}
@@ -48,9 +48,9 @@ function AlbumIcons({ item }) {
 					className={`${styles.dateMissing} ${albumStatus === "green" ? styles.dateMissingAvaliable : ""}`}
 					href={
 						albumStatus === "green"
-							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${spotifyReleaseDate.split("-")[0]}&events.0.date.month=${spotifyReleaseDate.split("-")[1]}&events.0.date.day=${
-									spotifyReleaseDate.split("-")[2]
-							  }&edit_note=${encodeURIComponent(`Added release date from Spotify using SAMBL: ${spotifyUrl}`)}`
+							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${releaseDate.split("-")[0]}&events.0.date.month=${releaseDate.split("-")[1]}&events.0.date.day=${
+									releaseDate.split("-")[2]
+							  }&edit_note=${encodeURIComponent(`Added release date from Spotify using SAMBL: ${url}`)}`
 							: undefined
 					}
 					title={albumStatus === "green" ? "This release is missing a release date!\n[Click to Fix]" : "This release is missing a release date!"}
@@ -58,34 +58,39 @@ function AlbumIcons({ item }) {
 					rel={albumStatus === "green" ? "noopener" : undefined}
 				></a>
 			)}
-			{albumIssues.includes("dateDiff") && <div className={styles.dateDiff} title={`This release has a differing release date! [SP: ${spotifyReleaseDate} MB: ${mbReleaseDate}]\n(This may indicate that you have to split a release.)`} />}
+			{albumIssues.includes("dateDiff") && <div className={styles.dateDiff} title={`This release has a differing release date! [SP: ${releaseDate} MB: ${mbReleaseDate}]\n(This may indicate that you have to split a release.)`} />}
 		</div>
 	);
 }
 
 function ActionButtons({ item }) {
 	const { settings } = useSettings();
-	const { spotifyId, spotifyUrl } = item;
+	const { url } = item;
 	const [collapsed, setCollapsed] = useState(true);
-	function toggleState(){
+	function toggleState() {
 		setCollapsed(!collapsed);
 	}
 	return (
 		<>
 			<div className={styles.actionButtons}>
-				{<div className={`${collapsed ? styles.expand : styles.collapse}`} onClick={toggleState}>{collapsed ? <FaAnglesLeft /> : <FaAnglesRight />}</div>}
+				{
+					<div className={`${collapsed ? styles.expand : styles.collapse}`} onClick={toggleState}>
+						{collapsed ? <FaAnglesLeft /> : <FaAnglesRight />}
+					</div>
+				}
 				<div className={`${collapsed ? styles.collapsed : styles.expanded}`}>
-				{settings.showExport && <SelectionButtons item={item} />}
-				{settings.showATisket && (
-					<a className={styles.aTisketButton} href={`https://atisket.pulsewidth.org.uk/?spf_id=${spotifyId}&amp;preferred_vendor=spf`} target="_blank" rel="noopener noreferrer">
-						<div>A-tisket</div>
-					</a>
-				)}
-				{settings.showHarmony && (
-					<a className={styles.harmonyButton} href={`https://harmony.pulsewidth.org.uk/release?url=${spotifyUrl}&category=preferred`} target="_blank" rel="noopener noreferrer">
-						<div>Harmony</div>
-					</a>
-				)}</div>
+					{settings?.showExport && <SelectionButtons item={item} />}
+					{settings?.showATisket && (
+						<a className={styles.aTisketButton} href={`https://atisket.pulsewidth.org.uk/?url=${url}`} target="_blank" rel="noopener noreferrer">
+							<div>A-tisket</div>
+						</a>
+					)}
+					{settings?.showHarmony && (
+						<a className={styles.harmonyButton} href={`https://harmony.pulsewidth.org.uk/release?url=${url}&category=preferred`} target="_blank" rel="noopener noreferrer">
+							<div>Harmony</div>
+						</a>
+					)}
+				</div>
 			</div>
 		</>
 	);
@@ -124,31 +129,38 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 		progress: undefined,
 
 		transition: Flip,
-	}
+	};
 	async function dispError(message, type = "warn") {
 		if (type === "error") {
 			toast.error(message, toastProperties);
 		} else {
 			toast.warn(message, toastProperties);
 		}
-	}	
+	}
 	async function dispPromise(promise, message) {
-		return toast.promise(promise, {
-			pending: message,
-			error: "Data not found!"
-		}, toastProperties).finally(() => {});
+		return toast
+			.promise(
+				promise,
+				{
+					pending: message,
+					error: "Data not found!",
+				},
+				toastProperties
+			)
+			.finally(() => {});
 	}
 
 	const {
-		spotifyId,
-		spotifyName,
-		spotifyUrl,
-		spotifyImageURL,
-		spotifyImageURL300px,
-		spotifyAlbumArtists,
-		spotifyReleaseDate,
-		spotifyTrackCount,
-		spotifyAlbumType,
+		provider,
+		id,
+		name,
+		url,
+		imageUrl,
+		imageUrlSmall,
+		albumArtists,
+		releaseDate,
+		trackCount,
+		albumType,
 		albumStatus,
 		albumMBUrl,
 		mbTrackCount,
@@ -164,22 +176,19 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 		mbBarcode,
 	} = item;
 
-
-	
 	async function refreshData() {
-		setIsLoading(true)
-		const response = await dispPromise(fetch(`/api/compareSingleAlbum?spotifyId=${spotifyId}&mbid=${currentArtistMBID}`), "Refreshing album...");
-		setIsLoading(false); 
+		setIsLoading(true);
+		const response = await dispPromise(fetch(`/api/compareSingleAlbum?provider_id=${id}&provider=${provider}&mbid=${currentArtistMBID}`), "Refreshing album...");
+		setIsLoading(false);
 		if (response.ok) {
 			const updatedItem = await response.json();
-			console.log(updatedItem)
 			if (onUpdate) onUpdate(updatedItem);
 		} else {
 			dispError("Failed to refresh album data!", "error");
 		}
 	}
 
-	const spotifyTrackString = spotifyTrackCount > 1 ? `${spotifyTrackCount} Tracks` : "1 Track";
+	const spotifyTrackString = trackCount > 1 ? `${trackCount} Tracks` : "1 Track";
 
 	const mbTrackString = mbTrackNames.map((track) => track).join("\n");
 
@@ -191,16 +200,16 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 			: "This album has no MB release with a matching name or URL";
 
 	let data_params = {
-		"data-spotify-id": spotifyId,
-		"data-spotify-name": spotifyName,
-		"data-spotify-url": spotifyUrl,
-		"data-spotify-image-url": spotifyImageURL,
-		"data-spotify-image-url-300px": spotifyImageURL300px,
-		"data-spotify-album-artists": spotifyAlbumArtists.map((artist) => artist.name).join(", "),
-		"data-spotify-album-artist-ids": spotifyAlbumArtists.map((artist) => artist.id).join(", "),
-		"data-spotify-release-date": spotifyReleaseDate,
-		"data-spotify-track-count": spotifyTrackCount,
-		"data-spotify-album-type": spotifyAlbumType,
+		"data-spotify-id": id,
+		"data-spotify-name": name,
+		"data-spotify-url": url,
+		"data-spotify-image-url": imageUrl,
+		"data-spotify-image-url-300px": imageUrlSmall,
+		"data-spotify-album-artists": albumArtists.map((artist) => artist.name).join(", "),
+		"data-spotify-album-artist-ids": albumArtists.map((artist) => artist.id).join(", "),
+		"data-spotify-release-date": releaseDate,
+		"data-spotify-track-count": trackCount,
+		"data-spotify-album-type": albumType,
 		"data-status": albumStatus,
 		"data-track-count": mbTrackCount,
 		"data-release-date": mbReleaseDate,
@@ -221,8 +230,8 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 
 				{/* Album Cover */}
 				<div className={styles.albumCover}>
-					<a href={spotifyImageURL} target="_blank" rel="noopener noreferrer">
-						<img src={spotifyImageURL300px} alt={`${spotifyName} cover`} loading="lazy" />
+					<a href={imageUrl} target="_blank" rel="noopener noreferrer">
+						<img src={imageUrlSmall} alt={`${name} cover`} loading="lazy" />
 					</a>
 				</div>
 
@@ -230,8 +239,8 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 				<div className={styles.textContainer}>
 					{/* Album Title */}
 					<div className={styles.albumTitle}>
-						<a href={spotifyUrl} target="_blank" rel="noopener noreferrer">
-							{spotifyName}
+						<a href={url} target="_blank" rel="noopener noreferrer">
+							{name}
 						</a>
 						{albumMBUrl && (
 							<a href={albumMBUrl} target="_blank" rel="noopener noreferrer">
@@ -250,13 +259,13 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 
 					{/* Artists */}
 					<div className={styles.artists}>
-						{spotifyAlbumArtists.map((artist, index) => (
+						{albumArtists.map((artist, index) => (
 							<span key={artist.id}>
 								{index > 0 && ", "}
-								<a href={artist.external_urls.spotify} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
+								<a href={artist.url} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
 									{artist.name}
 								</a>
-								<a href={`../newartist?spid=${artist.id}`} target="_blank" rel="noopener noreferrer">
+								<a href={`../newartist?provider_id=${artist.id}&provider=${artist.provider}`} target="_blank" rel="noopener noreferrer">
 									<img className={styles.SAMBLicon} src="../assets/images/favicon.svg" alt="SAMBL" />
 								</a>
 							</span>
@@ -266,7 +275,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 					{/* Album Info */}
 					<div className={styles.albumInfo}>
 						<div>
-							{spotifyReleaseDate} • {spotifyAlbumType.charAt(0).toUpperCase() + spotifyAlbumType.slice(1)} •{" "}
+							{releaseDate} • {albumType.charAt(0).toUpperCase() + albumType.slice(1)} •{" "}
 							{albumStatus == "red" ? (
 								<span className={`${highlightTracks ? styles.trackHighlight : ""}`}>{spotifyTrackString}</span>
 							) : (
@@ -292,7 +301,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 
 function AddButton({ item }) {
 	return (
-		<Link className={styles.viewButton} href={`/newartist?spid=${item.spotifyId}`}>
+		<Link className={styles.viewButton} href={`/newartist?provider_id=${item.provider_id}&provider=${item.provider}`}>
 			<div>
 				Add <img className={styles.artistMB} src="../assets/images/MusicBrainz_logo_icon.svg"></img>
 			</div>
@@ -302,7 +311,7 @@ function AddButton({ item }) {
 
 function ViewButton({ item }) {
 	return (
-		<Link className={styles.viewButton} href={`/artist?spid=${item.spotifyId}&artist_mbid=${item.mbid}`}>
+		<Link className={styles.viewButton} href={`/artist?provider_id=${item.id}&provider=${item.provider}&artist_mbid=${item.mbid}`}>
 			<div>View Artist</div>
 		</Link>
 	);
@@ -320,12 +329,12 @@ function ArtistItem({ item }) {
 			)}
 			<div className={styles.textContainer}>
 				<div className={styles.artistName}>
-					<a href={`https://open.spotify.com/artist/${item.spotifyId}`} target="_blank">
+					<a href={item.url} target="_blank">
 						{item.name}
 					</a>
 				</div>
-				<div className={styles.artistFollowers}>{item.followers} Followers</div>
-				<div className={styles.artistGenres}>{item.genres}</div>
+				<div className={styles.artistFollowers}>{item.relevance}</div>
+				<div className={styles.artistGenres}>{item.info}</div>
 			</div>
 
 			{item.mbid == null ? <AddButton item={item} /> : <ViewButton item={item} />}
@@ -340,22 +349,22 @@ function Icon({ source }) {
 			{source === "musicbrainz" && <img className={styles.mbIcon} src="../assets/images/MusicBrainz_logo_icon.svg" />}
 			{source === "deezer" && <FaDeezer className={styles.deezerIcon} />}
 			{source === "musixmatch" && <img className={styles.musixMatchIcon} src="../assets/images/Musixmatch_logo_icon_only.svg" />}
+			{source === "tidal" && <SiTidal className={styles.tidalIcon} />}
 		</>
 	);
 }
 
 function LinkButton({ item }) {
-		const { settings } = useSettings();
+	const { settings } = useSettings();
 
-	
 	return (
 		<div className={styles.actionButtons}>
-		{settings.showExport &&<SelectionButtons item={item} /> }
-		<a href={item.link} target="_blank" className={styles.viewButton}>
-			<div>
-				View <Icon source={item.source} />
-			</div>
-		</a>
+			{settings?.showExport && <SelectionButtons item={item} />}
+			<a href={item.link} target="_blank" className={styles.viewButton}>
+				<div>
+					View <Icon source={item.source} />
+				</div>
+			</a>
 		</div>
 	);
 }
@@ -409,7 +418,7 @@ function ListBuilder({ items, type, onItemUpdate }) {
 	);
 }
 
-function ListContainer({ items, type, text, onItemUpdate}) {
+function ListContainer({ items, type, text, onItemUpdate }) {
 	return (
 		<>
 			<div className={styles.listContainer}>{items && <ListBuilder items={items} type={type} onItemUpdate={onItemUpdate} />}</div>
@@ -465,18 +474,18 @@ function LoadingItem() {
 						<div className={`${styles.skeletonText} ${styles.skeletonInfo}`}></div>
 					</div>
 					{/* Buttons Placeholder */}
-					{settings.showHarmony && <div className={`${styles.skeletonButton} ${styles.skeletonButton1}`}></div>}
-					{settings.showATisket && <div className={`${styles.skeletonButton} ${styles.skeletonButton2}`}></div>}
+					{settings?.showHarmony && <div className={`${styles.skeletonButton} ${styles.skeletonButton1}`}></div>}
+					{settings?.showATisket && <div className={`${styles.skeletonButton} ${styles.skeletonButton2}`}></div>}
 				</div>
 			</div>
 		</div>
 	);
 }
 
-function LoadingContainer({ text }) {
+function LoadingContainer({ text, showRefresh = false }) {
 	return (
 		<>
-			<LoadingSearchContainer text={text} />
+			<LoadingSearchContainer text={text} showRefresh={showRefresh} />
 			<div className={styles.listSkeletonContainer}>
 				{Array.from({ length: 13 }).map((_, index) => (
 					<LoadingItem key={index} />
@@ -486,7 +495,23 @@ function LoadingContainer({ text }) {
 	);
 }
 
-function LoadingSearchContainer({ text }) {
+function RefreshButton({refresh, showRefresh = false}) {
+	if (refresh != undefined) {
+		return (
+			<button id="refreshButton" className={styles.refreshButton} onClick={refresh}>
+					<IoMdRefresh />
+				</button>
+		)
+	} else if (showRefresh) {
+		return (
+			<button id="refreshButton" className={styles.refreshButton}>
+				<IoMdRefresh />
+			</button>
+		);
+	}
+}
+
+function LoadingSearchContainer({ text, showRefresh = false }) {
 	return (
 		<>
 			<div id="searchContainer" className={styles.searchContainer}>
@@ -496,12 +521,13 @@ function LoadingSearchContainer({ text }) {
 						Filter
 					</div>
 				</button>
+				<RefreshButton showRefresh={showRefresh} />
 			</div>
 		</>
 	);
 }
 
-function SearchContainer({ onSearch, currentFilter, setFilter }) {
+function SearchContainer({ onSearch, currentFilter, setFilter, refresh }) {
 	const Popup = dynamic(() => import("./Popup"), { ssr: false });
 	return (
 		<div id="searchContainer" className={styles.searchContainer}>
@@ -523,12 +549,13 @@ function SearchContainer({ onSearch, currentFilter, setFilter }) {
 				data={currentFilter}
 				apply={(newFilter) => setFilter(newFilter)}
 			/>
+			<RefreshButton refresh={refresh} />
 		</div>
 	);
 }
 
-export default function ItemList({ items, type, text }) {
-	const { settings } = useSettings();
+export default function ItemList({ items, type, text, refresh }) {
+	const { settings  } = useSettings();
 	const [searchQuery, setSearchQuery] = useState(""); // State for search query
 	const [filteredItems, setFilteredItems] = useState(items || []); // State for filtered items
 	const [currentItems, setCurrentItems] = useState(items || []);
@@ -555,7 +582,7 @@ export default function ItemList({ items, type, text }) {
 			updatedItems = updatedItems
 				.map((item) => {
 					const matchesTrack = item.mbTrackNames.some((track) => track.toLowerCase().includes(lowerCaseQuery));
-					const matchesTitle = item.spotifyName.toLowerCase().includes(lowerCaseQuery);
+					const matchesTitle = item.name.toLowerCase().includes(lowerCaseQuery);
 
 					return {
 						...item,
@@ -563,7 +590,7 @@ export default function ItemList({ items, type, text }) {
 					};
 				})
 				.filter((item) => {
-					return item.spotifyName.toLowerCase().includes(lowerCaseQuery) || item.spotifyAlbumArtists.some((artist) => artist.name.toLowerCase().includes(lowerCaseQuery)) || item.highlightTracks;
+					return item.name.toLowerCase().includes(lowerCaseQuery) || item.albumArtists.some((artist) => artist.name.toLowerCase().includes(lowerCaseQuery)) || item.highlightTracks;
 				});
 		}
 
@@ -596,17 +623,15 @@ export default function ItemList({ items, type, text }) {
 		itemArray = Array.isArray(currentItems) ? currentItems : Object.values(currentItems);
 	}
 
-	 const handleItemUpdate = (updatedItem) => {
-        setCurrentItems((prev) =>
-            prev.map((item) => item.spotifyId === updatedItem.spotifyId ? updatedItem : item)
-        );
-    };
+	const handleItemUpdate = (updatedItem) => {
+		setCurrentItems((prev) => prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)));
+	};
 	return (
 		<div className={styles.listWrapper}>
-			{type === "album" && <SearchContainer onSearch={setSearchQuery} currentFilter={filter} setFilter={setFilter} />}
+			{type === "album" && <SearchContainer onSearch={setSearchQuery} currentFilter={filter} setFilter={setFilter} refresh={refresh} />}
 			{type === "loadingAlbum" ? (
-				<LoadingContainer text={text} />
-			) : items.length > 75 && settings.listVirtualization ? ( // If over 200 albums, use the virtualized list. Reason why I don't want to always use it is because it scrolls less smooth
+				<LoadingContainer text={text} showRefresh={refresh != undefined} />
+			) : items.length > 75 && settings?.listVirtualization ? ( // If over 200 albums, use the virtualized list. Reason why I don't want to always use it is because it scrolls less smooth
 				<VirtualizedList items={type === "album" ? filteredItems : itemArray} type={type} text={text} onItemUpdate={handleItemUpdate} />
 			) : (
 				<ListContainer items={type === "album" ? filteredItems : itemArray} type={type} text={text} onItemUpdate={handleItemUpdate} />

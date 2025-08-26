@@ -1,24 +1,23 @@
-import spotify from "./providers/spotify";
 import musicbrainz from "./providers/musicbrainz";
+import providers from "./providers/providers";
+import logger from "../../utils/logger";
 
 export default async function handler(req, res) {
     try {
-        const { query } = req.query;
+        const { query, provider } = req.query;
         if (!query) {
             return res.status(400).json({ error: "Parameter `query` is required" });
         }
-        let results = await spotify.searchByArtistName(query);
+        let sourceProvider = providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject", "getArtistUrl"]);
+        if (!sourceProvider) {
+            return res.status(400).json({ error: `Provider \`${provider}\` does not support this operation` });
+        }
+        let results = await sourceProvider.searchByArtistName(query);
         let artistUrls = [];
         let artistData = {}
-        for (let artist of results.artists.items) {
-            artistUrls.push(artist.external_urls.spotify)
-            artistData[artist.external_urls.spotify] = {
-                name: artist.name,
-                imageUrl: artist.images[0]?.url || "",
-                genres: artist.genres.join(", "), // Convert genres array to a string
-                followers: artist.followers.total,
-                spotifyId: artist.id,
-            }
+        for (let artist of sourceProvider.formatArtistSearchData(results)) {
+            artistUrls.push(sourceProvider.getArtistUrl(artist))
+            artistData[sourceProvider.getArtistUrl(artist)] = sourceProvider.formatArtistObject(artist);
         }
         let mbids = await musicbrainz.getIdsBySpotifyUrls(artistUrls);
         for (let url of artistUrls) {
@@ -26,6 +25,7 @@ export default async function handler(req, res) {
         }
         res.status(200).json(artistData);
 	} catch (error) {
+        logger.error("Error in searchArtists API:", error);
         res.status(500).json({ error: "Internal Server Error", details: error.message });
     }
 }

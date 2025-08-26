@@ -177,7 +177,8 @@
 	flex-direction: row;
 }
 
-.filterSearch {
+.filterSearch,
+.refreshButton {
 	position: relative;
 	padding: 10px;
 	height: 32px;
@@ -189,10 +190,25 @@
 	align-items: center;
 	display: flex;
 }
-
-.filterSearch {
-	margin: 10px 10px 2px 0px;
+.filterSearch,
+.refreshButton {
+	margin: 10px 5px 2px 0px;
 }
+
+.searchContainer > :last-child.filterSearch,
+.searchContainer > :last-child.refreshButton {
+	margin-right: 10px;
+}
+
+.filterSearch:hover,
+.exportButton:hover,
+.refreshButton:hover {
+	border: 1px solid var(--foreground-primary);
+	transition: 0.2s all;
+	color: var(--foreground-primary);
+	background: transparent;
+}
+
 
 @keyframes fadeIn {
 	0% {
@@ -209,13 +225,6 @@
 	overflow: hidden;
 }
 
-.filterSearch:hover,
-.exportButton:hover {
-	border: 1px solid var(--foreground-primary);
-	transition: 0.2s all;
-	color: var(--foreground-primary);
-	background: transparent;
-}
 
 .listSearch,
 .listSearchLoading {
@@ -282,6 +291,7 @@
 	white-space: nowrap;
 	margin-left: auto;
 	font-weight: normal;
+	cursor: pointer;
 }
 
 .aTisketButton {
@@ -305,11 +315,11 @@
 }
 
 .exportButton:hover {
-	border: 1px solid #003a26;
+	border: 1px solid var(--foreground-secondary);
 	transition: 0.2s all;
-	background-color: #15dd9a;
+	background-color: #15dd9a8f;
 	text-decoration: none;
-	color: #003a26;
+	color: var(--foreground-secondary);
 }
 
 .hasTracks {

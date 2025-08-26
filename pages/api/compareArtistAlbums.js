@@ -9,8 +9,13 @@ import logger from "../../utils/logger";
 // quick - Uses URL matching to check for spotify album links in MusicBrainz. This returns faster, but contains less information, removing the orange album status.
 // full - adds inc parameters to the MusicBrainz query. (Does not affect quick mode)
 
-async function fetchSourceAlbums(artistId, offset = 0) {
-	return await spotify.getArtistAlbums(artistId, offset, 50);
+async function fetchSourceAlbums(providerId, provider, offset = 0, bypassCache = false) {
+	return fetch(`http://localhost:${process.env.PORT || 3000}/api/getArtistAlbums?provider_id=${providerId}&provider=${provider}&offset=${offset}&limit=50${bypassCache ? "&forceRefresh" : ""}`).then((response) => {
+		if (!response.ok) {
+			return response.status;
+		}
+		return response.json();
+	});
 }
 
 async function fetchMbArtistAlbums(mbid, offset = 0, full = false) {
@@ -37,45 +42,45 @@ export default async function handler(req, res) {
 
 	function getSourceAlbumUrls() {
 		return sourceAlbums.map((album) => {
-			return album.external_urls.spotify;
+			return album.url;
 		});
 	}
 
-	async function fetchSpotifyAlbums(spids) {
-		let attempts = 0;
-		for (const spid of spids) {
-			let offset = 0;
-			let currentAlbumCount = 999;
-			let fetchedAlbums = 0;
-			while (offset < currentAlbumCount) {
-				try {
-					const data = await fetchSourceAlbums(spid, offset);
-					if (typeof data === "number") {
-						if (data === 404) {
-							throw new Error(404);
+	async function fetchProviderAlbums(pids, provider, bypassCache = false) {
+			let attempts = 0;
+			for (const pid of pids) {
+				let offset = 0;
+				let currentAlbumCount = 999;
+				let fetchedAlbums = 0;
+				while (offset != null) {
+					try {
+						const data = await fetchSourceAlbums(pid, provider, offset, bypassCache);
+						if (typeof data === "number") {
+							if (data === 404) {
+								logger.error(`Spotify ID ${pid} not found!`);
+								return;
+							}
+							throw new Error(`Error fetching Spotify albums: ${data}`);
 						}
-						throw new Error(`Error fetching Spotify albums: ${data}`);
+						sourceAlbums = [...sourceAlbums, ...data.albums];
+						fetchedAlbums += data.albums.length;
+						currentAlbumCount = data.count;
+						if (sourceAlbumCount < 0) {
+							sourceAlbumCount = currentAlbumCount;
+						}
+						offset = data.next;
+					} catch (error) {
+						attempts++;
+						console.error("Error fetching albums:", error);
 					}
-					sourceAlbums = [...sourceAlbums, ...data.items];
-					fetchedAlbums += data.items.length;
-					currentAlbumCount = data.total;
-					if (sourceAlbumCount < 0) {
-						sourceAlbumCount = currentAlbumCount;
+					if (attempts > 3) {
+						logger.error("Failed to fetch Spotify albums");
+						break;
 					}
-					offset = fetchedAlbums;
-					// updateLoadingText();
-				} catch (error) {
-					attempts++;
-					console.error("Error fetching albums:", error);
 				}
-				if (attempts > 3) {
-					throw new Error("Failed to fetch Spotify albums");
-					break;
-				}
+				sourceAlbumCount += currentAlbumCount;
 			}
-			sourceAlbumCount += currentAlbumCount;
 		}
-	}
 
 	async function fetchMusicbrainzArtistAlbums(mbid, full = false) {
 		let offset = 0;
@@ -179,26 +184,24 @@ export default async function handler(req, res) {
 	}
 
 	try {
-		var { spotifyId, mbid } = req.query;
+		var { provider_id, provider, mbid } = req.query;
 		// Check for 'quick' or 'full' in the query string
 		const quick = Object.prototype.hasOwnProperty.call(req.query, "quick");
 		const full = Object.prototype.hasOwnProperty.call(req.query, "full");
 		const raw = Object.prototype.hasOwnProperty.call(req.query, "raw");
-		if (!spotifyId || !spotify.validateSpotifyId(spotifyId)) {
-			return res.status(400).json({ error: "Parameter `spotifyId` is missing or malformed" });
-		} else {
-			spotifyId = spotify.extractSpotifyIdFromUrl(spotifyId);
+		if (!provider_id || !provider) {
+			return res.status(400).json({ error: "Parameters `provider_id` and `provider` are required!" });
 		}
 
-		if (mbid & !musicbrainz.validateMBID(mbid) || (!quick && !mbid)) {
+		if (mbid && !musicbrainz.validateMBID(mbid) || (!quick && !mbid)) {
 			return res.status(400).json({ error: "Parameter `mbid` is missing or malformed" });
 		}
 
 		if (quick) {
-			await fetchSpotifyAlbums([spotifyId]);
+			await fetchProviderAlbums([provider_id], provider);
 			await fetchMusicBrainzAlbumsBySourceUrls(getSourceAlbumUrls());
 		} else {
-			await Promise.all([fetchSpotifyAlbums([spotifyId]), fetchMusicbrainzArtistAlbums(mbid, full), fetchMusicBrainzFeaturedAlbums(mbid, full)]);
+			await Promise.all([fetchProviderAlbums([provider_id], provider), fetchMusicbrainzArtistAlbums(mbid, full), fetchMusicBrainzFeaturedAlbums(mbid, full)]);
 		}
 		if (raw) {
 			return res.status(200).json({ sourceAlbums: sourceAlbums, mbAlbums: mbAlbums });

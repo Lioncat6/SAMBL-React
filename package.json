@@ -1,6 +1,6 @@
 {
 	"name": "sambl-client",
-	"version": "2.1.0",
+	"version": "2.2.0",
 	"main": "/src/index.js",
 	"scripts": {
 		"build": "next build",
@@ -12,8 +12,10 @@
 	},
 	"dependencies": {
 		"@headlessui/react": "^2.2.2",
+		"@tidal-music/api": "^0.4.0",
+		"@tidal-music/auth": "^1.3.4",
 		"@types/react": "^19.1.2",
-		"deezer-public-api": "^1.0.4",
+		"deezer-public-api": "github:zaosoula/deezer-public-api#19e8bc1",
 		"log4js": "^6.6.0",
 		"musicbrainz-api": "^0.25.1",
 		"next": "^15.3.0",
@@ -28,7 +30,6 @@
 		"react-toastify": "^11.0.5",
 		"react-virtualized-auto-sizer": "^1.0.26",
 		"react-window": "^1.8.11",
-		"reactjs-popup": "^2.0.6",
 		"spotify-web-api-node": "^5.0.0"
 	},
 	"repository": {

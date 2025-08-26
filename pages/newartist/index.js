@@ -2,8 +2,8 @@ import ArtistInfo from "../../components/ArtistInfo";
 import AddButtons from "../../components/buttons";
 import Head from "next/head";
 
-async function fetchArtistData(spfId) {
-    const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?spotifyId=${spfId}`);
+async function fetchArtistData(id, provider) {
+    const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?provider_id=${id}&provider=${provider}`);
     if (response.ok) {
         return await response.json();
     } else {
@@ -12,32 +12,31 @@ async function fetchArtistData(spfId) {
 }
 
 export async function getServerSideProps(context) {
-    const { spid } = context.query;
+    let { spid, provider, provider_id, pid } = context.query;
+    if (spid) { 
+        provider_id = spid;
+        provider = "spotify";
+    }
+    if (pid) provider_id = pid;
 
     try {
-        const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/lookupArtist?spotifyId=${spid}`);
+        const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/lookupArtist?provider_id=${provider_id}&provider=${provider}`);
         if (response.ok) {
-            const mbid = await response.json();
+            const { mbid } = await response.json();
             if (mbid) {
                 return {
                     redirect: {
-                        destination: `/artist?spid=${spid}&artist_mbid=${mbid}`,
+                        destination: `/artist?provider_id=${provider_id}&provider=${provider}&artist_mbid=${mbid}`,
                         permanent: false,
                     },
                 };
             }
         }
 
-        const data = await fetchArtistData(spid);
+        const data = (await fetchArtistData(provider_id, provider)).providerData;
 
-        const artist = {
-            name: data.name,
-            imageUrl: data.images[0]?.url || "",
-            genres: data.genres.join(", "),
-            followers: data.followers.total,
-            popularity: data.popularity,
-            spotifyId: spid,
-        };
+        const artist = data;
+        data.provider_id = data.id;
 
         return {
             props: { artist },

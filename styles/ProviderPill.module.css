@@ -1,0 +1,114 @@
+.ProviderPill {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--foreground-secondary);
+    height: 32px;
+    border-radius: 10px;
+    display: flex;
+	flex-direction:row;
+	left: 0;
+	position: absolute;
+	max-width: 38vw;
+	min-width: min-content;
+	flex-wrap: wrap;
+	align-content: center;
+	justify-content: right;
+    margin: 20px;
+    padding: 5px;
+    overflow: hidden;
+    flex-wrap: nowrap;
+}
+.provider {
+    border-radius: 50px;
+    width: 30px;
+    height: 30px;
+    border: none;
+    align-items: center;
+    background-color: var(--foreground-background);
+    transition: color 0.3s ease, filter 0.3s ease;
+}
+
+.SelectedProvider {
+    position: absolute;
+    pointer-events: none;
+    border-radius: 50px;
+    width: 30px;
+    height: 30px;
+    border: 1px solid currentColor;
+    align-items: center;
+    transition: color .5s ease, filter 0.3s ease, left 0.3s cubic-bezier(0.68, -0.3, 0.27, 1.3);
+    filter: blur(0.2px) drop-shadow(0 0 1px currentColor);
+    animation: overlayFade 0.5s forwards;
+}
+
+/* Provider color definitions */
+
+.spotify {
+    color: var(--spotify-green);
+}
+
+.itunes {
+    color: var(--itunes-red);
+}
+
+.tidal {
+    color: var(--tidal-black);
+}
+
+.deezer {
+    color: var(--deezer-purple);
+}
+
+/* Makes it where you only have to define the color with the provider namespace */
+.provider:not(.selected):not(:hover) {
+    color: var(--foreground-primary) !important;
+}
+
+.provider.selected {
+    filter: blur(0.2px) drop-shadow(0 0 5px currentColor);
+}
+
+.provider:hover {
+    animation: logoShake 0.3s ease-in-out, colorPulse 0.6s infinite alternate;
+}
+
+@keyframes logoShake {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(5deg); }
+    50% { transform: rotate(-5deg); }
+    75% { transform: rotate(5deg); }
+    100% { transform: rotate(0deg); }
+}
+
+@keyframes colorPulse {
+    0% {
+        filter: blur(0.2px) drop-shadow(0 0 1px currentColor);
+    }
+    100% {
+        filter: blur(0.2px) drop-shadow(0 0 5px currentColor);
+    }
+}
+
+
+@keyframes overlayFade {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@media (max-width: 600px) {
+    .ProviderPillContainer {
+        width: 100%;
+        bottom: 5%;
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .ProviderPill {
+        position: relative !important;
+    }
+}

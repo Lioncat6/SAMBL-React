@@ -4,13 +4,37 @@ import withCache from "../../../utils/cache";
 
 const namespace = "musixmatch";
 
-let mxmAPI = new MusixMatchAPI(null, process.env.MUSIXMATCH_API_KEY);
+let proxies = {};
+if (
+	process.env.MXM_PROXY_HOST &&
+	process.env.MXM_PROXY_PORT
+) {
+	proxies = {
+		protocol: 'http',
+		host: process.env.MXM_PROXY_HOST,
+		port: parseInt(process.env.MXM_PROXY_PORT, 10),
+		auth: {
+			username: process.env.MXM_PROXY_USERNAME,
+			password: process.env.MXM_PROXY_PASSWORD
+		}
+	};
+}
+
+function initMxM(proxies) { 
+	if (proxies != {}) {
+		return new MusixMatchAPI(proxies, process.env.MUSIXMATCH_API_KEY);
+	} else {
+		return new MusixMatchAPI(null, process.env.MUSIXMATCH_API_KEY);
+	}
+}
+
+let mxmAPI = initMxM(proxies);
 let lastRefreshed = Date.now();
 
 async function refreshApi() {
     const timeout = 60 * 60 * 1000 * 12;
     if (Date.now() - lastRefreshed > timeout) {
-        mxmAPI = new MusixMatchAPI(null, process.env.MUSIXMATCH_API_KEY);
+        mxmAPI = initMxM(proxies);
         lastRefreshed = Date.now();
         logger.debug("MusixMatch Alt API refreshed");
     }
@@ -41,7 +65,10 @@ async function getTrackByISRC(isrc) {
 	}
 }
 
+
+
 const musixmatch = {
+	namespace,
 	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 10,  namespace: namespace }),
 };
 

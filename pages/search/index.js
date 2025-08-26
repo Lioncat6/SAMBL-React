@@ -3,8 +3,8 @@ import ItemList from "../../components/ItemList";
 import Head from 'next/head';
 import SearchBox from '../../components/SearchBox';
 
-async function getItems(query) {
-    const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/searchArtists?query=${query}`);
+async function getItems(query, provider) {
+    const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/searchArtists?query=${query}&provider=${provider}`);
     if (response.ok) {
         const data = await response.json();
         return data; 
@@ -15,9 +15,10 @@ async function getItems(query) {
 
 export async function getServerSideProps(context) {
     const { query } = context.query;
+    const provider = context.req.cookies?.provider || "spotify";
 
     try {
-        const items = await getItems(query);
+        const items = await getItems(query, provider);
         return {
             props: { items },
         };
