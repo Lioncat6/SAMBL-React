@@ -98,3 +98,17 @@
         opacity: 1;
     }
 }
+
+@media (max-width: 600px) {
+    .ProviderPillContainer {
+        width: 100%;
+        bottom: 5%;
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .ProviderPill {
+        position: relative !important;
+    }
+}
