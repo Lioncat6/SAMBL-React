@@ -86,6 +86,7 @@ export async function getServerSideProps(context) {
 				provider_ids: pIDArray,
 				provider: provider || "spotify",
 				mbid: artist_mbid || mbid || null,
+				url: data[mostPopularIndex].url || null
 			};
 		} else {
 			data = (await fetchArtistData(provider_id, provider)).providerData;
@@ -98,6 +99,7 @@ export async function getServerSideProps(context) {
 				provider_id: provider_id,
 				provider: provider || "spotify",
 				mbid: artist_mbid || mbid || null,
+				url: data.url || null
 			};
 		}
 		return {
