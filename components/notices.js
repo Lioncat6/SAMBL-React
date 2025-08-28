@@ -23,7 +23,7 @@ export default function Notice({ data, type }) {
 				button={
 					<a
 						className={styles.addToMBButton}
-						href={`https://musicbrainz.org/artist/create?edit-artist.name=${data.name}&edit-artist.sort_name=${data.name}&edit-artist.url.0.text=https://open.spotify.com/artist/${data.spotifyId}&edit-artist.url.0.link_type_id=194&edit-artist.edit_note=Artist sourced from Spotify using SAMBL https://open.spotify.com/artist/6Q7zxRpatEpouz1e7dLbsG`}
+						href={`https://musicbrainz.org/artist/create?edit-artist.name=${data.name}&edit-artist.sort_name=${data.name}&edit-artist.url.0.text=${data.url}&edit-artist.url.0.link_type_id=194&edit-artist.edit_note=Artist sourced from ${data.provider} using SAMBL ${data.url}`}
 						target="_blank"
 						rel="noopener noreferrer"
 					>

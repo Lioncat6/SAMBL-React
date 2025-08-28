@@ -14,7 +14,7 @@ async function fetchArtistData(id, provider) {
 	if (response.ok) {
 		return await response.json();
 	} else {
-		throw new Error("Spotify artist not found!");
+		throw new Error("Artist not found!");
 	}
 }
 
@@ -224,10 +224,10 @@ export default function Artist({ artist }) {
 						const data = await fetchSourceAlbums(pid, provider, offset, bypassCache);
 						if (typeof data === "number") {
 							if (data === 404) {
-								dispError(`Spotify ID ${pid} not found!`);
+								dispError(`Artist ID ${pid} not found!`);
 								return;
 							}
-							throw new Error(`Error fetching Spotify albums: ${data}`);
+							throw new Error(`Error fetching provider albums: ${data}`);
 						}
 						sourceAlbums.current = [...sourceAlbums.current, ...data.albums];
 						fetchedAlbums += data.albums.length;
@@ -242,7 +242,7 @@ export default function Artist({ artist }) {
 						console.error("Error fetching albums:", error);
 					}
 					if (attempts > 3) {
-						dispError("Failed to fetch Spotify albums");
+						dispError("Failed to fetch provider albums");
 						break;
 					}
 				}

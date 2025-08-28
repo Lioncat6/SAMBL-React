@@ -7,7 +7,7 @@ async function fetchArtistData(id, provider) {
     if (response.ok) {
         return await response.json();
     } else {
-        throw new Error("Spotify artist not found!");
+        throw new Error("Artist not found!");
     }
 }
 
