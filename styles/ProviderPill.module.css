@@ -99,7 +99,7 @@
     }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 800px) {
     .ProviderPillContainer {
         width: 100%;
         bottom: 0;

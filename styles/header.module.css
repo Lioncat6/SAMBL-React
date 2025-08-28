@@ -70,6 +70,7 @@
 	width: 30px;
 	height: 30px;
 }
+
 .spotifyLogo {
 	padding: 0;
 	width: 20%;
@@ -106,7 +107,7 @@
 	transition: 0.3s;
 }
 
-.darkModeSwitch input:checked ~ .slider {
+.darkModeSwitch input:checked~.slider {
 	background-color: #d8dbe0;
 }
 
@@ -123,7 +124,7 @@
 	transition: 0.3s;
 }
 
-.darkModeSwitch input:checked ~ .slider::before {
+.darkModeSwitch input:checked~.slider::before {
 	transform: translateX(38px);
 	background-color: #28292c;
 	box-shadow: none;
@@ -133,13 +134,16 @@
 	.samblWrapper {
 		margin-right: 30px;
 	}
+
 	.header {
 		min-width: 380px;
 		width: -webkit-fill-available;
 	}
 }
 
-.configButton, .savedArtists, .toolsButton {
+.configButton,
+.savedArtists,
+.toolsButton {
 	position: relative;
 	right: 0;
 	margin: 10px 10px 2px 0px;
@@ -179,7 +183,7 @@
 
 .buttonWrapper {
 	display: flex;
-	flex-direction:row;
+	flex-direction: row;
 	right: 0;
 	position: absolute;
 	max-width: 38vw;
@@ -190,35 +194,47 @@
 }
 
 .dropdownWrapper {
-    position: relative;
-    display: inline-block;
+	position: relative;
+	display: inline-block;
 }
 
 .dropdownMenu {
-    position: absolute;
-    top: 100%; 
-    left: 0;
-    background-color: var(--background); 
-    border: 1px solid var(--button-border);
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-    padding: 8px 0; 
+	position: absolute;
+	top: 100%;
+	left: 0;
+	background-color: var(--background);
+	border: 1px solid var(--button-border);
+	border-radius: 8px;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	z-index: 1000;
+	padding: 8px 0;
 }
 
-.dropdownMenu a, .dropdownMenu .menuItem {
+.dropdownMenu a,
+.dropdownMenu .menuItem {
 	font-family: Arial, sans-serif;
-    display: block;
-    padding: 8px 16px;
-    color: var(--button-text);
-    text-decoration: none;
-    font-size: 14px;
+	display: block;
+	padding: 8px 16px;
+	color: var(--button-text);
+	text-decoration: none;
+	font-size: 14px;
 	font-weight: normal;
-    transition: background-color 0.2s, color 0.2s;
+	transition: background-color 0.2s, color 0.2s;
 	cursor: pointer;
 }
 
-.dropdownMenu a:hover, .dropdownMenu .menuItem:hover {
-    background-color: #444;
-    color: #ffffff;
+.dropdownMenu a:hover,
+.dropdownMenu .menuItem:hover {
+	background-color: #444;
+	color: #ffffff;
+}
+
+.collapse {
+	display: inline;
+}
+
+@media (max-width: 600px) {
+	.collapse {
+		display: none;
+	}
 }

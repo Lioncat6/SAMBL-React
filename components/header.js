@@ -35,7 +35,7 @@ export default function Header() {
 					<Menu as="div" className={styles.dropdownWrapper}>
 						<MenuButton className={styles.toolsButton}>
 							<div className={styles.buttonText}>
-								<FaTools /> Tools
+								<FaTools /><div className={styles.collapse}> Tools</div>
 							</div>
 						</MenuButton>
 						<MenuItems className={styles.dropdownMenu} transition anchor="bottom end">
@@ -58,14 +58,14 @@ export default function Header() {
 					</Menu>
 					<button className={styles.savedArtists}>
 						<div className={styles.buttonText}>
-							<FaUser /> Artists
+							<FaUser /><div className={styles.collapse}> Artists</div>
 						</div>
 					</button>
 					<Popup
 						button={
 							<button className={styles.configButton}>
 								<div className={styles.buttonText}>
-									<FaGear /> Configure
+									<FaGear /><div className={styles.collapse}> Configure</div>
 								</div>
 							</button>
 						}
