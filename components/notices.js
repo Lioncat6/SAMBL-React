@@ -15,8 +15,8 @@ function noQuickfetch() {
 }
 
 export default function Notice({ data, type }) {
-		let editNote = `Artist sourced from ${data.provider.charAt(0).toUpperCase() + data.provider.slice(1)} using SAMBL (Streaming Artist MusicBrainz Lookup) ${data.url}`;
 	if (type === "noMBID") {
+		let editNote = `Artist sourced from ${data?.provider?.charAt(0)?.toUpperCase() + data?.provider?.slice(1)} using SAMBL (Streaming Artist MusicBrainz Lookup) ${data.url}`;
 		return (
 			<NoticeBox
 				color="red"
