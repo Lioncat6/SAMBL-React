@@ -50,8 +50,8 @@ async function requestAccessToken() {
     });
 
     const content = await response.json();
-    if (!content?.accessToken) {
-        err.handleError("Failed to authenticate Tidal!", `Reason: ${content.error}`)
+    if (!content?.access_token) {
+        err.handleError("Failed to authenticate Tidal!", `Reason: ${content.error || response.statusText}`)
     }
     return {
         accessToken: content?.access_token,
