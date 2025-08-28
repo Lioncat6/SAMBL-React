@@ -2,9 +2,11 @@ import { credentialsProvider, init as initAuth } from '@tidal-music/auth';
 import { createAPIClient } from '@tidal-music/api';
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
+import ErrorHandler from "../../../utils/errorHandler";
 
 const namespace = "tidal";
 
+const err = new ErrorHandler(namespace);
 
 let credentials = null;
 const listeners = [];
@@ -48,6 +50,9 @@ async function requestAccessToken() {
     });
 
     const content = await response.json();
+    if (!content?.access_token) {
+        err.handleError("Failed to authenticate Tidal!", `Reason: ${content.error || response.statusText}`)
+    }
     return {
         accessToken: content?.access_token,
         validUntilTimestamp: Date.now() + (content.expires_in * 1000),
@@ -72,7 +77,6 @@ async function refreshApi() {
 
 refreshApi();
 
-
 async function getTrackByISRC(isrc) {
 	await refreshApi();
 	try {
@@ -83,8 +87,7 @@ async function getTrackByISRC(isrc) {
             return null;
         }
 	} catch (error) {
-		logger.error("Error fetching track by ISRC:", error);
-		throw error;
+		err.handleError("Error fetching track by ISRC:", error);
 	}
 }
 
@@ -98,8 +101,7 @@ async function getAlbumByUPC(upc) {
             return null;
         }
 	} catch (error) {
-		logger.error("Error fetching album by UPC:", error);
-		throw error;
+		err.handleError("Error fetching album by UPC:", error);
 	}
 }
 
@@ -107,15 +109,14 @@ async function searchByArtistName(query) {
     await refreshApi();
     try {
         const data = await tidalApi.GET(`/searchResults/${encodeURIComponent(query)}?countryCode=US&include=artists&include=artists.profileArt&include=artists.albums&include=albums.artists&include=albums.coverArt&include=artists.albums.coverArt`);
-
-        if (data?.data.included && data?.data.included.length > 0) {
+        console.log(data);
+        if (data?.data?.included && data?.data?.included.length > 0) {
             return JSON.parse(JSON.stringify(data)); // Tidal Moment
         } else {
             return {};
         }
     } catch (error) {
-        logger.error("Error searching for artist:", error);
-        throw error;
+        err.handleError("Error searching for artist:", error);
     }
 }
 
@@ -124,19 +125,18 @@ async function getAlbumById(tidalId) {
     try {
         const data = await tidalApi.GET(`/albums/${tidalId}?countryCode=US&include=coverArt&include=artists`);
         if (data.data) {
-            let included = data.data.included;
+            let included = data.data?.included;
             const artists = included.filter(obj => obj.type === "artists");
             const artworks = included.filter(obj => obj.type === "artworks");
-            let album = data.data.data;
+            let album = data.data?.data;
             album.attributes.artists = artists;
             album.attributes.coverArt = artworks[0];
-            return JSON.parse(JSON.stringify(data.data.data))
+            return JSON.parse(JSON.stringify(data.data?.data))
         } else {
             return null;
         }
     } catch (error) {
-        logger.error("Error fetching album by ID:", error);
-        throw error;
+        err.handleError("Error fetching album by ID:", error);
     }
 }
 
@@ -150,8 +150,7 @@ async function getTrackById(tidalId) {
             return null;
         }
     } catch (error) {
-        logger.error("Error fetching track by ID:", error);
-        throw error;
+        err.handleError("Error fetching track by ID:", error);
     }
 }
 
@@ -165,8 +164,7 @@ async function getArtistById(tidalId) {
             return null;
         }
     } catch (error) {
-        logger.error("Error fetching artist by ID:", error);
-        throw error;
+        err.handleError("Error fetching artist by ID:", error);
     }
 }
 
@@ -180,14 +178,13 @@ async function getArtistAlbums(artistId, offset, limit) {
             return null;
         }
     } catch (error) {
-        logger.error("Error fetching artist albums:", error);
-        throw error;
+        err.handleError("Error fetching artist albums:", error);
     }
 }
 
 function formatAlbumGetData(rawData) {
 	const currentPage = /%5Bcursor%5D=([a-zA-Z0-9]+)/;
-    const included = rawData.data.included;
+    const included = rawData.data?.included;
     const artists = included.filter(obj => obj.type === "artists");
     const artistMap = Object.fromEntries(artists.map(a => [a.id, a]));
     const albums = included.filter(obj => obj.type === "albums");
@@ -201,8 +198,8 @@ function formatAlbumGetData(rawData) {
 
 	return {
 		count: null,
-		current: rawData.data.links?.self?.match(currentPage) ? rawData.data.links?.self?.match(currentPage)[1] : null,
-		next: rawData.data.links?.meta?.nextCursor || null,
+		current: rawData.data?.links?.self?.match(currentPage) ? rawData.data?.links?.self?.match(currentPage)[1] : null,
+		next: rawData.data?.links?.meta?.nextCursor || null,
 		albums: albums,
 	};
 }
@@ -236,18 +233,18 @@ function formatAlbumArtistObject(artist) {
 
 function getTrackISRCs(data) {
     if (!data) return null;
-    let isrcs = data?.data?.attributes?.isrc ? [data.data.attributes.isrc] : [];
+    let isrcs = data?.data?.attributes?.isrc ? [data.data?.attributes.isrc] : [];
     return isrcs;
 }
 
 function getAlbumUPCs(data) {
     if (!data) return null;
-    let upcs = data?.data?.attributes?.barcodeId ? [data.data.attributes.barcodeId] : [];
+    let upcs = data?.data?.attributes?.barcodeId ? [data.data?.attributes.barcodeId] : [];
     return upcs;
 }
 
 function formatArtistSearchData(rawData) {
-    const included = rawData.data.included;
+    const included = rawData.data?.included;
     const artists = included.filter(obj => obj.type === "artists");
     const albums = included.filter(obj => obj.type === "albums");
     const artworks = included.filter(obj => obj.type === "artworks");
@@ -307,7 +304,7 @@ function formatArtistSearchData(rawData) {
 }
 
 function formatArtistLookupData(rawData) {
-    let queryArtist = rawData.data.links.self.match(/\/artists\/(\d+)/)[1];
+    let queryArtist = rawData.data?.links.self.match(/\/artists\/(\d+)/)[1];
     return formatArtistSearchData(rawData).filter(artist => artist.id === queryArtist)[0];
 }
 

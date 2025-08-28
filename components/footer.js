@@ -5,7 +5,7 @@ export default function footer() {
 		<>
 			<footer className={styles.footer}>
 				<div>
-					Please report any bugs or suggestions here{" "}
+					<div className={styles.footerText}>Please report any bugs or suggestions here{" "}</div>
 					<a rel="noopener" href="https://github.com/Lioncat6/SAMBL-React" target="_blank">
 						Github
 					</a>{" "}

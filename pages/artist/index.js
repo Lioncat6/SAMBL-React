@@ -14,7 +14,7 @@ async function fetchArtistData(id, provider) {
 	if (response.ok) {
 		return await response.json();
 	} else {
-		throw new Error("Spotify artist not found!");
+		throw new Error("Artist not found!");
 	}
 }
 
@@ -86,6 +86,7 @@ export async function getServerSideProps(context) {
 				provider_ids: pIDArray,
 				provider: provider || "spotify",
 				mbid: artist_mbid || mbid || null,
+				url: data[mostPopularIndex].url || null
 			};
 		} else {
 			data = (await fetchArtistData(provider_id, provider)).providerData;
@@ -98,6 +99,7 @@ export async function getServerSideProps(context) {
 				provider_id: provider_id,
 				provider: provider || "spotify",
 				mbid: artist_mbid || mbid || null,
+				url: data.url || null
 			};
 		}
 		return {
@@ -209,7 +211,7 @@ export default function Artist({ artist }) {
 					setStatusText(`Loading albums from musicbrainz... ${parseInt(mbAlbums.current.length)}/${Number(mbAlbumCount) + Number(mbFeaturedAlbumCount)}`);
 				}
 			} else {
-				setStatusText(`Loading albums from spotify... ${sourceAlbums.current.length}/${sourceAlbumCount}`);
+				setStatusText(`Loading albums from ${artist.provider}... ${sourceAlbums.current.length}${sourceAlbumCount ? `/${sourceAlbumCount}`: ""}`);
 			}
 		}
 
@@ -224,10 +226,10 @@ export default function Artist({ artist }) {
 						const data = await fetchSourceAlbums(pid, provider, offset, bypassCache);
 						if (typeof data === "number") {
 							if (data === 404) {
-								dispError(`Spotify ID ${pid} not found!`);
+								dispError(`Artist ID ${pid} not found!`);
 								return;
 							}
-							throw new Error(`Error fetching Spotify albums: ${data}`);
+							throw new Error(`Error fetching provider albums: ${data}`);
 						}
 						sourceAlbums.current = [...sourceAlbums.current, ...data.albums];
 						fetchedAlbums += data.albums.length;
@@ -242,7 +244,7 @@ export default function Artist({ artist }) {
 						console.error("Error fetching albums:", error);
 					}
 					if (attempts > 3) {
-						dispError("Failed to fetch Spotify albums");
+						dispError("Failed to fetch provider albums");
 						break;
 					}
 				}

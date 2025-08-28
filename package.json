@@ -1,6 +1,6 @@
 {
 	"name": "sambl-client",
-	"version": "2.2.0",
+	"version": "2.2.1",
 	"main": "/src/index.js",
 	"scripts": {
 		"build": "next build",
@@ -15,7 +15,7 @@
 		"@tidal-music/api": "^0.4.0",
 		"@tidal-music/auth": "^1.3.4",
 		"@types/react": "^19.1.2",
-		"deezer-public-api": "github:zaosoula/deezer-public-api#19e8bc1",
+		"deezer-public-api": "^1.0.5",
 		"log4js": "^6.6.0",
 		"musicbrainz-api": "^0.25.1",
 		"next": "^15.3.0",

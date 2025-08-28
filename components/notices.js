@@ -15,6 +15,7 @@ function noQuickfetch() {
 }
 
 export default function Notice({ data, type }) {
+		let editNote = `Artist sourced from ${data.provider.charAt(0).toUpperCase() + data.provider.slice(1)} using SAMBL (Streaming Artist MusicBrainz Lookup) ${data.url}`;
 	if (type === "noMBID") {
 		return (
 			<NoticeBox
@@ -23,7 +24,7 @@ export default function Notice({ data, type }) {
 				button={
 					<a
 						className={styles.addToMBButton}
-						href={`https://musicbrainz.org/artist/create?edit-artist.name=${data.name}&edit-artist.sort_name=${data.name}&edit-artist.url.0.text=https://open.spotify.com/artist/${data.spotifyId}&edit-artist.url.0.link_type_id=194&edit-artist.edit_note=Artist sourced from Spotify using SAMBL https://open.spotify.com/artist/6Q7zxRpatEpouz1e7dLbsG`}
+						href={`https://musicbrainz.org/artist/create?edit-artist.name=${data.name}&edit-artist.sort_name=${data.name}&edit-artist.url.0.text=${data.url}&edit-artist.url.0.link_type_id=194&edit-artist.edit_note=${editNote}`}
 						target="_blank"
 						rel="noopener noreferrer"
 					>

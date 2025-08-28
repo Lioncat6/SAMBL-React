@@ -79,3 +79,13 @@
 	display: inline-block;
 	color: lightgray;
 }
+
+.footerText {
+	display: inline;
+}
+
+@media (max-width: 600px) {
+	.footerText {
+		display: none;
+	}
+}

@@ -301,7 +301,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 
 function AddButton({ item }) {
 	return (
-		<Link className={styles.viewButton} href={`/newartist?provider_id=${item.provider_id}&provider=${item.provider}`}>
+		<Link className={styles.viewButton} href={`/newartist?provider_id=${item.id}&provider=${item.provider}`}>
 			<div>
 				Add <img className={styles.artistMB} src="../assets/images/MusicBrainz_logo_icon.svg"></img>
 			</div>
