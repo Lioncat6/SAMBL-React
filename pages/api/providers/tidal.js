@@ -244,7 +244,7 @@ function getAlbumUPCs(data) {
 }
 
 function formatArtistSearchData(rawData) {
-    const included = rawdata.data?.included;
+    const included = rawData.data?.included;
     const artists = included.filter(obj => obj.type === "artists");
     const albums = included.filter(obj => obj.type === "albums");
     const artworks = included.filter(obj => obj.type === "artworks");
