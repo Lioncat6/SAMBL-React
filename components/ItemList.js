@@ -14,14 +14,14 @@ import { IoMdRefresh } from "react-icons/io";
 import { toast, Flip } from "react-toastify";
 
 function AlbumIcons({ item }) {
-	const { id, url, releaseDate, trackCount, albumStatus, mbTrackCount, mbReleaseDate, mbid, albumIssues } = item;
+	const { id, url, releaseDate, trackCount, albumStatus, mbTrackCount, mbReleaseDate, mbid, albumIssues, provider } = item;
 	return (
 		<div className={styles.iconContainer}>
 			{albumIssues.includes("noUPC") && <img className={styles.upcIcon} src="../assets/images/noUPC.svg" title="This release is missing a UPC/Barcode!" alt="Missing UPC" />}
 			{albumIssues.includes("missingISRCs") && (
 				<a
 					className={albumStatus === "green" ? styles.isrcTextAvaliable : styles.isrcText}
-					href={albumStatus === "green" ? `https://isrchunt.com/spotify/importisrc?releaseId=${id}` : undefined}
+					href={albumStatus === "green" ? `https://isrchunt.com/${provider}/importisrc?releaseId=${id}` : undefined}
 					target={albumStatus === "green" ? "_blank" : undefined}
 					rel={albumStatus === "green" ? "noopener" : undefined}
 					title={albumStatus === "green" ? "This release has missing ISRCs! [Click to Fix]" : "This release has missing ISRCs!"}
@@ -188,7 +188,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 		}
 	}
 
-	const spotifyTrackString = trackCount > 1 ? `${trackCount} Tracks` : "1 Track";
+	const sourceTrackString = trackCount > 1 ? `${trackCount} Tracks` : "1 Track";
 
 	const mbTrackString = mbTrackNames.map((track) => track).join("\n");
 
@@ -200,16 +200,16 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 			: "This album has no MB release with a matching name or URL";
 
 	let data_params = {
-		"data-spotify-id": id,
-		"data-spotify-name": name,
-		"data-spotify-url": url,
-		"data-spotify-image-url": imageUrl,
-		"data-spotify-image-url-300px": imageUrlSmall,
-		"data-spotify-album-artists": albumArtists.map((artist) => artist.name).join(", "),
-		"data-spotify-album-artist-ids": albumArtists.map((artist) => artist.id).join(", "),
-		"data-spotify-release-date": releaseDate,
-		"data-spotify-track-count": trackCount,
-		"data-spotify-album-type": albumType,
+		"data-id": id,
+		"data-name": name,
+		"data-url": url,
+		"data-image-url": imageUrl,
+		"data-image-url-small": imageUrlSmall,
+		"data-album-artists": albumArtists.map((artist) => artist.name).join(", "),
+		"data-album-artist-ids": albumArtists.map((artist) => artist.id).join(", "),
+		"data-release-date": releaseDate,
+		"data-track-count": trackCount,
+		"data-album-type": albumType,
 		"data-status": albumStatus,
 		"data-track-count": mbTrackCount,
 		"data-release-date": mbReleaseDate,
@@ -277,12 +277,12 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 						<div>
 							{releaseDate} • {albumType.charAt(0).toUpperCase() + albumType.slice(1)} •{" "}
 							{albumStatus == "red" ? (
-								<span className={`${highlightTracks ? styles.trackHighlight : ""}`}>{spotifyTrackString}</span>
+								<span className={`${highlightTracks ? styles.trackHighlight : ""}`}>{sourceTrackString}</span>
 							) : (
 								<Popup
 									button={
 										<span className={`${styles.hasTracks} ${highlightTracks ? styles.trackHighlight : ""}`} title={"[Click to view tracks]\n" + mbTrackString || ""}>
-											{spotifyTrackString}
+											{sourceTrackString}
 										</span>
 									}
 									type="track"
@@ -607,7 +607,7 @@ export default function ItemList({ items, type, text, refresh }) {
 			}
 			const variousArtistsList = ["Various Artists", "Artistes Variés", "Verschiedene Künstler", "Varios Artistas", "ヴァリアス・アーティスト"];
 			if (!filter.showVarious) {
-				updatedItems = updatedItems.filter((item) => !variousArtistsList.some((artist) => item.spotifyAlbumArtists.some((a) => a.name === artist)));
+				updatedItems = updatedItems.filter((item) => !variousArtistsList.some((artist) => item.albumArtists?.some((a) => a.name === artist)));
 			}
 			if (filter.onlyIssues) {
 				updatedItems = updatedItems.filter((item) => item.albumIssues.length > 0);
