@@ -16,10 +16,10 @@ export default async function handler(req, res) {
         }
 		let data = await providerObj.getArtistAlbums(provider_id, offset, limit, { noCache: forceRefresh });
 		data = providerObj.formatAlbumGetData(data);
-		data.albums = data.albums.map(album => providerObj.formatAlbumObject(album));
+		data.albums = data?.albums?.map(album => providerObj.formatAlbumObject(album)) || [];
 		res.status(200).json(data);
 	} catch (error) {
-		logger.error(error)
+		logger.error("Error in getArtistAlbums API", error)
 		res.status(500).json({ error: "Internal Server Error", details: error.message });
 	}
 }

@@ -1,5 +1,7 @@
 import providers from "./providers/providers";
 import musicbrainz from "./providers/musicbrainz";
+import logger from "../../utils/logger"
+
 export default async function handler(req, res) {
     try {
         var { provider_id, provider, url } = req.query;
@@ -37,6 +39,7 @@ export default async function handler(req, res) {
         }
         return res.status(200).json({ providerData });
     } catch (error) {
+		logger.error("Error in getArtistInfo API", error)
         return res.status(500).json({ error: "Internal Server Error", details: error.message });
     }
 }

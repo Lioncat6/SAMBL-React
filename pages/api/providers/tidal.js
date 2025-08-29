@@ -184,7 +184,16 @@ async function getArtistAlbums(artistId, offset, limit) {
 
 function formatAlbumGetData(rawData) {
 	const currentPage = /%5Bcursor%5D=([a-zA-Z0-9]+)/;
+    const data = rawData.data?.data;
     const included = rawData.data?.included;
+    if (!included) {
+        return {
+		count: null,
+		current: null,
+		next: null,
+		albums: [],
+	};
+    }
     const artists = included.filter(obj => obj.type === "artists");
     const artistMap = Object.fromEntries(artists.map(a => [a.id, a]));
     const albums = included.filter(obj => obj.type === "albums");
@@ -244,7 +253,15 @@ function getAlbumUPCs(data) {
 }
 
 function formatArtistSearchData(rawData) {
+    const data = rawData.data?.data;
     const included = rawData.data?.included;
+    if (!included) {
+        if (data) {
+            return [data];
+        } else {
+            return [];
+        }
+    }
     const artists = included.filter(obj => obj.type === "artists");
     const albums = included.filter(obj => obj.type === "albums");
     const artworks = included.filter(obj => obj.type === "artworks");
