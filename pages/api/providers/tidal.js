@@ -109,7 +109,6 @@ async function searchByArtistName(query) {
     await refreshApi();
     try {
         const data = await tidalApi.GET(`/searchResults/${encodeURIComponent(query)}?countryCode=US&include=artists&include=artists.profileArt&include=artists.albums&include=albums.artists&include=albums.coverArt&include=artists.albums.coverArt`);
-        console.log(data);
         if (data?.data?.included && data?.data?.included.length > 0) {
             return JSON.parse(JSON.stringify(data)); // Tidal Moment
         } else {

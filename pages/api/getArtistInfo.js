@@ -21,7 +21,7 @@ export default async function handler(req, res) {
             provider_id = urlInfo.id;
             provider = urlInfo.provider.namespace;
         }
-        const providerObj = providers.parseProvider(provider, ["getArtistById"]);
+        const providerObj = providers.parseProvider(provider, ["getArtistById", "formatArtistLookupData", "formatArtistObject", "createUrl"]);
         if (!providerObj) {
             return res.status(400).json({ error: "Provider doesn't exist or doesn't support this operation" });
         }
