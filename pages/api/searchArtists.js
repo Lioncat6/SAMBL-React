@@ -19,6 +19,9 @@ export default async function handler(req, res) {
             artistUrls.push(sourceProvider.getArtistUrl(artist))
             artistData[sourceProvider.getArtistUrl(artist)] = sourceProvider.formatArtistObject(artist);
         }
+        if (artistUrls.length == 0) {
+            res.status(200).json({})
+        }
         let mbids = await musicbrainz.getIdsBySpotifyUrls(artistUrls);
         for (let url of artistUrls) {
             artistData[url].mbid = mbids[url] || null
