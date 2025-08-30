@@ -61,6 +61,14 @@ async function getTrackInfoAsync(trackUrl) {
     });
 }
 
+async function init() {
+	try {
+		await searchAsync({ query: "test", page: 1 });
+	} catch (error) {
+		err.handleError("Error initializing Bandcamp API:", error);
+	}
+}
+
 async function getAlbumById(url) {
     console.log(url)
     try {
@@ -218,6 +226,8 @@ function parseUrl(url) {
 	}
 	return null;
 }
+
+init();
 
 const bandcamp = {
 	namespace,
