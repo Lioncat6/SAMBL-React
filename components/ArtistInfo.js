@@ -143,7 +143,6 @@ function GenresContainer({ artist }) {
 }
 
 export default function ArtistInfo({ artist }) {
-	console.log(artist)
 	return (
 		<>
 			<div id="artistPageContainer" className={styles.artistPageContainer}>
