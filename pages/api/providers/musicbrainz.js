@@ -55,7 +55,9 @@ async function getIdsBySpotifyUrls(spotifyUrls) {
 		}
 		let mbids = {};
 		for (let url of data.urls) {
-			mbids[url.resource] = url.relations[0].artist.id;
+			if (url.relations?.length > 0) {
+				mbids[url.resource] = url.relations[0].artist.id;
+			}
 		}
 		return mbids;
 	} catch (error) {

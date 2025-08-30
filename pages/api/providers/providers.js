@@ -3,6 +3,7 @@ import musicbrainz from "./musicbrainz";
 import musixmatch from "./musixmatch";
 import deezer from "./deezer";
 import tidal from "./tidal"
+import bandcamp from "./bandcamp"
 import logger from "../../../utils/logger"
 
 const providerList = [
@@ -10,7 +11,8 @@ const providerList = [
     musicbrainz,
     musixmatch,
     deezer,
-    tidal
+    tidal,
+    bandcamp
 ];
 
 /**

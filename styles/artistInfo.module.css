@@ -19,16 +19,22 @@
 
 .spURLContainer,
 .deezerURLContainer,
-.tidalURLContainer {
+.tidalURLContainer,
+.bandcampURLContainer {
 	display: flex;
 	flex-direction: row;
 	padding: 1.2vh 0 0 0;
 	margin-bottom: 0;
 }
 
+.bandcampURLContainer svg {
+	color: var(--bandcamp-blue);
+}
+
 .spURLContainer a,
 .deezerURLContainer a,
-.tidalURLContainer a {
+.tidalURLContainer a,
+.bandcampURLContainer a {
 	padding: 0 3px 0 0;
 }
 

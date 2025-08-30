@@ -1,6 +1,6 @@
 import styles from "../styles/artistInfo.module.css";
-import { FaSpotify, FaDeezer } from "react-icons/fa6";
-import { SiTidal } from "react-icons/si";
+import { FaSpotify, FaDeezer, FaBandcamp  } from "react-icons/fa6";
+import { SiTidal, SiBandcamp } from "react-icons/si";
 import { LuImageUp } from "react-icons/lu";
 
 function SpotifyUrlContainer({ id }) {
@@ -35,6 +35,18 @@ function DeezerUrlContainer({ id }) {
 	);
 }
 
+function BandcampUrlContainer({ id }) {
+	return (
+		<div className={styles.bandcampURLContainer}>
+			<a id="bandcampURL" target="_blank" href={`https://${id}.bandcamp.com`}>
+				<div className={styles.iconWrapper}>
+					<SiBandcamp className={styles.bandcampIcon} />
+				</div>
+			</a>
+		</div>
+	);
+}
+
 function UrlContainer({ id, provider }) {
 	switch (provider) {
 		case "spotify":
@@ -45,6 +57,8 @@ function UrlContainer({ id, provider }) {
 			return <DeezerUrlContainer id={id} />;
 		case "musicbrainz":
 			return <MusicBrainzUrlContainer id={id} />;
+		case "bandcamp":
+			return <BandcampUrlContainer id={id} />;
 		default:
 			return null;
 	}
@@ -122,13 +136,14 @@ function FollowerContainer({ artist }) {
 function GenresContainer({ artist }) {
 	if (artist.genres != null) {
 		return (
-			<div id="artistGenres" className={styles.artistGenres}>{artist.genres}</div>
+			<div id="artistGenres" className={styles.artistGenres}>{Array.isArray(artist.genres) ? artist.genres.join(", ") : artist.genres}</div>
 		);
 	}
 	return null;
 }
 
 export default function ArtistInfo({ artist }) {
+	console.log(artist)
 	return (
 		<>
 			<div id="artistPageContainer" className={styles.artistPageContainer}>

@@ -6,16 +6,32 @@ import processData from "../../utils/processAlbumData";
 
 export default async function handler(req, res) {
     try {
-		var { provider_id, provider, mbid } = req.query;
-        if (!provider || !provider_id) {
-            return res.status(400).json({ error: "Parameters `provider` and `provider_id` are required" });
+		var { provider_id, provider, url, mbid } = req.query;
+
+        if (provider_id && !provider) {
+            return res.status(400).json({ error: "Provider must be specified when provider_id is provided" });
+        }
+        if (!provider_id && !url) {
+            return res.status(400).json({ error: "Either `provider_id` or `url` must be provided" });
+        }
+        if (url) {
+            const urlInfo = providers.getUrlInfo(url);
+            if (!urlInfo) {
+                return res.status(400).json({ error: "Invalid URL" });
+            }
+            provider_id = urlInfo.id;
+            provider = urlInfo.provider.namespace;
+        }
+        const providerObj = providers.parseProvider(provider, ["getAlbumById", "formatAlbumObject"]);
+
+        if (!providerObj) {
+            return res.status(400).json({ error: "Provider doesn't exist or doesn't support this operation" });
         }
 
 		if (mbid & !musicbrainz.validateMBID(mbid)) {
 			return res.status(400).json({ error: "Parameter `mbid` is missing or malformed" });
 		}
 
-        const providerObj = providers.parseProvider(provider, ["getAlbumById", "formatAlbumObject"]);
         if (!providerObj) {
             return res.status(400).json({ error: "Provider doesn't exist or doesn't support this operation" });
         }

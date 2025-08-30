@@ -1,5 +1,7 @@
 import providers from "./providers/providers";
 import musicbrainz from "./providers/musicbrainz";
+import logger from "../../utils/logger";
+
 export default async function handler(req, res) {
     try {
         var { provider_id, provider, url } = req.query;
@@ -36,8 +38,8 @@ export default async function handler(req, res) {
         mbData = await musicbrainz.getArtistByUrl(providerUrl, { noCache: forceRefresh });
         let mbid = mbData?.id || null;
         return res.status(200).json({ mbid, provider, provider_id });
-
     } catch (error) {
+        logger.error("Error in lookupArtist API", error);
         return res.status(500).json({ error: "Internal Server Error", details: error.message });
     }
 }

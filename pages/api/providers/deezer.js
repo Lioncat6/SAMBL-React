@@ -52,7 +52,7 @@ async function searchByArtistName(query) {
 	await refreshApi();
 	try {
 		const data = await deezerApi.search.artist(query);
-		if (data.data && data.data.length > 0) {
+		if (data.data) {
             return data;
         } else {
             return null;
