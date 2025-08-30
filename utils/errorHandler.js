@@ -5,13 +5,13 @@ class ErrorHandler {
         this.namespace = namespace;
     }
 
-    handleError(message, error, code = null, ErrorType = Error) {
+    handleError(message, error, code = null, throwError = true, ErrorType = Error) {
         const logMessage = `[${this.namespace}]: ${message || "Internal Server Error"}`;
         logger.error(logMessage, error);
 
         const err = new ErrorType(logMessage);
         if (code) err.code = code;
-        throw err;
+        if (throwError) throw err;
     }
 }
 

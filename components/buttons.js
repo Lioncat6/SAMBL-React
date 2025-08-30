@@ -1,8 +1,9 @@
 import styles from "../styles/buttons.module.css";
 import Link from "next/link";
-import ArtistInfo from "./ArtistInfo";
+import text from "../utils/text";
+
 export default function AddButtons({ artist }) {
-	let editNote = `Artist sourced from ${artist.provider.charAt(0).toUpperCase() + artist.provider.slice(1)} using SAMBL (Streaming Artist MusicBrainz Lookup) ${artist.url}`;
+	let editNote = `Artist sourced from ${text.capitalizeFirst(artist.provider)} using SAMBL (Streaming Artist MusicBrainz Lookup) ${artist.url}`;
 	let addUrl = `https://musicbrainz.org/artist/create?edit-artist.name=${artist.name}&edit-artist.sort_name=${artist.name}&edit-artist.url.0.text=${artist.url}&edit-artist.url.0.link_type_id=194&edit-artist.edit_note=${encodeURIComponent(editNote)}`
 	return (
 		<>

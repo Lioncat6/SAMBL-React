@@ -12,6 +12,7 @@ import { SiTidal } from "react-icons/si";
 import { FaAnglesRight, FaAnglesLeft } from "react-icons/fa6";
 import { IoMdRefresh } from "react-icons/io";
 import { toast, Flip } from "react-toastify";
+import text from "../utils/text";
 
 function AlbumIcons({ item }) {
 	const { id, url, releaseDate, trackCount, albumStatus, mbTrackCount, mbReleaseDate, mbid, albumIssues, provider } = item;
@@ -275,7 +276,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 					{/* Album Info */}
 					<div className={styles.albumInfo}>
 						<div>
-							{releaseDate} • {albumType.charAt(0).toUpperCase() + albumType.slice(1)} •{" "}
+							{releaseDate} • {text.capitalizeFirst(albumType)} •{" "}
 							{albumStatus == "red" ? (
 								<span className={`${highlightTracks ? styles.trackHighlight : ""}`}>{sourceTrackString}</span>
 							) : (

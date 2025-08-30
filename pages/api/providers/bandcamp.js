@@ -1,20 +1,12 @@
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
+import text from "../../../utils/text";
 const bcApi = require("bandcamp-scraper");
 
 const namespace = "bandcamp";
 
 const err = new ErrorHandler(namespace);
-
-function parseBandcampDate(dateStr) {
-    const date = new Date(dateStr);
-    if (isNaN(date)) return null;
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const dd = String(date.getDate()).padStart(2, "0");
-    const yyyy = date.getFullYear();
-    return `${yyyy}-${mm}-${dd}`;
-}
 
 function searchAsync(params) {
 	return new Promise((resolve, reject) => {
@@ -181,7 +173,7 @@ function formatAlbumObject(album) {
 			},
 		],
 		artistNames: album.artist,
-		releaseDate: parseBandcampDate(album.releaseDate || album.raw?.current?.release_date),
+		releaseDate: text.formatDate(album.releaseDate || album.raw?.current?.release_date),
 		trackCount: album.numTracks,
 		albumType: albumType,
 	};
