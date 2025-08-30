@@ -9,47 +9,15 @@ const namespace = "bandcamp";
 const err = new ErrorHandler(namespace);
 
 function searchAsync(params) {
-	return new Promise((resolve, reject) => {
-		bcApi.search(params, (error, searchResults) => {
-			if (error) reject(error);
-			else resolve(searchResults);
-		});
-	});
-}
-
-function getArtistByIdAsync(id) {
-	return new Promise((resolve, reject) => {
-		bcApi.getArtist(`https://${id}.bandcamp.com`, (error, artistData) => {
-			if (error) reject(error);
-			else resolve(artistData);
-		});
-	});
-}
-
-async function getAlbumUrlsAsync(artistUrl) {
-	return new Promise((resolve, reject) => {
-		bcApi.getAlbumUrls(artistUrl, (error, albumData) => {
-			if (error) reject(error);
-			else resolve(albumData);
-		});
-	});
-}
-
-async function getAlbumInfoAsync(albumUrl) {
-	return new Promise((resolve, reject) => {
-		bcApi.getAlbumInfo(albumUrl, (error, albumData) => {
-			if (error) reject(error);
-			else resolve(albumData);
-		});
-	});
-}
-
-async function getTrackInfoAsync(trackUrl) {
     return new Promise((resolve, reject) => {
-        bcApi.getTrackInfo(trackUrl, (error, trackData) => {
-            if (error) reject(error);
-            else resolve(trackData);
-        });
+        try {
+            bcApi.search(params, (error, searchResults) => {
+                if (error) reject(error);
+                else resolve(searchResults);
+            });
+        } catch (err) {
+            reject(err);
+        }
     });
 }
 
@@ -61,8 +29,59 @@ async function init() {
 	}
 }
 
+function getArtistByIdAsync(id) {
+    return new Promise((resolve, reject) => {
+        try {
+            bcApi.getArtist(`https://${id}.bandcamp.com`, (error, artistData) => {
+                if (error) reject(error);
+                else resolve(artistData);
+            });
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
+async function getAlbumUrlsAsync(artistUrl) {
+    return new Promise((resolve, reject) => {
+        try {
+            bcApi.getAlbumUrls(artistUrl, (error, albumData) => {
+                if (error) reject(error);
+                else resolve(albumData);
+            });
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
+async function getAlbumInfoAsync(albumUrl) {
+    return new Promise((resolve, reject) => {
+        try {
+            bcApi.getAlbumInfo(albumUrl, (error, albumData) => {
+                if (error) reject(error);
+                else resolve(albumData);
+            });
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
+async function getTrackInfoAsync(trackUrl) {
+	return new Promise((resolve, reject) => {
+		try {
+			bcApi.getTrackInfo(trackUrl, (error, trackData) => {
+				if (error) reject(error);
+				else resolve(trackData);
+			});
+		} catch (err) {
+			reject(err);
+		}
+	});
+}
+
 async function getAlbumById(url) {
-    console.log(url)
     try {
         let albumData = null;
         if (url.includes("/album/")) {
@@ -70,7 +89,6 @@ async function getAlbumById(url) {
         } else if (url.includes("/track/")) {
             albumData = await getTrackInfoAsync(url);
         }
-        console.log(albumData)
         return albumData;
     } catch (error) {
         err.handleError("Error fetching album by ID:", error);
@@ -153,8 +171,8 @@ function formatAlbumObject(album) {
         album.artist = artistId;
         albumType = "single";
     }
-    let imageUrl = album.imageUrl.replace(/_\d+\.jpg$/, "_0.jpg") || `https://f4.bcbits.com/img/a${album.raw.art_id}_0.jpg`;
-    let imageUrlSmall = album.imageUrl.replace(/_\d+\.jpg$/, "_3.jpg") || `https://f4.bcbits.com/img/a${album.raw.art_id}_3.jpg`;
+    let imageUrl = album.imageUrl?.replace(/_\d+\.jpg$/, "_0.jpg") || `https://f4.bcbits.com/img/a${album.raw.art_id}_0.jpg`;
+    let imageUrlSmall = album.imageUrl?.replace(/_\d+\.jpg$/, "_3.jpg") || `https://f4.bcbits.com/img/a${album.raw.art_id}_3.jpg`;
 	return {
 		provider: namespace,
 		id: albumId,
