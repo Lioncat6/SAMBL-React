@@ -6,8 +6,6 @@
 		"build": "next build",
 		"start": "next start",
 		"lint": "next lint",
-		"test": "react-scripts test --env=jsdom",
-		"eject": "react-scripts eject",
 		"dev": "next dev"
 	},
 	"dependencies": {
@@ -27,7 +25,6 @@
 		"react": "^19.1.0",
 		"react-dom": "^19.1.0",
 		"react-icons": "^5.5.0",
-		"react-scripts": "^5.0.1",
 		"react-toastify": "^11.0.5",
 		"react-virtualized-auto-sizer": "^1.0.26",
 		"react-window": "^1.8.11",
@@ -48,5 +45,8 @@
 			"last 1 firefox version",
 			"last 1 safari version"
 		]
+	},
+	"devDependencies": {
+		"typescript": "5.9.2"
 	}
 }

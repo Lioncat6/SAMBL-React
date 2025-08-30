@@ -11,6 +11,7 @@ Streaming Artist MusicBrainz Lookup
 | Spotify | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Deezer | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Tidal | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Bandcamp | ❌ | ❌ | ✅ | ✅ | ✅ |
 | MusixMatch | ✅ | ❌ | ❌ | ❌ | ❌ |
 
 ### MetaBrainz Thread:

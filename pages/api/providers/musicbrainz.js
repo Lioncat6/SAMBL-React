@@ -59,7 +59,6 @@ async function getIdsBySpotifyUrls(spotifyUrls) {
 				mbids[url.resource] = url.relations[0].artist.id;
 			}
 		}
-		console.log(mbids)
 		return mbids;
 	} catch (error) {
 		err.handleError("Failed to get ids", error);
