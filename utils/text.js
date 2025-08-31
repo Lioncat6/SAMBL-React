@@ -24,7 +24,7 @@ function capitalizeFirstLetter(text) {
 }
 
 /**
- * Format milliseconds into a human-readable string
+ * Format milliseconds into MM:SS
  *
  * @param {number} ms The milliseconds to format.
  */
@@ -33,6 +33,18 @@ function formatMS(ms) {
 	const minutes = Math.floor(ms / 60000);
 	const seconds = Math.floor((ms % 60000) / 1000);
 	return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
+
+/**
+ * Format seconds into MM:SS
+ *
+ * @param {number} seconds The seconds to format.
+ */
+function formatSeconds(seconds) {
+	if (typeof seconds !== "number") seconds = Number(seconds);
+	const minutes = Math.floor(seconds / 60);
+	const secs = Math.floor(seconds % 60);
+	return `${minutes}:${secs.toString().padStart(2, "0")}`;
 }
 
 /**
@@ -48,7 +60,19 @@ function formatDate(dateStr) {
 	const yyyy = date.getFullYear();
 	return `${yyyy}-${mm}-${dd}`;
 }
-
+/**
+ * Handles ISO 8601 duration strings like "PT4M8S".
+ *
+ * @param {string} duration The ISO 8601 duration string to format.
+ * @returns {string} The formatted duration string.
+ */
+function formatDuration(duration) {
+	const match = /^PT(?:(\d+)M)?(?:(\d+)S)?$/.exec(duration);
+	if (!match) return duration;
+	const minutes = parseInt(match[1] || "0", 10);
+	const seconds = parseInt(match[2] || "0", 10);
+	return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
 
 /**
  * Utility object for text formatting.
@@ -63,7 +87,11 @@ const text = {
 	formatMS,
 	fm: formatMS,
 	formatDate,
-	fd: formatDate
+	fd: formatDate,
+	formatSeconds,
+	fs: formatSeconds,
+	formatDuration,
+	fd: formatDuration
 };
 
 export default text;
