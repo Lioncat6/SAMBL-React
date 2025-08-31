@@ -37,6 +37,8 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
 		let providerReleaseDate = album.releaseDate;
 		let providerTrackCount = album.trackCount;
 		let providerAlbumType = album.albumType;
+		let providerBarcode = album.upc || null;
+		let providerTracks = album.albumTracks || [];
 
 		let mbTrackCount = 0;
 		let mbReleaseDate = "";
@@ -146,6 +148,8 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
 				albumType: providerAlbumType,
 				albumStatus,
 				albumMBUrl,
+				albumBarcode: providerBarcode,
+				albumTracks: providerTracks,
 				mbTrackCount,
 				mbReleaseDate,
 				mbid,
