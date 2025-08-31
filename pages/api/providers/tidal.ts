@@ -1,23 +1,37 @@
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, AlbumArtistObject } from "./provider-types";
 import { credentialsProvider, init as initAuth } from '@tidal-music/auth';
 import { createAPIClient } from '@tidal-music/api';
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
-
+import text from "../../../utils/text"
 const namespace = "tidal";
 
 const err = new ErrorHandler(namespace);
 
-let credentials = null;
-const listeners = [];
+type Credentials = {
+    clientId: string;
+    clientSecret: string;
+    token: string;
+    expires: number;
+    requestedScopes: Array<string>;
+};
+
+let credentials: Credentials | null = null;
+const listeners: Array<(event: any) => void> = [];
 
 const nodeCredentialsProvider = {
-    bus: (callback) => {
+    bus: (callback: any) => {
         listeners.push(callback);
     },
-    getCredentials: async () => credentials,
+    getCredentials: async (): Promise<Credentials> => {
+        if (!credentials) {
+            throw new Error("No credentials available");
+        }
+        return credentials;
+    },
     // Helper for updating credentials and notifying listeners
-    _setCredentials: (newCreds) => {
+    _setCredentials: (newCreds: Credentials) => {
         credentials = newCreds;
         const event = { 
             type: 'CredentialsUpdatedMessage', 
@@ -27,8 +41,12 @@ const nodeCredentialsProvider = {
     }
 };
 
-const tidalClientId = process.env.TIDAL_CLIENT_ID;
-const tidalClientSecret = process.env.TIDAL_CLIENT_SECRET;
+const tidalClientId: string = process.env.TIDAL_CLIENT_ID ?? "";
+const tidalClientSecret: string = process.env.TIDAL_CLIENT_SECRET ?? "";
+
+if (!tidalClientId || !tidalClientSecret) {
+    throw new Error("TIDAL_CLIENT_ID and TIDAL_CLIENT_SECRET must be set in environment variables.");
+}
 
 // Code permanently borrowed from https://github.com/kellnerd/harmony/tree
 // Credit to @kellnerd and @outsidecontext
@@ -62,13 +80,13 @@ async function requestAccessToken() {
 
 
 
-let tidalApi = null;
-let validUntilTimestamp = null;
+let tidalApi: any = null;
+let validUntilTimestamp: number | null = null;
 
 async function refreshApi() {
     if (!validUntilTimestamp || Date.now() > validUntilTimestamp || nodeCredentialsProvider.getCredentials() === null || tidalApi === null) {
         const tokenData = await requestAccessToken();
-        nodeCredentialsProvider._setCredentials({ clientId: tidalClientId, clientSecret: tidalClientSecret, token: tokenData.accessToken, expires: tokenData.expiresIn });
+        nodeCredentialsProvider._setCredentials({ clientId: tidalClientId, clientSecret: tidalClientSecret, token: tokenData.accessToken, expires: tokenData.expiresIn, requestedScopes: [] });
         validUntilTimestamp = tokenData.validUntilTimestamp;
         tidalApi = createAPIClient(nodeCredentialsProvider);
     }
@@ -122,14 +140,16 @@ async function searchByArtistName(query) {
 async function getAlbumById(tidalId) {
     await refreshApi();
     try {
-        const data = await tidalApi.GET(`/albums/${tidalId}?countryCode=US&include=coverArt&include=artists`);
+        const data = await tidalApi.GET(`/albums/${tidalId}?countryCode=US&include=coverArt&include=artists&include=items`);
         if (data.data) {
             let included = data.data?.included;
             const artists = included.filter(obj => obj.type === "artists");
             const artworks = included.filter(obj => obj.type === "artworks");
+            const tracks = included.filter(obj => obj.type === "tracks");
             let album = data.data?.data;
             album.attributes.artists = artists;
             album.attributes.coverArt = artworks[0];
+            album.attributes.tracks = tracks;
             return JSON.parse(JSON.stringify(data.data?.data))
         } else {
             return null;
@@ -170,7 +190,7 @@ async function getArtistById(tidalId) {
 async function getArtistAlbums(artistId, offset, limit) {
     await refreshApi();
     try {
-        const data = await tidalApi.GET(`/artists/${artistId}/relationships/albums?countryCode=US&include=albums&include=albums.coverArt&include=albums.artists${(offset && offset !=0) ? `&page[cursor]=${offset}` : ''}`);
+        const data = await tidalApi.GET(`/artists/${artistId}/relationships/albums?countryCode=US&include=albums&include=albums.coverArt&include=albums.artists&include=albums.items${(offset && offset !=0) ? `&page[cursor]=${offset}` : ''}`);
         if (data.data) {
             return JSON.parse(JSON.stringify(data));
         } else {
@@ -181,7 +201,7 @@ async function getArtistAlbums(artistId, offset, limit) {
     }
 }
 
-function formatAlbumGetData(rawData) {
+function formatAlbumGetData(rawData): AlbumData {
 	const currentPage = /%5Bcursor%5D=([a-zA-Z0-9]+)/;
     const data = rawData.data?.data;
     const included = rawData.data?.included;
@@ -198,9 +218,12 @@ function formatAlbumGetData(rawData) {
     const albums = included.filter(obj => obj.type === "albums");
     const artworks = included.filter(obj => obj.type === "artworks");
     const artworkMap = Object.fromEntries(artworks.map(a => [a.id, a]));
+    const tracks = included.filter(obj => obj.type === "tracks");
+    const trackMap = Object.fromEntries(tracks.map(t => [t.id, t]));
 
     for (let album of albums) {
         album.attributes.artists = album.relationships?.artists?.data.map(a => artistMap[a.id]) || [];
+        album.attributes.tracks = album.relationships?.items?.data.map(t => trackMap[t.id]) || [];
         album.attributes.coverArt = artworkMap[album.relationships?.coverArt?.data[0]?.id] || null;
     }
 
@@ -212,7 +235,7 @@ function formatAlbumGetData(rawData) {
 	};
 }
 
-function formatAlbumObject(album) {
+function formatAlbumObject(album): AlbumObject {
 	return {
 		provider: namespace,
 		id: album.id,
@@ -225,10 +248,47 @@ function formatAlbumObject(album) {
 		releaseDate: album.attributes.releaseDate,
 		trackCount: album.attributes.numberOfItems,
 		albumType: album.attributes.type,
+        upc: album.attributes.barcodeId,
+        albumTracks: getAlbumTracks(album) || [],
 	};
 }
 
-function formatAlbumArtistObject(artist) {
+function getAlbumTracks(album) {
+    let tracks = album.attributes.tracks;
+    let items = album.relationships?.items.data || [];
+    for (let item of items) {
+        let track = tracks.find(t => t.id === item.id);
+        if (track) {
+            track.attributes.trackNumber = item.meta?.trackNumber;
+            track.attributes.imageUrl = album.attributes?.coverArt?.attributes?.files[0]?.href || "";
+            track.attributes.imageUrlSmall = album.attributes?.coverArt?.attributes?.files[5]?.href || "";
+            track.attributes.albumName = album.attributes.title;
+            track.attributes.artistNames =  album.attributes.artists.map(artist => artist.attributes.name).join(", ");
+        }
+    }
+    const formattedTracks: TrackObject[] = tracks.map(formatTrackObject);
+    formattedTracks.sort((a, b) => (a.trackNumber || 0) - (b.trackNumber || 0));
+    return formattedTracks;
+}
+
+function formatTrackObject(track): TrackObject {
+	return {
+		provider: namespace,
+		id: track.id,
+		name: `${track.attributes.title}${track.attributes.version ? ` (${track.attributes.version})` : ""}`,
+		url: `https://tidal.com/track/${track.id}`,
+		imageUrl: track.attributes.imageUrl,
+		imageUrlSmall: track.attributes.imageUrlSmall,
+		artistNames: track.attributes.artistNames,
+		albumName: track.attributes.albumName || null,
+		releaseDate: track.attributes.releaseDate,
+		trackNumber: track.attributes.trackNumber,
+		duration: text.formatDuration(track.attributes.duration),
+		isrcs: track.attributes.isrc ? [track.attributes.isrc] : [],
+	};
+}
+
+function formatAlbumArtistObject(artist): AlbumArtistObject {
     return {
         provider: namespace,
         id: artist.id,
@@ -247,7 +307,7 @@ function getTrackISRCs(data) {
 
 function getAlbumUPCs(data) {
     if (!data) return null;
-    let upcs = data?.data?.attributes?.barcodeId ? [data.data?.attributes.barcodeId] : [];
+    let upcs = data?.attributes?.barcodeId ? [data.attributes.barcodeId] : [];
     return upcs;
 }
 
@@ -269,7 +329,7 @@ function formatArtistSearchData(rawData) {
     for (let artist of artists) {
         let coverArtUrl = null;
         let topAlbumPopularity = -1;
-        let bestAlbumDate = null;
+        let bestAlbumDate = "";
 
         // Check for profileArt
         if (artist.relationships?.profileArt?.data?.length) {
@@ -324,11 +384,12 @@ function formatArtistLookupData(rawData) {
     return formatArtistSearchData(rawData).filter(artist => artist.id === queryArtist)[0];
 }
 
-function formatArtistObject(rawObject) {
+function formatArtistObject(rawObject): ArtistObject {
     return {
         name: rawObject.attributes.name,
         url: getArtistUrl(rawObject),
         imageUrl: rawObject.imageUrl || '',
+        imageUrlSmall: rawObject.imageUrlSmall || '',
         relevance: `${(rawObject.attributes.popularity * 100).toFixed(0)}% Popularity`,
         info: '',
         genres: null,

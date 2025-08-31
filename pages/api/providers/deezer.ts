@@ -1,7 +1,11 @@
-const DeezerPublicApi = require("deezer-public-api");
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, AlbumArtistObject } from "./provider-types";
 import logger from "../../../utils/logger";
+import text from "../../../utils/text";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
+import { BUILD_MANIFEST } from "next/dist/shared/lib/constants";
+const DeezerPublicApi = require("deezer-public-api");
+
 const namespace = "deezer";
 
 const err = new ErrorHandler(namespace);
@@ -128,15 +132,20 @@ function formatArtistLookupData(rawData) {
 	return rawData;
 }
 
-function formatArtistObject(artist) {
-	let imageUrl = artist.picture_big;
+function formatArtistObject(artist): ArtistObject {
+	let imageUrl = artist.picture_xl;
+	let imageUrlSmall = artist.picture_medium;
 	if (imageUrl.includes("/artist//")) {
 		imageUrl = artist.picture;
+	}
+	if (imageUrlSmall.includes("/artist//")) {
+		imageUrlSmall = artist.picture;
 	}
 	return {
 		name: artist.name,
 		url: getArtistUrl(artist),
 		imageUrl: imageUrl || "",
+		imageUrlSmall: imageUrlSmall || "",
 		relevance: `${artist.nb_fan} fans`,
 		info: `${artist.nb_album} albums`,
 		genres: null,
@@ -147,7 +156,7 @@ function formatArtistObject(artist) {
 	};
 }
 
-function formatAlbumArtistObject(artist) {
+function formatAlbumArtistObject(artist): AlbumArtistObject {
 	return {
 		name: artist.name,
 		url: artist.link,
@@ -163,8 +172,8 @@ async function getArtistAlbums(artistId, offset, limit) {
 	try {
 		let artistAlbumData = await await deezerApi.artist.albums(artistId, 9999, 0);
 		let artistData = await deezer.getArtistById(artistId);
-		let next = 0;
-		let searchAlbums = []
+		let next: any = 0;
+		let searchAlbums: any[] = [];
 		while (next != null) {
 			let searchAlbumData = await deezerApi.search.album(`artist:"${artistData.name}"`, null, 9999, next);
 			if (searchAlbumData && searchAlbumData.data) {
@@ -192,7 +201,7 @@ async function getArtistAlbums(artistId, offset, limit) {
 	}
 }
 
-function formatAlbumGetData(rawData) {
+function formatAlbumGetData(rawData): AlbumData {
 	const nextIntRegex = /index=(\d+)/;
 	return {
 		count: rawData.total,
@@ -202,7 +211,7 @@ function formatAlbumGetData(rawData) {
 	};
 }
 
-function formatAlbumObject(album) {
+function formatAlbumObject(album): AlbumObject {
 	return {
 		provider: namespace,
 		id: album.id,
@@ -215,6 +224,38 @@ function formatAlbumObject(album) {
 		releaseDate: album.release_date,
 		trackCount: album.nb_tracks,
 		albumType: album.record_type,
+		upc: album.upc || null,
+		albumTracks: getAlbumTracks(album)
+	};
+}
+
+function getAlbumTracks(album) {
+	let tracks = album.tracks?.data;
+	if (tracks){
+		for (let track in tracks) {
+			tracks[track].trackNumber = parseInt(track) + 1;
+		}
+		tracks = tracks.map(formatTrackObject);
+		tracks.sort((a, b) => (a.trackNumber || 0) - (b.trackNumber || 0));
+		return tracks;
+	}
+	return [];
+}
+
+function formatTrackObject(track): TrackObject {
+	return {
+		provider: namespace,
+		id: track.id,
+		name: track.title,
+		url: track.link,
+		imageUrl: track.album.cover_xl || "",
+		imageUrlSmall: track.album.cover_medium || "",
+		albumName: track.album.title,
+		artistNames: track.artist ? [track.artist.name] : [],
+		duration: text.formatSeconds(track.duration),
+		trackNumber: track.trackNumber,
+		releaseDate: track.release_date,
+		isrcs: track.isrc ? [track.isrc] : [],
 	};
 }
 
