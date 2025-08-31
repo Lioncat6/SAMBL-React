@@ -84,6 +84,9 @@
     max-width: 50%;
     transition: all 0.3s ease;
     min-width: 30%;
+    display: flex;
+    flex-direction: column;
+    max-height: 90%;
 }
 
 @media screen and (max-width: 768px) {
@@ -121,6 +124,7 @@
 .content {
     margin-top: 20px;
     margin-bottom: 20px;
+    overflow-y: scroll;
 }
 /* 
 .actions .button {
@@ -166,6 +170,10 @@ display: flex;
 flex-direction: row;
 }
 
+.propertyRow.expanded {
+    flex-direction: column;
+}
+
 .propertyData {
     display: inline-block;
     margin-left: 5px;
@@ -173,7 +181,31 @@ flex-direction: row;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 100%; 
+    width: -webkit-fill-available;
+}
+
+.subPropertyDataValue {
+    display: inline-block;
+    margin-left: 5px;
+    color: var(--foreground-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: -webkit-fill-available;
+}
+
+.subPropertyData {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.subPropertyDataColumn {
+    display: flex;
+    flex-direction: column;
+    width: -webkit-fill-available;
+    flex: 1 1 0;      /* Allow to grow and shrink */
+    min-width: 0;     /* Allow ellipsis to work */
 }
 
 .property {
@@ -263,12 +295,6 @@ flex-direction: row;
     cursor: not-allowed;
     color: var(--foreground-tertiary);
 }
-
-.subPropertyRow {
-    display: flex;
-    flex-direction: row;
-}
-
 .subPropertyDataKey {
     display: inline;
     color: var(--foreground-secondary);
@@ -279,6 +305,17 @@ flex-direction: row;
     display: flex;
     align-items: center;
     margin-right: 5px;
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+.subPropertyRow {
+    margin: 10px 0 10px 5%;
+    background-color: var(--background-secondary);
+    border-radius: 10px;
+    padding: 5px;
+    display: flex;
+    flex-direction: row;
+    width: -webkit-fill-available;
 }
 
 .settingsInput {
