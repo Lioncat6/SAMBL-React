@@ -229,30 +229,31 @@ function getAlbumTracks(album): TrackObject[] {
 	const trackIdRegex = /\/(track|album)\/([^/]+)/;
 	let tracks: TrackObject[] = [];
 	if (album && album.tracks) {
+		album.tracks = album.tracks.filter(track => (track.url && track.duration));
 		for (let trackNumber in album.tracks) {
-			let trackInfo = album.raw.trackinfo[trackNumber];
+			let trackinfo = album.raw.trackinfo[trackNumber];
 			let currentTrack = album.tracks[trackNumber];
-			trackInfo.url = trackUrlRegex.exec(currentTrack.url)?.[1] || null;
-			trackInfo.id = trackInfo.url?.match(trackIdRegex) ? trackInfo.url.match(trackIdRegex)[2] : null;
-			if (!trackInfo.artist){
-				trackInfo.artist = album.artist;
+			trackinfo.url = trackUrlRegex.exec(currentTrack.url)?.[1] || null;
+			trackinfo.id = trackinfo.url?.match(trackIdRegex) ? trackinfo.url.match(trackIdRegex)[2] : null;
+			if (!trackinfo.artist){
+				trackinfo.artist = album.artist;
 			}
-			trackInfo.albumName = album.name || album.title;
-			trackInfo.releaseDate = text.formatDate(album.releaseDate || album.raw?.current?.release_date);
-			trackInfo.imageUrl = album.imageUrl?.replace(/_\d+\.jpg$/, "_0.jpg") || (album.raw.art_id ? `https://f4.bcbits.com/img/a${album.raw.art_id}_0.jpg` : null);
-   		 	trackInfo.imageUrlSmall = album.imageUrl?.replace(/_\d+\.jpg$/, "_3.jpg") || (album.raw.art_id ? `https://f4.bcbits.com/img/a${album.raw.art_id}_3.jpg` : null);
-			tracks.push(formatTrackObject(trackInfo));
+			trackinfo.albumName = album.name || album.title;
+			trackinfo.releaseDate = text.formatDate(album.releaseDate || album.raw?.current?.release_date);
+			trackinfo.imageUrl = album.imageUrl?.replace(/_\d+\.jpg$/, "_0.jpg") || (album.raw.art_id ? `https://f4.bcbits.com/img/a${album.raw.art_id}_0.jpg` : null);
+   		 	trackinfo.imageUrlSmall = album.imageUrl?.replace(/_\d+\.jpg$/, "_3.jpg") || (album.raw.art_id ? `https://f4.bcbits.com/img/a${album.raw.art_id}_3.jpg` : null);
+			tracks.push(formatTrackObject(trackinfo));
 		}
 	} else if (album && album.raw?.current?.type == "track") {
-		let trackInfo = album.raw.trackinfo[0];
-		trackInfo.url = trackUrlRegex.exec(album.url)?.[1] || null;
-		trackInfo.id = trackInfo.url?.match(trackIdRegex) ? trackInfo.url.match(trackIdRegex)[2] : null;
-		trackInfo.albumName = album.name || album.title;
-		trackInfo.releaseDate = text.formatDate(album.releaseDate || album.raw?.current?.release_date);
-		trackInfo.imageUrl = album.imageUrl?.replace(/_\d+\.jpg$/, "_0.jpg") || (album.raw.art_id ? `https://f4.bcbits.com/img/a${album.raw.art_id}_0.jpg` : null);
-		trackInfo.imageUrlSmall = album.imageUrl?.replace(/_\d+\.jpg$/, "_3.jpg") || (album.raw.art_id ? `https://f4.bcbits.com/img/a${album.raw.art_id}_3.jpg` : null);
-		trackInfo.isrc = album.raw.current.isrc;
-		tracks.push(formatTrackObject(trackInfo));
+		let trackinfo = album.raw.trackinfo[0];
+		trackinfo.url = trackUrlRegex.exec(album.url)?.[1] || null;
+		trackinfo.id = trackinfo.url?.match(trackIdRegex) ? trackinfo.url.match(trackIdRegex)[2] : null;
+		trackinfo.albumName = album.name || album.title;
+		trackinfo.releaseDate = text.formatDate(album.releaseDate || album.raw?.current?.release_date);
+		trackinfo.imageUrl = album.imageUrl?.replace(/_\d+\.jpg$/, "_0.jpg") || (album.raw.art_id ? `https://f4.bcbits.com/img/a${album.raw.art_id}_0.jpg` : null);
+		trackinfo.imageUrlSmall = album.imageUrl?.replace(/_\d+\.jpg$/, "_3.jpg") || (album.raw.art_id ? `https://f4.bcbits.com/img/a${album.raw.art_id}_3.jpg` : null);
+		trackinfo.isrc = album.raw.current.isrc;
+		tracks.push(formatTrackObject(trackinfo));
 	}
 	tracks.sort((a, b) => (a.trackNumber || 0) - (b.trackNumber || 0));
 	return tracks;
