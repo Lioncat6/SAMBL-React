@@ -36,6 +36,9 @@ export default async function handler(req, res) {
         if (isrcs == null) {
             return res.status(404).json({ error: "Track not found!" });
         }
+        if (isrcs == -1) {
+            return res.status(404).json({ error: "Track has no ISRC!" });
+        }
         res.status(200).json({ isrcs });
 	} catch (error) {
         logger.error("Error in getTrackISRCs API:", error);

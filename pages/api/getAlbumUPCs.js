@@ -35,6 +35,9 @@ export default async function handler(req, res) {
         if (upcs == null) {
             return res.status(404).json({ error: "Album not found!" });
         }
+        if (upcs == -1) {
+            return res.status(404).json({ error: "Album has no UPC!" });
+        }
         res.status(200).json({ upcs });
     } catch (error) {
         logger.error("Error in getAlbumUPCs API:", error);
