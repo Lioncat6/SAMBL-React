@@ -14,7 +14,7 @@ async function getItems(query, provider) {
 }
 
 export async function getServerSideProps(context) {
-    const { query, provider } = context.query;
+    let { query, provider } = context.query;
     if (!provider) {
         provider = context.req.cookies?.provider || "spotify";
     }
