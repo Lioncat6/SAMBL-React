@@ -62,7 +62,7 @@ async function dispPromise(promise, message) {
 
 export default function AddButtons({ artist }) {
 	let editNote = editNoteBuilder.buildEditNote('Artist', artist.provider, artist.url, artist.url);
-	let addUrl = `https://musicbrainz.org/artist/create?edit-artist.name=${artist.name}&edit-artist.sort_name=${artist.name}&edit-artist.url.0.text=${artist.url}&edit-artist.url.0.link_type_id=194&edit-artist.edit_note=${encodeURIComponent(editNote)}`
+	let addUrl = `https://musicbrainz.org/artist/create?edit-artist.name=${artist.name}&edit-artist.sort_name=${artist.name}&edit-artist.url.0.text=${artist.url}&edit-artist.url.0.link_type_id=194&edit-artist.edit_note=${editNote}`
 	return (
 		<>
 			<a

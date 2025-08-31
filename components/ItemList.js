@@ -15,9 +15,10 @@ import { toast, Flip } from "react-toastify";
 import text from "../utils/text";
 import { PiPlaylistBold } from "react-icons/pi";
 import { TbPlaylistOff } from "react-icons/tb";
+import editNoteBuilder from "../utils/editNoteBuilder";
 
 function AlbumIcons({ item }) {
-	const { id, url, releaseDate, trackCount, albumStatus, mbTrackCount, mbReleaseDate, mbid, albumIssues, provider } = item;
+	const { id, url, releaseDate, trackCount, albumStatus, mbTrackCount, mbReleaseDate, mbid, albumIssues, provider, currentArtistMBID } = item;
 	return (
 		<div className={styles.iconContainer}>
 			{albumIssues.includes("noUPC") && <img className={styles.upcIcon} src="../assets/images/noUPC.svg" title="This release is missing a UPC/Barcode!" alt="Missing UPC" />}
@@ -53,7 +54,7 @@ function AlbumIcons({ item }) {
 						albumStatus === "green"
 							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${releaseDate.split("-")[0]}&events.0.date.month=${releaseDate.split("-")[1]}&events.0.date.day=${
 									releaseDate.split("-")[2]
-							  }&edit_note=${encodeURIComponent(`Added release date from ${text.capitalizeFirst(provider)} using SAMBL: ${url}`)}`
+							  }&edit_note=${encodeURIComponent(editNoteBuilder.buildEditNote(`Release Date`, provider, url, `https://musicbrainz.org/artist/${currentArtistMBID}`))}`
 							: undefined
 					}
 					title={albumStatus === "green" ? "This release is missing a release date!\n[Click to Fix]" : "This release is missing a release date!"}

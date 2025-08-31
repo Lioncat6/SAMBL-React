@@ -1,5 +1,7 @@
 import getConfig from "next/config";
 
+const encode = str => encodeURIComponent(str).replace(/%250A/g, '%0A');
+
 /**
  * Generate Edit note String
  *
@@ -11,19 +13,20 @@ import getConfig from "next/config";
  */
 function buildEditNote(edit, provider, sourceUrl, artistUrl, pageUrl) {
 	const { publicRuntimeConfig } = getConfig();
-	return `${edit} imported from ''SAMBL''%0A
-    '''Provider:''' ${provider}%0A
-    '''Source:''' ${sourceUrl}%0A
-    '''Artist:''' ${artistUrl}%0A
-    ${pageUrl ? `'''SAMBL URL:''' ${pageUrl}%0A` : ''}
-    %0A
-    '''SAMBL ${publicRuntimeConfig.version}''': https://sambl.lioncat6.com | https://github.com/lioncat6/SAMBL-React
-    `;
+    return encode(
+        `${edit} imported from ''SAMBL''%0A
+        '''Provider:''' ${provider}%0A
+        '''Source:''' ${sourceUrl}%0A
+        '''Artist:''' ${artistUrl}%0A
+        ${pageUrl ? `'''SAMBL URL:''' ${pageUrl}%0A` : ''}
+        %0A
+        '''SAMBL ${publicRuntimeConfig.version}''': https://sambl.lioncat6.com | https://github.com/lioncat6/SAMBL-React
+    `);
 }
 
 function buildDeepSearchEditNote(data) {
     const { publicRuntimeConfig } = getConfig();
-return `Artist found with ''SAMBL Deep Search''%0A
+return encode(`Artist found with ''SAMBL Deep Search''%0A
     '''Provider:''' ${data.provider}%0A
     '''Albums:'''%0A
     ${data.albums.map(album => ` • '''${album.title}''' ''Barcode: ${album.upc}'' ${album.url}%0A''Artists:'' ${album.artists?.map(artist => artist.id).join(", ") || "none"}`).join("%0A ")}%0A%0A
@@ -31,7 +34,7 @@ return `Artist found with ''SAMBL Deep Search''%0A
     '''Name Similarity:''' ${Math.round(data.nameSimilarity * 100)}%%0A
     ${data.method=="most_common" ? `'''Method:''' Most Common MBID (${data.mostCommonMbid})%0A` : `'''Method:''' Name Similarity (''${Math.round(data.nameSimilarity * 100)}%'')%0A• ''Provider Name: ${data.sourceName}''%0A• ''Name in Musicbrainz: ${data.mbName}''`}
     %0A%0A'''SAMBL ${publicRuntimeConfig.version}''': https://sambl.lioncat6.com | https://github.com/lioncat6/SAMBL-React
-    `
+    `);
 }
 
 const editNoteBuilder = {
