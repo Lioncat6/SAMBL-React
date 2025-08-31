@@ -222,14 +222,15 @@ function ExportMenu({ data, close }) {
 					if (Array.isArray(value) && value.length > 0 && typeof value[0] === "object" && !Array.isArray(value[0])) {
 						const [expanded, setExpanded] = useState(false);
 						return (
-							<div key={key} className={styles.propertyRow}>
+							<div key={key} className={`${styles.propertyRow} ${expanded ? styles.expanded : ""}`}>
 								<div className={styles.property}>
 									<CopyButton value={value} />
 									{key}
+									<button className={styles.expandButton} onClick={() => setExpanded(!expanded)} title={expanded ? "Collapse" : "Expand"}>
+										{expanded ? <FaChevronRight /> : <FaChevronDown />}
+									</button>
 								</div>
-								<button className={styles.expandButton} onClick={() => setExpanded(!expanded)} title={expanded ? "Collapse" : "Expand"}>
-									{expanded ? <FaChevronRight /> : <FaChevronDown />}
-								</button>
+
 								{expanded ? (
 									<div className={styles.propertyData}>
 										{value.map((subObj, subIndex) => (
@@ -243,16 +244,12 @@ function ExportMenu({ data, close }) {
 												<div className={styles.subPropertyDataColumn}>
 													{Object.entries(subObj).map(([subKey, subValue]) => (
 														<div key={subKey} className={styles.subPropertyData}>
-															<strong className={styles.subPropertyDataKey}>
-																{" "}
-																{value.length == 1 && (
-																	<div className={styles.subPropertyDataKey}>
-																		<CopyButton value={String(subValue)} />
-																	</div>
-																)}
-																{subKey}
-															</strong>{" "}
-															{typeof subValue == "object" && !Array.isArray(subValue) ? JSON.stringify(subValue) : String(subValue)}
+																<div className={styles.subPropertyDataKey}>
+																	<CopyButton value={subValue != null ? String(subValue) : null} />
+
+																	{subKey}
+																</div>
+															<div className={styles.subPropertyDataValue}>{typeof subValue == "object" && !Array.isArray(subValue) && subValue !== null ? JSON.stringify(subValue) : subValue != null ? String(subValue) : ""}</div>
 														</div>
 													))}
 												</div>
@@ -315,17 +312,17 @@ function TrackMenu({ data, close }) {
 			{" "}
 			<div className={styles.header}>
 				{" "}
-				<MdOutlineAlbum /> Tracks for {data.spotifyName}
+				<MdOutlineAlbum /> Tracks for {data.name}
 			</div>
 			<div className={styles.content}>
-				{Object.entries(data.mbTrackISRCs).map(([key, value]) => {
+				{Object.entries((data.mbTrackISRCs.length > 0 ? data.mbTrackISRCs : data.albumTracks)).map(([key, value]) => {
 					return (
 						<div key={key} className={styles.propertyRow}>
 							<div className={styles.property}>
 								<button
 									className={`${styles.copyButton} ${value.isrcs.length > 0 ? "" : styles.disabled}`}
 									onClick={() => handleCopy(Array.isArray(value.isrcs) && typeof value[0] === "object" ? JSON.stringify(value, null, 2) : String(value.isrcs))}
-									title={value.isrcs.length > 0 ? "Copy to Clipboard" : "No data available"}
+									title={value.isrcs.length > 0 ? "Copy to Clipboard" : "No ISRC data available"}
 								>
 									<FaCopy />
 								</button>
@@ -335,8 +332,7 @@ function TrackMenu({ data, close }) {
 										href={value.isrcs.length ? `/find?query=${encodeURIComponent(value.isrcs[0])}` : undefined}
 										target="_blank"
 										rel="noopener noreferrer"
-										title={value.isrcs.length > 0 ? "Lookup ISRC" : "No data available"}
-										style={{ pointerEvents: value.isrcs.length > 0 ? "auto" : "none" }}
+										title={value.isrcs.length > 0 ? "Lookup ISRC" : "No ISRC data available"}
 									>
 										<FaMagnifyingGlass />
 									</a>

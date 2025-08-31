@@ -4,6 +4,7 @@ import musixmatch from "./providers/musixmatch";
 import deezer from "./providers/deezer";
 import tidal from "./providers/tidal";
 import logger from "../../utils/logger";
+import text from "../../utils/text";
 
 function createDataObject(source, imageUrl, title, artists, info, link, extraInfo = null) {
 	return {
@@ -15,16 +16,6 @@ function createDataObject(source, imageUrl, title, artists, info, link, extraInf
 		link: link,
 		extraInfo: extraInfo,
 	};
-}
-
-function formatMS(ms) {
-	const minutes = Math.floor(ms / 60000);
-	const seconds = Math.floor((ms % 60000) / 1000);
-	return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-}
-
-function firstCapitalize(str) {
-	return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }
 
 export default async function handler(req, res) {
@@ -64,7 +55,7 @@ export default async function handler(req, res) {
 							album.images[0].url || "",
 							album.name,
 							album.artists.map((artist) => ({ name: artist.name, link: artist.external_urls.spotify })),
-							[album.release_date, `${album.total_tracks} tracks`, firstCapitalize(album.type)],
+							[album.release_date, `${album.total_tracks} tracks`, text.capitalizeFirst(album.type)],
 							album.external_urls.spotify
 						)
 					);
@@ -79,7 +70,7 @@ export default async function handler(req, res) {
 							imageData.images[0]?.thumbnails?.large || "",
 							album.title,
 							album["artist-credit"].map((artist) => ({ name: artist.name, link: `https://musicbrainz.org/artist/${artist.artist.id}` })),
-							[album.date, `${album["track-count"]} tracks`, firstCapitalize(album["release-group"]["primary-type"])],
+							[album.date, `${album["track-count"]} tracks`, text.capitalizeFirst(album["release-group"]["primary-type"])],
 							`https://musicbrainz.org/release/${album.id}`
 						)
 					);
@@ -92,7 +83,7 @@ export default async function handler(req, res) {
 						deezerData.cover_medium || "",
 						deezerData.title,
 						deezerData.contributors.map((contributor) => ({ name: contributor.name, link: contributor.link })),
-						[deezerData.release_date, `${deezerData.nb_tracks} tracks`, firstCapitalize(deezerData.type)],
+						[deezerData.release_date, `${deezerData.nb_tracks} tracks`, text.capitalizeFirst(deezerData.type)],
 						deezerData.link
 					)
 				);
@@ -125,7 +116,7 @@ export default async function handler(req, res) {
 							getArtworkUrl(album.relationships?.coverArt?.data[0]?.id) || "",
 							album.attributes?.title || "",
 							getArtists(album.relationships?.artists?.data.map((artist) => artist.id)) || [],
-							[album.attributes?.releaseDate, `${album.attributes?.numberOfItems} tracks`, firstCapitalize(album.attributes?.type)],
+							[album.attributes?.releaseDate, `${album.attributes?.numberOfItems} tracks`, text.capitalizeFirst(album.attributes?.type)],
 							`https://tidal.com/album/${album.id}`
 						)
 					);
@@ -148,7 +139,7 @@ export default async function handler(req, res) {
 							track.album.images[0].url || "",
 							track.name,
 							track.artists.map((artist) => ({ name: artist.name, link: artist.external_urls.spotify })),
-							[track.album.release_date, formatMS(track.duration_ms), `Track ${track.track_number}`, track.album.name],
+							[track.album.release_date, text.formatMS(track.duration_ms), `Track ${track.track_number}`, track.album.name],
 							track.external_urls.spotify,
 							[
 								{
@@ -183,7 +174,7 @@ export default async function handler(req, res) {
 							"",
 							track.title,
 							track["artist-credit"].map((artist) => ({ name: artist.name, link: `https://musicbrainz.org/artist/${artist.artist.id}` })),
-							[initialReleaseDate, formatMS(track.length), `${track["releases"].length} Releases`, track.video && "Video"],
+							[initialReleaseDate, text.formatMS(track.length), `${track["releases"].length} Releases`, track.video && "Video"],
 							`https://musicbrainz.org/recording/${track.id}`
 						)
 					);
@@ -198,7 +189,7 @@ export default async function handler(req, res) {
 						[{ name: mxmData.track.artist_name, link: `https://www.musixmatch.com/artist/${mxmData.track.artist_id}` }],
 						[
 							mxmData.track.first_release_date?.replace("T00:00:00Z", ""),
-							formatMS(mxmData.track.track_length * 1000),
+							text.formatMS(mxmData.track.track_length * 1000),
 							mxmData.lyrics?.restricted == 1 && "Restricted",
 							mxmData.lyrics?.published_status.toString().includes("5") && "Not Verified",
 							((mxmData.track.has_lyrics == 0 && mxmData.lyrics?.instrumental != 1) || !mxmData.lyrics) && "Missing Lyrics",
@@ -234,15 +225,6 @@ export default async function handler(req, res) {
 				let artworkMap = Object.fromEntries(artworks.map((artwork) => [artwork.id, artwork]));
 				const albums = tidalData.included.filter((obj) => obj.type === "albums");
 				let albumMap = Object.fromEntries(albums.map((album) => [album.id, album]));
-
-				function formatDuration(duration) {
-					// Handles ISO 8601 duration strings like "PT4M8S"
-					const match = /^PT(?:(\d+)M)?(?:(\d+)S)?$/.exec(duration);
-					if (!match) return duration;
-					const minutes = parseInt(match[1] || "0", 10);
-					const seconds = parseInt(match[2] || "0", 10);
-					return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-				}
 
 				function getArtworkUrl(artworkId) {
 					return artworkMap[artworkId]?.attributes?.files[0]?.href || "";
@@ -281,7 +263,7 @@ export default async function handler(req, res) {
 							getArtworkUrl(mostRecentAlbum?.relationships?.coverArt?.data[0]?.id) || "",
 							track.attributes?.title || "",
 							getArtists(track.relationships?.artists?.data.map((artist) => artist.id)) || [],
-							[mostRecentAlbum?.attributes?.releaseDate, formatDuration(track?.attributes?.duration), `${track?.relationships?.albums?.data.length} Album${track?.relationships?.albums?.data.length !== 1 ? "s" : ""}`, ],
+							[mostRecentAlbum?.attributes?.releaseDate, text.formatDuration(track?.attributes?.duration), `${track?.relationships?.albums?.data.length} Album${track?.relationships?.albums?.data.length !== 1 ? "s" : ""}`, ],
 							`https://tidal.com/track/${track.id}`
 						)
 					);
@@ -294,7 +276,7 @@ export default async function handler(req, res) {
 						deezerData.album.cover_medium || "",
 						deezerData.title,
 						deezerData.contributors.map((contributor) => ({ name: contributor.name, link: contributor.link })),
-						[deezerData.release_date, formatMS(deezerData.duration * 1000), `Track ${deezerData.track_position}`],
+						[deezerData.release_date, text.formatMS(deezerData.duration * 1000), `Track ${deezerData.track_position}`],
 						deezerData.link
 					)
 				);

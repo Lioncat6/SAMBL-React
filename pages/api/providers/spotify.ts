@@ -1,7 +1,8 @@
-import SpotifyWebApi from "spotify-web-api-node";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, AlbumArtistObject } from "./provider-types";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
+import SpotifyWebApi from "spotify-web-api-node";
 
 const namespace = "spotify";
 
@@ -13,8 +14,8 @@ const spotifyApi = new SpotifyWebApi({
 	redirectUri: process.env.SPOTIFY_REDIRECT_URI,
 });
 
-let accessToken = null;
-let tokenExpirationTime = null;
+let accessToken: string | null = null;
+let tokenExpirationTime: number | null = null;
 
 function validateSpotifyId(spotifyId) {
 	const spfPattern = /[A-Za-z0-9]{22}/;
@@ -164,11 +165,12 @@ function formatArtistLookupData(rawData) {
 	return rawData;
 }
 
-function formatArtistObject(rawObject) {
+function formatArtistObject(rawObject): ArtistObject {
 	return {
 		name: rawObject.name,
 		url: getArtistUrl(rawObject),
 		imageUrl: rawObject.images[0]?.url || "",
+		imageUrlSmall: rawObject.images[1]?.url || rawObject.images[0]?.url || "",
 		relevance: `${rawObject.followers.total} Followers`,
 		info: rawObject.genres.join(", "), // Convert genres array to a string
 		genres: rawObject.genres,
@@ -199,7 +201,7 @@ function createUrl(type, id) {
 	return `https://open.spotify.com/${type}/${id}`;
 }
 
-function formatAlbumGetData(rawData) {
+function formatAlbumGetData(rawData): AlbumData {
 	const nextIntRegex = /offset=(\d+)/;
 	return {
 		count: rawData.total,
@@ -209,7 +211,7 @@ function formatAlbumGetData(rawData) {
 	};
 }
 
-function formatAlbumArtistObject(artist) {
+function formatAlbumArtistObject(artist): AlbumArtistObject {
 	return {
 		name: artist.name,
 		url: getArtistUrl(artist),
@@ -220,7 +222,7 @@ function formatAlbumArtistObject(artist) {
 	};
 }
 
-function formatAlbumObject(album) {
+function formatAlbumObject(album): AlbumObject {
 	return {
 		provider: namespace,
 		id: album.id,
@@ -233,6 +235,39 @@ function formatAlbumObject(album) {
 		releaseDate: album.release_date,
 		trackCount: album.total_tracks,
 		albumType: album.album_type,
+		upc: album.external_ids?.upc || null,
+		albumTracks: getAlbumTracks(album),
+	};
+}
+
+function getAlbumTracks(album): TrackObject[] {
+	let tracks = album.tracks?.items
+	if (tracks) {
+		tracks.forEach((track) => {
+			track.imageUrl = album.images[0]?.url || "";
+			track.imageUrlSmall = album.images[1]?.url || album.images[0]?.url || "";
+			track.albumName = album.name;
+		});
+		tracks = tracks.map(formatTrackObject);
+		return tracks;
+	}
+	return []
+}
+
+function formatTrackObject(track): TrackObject {
+	return {
+		provider: namespace,
+		id: track.id,
+		name: track.name,
+		url: track.external_urls.spotify,
+		imageUrl: track.imageUrl || "",
+		imageUrlSmall: track.imageUrlSmall || "",
+		albumName: track.albumName,
+		artistNames: track.artists.map((artist) => artist.name),
+		duration: track.duration_ms,
+		trackNumber: track.track_number,
+		releaseDate: track.release_date,
+		isrcs: track.external_ids?.isrc ? [track.external_ids.isrc] : [],
 	};
 }
 

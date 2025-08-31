@@ -1,7 +1,6 @@
 import musicbrainz from "./providers/musicbrainz";
 import providers from "./providers/providers";
 import logger from "../../utils/logger";
-import { getTraceEvents } from "next/dist/trace";
 
 export default async function handler(req, res) {
     try {
@@ -34,6 +33,9 @@ export default async function handler(req, res) {
         let upcs = sourceProvider.getAlbumUPCs(results);
         if (upcs == null) {
             return res.status(404).json({ error: "Album not found!" });
+        }
+        if (upcs == -1) {
+            return res.status(200).json({ upcs: [] });
         }
         res.status(200).json({ upcs });
     } catch (error) {

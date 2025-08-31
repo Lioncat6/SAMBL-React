@@ -14,8 +14,10 @@ async function getItems(query, provider) {
 }
 
 export async function getServerSideProps(context) {
-    const { query } = context.query;
-    const provider = context.req.cookies?.provider || "spotify";
+    let { query, provider } = context.query;
+    if (!provider) {
+        provider = context.req.cookies?.provider || "spotify";
+    }
 
     try {
         const items = await getItems(query, provider);

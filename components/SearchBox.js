@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { toast, Flip } from "react-toastify";
 import { FaMagnifyingGlass } from "react-icons/fa6";
+import { useSettings } from "./SettingsContext";
 
 import styles from "../styles/SearchBox.module.css";
 function SearchBox() {
 	const [loadingState, setLoadingState] = useState(false);
 	const [inputValue, setInputValue] = useState("");
 	const router = useRouter();
+	const { settings, updateSettings, loading } = useSettings();
 
 	useEffect(() => {
 		// Populate box if URL has a query param
@@ -48,7 +50,7 @@ function SearchBox() {
 			} else if (spfPattern.test(query) || uuidPattern.test(query)) {
 				dispError("This type of lookup is currently unsupported. Please enter a provider link instead!");
 			} else {
-				router.push(`/search?query=${encodeURIComponent(query)}`);
+				router.push(`/search?query=${encodeURIComponent(query)}&provider=${settings.currentProvider}`);
 			}
 		} else {
 			dispError("Please enter a query");

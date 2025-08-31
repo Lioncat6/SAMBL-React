@@ -1,4 +1,6 @@
 import styles from "../styles/notices.module.css";
+import text from "../utils/text";
+import editNoteBuilder from "../utils/editNoteBuilder";
 
 function NoticeBox({ color, text, button }) {
 	return (
@@ -16,7 +18,7 @@ function noQuickfetch() {
 
 export default function Notice({ data, type }) {
 	if (type === "noMBID") {
-		let editNote = `Artist sourced from ${data?.provider?.charAt(0)?.toUpperCase() + data?.provider?.slice(1)} using SAMBL (Streaming Artist MusicBrainz Lookup) ${data.url}`;
+		let editNote = editNoteBuilder.buildEditNote('Artist', data.provider, data.url, data.url);
 		return (
 			<NoticeBox
 				color="red"

@@ -1,4 +1,4 @@
-import normalizeText from "./normalizeText";
+import text from "./text";
 
 export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = null, quick = false, full = false) {
 	let albumData = [];
@@ -37,6 +37,8 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
 		let providerReleaseDate = album.releaseDate;
 		let providerTrackCount = album.trackCount;
 		let providerAlbumType = album.albumType;
+		let providerBarcode = album.upc || null;
+		let providerTracks = album.albumTracks || [];
 
 		let mbTrackCount = 0;
 		let mbReleaseDate = "";
@@ -72,7 +74,7 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
 					}
 				});
 
-				if (albumStatus === "red" && normalizeText(mbReleaseName) === normalizeText(providerAlbumName)) {
+				if (albumStatus === "red" && text.normalizeText(mbReleaseName) === text.normalizeText(providerAlbumName)) {
 					albumStatus = "orange";
 					mbid = mbAlbum.id;
 					albumMBUrl = `https://musicbrainz.org/release/${mbid}`;
@@ -146,6 +148,8 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
 				albumType: providerAlbumType,
 				albumStatus,
 				albumMBUrl,
+				albumBarcode: providerBarcode,
+				albumTracks: providerTracks,
 				mbTrackCount,
 				mbReleaseDate,
 				mbid,

@@ -1,5 +1,5 @@
 import musicbrainz from "./providers/musicbrainz";
-
+import logger from "../../utils/logger";
 export default async function handler(req, res) {
     try {
         const { mbid } = req.query;
@@ -22,7 +22,7 @@ export default async function handler(req, res) {
 
         res.status(200).json({ releaseCount, ownCount, featuredCount });
     } catch (error) {
-        console.error("Error in getArtistReleaseCount API", error);
+        logger.error("Error in getArtistReleaseCount API", error);
         res.status(500).json({ error: "Internal Server Error", details: error.message });
     }
 }

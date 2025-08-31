@@ -78,6 +78,7 @@
 	width: 60px;
 	height: 60px;
 	padding-left: 5px;
+	object-fit: cover;
 }
 
 .artistIcon img:hover {
@@ -322,9 +323,17 @@
 	color: var(--foreground-secondary);
 }
 
-.hasTracks {
+.tracks {
 	cursor: help;
+}
+
+.hasTracks {
+	cursor: pointer;
 	transition: all 0.2s ease-in-out;
+}
+
+.hasTracks:hover {
+	color: var(--foreground-primary)
 }
 
 .trackHighlight {

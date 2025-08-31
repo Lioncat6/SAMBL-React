@@ -2,6 +2,7 @@ import styles from "../styles/artistInfo.module.css";
 import { FaSpotify, FaDeezer, FaBandcamp  } from "react-icons/fa6";
 import { SiTidal, SiBandcamp } from "react-icons/si";
 import { LuImageUp } from "react-icons/lu";
+import editNoteBuilder from "../utils/editNoteBuilder";
 
 function SpotifyUrlContainer({ id }) {
 	return (
@@ -90,7 +91,7 @@ function UrlIcons({ artist }) {
 
 function ImageContainer({ artist }) {
 	const { mbid, imageUrl } = artist;
-	let editNote = `Artist image imported from ''SAMBL''%0A'''Provider:''' ${artist.provider}%0A'''Source:''' ${imageUrl}`
+	let editNote = editNoteBuilder.buildEditNote('Artist image', artist.provider, imageUrl, artist.url);
 	let importUrl = `https://musicbrainz.org/artist/${mbid}/edit?edit-artist.url.0.text=https://web.archive.org/web/0/${imageUrl}&edit-artist.url.0.link_type_id=173&edit-artist.edit_note=${editNote}`
 	return (
 		<div id="artistImageContainer" className={styles.artistImageContainer}>
