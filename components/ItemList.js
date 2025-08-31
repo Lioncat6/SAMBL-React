@@ -233,11 +233,13 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 				<div className={`${styles.statusPill} ${styles[albumStatus]}`} title={pillTooltipText}></div>
 
 				{/* Album Cover */}
-				<div className={styles.albumCover}>
-					<a href={imageUrl} target="_blank" rel="noopener noreferrer">
-						<img src={imageUrlSmall} alt={`${name} cover`} loading="lazy" />
-					</a>
-				</div>
+				{(imageUrlSmall || imageUrl) && (
+					<div className={styles.albumCover}>
+						<a href={imageUrl} target="_blank" rel="noopener noreferrer">
+							<img src={imageUrlSmall || imageUrl} alt={`${name} cover`} loading="lazy" />
+						</a>
+					</div>
+				)}
 
 				{/* Text Container */}
 				<div className={styles.textContainer}>
