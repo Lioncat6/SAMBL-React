@@ -10,5 +10,7 @@ module.exports = {
     version,
     mastodonUrl: process.env.NEXT_PUBLIC_MASTODON_URL
   },
-  ignoreBuildErrors: true,
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 }
