@@ -35,7 +35,7 @@ export default async function handler(req, res) {
             return res.status(404).json({ error: "Album not found!" });
         }
         if (upcs == -1) {
-            return res.status(404).json({ error: "Album has no UPC!" });
+            return res.status(200).json({ upcs: [] });
         }
         res.status(200).json({ upcs });
     } catch (error) {
