@@ -226,15 +226,6 @@ export default async function handler(req, res) {
 				const albums = tidalData.included.filter((obj) => obj.type === "albums");
 				let albumMap = Object.fromEntries(albums.map((album) => [album.id, album]));
 
-				function formatDuration(duration) {
-					// Handles ISO 8601 duration strings like "PT4M8S"
-					const match = /^PT(?:(\d+)M)?(?:(\d+)S)?$/.exec(duration);
-					if (!match) return duration;
-					const minutes = parseInt(match[1] || "0", 10);
-					const seconds = parseInt(match[2] || "0", 10);
-					return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-				}
-
 				function getArtworkUrl(artworkId) {
 					return artworkMap[artworkId]?.attributes?.files[0]?.href || "";
 				}
@@ -272,7 +263,7 @@ export default async function handler(req, res) {
 							getArtworkUrl(mostRecentAlbum?.relationships?.coverArt?.data[0]?.id) || "",
 							track.attributes?.title || "",
 							getArtists(track.relationships?.artists?.data.map((artist) => artist.id)) || [],
-							[mostRecentAlbum?.attributes?.releaseDate, formatDuration(track?.attributes?.duration), `${track?.relationships?.albums?.data.length} Album${track?.relationships?.albums?.data.length !== 1 ? "s" : ""}`, ],
+							[mostRecentAlbum?.attributes?.releaseDate, text.formatDuration(track?.attributes?.duration), `${track?.relationships?.albums?.data.length} Album${track?.relationships?.albums?.data.length !== 1 ? "s" : ""}`, ],
 							`https://tidal.com/track/${track.id}`
 						)
 					);

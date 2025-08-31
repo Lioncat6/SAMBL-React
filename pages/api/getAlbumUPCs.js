@@ -1,7 +1,6 @@
 import musicbrainz from "./providers/musicbrainz";
 import providers from "./providers/providers";
 import logger from "../../utils/logger";
-import { getTraceEvents } from "next/dist/trace";
 
 export default async function handler(req, res) {
     try {
