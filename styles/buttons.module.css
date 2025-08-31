@@ -1,8 +1,20 @@
 .addToMBButton {
-	padding: 10px;
-	height: 15px;
-	border: 1px solid var(--foreground-primary);
-	border-radius: 20px;
-	margin-top: 12px;
-	display: block;
+    padding: 10px;
+    border: 1px solid var(--foreground-primary);
+    border-radius: 20px;
+    margin-top: 12px;
+    display: block;
+    width: -webkit-fill-available;
+    font: 16px Arial;
+    font-weight: bold;
+    color: var(--foreground-secondary);
+    background: transparent;
+	transition: all 0.2s ease-in-out;
+	cursor: pointer;
+	text-decoration: none;
+}
+
+.addToMBButton:hover {
+    border-color: var(--foreground-secondary);
+    color: var(--background-primary);
 }
