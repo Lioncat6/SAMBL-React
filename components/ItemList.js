@@ -13,6 +13,8 @@ import { FaAnglesRight, FaAnglesLeft } from "react-icons/fa6";
 import { IoMdRefresh } from "react-icons/io";
 import { toast, Flip } from "react-toastify";
 import text from "../utils/text";
+import { PiPlaylistBold } from "react-icons/pi";
+import { TbPlaylistOff } from "react-icons/tb";
 
 function AlbumIcons({ item }) {
 	const { id, url, releaseDate, trackCount, albumStatus, mbTrackCount, mbReleaseDate, mbid, albumIssues, provider } = item;
@@ -51,7 +53,7 @@ function AlbumIcons({ item }) {
 						albumStatus === "green"
 							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${releaseDate.split("-")[0]}&events.0.date.month=${releaseDate.split("-")[1]}&events.0.date.day=${
 									releaseDate.split("-")[2]
-							  }&edit_note=${encodeURIComponent(`Added release date from Spotify using SAMBL: ${url}`)}`
+							  }&edit_note=${encodeURIComponent(`Added release date from ${text.capitalizeFirst(provider)} using SAMBL: ${url}`)}`
 							: undefined
 					}
 					title={albumStatus === "green" ? "This release is missing a release date!\n[Click to Fix]" : "This release is missing a release date!"}
@@ -164,6 +166,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 		albumType,
 		albumStatus,
 		albumMBUrl,
+		albumTracks,
 		mbTrackCount,
 		mbReleaseDate,
 		mbid,
@@ -277,19 +280,36 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 					<div className={styles.albumInfo}>
 						<div>
 							{releaseDate} • {text.capitalizeFirst(albumType)} •{" "}
-							{albumStatus == "red" ? (
-								<span className={`${highlightTracks ? styles.trackHighlight : ""}`}>{sourceTrackString}</span>
-							) : (
-								<Popup
-									button={
-										<span className={`${styles.hasTracks} ${highlightTracks ? styles.trackHighlight : ""}`} title={"[Click to view tracks]\n" + mbTrackString || ""}>
-											{sourceTrackString}
-										</span>
-									}
-									type="track"
-									data={item}
-								></Popup>
-							)}
+							{albumStatus === "red"
+								? (
+									albumTracks.length > 0
+										? <Popup
+										button={
+											<span className={`${styles.hasTracks} ${highlightTracks ? styles.trackHighlight : ""}`} title={"Click to view tracks"}>
+												<PiPlaylistBold /> {sourceTrackString}
+											</span>
+										}
+										type="track"
+										data={item}
+									></Popup>
+										: (
+											<span className={`${styles.tracks} ${highlightTracks ? styles.trackHighlight : ""}`} title={"No track data available\nRefresh the album to fetch track data!"}>
+												<TbPlaylistOff /> {sourceTrackString}
+											</span>
+										)
+								)
+								: (
+									<Popup
+										button={
+											<span className={`${styles.hasTracks} ${highlightTracks ? styles.trackHighlight : ""}`} title={"Click to view tracks"}>
+												<PiPlaylistBold /> {sourceTrackString}
+											</span>
+										}
+										type="track"
+										data={item}
+									></Popup>
+								)
+							}
 						</div>
 						<AlbumIcons item={item} />
 					</div>
