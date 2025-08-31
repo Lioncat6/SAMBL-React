@@ -3,7 +3,7 @@ import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
 import text from "../../../utils/text";
-const bcApi = require("bandcamp-scraper");
+import bcApi from "bandcamp-scraper";
 
 const namespace = "bandcamp";
 

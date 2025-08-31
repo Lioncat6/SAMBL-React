@@ -3,8 +3,7 @@ import logger from "../../../utils/logger";
 import text from "../../../utils/text";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
-import { BUILD_MANIFEST } from "next/dist/shared/lib/constants";
-const DeezerPublicApi = require("deezer-public-api");
+import DeezerPublicApi from "deezer-public-api";
 
 const namespace = "deezer";
 
