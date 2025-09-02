@@ -8,7 +8,7 @@ import { toast, Flip } from "react-toastify";
 async function deepSearch(url) {
 	dispError("Please double check deep searches before submitting edits!", "warn")
 	try {
-		const response = await dispPromise(fetch(`http://localhost:${process.env.PORT || 3000}/api/artistDeepSearch?url=${encodeURIComponent(url)}`), "Running Deep Search...");
+		const response = await dispPromise(fetch(`/api/artistDeepSearch?url=${encodeURIComponent(url)}`), "Running Deep Search...");
 		if (response.ok) {
 			let data = await response.json();
 			let editNote = editNoteBuilder.buildDeepSearchEditNote(data);
