@@ -145,6 +145,7 @@ function formatArtistObject(artist): ArtistObject {
 		url: getArtistUrl(artist),
 		imageUrl: imageUrl || "",
 		imageUrlSmall: imageUrlSmall || "",
+		bannerUrl: null,
 		relevance: `${artist.nb_fan} fans`,
 		info: `${artist.nb_album} albums`,
 		genres: null,

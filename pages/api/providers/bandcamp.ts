@@ -25,7 +25,7 @@ function searchAsync(params) {
 function getArtistByIdAsync(id) {
     return new Promise((resolve, reject) => {
         try {
-            bcApi.getArtist(`https://${id}.bandcamp.com`, (error, artistData) => {
+            bcApi.getArtistInfo(`https://${id}.bandcamp.com`, (error, artistData) => {
                 if (error) reject(error);
                 else resolve(artistData);
             });
@@ -139,8 +139,12 @@ function formatArtistSearchData(rawData) {
 async function getArtistById(artistId) {
 	try {
 		const data = await bandcamp.searchByArtistName(artistId);
+		console.log(data.find((a) => a.url == `https://${artistId}.bandcamp.com`))
 		if (data) {
-			return data.find((a) => a.url == `https://${artistId}.bandcamp.com`) || null;
+			let artistData = data.find((a) => a.url == `https://${artistId}.bandcamp.com`) || null;
+			let idData = await getArtistByIdAsync(artistId);
+			artistData.raw = (idData as any).raw;
+			return artistData;
 		}
 		return null;
 	} catch (error) {
@@ -158,6 +162,7 @@ function formatArtistObject(rawData): ArtistObject {
 		url: rawData.url,
 		imageUrl: rawData.imageUrl?.replace(/_\d+\.jpg$/, "_0.jpg"),
 		imageUrlSmall: rawData.imageUrl?.replace(/_\d+\.jpg$/, "_3.jpg"),
+		bannerUrl: rawData.raw?.design?.bg_image_id ? `https://f4.bcbits.com/img/${rawData.raw.design.bg_image_id}_0.jpg` : rawData.raw?.header_desktop ? `https://f4.bcbits.com/img/${rawData.raw.header_desktop.image_id}_0.jpg`: "" ,
 		relevance: rawData.location,
 		info: rawData.tags.join(", "),
 		genres: rawData.tags,

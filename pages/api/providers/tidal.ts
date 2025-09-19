@@ -390,6 +390,7 @@ function formatArtistObject(rawObject): ArtistObject {
         url: getArtistUrl(rawObject),
         imageUrl: rawObject.imageUrl || '',
         imageUrlSmall: rawObject.imageUrlSmall || '',
+        bannerUrl: null,
         relevance: `${(rawObject.attributes.popularity * 100).toFixed(0)}% Popularity`,
         info: '',
         genres: null,

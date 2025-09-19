@@ -171,6 +171,7 @@ function formatArtistObject(rawObject): ArtistObject {
 		url: getArtistUrl(rawObject),
 		imageUrl: rawObject.images[0]?.url || "",
 		imageUrlSmall: rawObject.images[1]?.url || rawObject.images[0]?.url || "",
+		bannerUrl: null,
 		relevance: `${rawObject.followers.total} Followers`,
 		info: rawObject.genres.join(", "), // Convert genres array to a string
 		genres: rawObject.genres,

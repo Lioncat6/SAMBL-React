@@ -1,4 +1,4 @@
-import { FaSpotify, FaDeezer } from "react-icons/fa6";
+import { FaSpotify, FaDeezer, FaSoundcloud } from "react-icons/fa6";
 import { SiTidal, SiBandcamp, SiItunes } from "react-icons/si";
 import { useState, useEffect } from "react";
 import { useSettings } from "./SettingsContext";
@@ -10,6 +10,7 @@ const providers = [
     { name: "Deezer", namespace: "deezer", icon: <FaDeezer /> },
     { name: "Tidal", namespace: "tidal", icon: <SiTidal /> },
     { name: "Bandcamp", namespace: "bandcamp", icon: <SiBandcamp /> },
+    { name: "SoundCloud", namespace: "soundcloud", icon: <FaSoundcloud /> }
     // { name: "Apple Music", namespace: "itunes", icon: <SiItunes /> },
 ];
 
