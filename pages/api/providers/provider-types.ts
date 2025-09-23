@@ -3,6 +3,7 @@ export type ArtistObject = {
     url: string;
     imageUrl: string;
     imageUrlSmall: string;
+    bannerUrl: string | null;
     relevance: string;
     info: string;
     genres: string[] | null;
