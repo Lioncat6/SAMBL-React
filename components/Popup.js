@@ -290,6 +290,8 @@ function ExportMenu({ data, close }) {
 }
 
 function TrackMenu({ data, close }) {
+	let trackData = data.mbTrackISRCs.length > 0 ? data.mbTrackISRCs : data.albumTracks;
+	
 	let toastProperties = {
 		position: "top-left",
 		autoClose: 5000,
@@ -315,7 +317,7 @@ function TrackMenu({ data, close }) {
 				<MdOutlineAlbum /> Tracks for {data.name}
 			</div>
 			<div className={styles.content}>
-				{Object.entries((data.mbTrackISRCs.length > 0 ? data.mbTrackISRCs : data.albumTracks)).map(([key, value]) => {
+				{Object.entries(trackData).map(([key, value]) => {
 					return (
 						<div key={key} className={styles.propertyRow}>
 							<div className={styles.property}>
