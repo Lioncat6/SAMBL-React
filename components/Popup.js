@@ -245,11 +245,11 @@ function ExportMenu({ data, close }) {
 													{Object.entries(subObj).map(([subKey, subValue]) => (
 														<div key={subKey} className={styles.subPropertyData}>
 																<div className={styles.subPropertyDataKey}>
-																	<CopyButton value={subValue != null ? String(subValue) : null} />
+																	<CopyButton value={Array.isArray(subValue) && typeof subValue[0] == "object" ? JSON.stringify(subValue) : subValue != null ? String(subValue) : null} />
 
 																	{subKey}
 																</div>
-															<div className={styles.subPropertyDataValue}>{typeof subValue == "object" && !Array.isArray(subValue) && subValue !== null ? JSON.stringify(subValue) : subValue != null ? String(subValue) : ""}</div>
+															<div className={styles.subPropertyDataValue}>{typeof subValue == "object" && !Array.isArray(subValue) && subValue !== null ? JSON.stringify(subValue) : Array.isArray(subValue) && typeof subValue[0] == "object" ? JSON.stringify(subValue) : subValue != null ? String(subValue) : ""}</div>
 														</div>
 													))}
 												</div>

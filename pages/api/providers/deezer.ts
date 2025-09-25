@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, AlbumArtistObject } from "./provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject } from "./provider-types";
 import logger from "../../../utils/logger";
 import text from "../../../utils/text";
 import withCache from "../../../utils/cache";
@@ -156,7 +156,7 @@ function formatArtistObject(artist): ArtistObject {
 	};
 }
 
-function formatAlbumArtistObject(artist): AlbumArtistObject {
+function formatPartialArtistObject(artist): PartialArtistObject {
 	return {
 		name: artist.name,
 		url: artist.link,
@@ -219,7 +219,7 @@ function formatAlbumObject(album): AlbumObject {
 		url: album.link,
 		imageUrl: album.cover_xl || "",
 		imageUrlSmall: album.cover_medium || "",
-		albumArtists: album.contributors && album.contributors.length > 0 ? album.contributors.map(formatAlbumArtistObject) : album.artist ? [formatAlbumArtistObject(album.artist)] : [],
+		albumArtists: album.contributors && album.contributors.length > 0 ? album.contributors.map(formatPartialArtistObject) : album.artist ? [formatPartialArtistObject(album.artist)] : [],
 		artistNames: album.contributors && album.contributors.length > 0 ? album.contributors.map(artist => artist.name).join(", ") : album.artist ? album.artist.name : "",
 		releaseDate: album.release_date,
 		trackCount: album.nb_tracks,
@@ -251,6 +251,7 @@ function formatTrackObject(track): TrackObject {
 		imageUrl: track.album.cover_xl || "",
 		imageUrlSmall: track.album.cover_medium || "",
 		albumName: track.album.title,
+		trackArtists: track.artist? [formatPartialArtistObject(track.artist)]: [],
 		artistNames: track.artist ? [track.artist.name] : [],
 		duration: text.formatSeconds(track.duration),
 		trackNumber: track.trackNumber,
@@ -291,7 +292,7 @@ const deezer = {
 	formatArtistSearchData,
 	formatArtistLookupData,
     formatArtistObject,
-	formatAlbumArtistObject,
+	formatPartialArtistObject,
 	formatAlbumGetData,
 	formatAlbumObject,
     getArtistUrl,

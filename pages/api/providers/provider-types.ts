@@ -13,7 +13,7 @@ export type ArtistObject = {
     provider: string;
 };
 
-export type AlbumArtistObject = {
+export type PartialArtistObject = {
     name: string;
     url: string;
     imageUrl: string | null;
@@ -29,7 +29,7 @@ export type AlbumObject = {
     url: string;
     imageUrl: string | null;
     imageUrlSmall: string | null;
-    albumArtists: AlbumArtistObject[];
+    albumArtists: PartialArtistObject[];
     artistNames: string[];
     releaseDate: string | null;
     trackCount: number | null;
@@ -45,6 +45,7 @@ export type TrackObject = {
     url: string | null;
     imageUrl: string | null;
     imageUrlSmall: string | null;
+    trackArtists: PartialArtistObject[];
     artistNames: string[];
     albumName: string | null;
     releaseDate: string | null;
