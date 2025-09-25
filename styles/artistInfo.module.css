@@ -14,6 +14,7 @@
 .nameContainer {
 	display: flex;
 	flex-direction: row;
+	align-items: center;
 	justify-content: center;
 }
 
@@ -21,11 +22,16 @@
 .deezerURLContainer,
 .tidalURLContainer,
 .bandcampURLContainer,
-.urlContainer {
+.urlContainer,
+.soundcloudUrlContainer {
 	display: flex;
 	flex-direction: row;
-	padding: 1.2vh 0 0 0;
+	padding: 1.2vh 2px 0 0;
 	margin-bottom: 0;
+}
+
+.soundcloudUrlContainer {
+	margin-right: 5px;
 }
 
 .bandcampURLContainer svg {

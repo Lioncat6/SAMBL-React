@@ -391,7 +391,6 @@ export default function Artist({ artist }) {
 		setStatusText("Refreshing albums...");
 		await Artist.loadAlbums(true);
 	}
-
 	return (
 		<>
 			<Head>

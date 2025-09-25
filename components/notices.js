@@ -30,7 +30,7 @@ export default function Notice({ data, type }) {
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						<div>Add to MusicBranz</div>
+						<div>Add to MusicBrainz</div>
 					</a>
 				}
 			/>

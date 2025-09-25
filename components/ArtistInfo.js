@@ -50,7 +50,7 @@ function BandcampUrlContainer({ id, url }) {
 
 function SoundcloudUrlContainer({ url }) {
 	return (
-		<div className={styles.UrlContainer}>
+		<div className={styles.soundcloudUrlContainer}>
 			<a id="bandcampURL" target="_blank" href={url}>
 				<div className={styles.iconWrapper}>
 					<FaSoundcloud className={styles.FaSoundcloud} />
