@@ -9,7 +9,7 @@ export type ArtistObject = {
     genres: string[] | null;
     followers: number | null;
     popularity: number | null;
-    id: string;
+    id: string | number;
     provider: string;
 };
 
@@ -18,7 +18,7 @@ export type PartialArtistObject = {
     url: string;
     imageUrl: string | null;
     imageUrlSmall: string | null;
-    id: string;
+    id: string | number;
     provider: string;
 };
 

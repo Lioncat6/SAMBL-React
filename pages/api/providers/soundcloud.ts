@@ -82,8 +82,8 @@ function formatArtistObject(rawObject: SoundcloudUser): ArtistObject {
         bannerUrl: rawObject.visuals?.visuals[0]?.visual_url,
         relevance: `${rawObject.followers_count} Followers`,
         info: `${rawObject.city
-                ? rawObject.city + (rawObject.country_code ? ', ' : '')
-                : ''
+            ? rawObject.city + (rawObject.country_code ? ', ' : '')
+            : ''
             }${rawObject.country_code
                 ? countries.of(rawObject.country_code.toString().toUpperCase())
                 : ''
@@ -193,7 +193,7 @@ function formatTrackObject(track): TrackObject {
     }
 }
 
-function formatPartialArtistObject(artist): PartialArtistObject {
+function formatPartialArtistObject(artist: SoundcloudUser): PartialArtistObject {
     return {
         name: artist.username,
         url: artist.permalink_url?.split('?')[0],
@@ -206,8 +206,46 @@ function formatPartialArtistObject(artist): PartialArtistObject {
     }
 }
 
+async function getAlbumById(id: string): Promise<SoundcloudTrack | SoundcloudPlaylist | null> {
+    try {
+        let album: null | SoundcloudTrack | SoundcloudPlaylist = null;
+        if (id.includes("/set") || id.includes(":playlist:")) {
+            album = await scApi.playlists.get(id);
+        } else {
+            album = await scApi.tracks.get(id);
+        }
+        return album;
+    } catch (error) {
+        err.handleError("Failed to get album by id", error)
+        return null;
+    }
+}
+
 function createUrl(type, id) {
     return null
+}
+
+function parseUrl(url) {
+    const setRegex = /soundcloud\.com\/[^\/]*\/sets\/([^\/]*)/
+    const trackRegex = /soundcloud\.com\/[^\/]*\/([^\/]*)/
+    const artistRegex = /soundcloud\.com\/([^\/]*)/
+    if (url.match(setRegex)) {
+        return {
+            type: "album",
+            id: url,
+        };
+    } else if (url.match(trackRegex)) {
+        return {
+            type: "track",
+            id: url,
+        };
+    } else if (url.match(artistRegex)) {
+        return {
+            type: "artist",
+            id: url.match(artistRegex)[0],
+        };
+    }
+    return null;
 }
 
 const soundcloud = {
@@ -224,6 +262,10 @@ const soundcloud = {
         ttl: 60 * 30,
         namespace: namespace
     }),
+    getAlbumById: withCache(getAlbumById, {
+        ttl: 60 * 30,
+        namespace: namespace
+    }),
     formatArtistSearchData,
     formatArtistObject,
     formatAlbumObject,
@@ -232,7 +274,8 @@ const soundcloud = {
     formatAlbumGetData,
     formatArtistLookupData,
     getArtistUrl,
-    createUrl
+    createUrl,
+    parseUrl
 }
 
 export default soundcloud

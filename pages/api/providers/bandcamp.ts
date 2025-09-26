@@ -139,7 +139,6 @@ function formatArtistSearchData(rawData) {
 async function getArtistById(artistId) {
 	try {
 		const data = await bandcamp.searchByArtistName(artistId);
-		console.log(data.find((a) => a.url == `https://${artistId}.bandcamp.com`))
 		if (data) {
 			let artistData = data.find((a) => a.url == `https://${artistId}.bandcamp.com`) || null;
 			let idData = await getArtistByIdAsync(artistId);
