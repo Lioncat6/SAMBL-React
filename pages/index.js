@@ -9,7 +9,7 @@ export default function Home() {
 		<>
 			{masondonUrl && (
 				<Head>
-					<link rel="me" href={publicRuntimeConfig?.masondonUrl} />
+					<link rel="me" href={masondonUrl} />
 				</Head>
 			)}
 			<SearchBox />
