@@ -43,7 +43,7 @@ async function getTrackByISRC(isrc) {
 let musixmatch = null
 
 if (process.env.MUSIXMATCH_ALTERNATE === "1") {
-    logger.info("Using alternate Musixmatch implementation (musixmatch-alt).");
+    logger.debug("Using alternate Musixmatch implementation (musixmatch-alt).");
     musixmatch = musixmatchAlternate;
 } else {
     musixmatch = {
