@@ -131,6 +131,24 @@ function formatAlbumGetData(rawData): AlbumData {
     }
 }
 
+function getUPCFromAlbum(album): string | null {
+    let upc:string|null = null
+    if (album.tracks) {
+        for (let track of album.tracks) {
+            if (track.publisher_metadata?.upc_or_ean) {
+                if (!upc) {
+                    upc = track.publisher_metadata.upc_or_ean
+                } else if (upc !== track.publisher_metadata.upc_or_ean) {
+                    return null
+                }
+            }
+        }
+    } else if (album.publisher_metadata?.upc_or_ean) {
+        upc = album.publisher_metadata.upc_or_ean
+    }
+    return upc
+}
+
 function formatAlbumObject(rawAlbum): AlbumObject {
     return {
         provider: namespace,
@@ -144,13 +162,7 @@ function formatAlbumObject(rawAlbum): AlbumObject {
         releaseDate: getReleaseDate(rawAlbum),
         trackCount: rawAlbum.track_count || 1,
         albumType: rawAlbum.type || 'single',
-        upc: rawAlbum.publisher_metadata?.upc_or_ean
-            ? rawAlbum.publisher_metadata?.upc_or_ean
-            : rawAlbum.tracks
-                ? rawAlbum.tracks[0].publisher_metadata?.upc_or_ean
-                    ? rawAlbum.tracks[0].publisher_metadata?.upc_or_ean
-                    : null
-                : null,
+        upc: getUPCFromAlbum(rawAlbum),
         albumTracks: getAlbumTracks(rawAlbum)
     }
 }
