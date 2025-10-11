@@ -253,7 +253,7 @@ function formatTrackObject(track): TrackObject {
 		albumName: track.album.title,
 		trackArtists: track.artist? [formatPartialArtistObject(track.artist)]: [],
 		artistNames: track.artist ? [track.artist.name] : [],
-		duration: text.formatSeconds(track.duration),
+		duration: track.duration*1000,
 		trackNumber: track.trackNumber,
 		releaseDate: track.release_date,
 		isrcs: track.isrc ? [track.isrc] : [],

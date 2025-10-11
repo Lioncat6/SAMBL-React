@@ -284,7 +284,7 @@ function formatTrackObject(track): TrackObject {
 		albumName: track.albumName || null,
 		releaseDate: track.releaseDate || null,
 		trackNumber: track.track_num,
-		duration: text.formatSeconds(track.duration),
+		duration: track.duration,
 		isrcs: track.isrc ? [track.isrc] : []
 	};
 }

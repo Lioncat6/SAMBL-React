@@ -50,7 +50,7 @@ export type TrackObject = {
     albumName: string | null;
     releaseDate: string | null;
     trackNumber: number | null;
-    duration: string | null;
+    duration: number | null;
     isrcs: string[];
 };
 

@@ -75,6 +75,20 @@ function formatDuration(duration) {
 }
 
 /**
+ * Handles ISO 8601 duration strings like "PT4M8S".
+ *
+ * @param {string} duration The ISO 8601 duration string to format.
+ * @returns {number} The raw ms value.
+ */
+function formatDurationMS(duration) {
+	const match = /^PT(?:(\d+)M)?(?:(\d+)S)?$/.exec(duration);
+	if (!match) return duration;
+	const minutes = parseInt(match[1] || "0", 10);
+	const seconds = parseInt(match[2] || "0", 10);
+	return (minutes * 60000) + (seconds * 1000);
+}
+
+/**
  * Utility object for text formatting.
  *
  */
@@ -91,7 +105,9 @@ const text = {
 	formatSeconds,
 	fs: formatSeconds,
 	formatDuration,
-	fd: formatDuration
+	fd: formatDuration,
+	formatDurationMS,
+	fdm: formatDurationMS,
 };
 
 export default text;
