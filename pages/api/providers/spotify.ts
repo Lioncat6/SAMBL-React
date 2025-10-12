@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, AlbumArtistObject } from "./provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject } from "./provider-types";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
@@ -171,6 +171,7 @@ function formatArtistObject(rawObject): ArtistObject {
 		url: getArtistUrl(rawObject),
 		imageUrl: rawObject.images[0]?.url || "",
 		imageUrlSmall: rawObject.images[1]?.url || rawObject.images[0]?.url || "",
+		bannerUrl: null,
 		relevance: `${rawObject.followers.total} Followers`,
 		info: rawObject.genres.join(", "), // Convert genres array to a string
 		genres: rawObject.genres,
@@ -211,7 +212,7 @@ function formatAlbumGetData(rawData): AlbumData {
 	};
 }
 
-function formatAlbumArtistObject(artist): AlbumArtistObject {
+function formatPartialArtistObject(artist): PartialArtistObject {
 	return {
 		name: artist.name,
 		url: getArtistUrl(artist),
@@ -230,7 +231,7 @@ function formatAlbumObject(album): AlbumObject {
 		url: album.external_urls.spotify,
 		imageUrl: album.images[0]?.url || "",
 		imageUrlSmall: album.images[1]?.url || album.images[0]?.url || "",
-		albumArtists: album.artists.map(formatAlbumArtistObject),
+		albumArtists: album.artists.map(formatPartialArtistObject),
 		artistNames: album.artists.map((artist) => artist.name),
 		releaseDate: album.release_date,
 		trackCount: album.total_tracks,
@@ -263,6 +264,7 @@ function formatTrackObject(track): TrackObject {
 		imageUrl: track.imageUrl || "",
 		imageUrlSmall: track.imageUrlSmall || "",
 		albumName: track.albumName,
+		trackArtists: track.artists.map(formatPartialArtistObject),
 		artistNames: track.artists.map((artist) => artist.name),
 		duration: track.duration_ms,
 		trackNumber: track.track_number,

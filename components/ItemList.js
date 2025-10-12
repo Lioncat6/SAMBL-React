@@ -343,7 +343,7 @@ function ViewButton({ item }) {
 
 function ArtistItem({ item }) {
 	return (
-		<div className={styles.listItem} style={{ "--background-image": `url('${item.imageUrl}')` }}>
+		<div className={styles.listItem} style={{ "--background-image": `url('${item.bannerUrl || item.imageUrl || ""}')` }}>
 			{item.imageUrl && (
 				<div className={styles.artistIcon}>
 					<a href={item.imageUrl} target="_blank">

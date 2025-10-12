@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, AlbumArtistObject } from "./provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject } from "./provider-types";
 import { credentialsProvider, init as initAuth } from '@tidal-music/auth';
 import { createAPIClient } from '@tidal-music/api';
 import logger from "../../../utils/logger";
@@ -243,7 +243,7 @@ function formatAlbumObject(album): AlbumObject {
 		url: `https://tidal.com/album/${album.id}`,
 		imageUrl: album.attributes?.coverArt?.attributes?.files[0]?.href || "",
 		imageUrlSmall: album.attributes?.coverArt?.attributes?.files[5]?.href || "",
-		albumArtists: album.attributes.artists.map(formatAlbumArtistObject),
+		albumArtists: album.attributes.artists.map(formatPartialArtistObject),
 		artistNames: album.attributes.artists.map(artist => artist.attributes.name).join(", "),
 		releaseDate: album.attributes.releaseDate,
 		trackCount: album.attributes.numberOfItems,
@@ -263,7 +263,7 @@ function getAlbumTracks(album) {
             track.attributes.imageUrl = album.attributes?.coverArt?.attributes?.files[0]?.href || "";
             track.attributes.imageUrlSmall = album.attributes?.coverArt?.attributes?.files[5]?.href || "";
             track.attributes.albumName = album.attributes.title;
-            track.attributes.artistNames =  album.attributes.artists.map(artist => artist.attributes.name).join(", ");
+            track.attributes.artists =  album.attributes.artists;
         }
     }
     const formattedTracks: TrackObject[] = tracks.map(formatTrackObject);
@@ -279,16 +279,17 @@ function formatTrackObject(track): TrackObject {
 		url: `https://tidal.com/track/${track.id}`,
 		imageUrl: track.attributes.imageUrl,
 		imageUrlSmall: track.attributes.imageUrlSmall,
-		artistNames: track.attributes.artistNames,
+        trackArtists: track.attributes.artists.map(formatPartialArtistObject),
+		artistNames: track.attributes.artists.map(artist => artist.attributes.name),
 		albumName: track.attributes.albumName || null,
 		releaseDate: track.attributes.releaseDate,
 		trackNumber: track.attributes.trackNumber,
-		duration: text.formatDuration(track.attributes.duration),
+		duration: text.formatDurationMS(track.attributes.duration),
 		isrcs: track.attributes.isrc ? [track.attributes.isrc] : [],
 	};
 }
 
-function formatAlbumArtistObject(artist): AlbumArtistObject {
+function formatPartialArtistObject(artist): PartialArtistObject {
     return {
         provider: namespace,
         id: artist.id,
@@ -390,6 +391,7 @@ function formatArtistObject(rawObject): ArtistObject {
         url: getArtistUrl(rawObject),
         imageUrl: rawObject.imageUrl || '',
         imageUrlSmall: rawObject.imageUrlSmall || '',
+        bannerUrl: null,
         relevance: `${(rawObject.attributes.popularity * 100).toFixed(0)}% Popularity`,
         info: '',
         genres: null,
@@ -433,7 +435,7 @@ let tidal = {
     formatArtistLookupData,
     formatArtistObject,
     formatAlbumGetData,
-    formatAlbumArtistObject,
+    formatPartialArtistObject,
     formatAlbumObject,
     getArtistUrl,
     getTrackISRCs,

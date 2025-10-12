@@ -20,11 +20,13 @@ if (
 	};
 }
 
+const hostname = process.env.MUSIXMATCH_HOSTNAME || "https://www.musixmatch.com";
+
 function initMxM(proxies) { 
 	if (proxies != {}) {
-		return new MusixMatchAPI(proxies, process.env.MUSIXMATCH_API_KEY);
+		return new MusixMatchAPI(proxies, process.env.MUSIXMATCH_API_KEY, hostname);
 	} else {
-		return new MusixMatchAPI(null, process.env.MUSIXMATCH_API_KEY);
+		return new MusixMatchAPI(null, process.env.MUSIXMATCH_API_KEY, hostname);
 	}
 }
 

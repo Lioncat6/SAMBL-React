@@ -245,11 +245,11 @@ function ExportMenu({ data, close }) {
 													{Object.entries(subObj).map(([subKey, subValue]) => (
 														<div key={subKey} className={styles.subPropertyData}>
 																<div className={styles.subPropertyDataKey}>
-																	<CopyButton value={subValue != null ? String(subValue) : null} />
+																	<CopyButton value={Array.isArray(subValue) && typeof subValue[0] == "object" ? JSON.stringify(subValue) : subValue != null ? String(subValue) : null} />
 
 																	{subKey}
 																</div>
-															<div className={styles.subPropertyDataValue}>{typeof subValue == "object" && !Array.isArray(subValue) && subValue !== null ? JSON.stringify(subValue) : subValue != null ? String(subValue) : ""}</div>
+															<div className={styles.subPropertyDataValue}>{typeof subValue == "object" && !Array.isArray(subValue) && subValue !== null ? JSON.stringify(subValue) : Array.isArray(subValue) && typeof subValue[0] == "object" ? JSON.stringify(subValue) : subValue != null ? String(subValue) : ""}</div>
 														</div>
 													))}
 												</div>
@@ -290,6 +290,8 @@ function ExportMenu({ data, close }) {
 }
 
 function TrackMenu({ data, close }) {
+	let trackData = data.mbTrackISRCs.length > 0 ? data.mbTrackISRCs : data.albumTracks;
+	
 	let toastProperties = {
 		position: "top-left",
 		autoClose: 5000,
@@ -315,7 +317,7 @@ function TrackMenu({ data, close }) {
 				<MdOutlineAlbum /> Tracks for {data.name}
 			</div>
 			<div className={styles.content}>
-				{Object.entries((data.mbTrackISRCs.length > 0 ? data.mbTrackISRCs : data.albumTracks)).map(([key, value]) => {
+				{Object.entries(trackData).map(([key, value]) => {
 					return (
 						<div key={key} className={styles.propertyRow}>
 							<div className={styles.property}>

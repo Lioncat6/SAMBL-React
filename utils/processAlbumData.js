@@ -87,13 +87,18 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
 			}
 		});
 
+		const alwaysBarcodeProviders = ["spotify", "deezer", "tidal", "itunes"]
+		const alwaysISRCProviders = ["spotify", "deezer", "tidal", "itunes"]
+		
 		let mbTrackNames = [];
 		let mbTrackISRCs = [];
+		let mbAlignedISRCs = [];
 		let mbISRCs = [];
 		let tracksWithoutISRCs = [];
 		for (let track in finalTracks) {
 			let titleString = finalTracks[track].title;
 			let ISRCs = finalTracks[track].recording.isrcs;
+			mbAlignedISRCs.push(ISRCs[0] || null)
 			if (ISRCs.length < 1) {
 				tracksWithoutISRCs.push(track);
 			} else {
@@ -102,15 +107,33 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
 			mbTrackNames.push(titleString);
 			mbTrackISRCs.push({ name: titleString, isrcs: ISRCs });
 		}
-
+		let providerHasISRCs = false;
+		let hasMatchingISRCs = true;
+		let albumTrackISRCs = []
+		for (let track in providerTracks) {
+			if (track.isrcs){
+				if (track.isrcs[0] != null && track.isrcs[0] != undefined) {
+					providerHasISRCs = true;
+				}
+				albumTrackISRCs.push(track.isrcs[0] || null);
+				if ((track.isrcs[0] || null) != mbAlignedISRCs) {
+					hasMatchingISRCs = false;
+				}
+			} else {
+				albumTrackISRCs.push(null)
+			}
+		}
+		
 		if (albumStatus != "red") {
-			if (provider != "bandcamp") {
-				if (!mbBarcode || mbBarcode == null) {
-					albumIssues.push("noUPC");
-				}
-				if (tracksWithoutISRCs.length > 0) {
-					albumIssues.push("missingISRCs");
-				}
+			if ((!mbBarcode || mbBarcode == null) && (providerBarcode || alwaysBarcodeProviders.includes(provider))) {
+				albumIssues.push("noUPC");
+			} else if (providerBarcode && providerBarcode.replace(/^0+/, '') != mbBarcode.replace(/^0+/, '')) {
+				albumIssues.push("UPCDiff")
+			}
+			if (tracksWithoutISRCs.length > 0 && (providerHasISRCs || alwaysISRCProviders.includes(provider))) {
+				albumIssues.push("missingISRCs");
+			} else if (!hasMatchingISRCs) {
+				albumIssues.push("ISRCDiff")
 			}
 			if (mbTrackCount != providerTrackCount && !quick && full) {
 				albumIssues.push("trackDiff");

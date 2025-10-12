@@ -236,6 +236,7 @@ flex-direction: row;
 }
 
 .expandButton {
+    vertical-align: text-top;
     height: 1em;
 }
 

@@ -1,23 +1,23 @@
 import styles from "../styles/artistInfo.module.css";
-import { FaSpotify, FaDeezer, FaBandcamp  } from "react-icons/fa6";
+import { FaSpotify, FaDeezer, FaBandcamp, FaSoundcloud  } from "react-icons/fa6";
 import { SiTidal, SiBandcamp } from "react-icons/si";
 import { LuImageUp } from "react-icons/lu";
 import editNoteBuilder from "../utils/editNoteBuilder";
 
-function SpotifyUrlContainer({ id }) {
+function SpotifyUrlContainer({ id, url }) {
 	return (
 		<div className={styles.spURLContainer}>
-			<a id="spURL" target="_blank" href={"https://open.spotify.com/artist/" + id}>
+			<a id="spURL" target="_blank" href={url || "https://open.spotify.com/artist/" + id}>
 				<img alt="Spotify Icon" className={styles.spIcon} src="../assets/images/Spotify_icon.svg" />
 			</a>
 		</div>
 	);
 }
 
-function TidalUrlContainer({ id }) {
+function TidalUrlContainer({ id, url }) {
 	return (
 		<div className={styles.tidalURLContainer}>
-			<a id="tidalURL" target="_blank" href={"https://tidal.com/artist/" + id}>
+			<a id="tidalURL" target="_blank" href={url ||"https://tidal.com/artist/" + id}>
 				<div className={styles.iconWrapper}>
 					<SiTidal className={styles.tidalIcon} />
 				</div>
@@ -26,20 +26,20 @@ function TidalUrlContainer({ id }) {
 	);
 }
 
-function DeezerUrlContainer({ id }) {
+function DeezerUrlContainer({ id, url }) {
 	return (
 		<div className={styles.deezerURLContainer}>
-			<a id="deezerUrl" target="_blank" href={"https://www.deezer.com/artist/" + id}>
+			<a id="deezerUrl" target="_blank" href={url || "https://www.deezer.com/artist/" + id}>
 				<img alt="Deezer Icon" className={styles.deezerIcon} src="../assets/images/Deezer_icon.svg" />
 			</a>
 		</div>
 	);
 }
 
-function BandcampUrlContainer({ id }) {
+function BandcampUrlContainer({ id, url }) {
 	return (
 		<div className={styles.bandcampURLContainer}>
-			<a id="bandcampURL" target="_blank" href={`https://${id}.bandcamp.com`}>
+			<a id="bandcampURL" target="_blank" href={url || `https://${id}.bandcamp.com`}>
 				<div className={styles.iconWrapper}>
 					<SiBandcamp className={styles.bandcampIcon} />
 				</div>
@@ -48,18 +48,32 @@ function BandcampUrlContainer({ id }) {
 	);
 }
 
-function UrlContainer({ id, provider }) {
+function SoundcloudUrlContainer({ url }) {
+	return (
+		<div className={styles.soundcloudUrlContainer}>
+			<a id="bandcampURL" target="_blank" href={url}>
+				<div className={styles.iconWrapper}>
+					<FaSoundcloud className={styles.FaSoundcloud} />
+				</div>
+			</a>
+		</div>
+	);
+}
+
+function UrlContainer({ id, provider, url }) {
 	switch (provider) {
 		case "spotify":
-			return <SpotifyUrlContainer id={id} />;
+			return <SpotifyUrlContainer url={url} id={id} />;
 		case "tidal":
-			return <TidalUrlContainer id={id} />;
+			return <TidalUrlContainer url={url} id={id} />;
 		case "deezer":
-			return <DeezerUrlContainer id={id} />;
+			return <DeezerUrlContainer url={url} id={id} />;
 		case "musicbrainz":
-			return <MusicBrainzUrlContainer id={id} />;
+			return <MusicBrainzUrlContainer url={url} id={id} />;
 		case "bandcamp":
-			return <BandcampUrlContainer id={id} />;
+			return <BandcampUrlContainer url={url} id={id} />;
+		case "soundcloud":
+			return <SoundcloudUrlContainer url={url} />;
 		default:
 			return null;
 	}
@@ -78,7 +92,7 @@ function MusicBrainzUrlContainer({ id }) {
 function UrlIcons({ artist }) {
 	return (
 		<>
-			{artist.provider_id && <UrlContainer id={artist.provider_id} provider={artist.provider} />}
+			{artist.provider_id && <UrlContainer url={artist.url} provider={artist.provider} />}
 			{artist.provider_ids &&
 				artist.provider_ids.map((providerId) =>
 					<UrlContainer id={providerId} provider={artist.provider} />
@@ -146,7 +160,7 @@ function GenresContainer({ artist }) {
 export default function ArtistInfo({ artist }) {
 	return (
 		<>
-			<div id="artistPageContainer" className={styles.artistPageContainer}>
+			<div id="artistPageContainer" className={styles.artistPageContainer} style={{ "--background-image": `url('${artist.bannerUrl || ""}')` }}>
 				{artist.imageUrl && <ImageContainer artist={artist}/>}
 				<div id="artistTextContainer" className={styles.artistTextContainer}>
 					<div className={styles.nameContainer}>

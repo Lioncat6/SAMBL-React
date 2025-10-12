@@ -5,6 +5,7 @@ import deezer from "./deezer";
 import tidal from "./tidal"
 import bandcamp from "./bandcamp"
 import logger from "../../../utils/logger"
+import soundcloud from "./soundcloud"
 
 const providerList = [
     spotify,
@@ -12,7 +13,8 @@ const providerList = [
     musixmatch,
     deezer,
     tidal,
-    bandcamp
+    bandcamp,
+    soundcloud
 ];
 
 /**

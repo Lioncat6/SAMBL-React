@@ -42,7 +42,8 @@ const EndPoints = {
 };
 
 class MusixMatchAPI {
-    constructor(proxies = null, cookie = null) {
+    constructor(proxies = null, cookie = null, base_url = null) {
+        this.alternate_base_url = base_url ? `${base_url}/ws/1.1/` : null;
         this.base_url = "https://www.musixmatch.com/ws/1.1/";
         this.headers = {
             "User-Agent": USER_AGENT,
@@ -192,7 +193,10 @@ class MusixMatchAPI {
     async make_request(url) {
         url = url.replace(/%20/g, "+").replace(/ /g, "+");
         url = this.base_url + url;
-        const signed_url = url + await this.generate_signature(url);
+        let signed_url = url + await this.generate_signature(url);
+        if (this.alternate_base_url) {
+            signed_url = signed_url.replace(this.base_url, this.alternate_base_url);
+        }
         const response = await axios.get(signed_url, { headers: this.headers, proxies: this.proxies, timeout: 10000 });
         return response.data;
     }

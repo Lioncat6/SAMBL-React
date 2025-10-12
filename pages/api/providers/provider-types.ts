@@ -3,21 +3,22 @@ export type ArtistObject = {
     url: string;
     imageUrl: string;
     imageUrlSmall: string;
+    bannerUrl: string | null;
     relevance: string;
     info: string;
     genres: string[] | null;
     followers: number | null;
     popularity: number | null;
-    id: string;
+    id: string | number;
     provider: string;
 };
 
-export type AlbumArtistObject = {
+export type PartialArtistObject = {
     name: string;
     url: string;
     imageUrl: string | null;
     imageUrlSmall: string | null;
-    id: string;
+    id: string | number;
     provider: string;
 };
 
@@ -28,7 +29,7 @@ export type AlbumObject = {
     url: string;
     imageUrl: string | null;
     imageUrlSmall: string | null;
-    albumArtists: AlbumArtistObject[];
+    albumArtists: PartialArtistObject[];
     artistNames: string[];
     releaseDate: string | null;
     trackCount: number | null;
@@ -44,11 +45,12 @@ export type TrackObject = {
     url: string | null;
     imageUrl: string | null;
     imageUrlSmall: string | null;
+    trackArtists: PartialArtistObject[];
     artistNames: string[];
     albumName: string | null;
     releaseDate: string | null;
     trackNumber: number | null;
-    duration: string | null;
+    duration: number | null;
     isrcs: string[];
 };
 

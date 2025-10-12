@@ -70,7 +70,7 @@ export default function AddButtons({ artist }) {
 				href={ addUrl }
 				target="_blank"
 			>
-				<div>Add to MusicBranz</div>
+				<div>Add to MusicBrainz</div>
 			</a>
 			<Link className={styles.addToMBButton} href={`../artist/?provider_id=${artist.id}&provider=${artist.provider}`}>
 				<div>View Artist Anyway</div>

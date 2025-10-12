@@ -80,6 +80,7 @@ export async function getServerSideProps(context) {
 				names: uniqueNames,
 				name: uniqueNames.join(" / "),
 				imageUrl: data[mostPopularIndex].imageUrl || "",
+				bannerUrl: data[mostPopularIndex].bannerUrl || "",
 				genres: genres.join(", "),
 				followers: totalFollowers,
 				popularity: data[mostPopularIndex].popularity,
@@ -93,6 +94,7 @@ export async function getServerSideProps(context) {
 			artist = {
 				name: data.name,
 				imageUrl: data.imageUrl || "",
+				bannerUrl: data.bannerUrl || "",
 				genres: data.genres ? data.genres.join(", ") : "",
 				followers: data.followers,
 				popularity: data.popularity,
@@ -389,7 +391,6 @@ export default function Artist({ artist }) {
 		setStatusText("Refreshing albums...");
 		await Artist.loadAlbums(true);
 	}
-
 	return (
 		<>
 			<Head>

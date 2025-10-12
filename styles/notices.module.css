@@ -9,7 +9,7 @@
     box-shadow: 2px 2px 5px black;
     opacity: 70%;
     transition: all 0.2s ease-in-out;
-
+    z-index: 1;
 }
 
 .noticeBox:hover {
