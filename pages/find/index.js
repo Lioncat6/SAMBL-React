@@ -29,11 +29,11 @@ async function serverFind(query, type) {
 async function getISRCFromURL(url) {
 	return new Promise((resolve) => {
 		fetch(`/api/getTrackISRCs?url=${encodeURIComponent(url)}`)
-			.then((response) => {
+			.then(async (response) => {
 				if (response.ok) {
 					return response.json();
 				} else {
-					return null;
+					throw new Error((await response.json()).error || response.statusText);
 				}
 			})
 			.then((data) => {
@@ -49,11 +49,11 @@ async function getISRCFromURL(url) {
 async function getUPCFromURL(url) {
 	return new Promise((resolve) => {
 		fetch(`/api/getAlbumUPCs?url=${encodeURIComponent(url)}`)
-			.then((response) => {
+			.then(async (response) => {
 				if (response.ok) {
 					return response.json();
 				} else {
-					return null;
+					throw new Error((await response.json()).error || response.statusText);
 				}
 			})
 			.then((data) => {
@@ -147,21 +147,22 @@ export default function Find() {
 					const isrcPattern = /^[A-Z]{2}-?[A-Z0-9]{3}-?[0-9]{2}-?[0-9]{5}$/;
 					const upcPattern = /^\d{12,14}$/;
 					const urlPattern = /^(https?|http):\/\/[^\s/$.?#].[^\s]*$/i;
-
+					const soundcloudTrackPattern = /^(https?|http):\/\/(www\.)?soundcloud\.com\/[A-Za-z0-9_\-]+\/[A-Za-z0-9_\-]+$/i;
+					const soundcloudSetPattern = /^(https?|http):\/\/(www\.)?soundcloud\.com\/[A-Za-z0-9_\-]+\/sets\/[A-Za-z0-9_\-]+$/i;
 					if (isrcPattern.test(query)) {
 						const matchedQuery = query.match(isrcPattern)[0];
 						handleResults(await dispPromise(serverFind(matchedQuery, "ISRC"), "Finding by ISRC..."));
 					} else if (urlPattern.test(query)) {
-						if (query.includes("/track") || query.includes("/recording")) {
+						if (query.includes("/track") || query.includes("/recording") || soundcloudTrackPattern.test(query)) {
 							let response = await dispPromise(getISRCFromURL(query), "Looking up ISRC...");
-							if (response.isrcs.length > 0) {
+							if (response.isrcs?.length > 0) {
 								router.push(`find?query=${response.isrcs[0]}`);
 							} else {
 								dispError("No ISRC found for this URL");
 							}
-						} else if (query.includes("/album") || query.includes("/release/")) {
+						} else if (query.includes("/album") || query.includes("/release/") || query.includes("/releases/") || query.includes("/set/") || soundcloudSetPattern.test(query)) {
 							let response = await dispPromise(getUPCFromURL(query), "Looking up Barcode...");
-							if (response.upcs.length > 0) {
+							if (response.upcs?.length > 0) {
 								router.push(`find?query=${response.upcs[0]}`);
 							} else {
 								dispError("No Barcode found for this URL");
