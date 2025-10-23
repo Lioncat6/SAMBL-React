@@ -2,6 +2,72 @@ import musicbrainz from "./providers/musicbrainz";
 import providers from "./providers/providers";
 import logger from "../../utils/logger";
 
+/**
+ * @swagger
+ * /api/searchArtists:
+ *   get:
+ *     summary: Search artists by name using a specified provider
+ *     description: Returns formatted artist data including MusicBrainz IDs when available.
+ *     tags:
+ *       - Search
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The artist name to search for.
+ *       - in: query
+ *         name: provider
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The provider to use for the search (e.g., 'spotify').
+ *     responses:
+ *       200:
+ *         description: A list of matched artists with metadata.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               additionalProperties:
+ *                 type: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                     description: Artist's name
+ *                   url:
+ *                     type: string
+ *                     description: Provider-specific artist URL
+ *                   mbid:
+ *                     type: string
+ *                     nullable: true
+ *                     description: MusicBrainz ID if available
+ *       400:
+ *         description: Bad request due to missing or invalid parameters.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Parameter `query` is required
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal Server Error
+ *                 details:
+ *                   type: string
+ *                   example: Error details
+ */
+
 export default async function handler(req, res) {
     try {
         const { query, provider } = req.query;

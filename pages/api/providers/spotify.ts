@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject } from "./provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider } from "./provider-types";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
@@ -115,7 +115,7 @@ async function getAlbumByUPC(upc) {
 	}
 }
 
-async function getTrackByISRC(isrc) {
+async function getTrackByISRC(isrc:string) {
 	try {
 		await checkAccessToken();
 		const data = await spotifyApi.searchTracks(`isrc:${isrc}`, { limit: 20 });
@@ -125,7 +125,7 @@ async function getTrackByISRC(isrc) {
 	}
 }
 
-async function getAlbumById(spotifyId) {
+async function getAlbumById(spotifyId:string) {
 	try {
 		await checkAccessToken();
 		const data = await spotifyApi.getAlbum(spotifyId);
@@ -273,7 +273,7 @@ function formatTrackObject(track): TrackObject {
 	};
 }
 
-const spotify = {
+const spotify: FullProvider = {
 	namespace,
 	getArtistById: withCache(getArtistById, { ttl: 60 * 30, namespace: namespace }),
 	searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30, namespace: namespace }),
@@ -282,10 +282,10 @@ const spotify = {
 	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 30, namespace: namespace }),
 	getAlbumById: withCache(getAlbumById, { ttl: 60 * 30, namespace: namespace }),
 	getTrackById: withCache(getTrackById, { ttl: 60 * 30, namespace: namespace }),
-	validateSpotifyId,
-	extractSpotifyIdFromUrl,
 	formatArtistSearchData,
+	formatPartialArtistObject,
 	formatArtistLookupData,
+	formatTrackObject,
 	formatArtistObject,
 	formatAlbumGetData,
 	formatAlbumObject,

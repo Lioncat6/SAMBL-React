@@ -61,6 +61,37 @@ export type AlbumData = {
     albums: AlbumObject[];
 };
 
-export type Provider = {
-    //TODO
+export class UrlData {
+    type: 'album' | 'track' | 'artist' | null;
+    id: string | null;
+};
+
+export class UrlInfo extends UrlData {
+    provider: FullProvider;
+}
+
+export class Provider {
+    namespace: string;
+}
+
+export class FullProvider extends Provider {
+    getTrackByISRC?: (isrc: string) => Promise<any | null>;
+    getAlbumByUPC?: (upc: string) => Promise<any | null>;
+    searchByArtistName: (query: string) => Promise<any | null>;
+    getAlbumById:  (id: string) => Promise<any | null>;
+    getTrackById:  (id: string) => Promise<any | null>;
+    getArtistById:  (id: string) => Promise<any | null>;
+    getArtistAlbums:  (id: string, offset: string | number, limit: number) => Promise<any | null>;
+    formatArtistSearchData: (rawData: any) => any;
+    formatArtistLookupData: (rawData: any) => any;
+    formatArtistObject : (artist: any) => ArtistObject;
+    formatPartialArtistObject: (artist: any) => PartialArtistObject;
+    formatAlbumGetData: (rawData: any) => AlbumData;
+    formatAlbumObject: (album: any) => AlbumObject;
+    formatTrackObject: (track: any) => TrackObject;
+    getArtistUrl: (artist: any) => string | null;
+    getTrackISRCs: (track: any) => string[] | null;
+    getAlbumUPCs: (album: any) => string[] | null;
+    parseUrl: (url: string) => UrlData | null;
+    createUrl
 }
