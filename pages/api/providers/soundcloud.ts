@@ -266,7 +266,11 @@ async function getAlbumById (
   }
 }
 
-function createUrl (type, id) {
+function createUrl (type:string, id:string):string|null {
+  if (type == "artist"){
+    return id;
+  }
+  
   return null
 }
 
@@ -289,7 +293,7 @@ function parseUrl (url:string): UrlData | null {
     if (!artistMatch) return null
     return {
       type: 'artist',
-      id: artistMatch[0]
+      id: url
     }
   }
   return null
