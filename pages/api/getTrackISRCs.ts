@@ -2,6 +2,7 @@ import musicbrainz from "./providers/musicbrainz";
 import providers from "./providers/providers";
 import logger from "../../utils/logger";
 import { getTraceEvents } from "next/dist/trace";
+import { FullProvider } from "./providers/provider-types";
 
 export default async function handler(req, res) {
     try {
@@ -12,7 +13,7 @@ export default async function handler(req, res) {
         if (provider_id && !provider) {
             return res.status(400).json({ error: "Parameter `provider` is required when using `id`" });
         }
-        let sourceProvider = null;
+        let sourceProvider: FullProvider | null = null;
         if (url) {
             let urlInfo = providers.getUrlInfo(url);
             if (!urlInfo) {
@@ -35,9 +36,6 @@ export default async function handler(req, res) {
         let isrcs = sourceProvider.getTrackISRCs(results);
         if (isrcs == null) {
             return res.status(404).json({ error: "Track not found!" });
-        }
-        if (isrcs == -1) {
-            return res.status(200).json({ isrcs: [] });
         }
         res.status(200).json({ isrcs });
 	} catch (error) {

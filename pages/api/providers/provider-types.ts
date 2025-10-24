@@ -78,13 +78,13 @@ export class FullProvider extends Provider {
     getTrackByISRC?: (isrc: string) => Promise<any | null>;
     getAlbumByUPC?: (upc: string) => Promise<any | null>;
     searchByArtistName: (query: string) => Promise<any | null>;
-    getAlbumById:  (id: string) => Promise<any | null>;
-    getTrackById:  (id: string) => Promise<any | null>;
-    getArtistById:  (id: string) => Promise<any | null>;
-    getArtistAlbums:  (id: string, offset: string | number, limit: number) => Promise<any | null>;
+    getAlbumById: (id: string) => Promise<any | null>;
+    getTrackById: (id: string) => Promise<any | null>;
+    getArtistById: (id: string) => Promise<any | null>;
+    getArtistAlbums: (id: string, offset: string | number, limit: number) => Promise<any | null>;
     formatArtistSearchData: (rawData: any) => any;
     formatArtistLookupData: (rawData: any) => any;
-    formatArtistObject : (artist: any) => ArtistObject;
+    formatArtistObject: (artist: any) => ArtistObject;
     formatPartialArtistObject: (artist: any) => PartialArtistObject;
     formatAlbumGetData: (rawData: any) => AlbumData;
     formatAlbumObject: (album: any) => AlbumObject;
@@ -93,5 +93,5 @@ export class FullProvider extends Provider {
     getTrackISRCs: (track: any) => string[] | null;
     getAlbumUPCs: (album: any) => string[] | null;
     parseUrl: (url: string) => UrlData | null;
-    createUrl
+    createUrl: (urlType: string, providerId: string) => string | null;
 }

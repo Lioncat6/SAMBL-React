@@ -31,11 +31,11 @@ export default async function handler(req, res) {
         if (!artist) {
             return res.status(404).json({ error: "Artist not found" });
         }
+        console.log(provider_id)
         let providerData = providerObj.formatArtistLookupData(artist)
         providerData = providerObj.formatArtistObject(providerData);
         const providerUrl = providerObj.createUrl("artist", provider_id)
-        let mbData = null;
-        mbData = await musicbrainz.getArtistByUrl(providerUrl, { noCache: forceRefresh });
+        let mbData = await musicbrainz.getArtistByUrl(providerUrl, { noCache: forceRefresh });
         let mbid = mbData?.id || null;
         return res.status(200).json({ mbid, provider, provider_id });
     } catch (error) {

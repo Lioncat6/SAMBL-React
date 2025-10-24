@@ -1,6 +1,8 @@
 import musicbrainz from "./providers/musicbrainz";
 import providers from "./providers/providers";
 import logger from "../../utils/logger";
+import { FullProvider } from "./providers/provider-types";
+import { NextApiRequest, NextApiResponse } from "next";
 
 /**
  * @swagger
@@ -68,22 +70,24 @@ import logger from "../../utils/logger";
  *                   example: Error details
  */
 
-export default async function handler(req, res) {
+export default async function handler(req:NextApiRequest, res:NextApiResponse) {
     try {
         const { query, provider } = req.query;
-        if (!query) {
+        if (!query || typeof query != "string") {
             return res.status(400).json({ error: "Parameter `query` is required" });
         }
-        let sourceProvider = providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject", "getArtistUrl"]);
+        let sourceProvider: FullProvider = providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject", "getArtistUrl"]);
         if (!sourceProvider) {
             return res.status(400).json({ error: `Provider \`${provider}\` does not support this operation` });
         }
         let results = await sourceProvider.searchByArtistName(query);
-        let artistUrls = [];
+        let artistUrls: string[] = [];
         let artistData = {}
         for (let artist of sourceProvider.formatArtistSearchData(results)) {
-            artistUrls.push(sourceProvider.getArtistUrl(artist))
-            artistData[sourceProvider.getArtistUrl(artist)] = sourceProvider.formatArtistObject(artist);
+            const artistUrl = sourceProvider.getArtistUrl(artist)
+            if (!artistUrl) continue;
+            artistUrls.push(artistUrl)
+            artistData[artistUrl] = sourceProvider.formatArtistObject(artist);
         }
         if (artistUrls.length == 0) {
             res.status(200).json({})

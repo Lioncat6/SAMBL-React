@@ -112,9 +112,9 @@ async function getTrackById(url) {
 	}
 }
 
-function getTrackISRCs(track) {
+function getTrackISRCs(track): string[] | null {
 	if (track && track.raw) {
-		return track.raw.current.isrc || -1;
+		return track.raw.current.isrc ? [track.raw.current.isrc] : [];
 	}
 	return null;
 }
@@ -299,7 +299,7 @@ function getArtistUrl(artist) {
 	return artist.url;
 }
 
-function createUrl(type, id) {
+function createUrl(type: string, id: string): string {
 	const baseUrl = "bandcamp.com";
 	switch (type) {
 		case "artist":
