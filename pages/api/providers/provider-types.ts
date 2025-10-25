@@ -74,14 +74,18 @@ export class Provider {
     namespace: string;
 }
 
+export type CacheOptions = {
+  noCache?: boolean;
+};
+
 export class FullProvider extends Provider {
-    getTrackByISRC?: (isrc: string) => Promise<any | null>;
-    getAlbumByUPC?: (upc: string) => Promise<any | null>;
-    searchByArtistName: (query: string) => Promise<any | null>;
-    getAlbumById: (id: string) => Promise<any | null>;
-    getTrackById: (id: string) => Promise<any | null>;
-    getArtistById: (id: string) => Promise<any | null>;
-    getArtistAlbums: (id: string, offset: string | number, limit: number) => Promise<any | null>;
+    getTrackByISRC?: (isrc: string, options?: CacheOptions) => Promise<any | null>;
+    getAlbumByUPC?: (upc: string, options?: CacheOptions) => Promise<any | null>;
+    searchByArtistName: (query: string, options?: CacheOptions) => Promise<any | null>;
+    getAlbumById: (id: string, options?: CacheOptions) => Promise<any | null>;
+    getTrackById: (id: string, options?: CacheOptions) => Promise<any | null>;
+    getArtistById: (id: string, options?: CacheOptions) => Promise<any | null>;
+    getArtistAlbums: (id: string, offset: string | number, limit: number, options?: CacheOptions) => Promise<any | null>;
     formatArtistSearchData: (rawData: any) => any;
     formatArtistLookupData: (rawData: any) => any;
     formatArtistObject: (artist: any) => ArtistObject;
