@@ -115,7 +115,7 @@ async function getAlbumByUPC(upc) {
 	}
 }
 
-async function getTrackByISRC(isrc:string) {
+async function getTrackByISRC(isrc: string) {
 	try {
 		await checkAccessToken();
 		const data = await spotifyApi.searchTracks(`isrc:${isrc}`, { limit: 20 });
@@ -125,13 +125,34 @@ async function getTrackByISRC(isrc:string) {
 	}
 }
 
-async function getAlbumById(spotifyId:string) {
+async function getAlbumById(spotifyId: string) {
 	try {
 		await checkAccessToken();
 		const data = await spotifyApi.getAlbum(spotifyId);
+		if (data.body?.tracks?.total > 50) {
+			data.body.tracks = await getAlbumTracksById(spotifyId);
+		}
 		return data.body;
 	} catch (error) {
 		err.handleError("Error fetching album by Spotify ID:", error);
+	}
+}
+
+async function getAlbumTracksById(spotifyId) {
+	try {
+		await checkAccessToken();
+		let itemsArray: any = [];
+		let offset = 0;
+		let data: any;
+		do {
+			data = await spotifyApi.getAlbumTracks(spotifyId, { limit: 50, offset: offset });
+			itemsArray = itemsArray.concat(data.body.items);
+			offset += data.body.items.length;
+		}
+		while (data?.body?.next)
+		return { items: itemsArray, total: data.body.total };
+	} catch (error) {
+		err.handleError("Error fetching album tracks by Spotify ID:", error);
 	}
 }
 
