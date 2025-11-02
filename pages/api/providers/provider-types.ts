@@ -70,6 +70,10 @@ export class UrlInfo extends UrlData {
     provider: FullProvider;
 }
 
+export class UrlMBIDDict {
+    [key: string]: string | undefined;
+}
+
 export class Provider {
     namespace: string;
 }
