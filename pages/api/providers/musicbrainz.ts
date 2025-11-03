@@ -31,7 +31,7 @@ async function getIdBySpotifyId(spotifyId: string): Promise<string | null | unde
 		if (!data.relations || data.relations?.length == 0) {
 			return null; // No artist found
 		}
-		return (data.relations[0] as unknown as IRelation).artist?.id || null;
+		return data.relations[0].artist?.id || null;
 	} catch (error) {
 		err.handleError("Failed to fetch artist data", error);
 	}
@@ -55,7 +55,7 @@ async function getArtistByUrl(url: string): Promise<IArtist | null | undefined> 
 		if (!data.relations || data.relations?.length == 0) {
 			return null; // No artist found
 		}
-		return (data.relations[0] as unknown as IRelation).artist;
+		return data.relations[0].artist;
 	} catch (error) {
 		err.handleError("Failed to fetch artist data", error);
 	}
@@ -71,7 +71,7 @@ async function getIdsBySpotifyUrls(spotifyUrls: string[]): Promise<UrlMBIDDict |
 		for (let url of data.urls) {
 			if (url && url.relations) {
 				if (url.relations?.length > 0) {
-					mbids[url.resource] = (url.relations as unknown as IRelation[])[0]?.artist?.id;
+					mbids[url.resource] = url.relations[0]?.artist?.id;
 				}
 			}
 		}
