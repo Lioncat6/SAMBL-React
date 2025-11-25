@@ -136,7 +136,6 @@ function formatAlbumGetData (rawData): AlbumData {
 }
 
 function getUPCFromAlbum (album): string | null {
-  console.log(album)
   let upc: string | null = null
   if (album.tracks) {
     for (let track of album.tracks) {
