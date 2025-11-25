@@ -326,7 +326,7 @@ function formatTrackObject(track): TrackObject {
 		albumName: track.albumName || null,
 		releaseDate: track.releaseDate || null,
 		trackNumber: track.track_num,
-		duration: track.duration,
+		duration: track.duration*1000 || null,
 		isrcs: track.isrc ? [track.isrc] : [],
 	};
 }
