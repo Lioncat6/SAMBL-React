@@ -289,7 +289,7 @@ function formatTrackObject(track): TrackObject {
 		artistNames: track.artists.map((artist) => artist.name),
 		duration: track.duration_ms,
 		trackNumber: track.track_number,
-		releaseDate: track.release_date,
+		releaseDate: track.release_date || null,
 		isrcs: track.external_ids?.isrc ? [track.external_ids.isrc] : [],
 	};
 }

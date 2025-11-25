@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject } from "./provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider } from "./provider-types";
 import { credentialsProvider, init as initAuth } from '@tidal-music/auth';
 import { createAPIClient } from '@tidal-music/api';
 import logger from "../../../utils/logger";
@@ -282,7 +282,7 @@ function formatTrackObject(track): TrackObject {
         trackArtists: track.attributes.artists.map(formatPartialArtistObject),
 		artistNames: track.attributes.artists.map(artist => artist.attributes.name),
 		albumName: track.attributes.albumName || null,
-		releaseDate: track.attributes.releaseDate,
+		releaseDate: track.attributes.releaseDate || null,
 		trackNumber: track.attributes.trackNumber,
 		duration: text.formatDurationMS(track.attributes.duration),
 		isrcs: track.attributes.isrc ? [track.attributes.isrc] : [],
@@ -422,7 +422,7 @@ function createUrl(type, id) {
     return `https://tidal.com/${type}/${id}`;
 }
 
-let tidal = {
+let tidal: FullProvider = {
     namespace,
     getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 30, namespace: namespace }),
     getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 30, namespace: namespace }),
@@ -437,6 +437,7 @@ let tidal = {
     formatAlbumGetData,
     formatPartialArtistObject,
     formatAlbumObject,
+    formatTrackObject,
     getArtistUrl,
     getTrackISRCs,
     getAlbumUPCs,

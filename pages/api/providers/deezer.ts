@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject } from "./provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider } from "./provider-types";
 import logger from "../../../utils/logger";
 import text from "../../../utils/text";
 import withCache from "../../../utils/cache";
@@ -255,7 +255,7 @@ function formatTrackObject(track): TrackObject {
 		artistNames: track.artist ? [track.artist.name] : [],
 		duration: track.duration*1000,
 		trackNumber: track.trackNumber,
-		releaseDate: track.release_date,
+		releaseDate: track.release_date || null,
 		isrcs: track.isrc ? [track.isrc] : [],
 	};
 }
@@ -280,7 +280,7 @@ function createUrl(type, id) {
 	return `https://www.deezer.com/${type}/${id}`;
 }
 
-const deezer = {
+const deezer: FullProvider = {
 	namespace,
 	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 30, namespace: namespace }),
 	getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 30, namespace: namespace }),
@@ -295,6 +295,7 @@ const deezer = {
 	formatPartialArtistObject,
 	formatAlbumGetData,
 	formatAlbumObject,
+	formatTrackObject,
     getArtistUrl,
 	getTrackISRCs,
 	getAlbumUPCs,
