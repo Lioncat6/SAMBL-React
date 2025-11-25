@@ -197,6 +197,7 @@ export default function Artist({ artist }) {
 	let mbFeaturedAlbumCount = -1;
 	let sourceAlbums = useRef([]);
 	let mbAlbums = useRef([]);
+	let mbFeaturedAlbums = useRef([]);
 
 	function resetData() {
 		sourceAlbumCount = -1;
@@ -204,13 +205,14 @@ export default function Artist({ artist }) {
 		mbFeaturedAlbumCount = -1;
 		sourceAlbums.current = [];
 		mbAlbums.current = [];
+		mbFeaturedAlbums.current = [];
 	}
 
 	useEffect(() => {
 		function updateLoadingText(musicBrainz) {
 			if (musicBrainz) {
 				if (mbAlbumCount > -1 && mbFeaturedAlbumCount > -1) {
-					setStatusText(`Loading albums from musicbrainz... ${parseInt(mbAlbums.current.length)}/${Number(mbAlbumCount) + Number(mbFeaturedAlbumCount)}`);
+					setStatusText(`Loading albums from musicbrainz... ${parseInt(mbAlbums.current.length)+ parseInt(mbFeaturedAlbums.current.length)}/${Number(mbAlbumCount) + Number(mbFeaturedAlbumCount)}`);
 				}
 			} else {
 				setStatusText(`Loading albums from ${artist.provider}... ${sourceAlbums.current.length}${sourceAlbumCount ? `/${sourceAlbumCount}`: ""}`);
@@ -295,9 +297,9 @@ export default function Artist({ artist }) {
 						}
 						throw new Error(`Error fetching MusicBrainz Featured albums: ${data}`);
 					}
-					mbAlbums.current = [...mbAlbums.current, ...data.releases];
+					mbFeaturedAlbums.current = [...mbFeaturedAlbums.current, ...data.releases];
 					mbFeaturedAlbumCount = data["release-count"];
-					offset = mbAlbums.current.length;
+					offset = mbFeaturedAlbums.current.length;
 					updateLoadingText(true);
 				} catch (error) {
 					attempts++;
@@ -375,7 +377,7 @@ export default function Artist({ artist }) {
 			if (didQuickFetch) {
 				data = await dispPromise(quickFetchAlbums(providerIds[0], artist.provider, artist.mbid, bypassCache), "Quick Fetching albums...");
 			} else {
-				data = processData(sourceAlbums.current, mbAlbums.current, artist.mbid);
+				data = processData(sourceAlbums.current, [ ...mbAlbums.current, ...mbFeaturedAlbums.current], artist.mbid);
 			}
 			setStatusText(data.statusText);
 			setAlbums(data.albumData);

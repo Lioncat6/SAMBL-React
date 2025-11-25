@@ -26,6 +26,7 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
 	let mbUrlAlbumMap = new Map();
 
 	mbAlbums.forEach((mbAlbum) => {
+		if (!mbAlbum?.relations) return;
 		(mbAlbum.relations || []).forEach((relation) => {
 			const resource = relation?.url?.resource?.trim();
 			if (resource) {
@@ -39,6 +40,7 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
 	let mbNameAlbumMap = new Map();
 
 	mbAlbums.forEach((mbAlbum) => {
+		if (!mbAlbum?.title) return;
 		const normalizedTitle = text.normalizeText(mbAlbum.title || "");
 		if (normalizedTitle) {
 			if (!mbNameAlbumMap.has(normalizedTitle)) mbNameAlbumMap.set(normalizedTitle, []);

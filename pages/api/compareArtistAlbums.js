@@ -39,6 +39,7 @@ export default async function handler(req, res) {
 	let mbUrlCount = -1;
 	let sourceAlbums = [];
 	let mbAlbums = [];
+	let mbFeaturedAlbums = [];
 
 	function getSourceAlbumUrls() {
 		return sourceAlbums.map((album) => {
@@ -121,9 +122,9 @@ export default async function handler(req, res) {
 					}
 					throw new Error(`Error fetching MusicBrainz Featured albums: ${data}`);
 				}
-				mbAlbums = [...mbAlbums, ...data.releases];
+				mbFeaturedAlbums = [...mbFeaturedAlbums, ...data.releases];
 				mbFeaturedAlbumCount = data["release-count"];
-				offset = mbAlbums.length;
+				offset = mbFeaturedAlbums.length;
 				// updateLoadingText(true);
 			} catch (error) {
 				attempts++;
@@ -204,10 +205,10 @@ export default async function handler(req, res) {
 			await Promise.all([fetchProviderAlbums([provider_id], provider), fetchMusicbrainzArtistAlbums(mbid, full), fetchMusicBrainzFeaturedAlbums(mbid, full)]);
 		}
 		if (raw) {
-			return res.status(200).json({ sourceAlbums: sourceAlbums, mbAlbums: mbAlbums });
+			return res.status(200).json({ sourceAlbums: sourceAlbums, mbAlbums: mbAlbums, mbFeaturedAlbums: mbFeaturedAlbums } );
 		}
 		logger.debug("Processing data");
-		let data = await processData(sourceAlbums, mbAlbums, mbid, quick, full);
+		let data = await processData(sourceAlbums, [...mbAlbums, ...mbFeaturedAlbums], mbid, quick, full);
 		res.status(200).json(data);
 	} catch (error) {
 		logger.error("Error in CompareArtistAlbums API", error);
