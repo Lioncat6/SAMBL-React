@@ -1,8 +1,10 @@
 import MusixMatchAPI from "./lib/musixmatch-alt";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
-
+import ErrorHandler from "../../../utils/errorHandler";
 const namespace = "musixmatch";
+
+const err = new ErrorHandler(namespace);
 
 let proxies = {};
 if (
@@ -42,14 +44,29 @@ async function refreshApi() {
     }
 }
 
+async function withRetry(apiCall, retries = 3, delay = 250) {
+	for (let attempt = 1; attempt <= retries; attempt++) {
+		try {
+			return await apiCall();
+		} catch (error) {
+			if (attempt < retries) {
+				// logger.warn(`Retrying API call (attempt ${attempt} of ${retries})...`);
+				await new Promise((resolve) => setTimeout(resolve, delay));
+			} else {
+				err.handleError("API call failed after retries:", error);
+				throw error;
+			}
+		}
+	}
+}
+
 async function getTrackByISRC(isrc) {
 	try {
 
 		await refreshApi();
-
-		const trackData = await mxmAPI.get_track(null, isrc);
+		const trackData = await withRetry(() => mxmAPI.get_track(null, isrc));
 		if (trackData.message.body?.track) {
-			const lyricsData = await mxmAPI.get_track_lyrics(null, isrc);
+			const lyricsData = await withRetry(() => mxmAPI.get_track_lyrics(null, isrc));
 			if (lyricsData.message.body) {
 				trackData.message.body.lyrics = lyricsData.message.body.lyrics;
 			}

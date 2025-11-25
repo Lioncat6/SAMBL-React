@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData } from "./provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, FullProvider, PartialArtistObject } from "./provider-types";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
@@ -112,9 +112,9 @@ async function getTrackById(url) {
 	}
 }
 
-function getTrackISRCs(track) {
+function getTrackISRCs(track): string[] | null {
 	if (track && track.raw) {
-		return track.raw.current.isrc || -1;
+		return track.raw.current.isrc ? [track.raw.current.isrc] : [];
 	}
 	return null;
 }
@@ -161,7 +161,11 @@ function formatArtistObject(rawData): ArtistObject {
 		url: rawData.url,
 		imageUrl: rawData.imageUrl?.replace(/_\d+\.jpg$/, "_0.jpg"),
 		imageUrlSmall: rawData.imageUrl?.replace(/_\d+\.jpg$/, "_3.jpg"),
-		bannerUrl: rawData.raw?.design?.bg_image_id ? `https://f4.bcbits.com/img/${rawData.raw.design.bg_image_id}_0.jpg` : rawData.raw?.header_desktop ? `https://f4.bcbits.com/img/${rawData.raw.header_desktop.image_id}_0.jpg` : "",
+		bannerUrl: rawData.raw?.design?.bg_image_id
+			? `https://f4.bcbits.com/img/${rawData.raw.design.bg_image_id}_0.jpg`
+			: rawData.raw?.header_desktop
+				? `https://f4.bcbits.com/img/${rawData.raw.header_desktop.image_id}_0.jpg`
+				: "",
 		relevance: rawData.location,
 		info: rawData.tags.join(", "),
 		genres: rawData.tags,
@@ -172,11 +176,26 @@ function formatArtistObject(rawData): ArtistObject {
 	};
 }
 
-async function getArtistAlbums(artistId: string, offset: number = 1, limit: number) {
+async function getArtistAlbums(
+	artistId: string,
+	offset: number = 1,
+	limit: number
+) {
 	try {
-		let searchResults: any = await searchAsync({ query: artistId, page: Number(offset) });
-		let albumItems = searchResults.filter((a) => (a.type == "album" || (a.type == "track" && a.artist == "")) && a.url.includes(`https://${artistId}.bandcamp.com/`)); // Yes, this filters out tracks that have an album because of a coding error in the bandcamp library :3
-		return { current: offset, next: searchResults.length === 0 ? null : Number(offset) + 1, albums: albumItems };
+		let searchResults: any = await searchAsync({
+			query: artistId,
+			page: Number(offset),
+		});
+		let albumItems = searchResults.filter(
+			(a) =>
+				(a.type == "album" || (a.type == "track" && a.artist == "")) &&
+				a.url.includes(`https://${artistId}.bandcamp.com/`)
+		); // Yes, this filters out tracks that have an album because of a coding error in the bandcamp library :3
+		return {
+			current: offset,
+			next: searchResults.length === 0 ? null : Number(offset) + 1,
+			albums: albumItems,
+		};
 	} catch (error) {
 		err.handleError("Error fetching artist albums:", error);
 	}
@@ -200,8 +219,12 @@ function formatAlbumObject(album): AlbumObject {
 		album.artist = artistId;
 		albumType = "single";
 	}
-	let imageUrl = album.imageUrl?.replace(/_\d+\.jpg$/, "_0.jpg") || `https://f4.bcbits.com/img/a${album.raw.art_id}_0.jpg`;
-	let imageUrlSmall = album.imageUrl?.replace(/_\d+\.jpg$/, "_3.jpg") || `https://f4.bcbits.com/img/a${album.raw.art_id}_3.jpg`;
+	let imageUrl =
+		album.imageUrl?.replace(/_\d+\.jpg$/, "_0.jpg") ||
+		`https://f4.bcbits.com/img/a${album.raw.art_id}_0.jpg`;
+	let imageUrlSmall =
+		album.imageUrl?.replace(/_\d+\.jpg$/, "_3.jpg") ||
+		`https://f4.bcbits.com/img/a${album.raw.art_id}_3.jpg`;
 	return {
 		provider: namespace,
 		id: albumId,
@@ -220,11 +243,13 @@ function formatAlbumObject(album): AlbumObject {
 			},
 		],
 		artistNames: [album.artist],
-		releaseDate: text.formatDate(album.releaseDate || album.raw?.current?.release_date),
+		releaseDate: text.formatDate(
+			album.releaseDate || album.raw?.current?.release_date
+		),
 		trackCount: album.numTracks || album.tracks?.length,
 		albumType: albumType,
 		upc: album.raw?.current?.upc || null,
-		albumTracks: getAlbumTracks(album) || []
+		albumTracks: getAlbumTracks(album) || [],
 	};
 }
 
@@ -233,29 +258,53 @@ function getAlbumTracks(album): TrackObject[] {
 	const trackIdRegex = /\/(track|album)\/([^/]+)/;
 	let tracks: TrackObject[] = [];
 	if (album && album.tracks) {
-		album.tracks = album.tracks.filter(track => (track.url && track.duration));
+		album.tracks = album.tracks.filter((track) => track.url && track.duration);
 		for (let trackNumber in album.tracks) {
 			let trackinfo = album.raw.trackinfo[trackNumber];
 			let currentTrack = album.tracks[trackNumber];
 			trackinfo.url = trackUrlRegex.exec(currentTrack.url)?.[1] || null;
-			trackinfo.id = trackinfo.url?.match(trackIdRegex) ? trackinfo.url.match(trackIdRegex)[2] : null;
+			trackinfo.id = trackinfo.url?.match(trackIdRegex)
+				? trackinfo.url.match(trackIdRegex)[2]
+				: null;
 			if (!trackinfo.artist) {
 				trackinfo.artist = album.artist;
 			}
 			trackinfo.albumName = album.name || album.title;
-			trackinfo.releaseDate = text.formatDate(album.releaseDate || album.raw?.current?.release_date);
-			trackinfo.imageUrl = album.imageUrl?.replace(/_\d+\.jpg$/, "_0.jpg") || (album.raw.art_id ? `https://f4.bcbits.com/img/a${album.raw.art_id}_0.jpg` : null);
-			trackinfo.imageUrlSmall = album.imageUrl?.replace(/_\d+\.jpg$/, "_3.jpg") || (album.raw.art_id ? `https://f4.bcbits.com/img/a${album.raw.art_id}_3.jpg` : null);
+			trackinfo.releaseDate = text.formatDate(
+				album.releaseDate || album.raw?.current?.release_date
+			);
+			trackinfo.imageUrl =
+				album.imageUrl?.replace(/_\d+\.jpg$/, "_0.jpg") ||
+				(album.raw.art_id
+					? `https://f4.bcbits.com/img/a${album.raw.art_id}_0.jpg`
+					: null);
+			trackinfo.imageUrlSmall =
+				album.imageUrl?.replace(/_\d+\.jpg$/, "_3.jpg") ||
+				(album.raw.art_id
+					? `https://f4.bcbits.com/img/a${album.raw.art_id}_3.jpg`
+					: null);
 			tracks.push(formatTrackObject(trackinfo));
 		}
 	} else if (album && album.raw?.current?.type == "track") {
 		let trackinfo = album.raw.trackinfo[0];
 		trackinfo.url = trackUrlRegex.exec(album.url)?.[1] || null;
-		trackinfo.id = trackinfo.url?.match(trackIdRegex) ? trackinfo.url.match(trackIdRegex)[2] : null;
+		trackinfo.id = trackinfo.url?.match(trackIdRegex)
+			? trackinfo.url.match(trackIdRegex)[2]
+			: null;
 		trackinfo.albumName = album.name || album.title;
-		trackinfo.releaseDate = text.formatDate(album.releaseDate || album.raw?.current?.release_date);
-		trackinfo.imageUrl = album.imageUrl?.replace(/_\d+\.jpg$/, "_0.jpg") || (album.raw.art_id ? `https://f4.bcbits.com/img/a${album.raw.art_id}_0.jpg` : null);
-		trackinfo.imageUrlSmall = album.imageUrl?.replace(/_\d+\.jpg$/, "_3.jpg") || (album.raw.art_id ? `https://f4.bcbits.com/img/a${album.raw.art_id}_3.jpg` : null);
+		trackinfo.releaseDate = text.formatDate(
+			album.releaseDate || album.raw?.current?.release_date
+		);
+		trackinfo.imageUrl =
+			album.imageUrl?.replace(/_\d+\.jpg$/, "_0.jpg") ||
+			(album.raw.art_id
+				? `https://f4.bcbits.com/img/a${album.raw.art_id}_0.jpg`
+				: null);
+		trackinfo.imageUrlSmall =
+			album.imageUrl?.replace(/_\d+\.jpg$/, "_3.jpg") ||
+			(album.raw.art_id
+				? `https://f4.bcbits.com/img/a${album.raw.art_id}_3.jpg`
+				: null);
 		trackinfo.isrc = album.raw.current.isrc;
 		tracks.push(formatTrackObject(trackinfo));
 	}
@@ -272,20 +321,25 @@ function formatTrackObject(track): TrackObject {
 		url: track.url || null,
 		imageUrl: track.imageUrl || null,
 		imageUrlSmall: track.imageUrlSmall || null,
-		trackArtists: [{
-			url: `https://${artistId}.bandcamp.com`,
-			name: track.artist,
-			imageUrl: null,
-			imageUrlSmall: null,
-			id: artistId,
-			provider: namespace,
-		}],
+		trackArtists: [formatPartialArtistObject(track)],
 		artistNames: track.artist ? [track.artist] : [],
 		albumName: track.albumName || null,
 		releaseDate: track.releaseDate || null,
 		trackNumber: track.track_num,
-		duration: track.duration,
-		isrcs: track.isrc ? [track.isrc] : []
+		duration: track.duration*1000 || null,
+		isrcs: track.isrc ? [track.isrc] : [],
+	};
+}
+
+function formatPartialArtistObject(track): PartialArtistObject {
+	const artistId = track.url.match(/^https?:\/\/([^.]+)\.bandcamp\.com/)[1];
+	return {
+		url: `https://${artistId}.bandcamp.com`,
+		name: track.artist,
+		imageUrl: null,
+		imageUrlSmall: null,
+		id: artistId,
+		provider: namespace,
 	};
 }
 
@@ -299,7 +353,7 @@ function getArtistUrl(artist) {
 	return artist.url;
 }
 
-function createUrl(type, id) {
+function createUrl(type: string, id: string): string {
 	const baseUrl = "bandcamp.com";
 	switch (type) {
 		case "artist":
@@ -310,12 +364,13 @@ function createUrl(type, id) {
 }
 
 function parseUrl(url) {
-	const musicRegex = /^https?:\/\/([^.]+)\.bandcamp\.com\/(track|album)\/([^.]+)/;
+	const musicRegex =
+		/^https?:\/\/([^.]+)\.bandcamp\.com\/(track|album)\/([^.]+)/;
 	const musicMatch = url.match(musicRegex);
 	if (musicMatch) {
 		return {
 			type: musicMatch[2],
-			id: url
+			id: url,
 		};
 	}
 	const artistRegex = /^https?:\/\/([^.]+)\.bandcamp\.com/;
@@ -331,7 +386,7 @@ function parseUrl(url) {
 
 init();
 
-const bandcamp = {
+const bandcamp: FullProvider = {
 	namespace,
 	searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30, namespace: namespace }),
 	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 30, namespace: namespace }),
@@ -341,13 +396,15 @@ const bandcamp = {
 	createUrl,
 	formatArtistSearchData,
 	formatArtistObject,
+	formatPartialArtistObject,
+	formatTrackObject,
 	formatArtistLookupData,
 	formatAlbumObject,
 	formatAlbumGetData,
 	getArtistById,
 	parseUrl,
 	getTrackISRCs,
-	getAlbumUPCs
+	getAlbumUPCs,
 };
 
 export default bandcamp;

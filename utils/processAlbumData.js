@@ -21,6 +21,33 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
 	//     albumType: string;
 	// };
 	//
+
+	// Map of Stremaing service URLs to MB Albums
+	let mbUrlAlbumMap = new Map();
+
+	mbAlbums.forEach((mbAlbum) => {
+		if (!mbAlbum?.relations) return;
+		(mbAlbum.relations || []).forEach((relation) => {
+			const resource = relation?.url?.resource?.trim();
+			if (resource) {
+				if (!mbUrlAlbumMap.has(resource)) mbUrlAlbumMap.set(resource, []);
+				mbUrlAlbumMap.get(resource).push(mbAlbum);
+			}
+		});
+	});
+
+	// Map of normalized release names
+	let mbNameAlbumMap = new Map();
+
+	mbAlbums.forEach((mbAlbum) => {
+		if (!mbAlbum?.title) return;
+		const normalizedTitle = text.normalizeText(mbAlbum.title || "");
+		if (normalizedTitle) {
+			if (!mbNameAlbumMap.has(normalizedTitle)) mbNameAlbumMap.set(normalizedTitle, []);
+			mbNameAlbumMap.get(normalizedTitle).push(mbAlbum);
+		}
+	});
+
 	sourceAlbums.forEach((album) => {
 		let albumStatus = "red";
 		let albumMBUrl = "";
@@ -47,34 +74,51 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
 		let albumIssues = [];
 		let finalTracks = [];
 		let mbBarcode = "";
-		mbAlbums.forEach((mbAlbum) => {
-			if (mbAlbum?.title) {
-				let mbReleaseName = mbAlbum.title;
-				let mbReleaseUrls = mbAlbum.relations || [];
-				let MBTrackCount = mbAlbum.media?.reduce((count, media) => count + media["track-count"], 0);
-				let MBReleaseDate = mbAlbum.date;
-				let MBReleaseUPC = mbAlbum.barcode;
-				let hasCoverArt = mbAlbum["cover-art-archive"]?.front || false;
-				var MBTracks = [];
-				mbAlbum.media?.forEach((media) => {
-					if (media.tracks) {
-						MBTracks = [...MBTracks, ...media.tracks];
-					}
-				});
-				mbReleaseUrls.forEach((relation) => {
-					if (relation.url.resource == providerUrl) {
-						albumStatus = "green";
-						mbid = mbAlbum.id;
-						albumMBUrl = `https://musicbrainz.org/release/${mbid}`;
-						mbTrackCount = MBTrackCount;
-						mbReleaseDate = MBReleaseDate;
-						finalHasCoverArt = hasCoverArt;
-						finalTracks = MBTracks;
-						mbBarcode = MBReleaseUPC;
-					}
+		
+		// Try URL map
+		const sourceUrl = providerUrl?.trim();
+		if (sourceUrl && mbUrlAlbumMap.has(sourceUrl)) {
+			const matches = mbUrlAlbumMap.get(sourceUrl) || [];
+			for (const mbAlbum of matches) {
+				if (!mbAlbum?.title) continue;
+				const MBTrackCount = (mbAlbum.media || []).reduce((count, media) => count + (media["track-count"] || 0), 0);
+				const MBReleaseDate = mbAlbum.date;
+				const MBReleaseUPC = mbAlbum.barcode;
+				const hasCoverArt = mbAlbum["cover-art-archive"]?.front || false;
+				let MBTracks = [];
+				(mbAlbum.media || []).forEach((media) => {
+					if (media.tracks) MBTracks = MBTracks.concat(media.tracks);
 				});
 
-				if (albumStatus === "red" && text.normalizeText(mbReleaseName) === text.normalizeText(providerAlbumName)) {
+				albumStatus = "green";
+				mbid = mbAlbum.id;
+				albumMBUrl = `https://musicbrainz.org/release/${mbid}`;
+				mbTrackCount = MBTrackCount;
+				mbReleaseDate = MBReleaseDate;
+				finalHasCoverArt = hasCoverArt;
+				finalTracks = MBTracks;
+				mbBarcode = MBReleaseUPC;
+				// prefer the first exact URL match
+				break;
+			}
+		}
+
+		// Try name map
+		if (albumStatus === "red") {
+			const normalized = text.normalizeText(providerAlbumName || "");
+			if (normalized && mbNameAlbumMap.has(normalized)) {
+				const matches = mbNameAlbumMap.get(normalized) || [];
+				for (const mbAlbum of matches) {
+					if (!mbAlbum?.title) continue;
+					const MBTrackCount = (mbAlbum.media || []).reduce((count, media) => count + (media["track-count"] || 0), 0);
+					const MBReleaseDate = mbAlbum.date;
+					const MBReleaseUPC = mbAlbum.barcode;
+					const hasCoverArt = mbAlbum["cover-art-archive"]?.front || false;
+					let MBTracks = [];
+					(mbAlbum.media || []).forEach((media) => {
+						if (media.tracks) MBTracks = MBTracks.concat(media.tracks);
+					});
+
 					albumStatus = "orange";
 					mbid = mbAlbum.id;
 					albumMBUrl = `https://musicbrainz.org/release/${mbid}`;
@@ -83,9 +127,10 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
 					finalHasCoverArt = hasCoverArt;
 					finalTracks = MBTracks;
 					mbBarcode = MBReleaseUPC;
+					break;
 				}
 			}
-		});
+		}
 
 		const alwaysBarcodeProviders = ["spotify", "deezer", "tidal", "itunes"]
 		const alwaysISRCProviders = ["spotify", "deezer", "tidal", "itunes"]

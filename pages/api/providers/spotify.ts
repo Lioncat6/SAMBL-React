@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject } from "./provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider } from "./provider-types";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
@@ -115,7 +115,7 @@ async function getAlbumByUPC(upc) {
 	}
 }
 
-async function getTrackByISRC(isrc) {
+async function getTrackByISRC(isrc: string) {
 	try {
 		await checkAccessToken();
 		const data = await spotifyApi.searchTracks(`isrc:${isrc}`, { limit: 20 });
@@ -125,13 +125,34 @@ async function getTrackByISRC(isrc) {
 	}
 }
 
-async function getAlbumById(spotifyId) {
+async function getAlbumById(spotifyId: string) {
 	try {
 		await checkAccessToken();
 		const data = await spotifyApi.getAlbum(spotifyId);
+		if (data.body?.tracks?.total > 50) {
+			data.body.tracks = await getAlbumTracksById(spotifyId);
+		}
 		return data.body;
 	} catch (error) {
 		err.handleError("Error fetching album by Spotify ID:", error);
+	}
+}
+
+async function getAlbumTracksById(spotifyId) {
+	try {
+		await checkAccessToken();
+		let itemsArray: any = [];
+		let offset = 0;
+		let data: any;
+		do {
+			data = await spotifyApi.getAlbumTracks(spotifyId, { limit: 50, offset: offset });
+			itemsArray = itemsArray.concat(data.body.items);
+			offset += data.body.items.length;
+		}
+		while (data?.body?.next)
+		return { items: itemsArray, total: data.body.total };
+	} catch (error) {
+		err.handleError("Error fetching album tracks by Spotify ID:", error);
 	}
 }
 
@@ -268,12 +289,12 @@ function formatTrackObject(track): TrackObject {
 		artistNames: track.artists.map((artist) => artist.name),
 		duration: track.duration_ms,
 		trackNumber: track.track_number,
-		releaseDate: track.release_date,
+		releaseDate: track.release_date || null,
 		isrcs: track.external_ids?.isrc ? [track.external_ids.isrc] : [],
 	};
 }
 
-const spotify = {
+const spotify: FullProvider = {
 	namespace,
 	getArtistById: withCache(getArtistById, { ttl: 60 * 30, namespace: namespace }),
 	searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30, namespace: namespace }),
@@ -282,10 +303,10 @@ const spotify = {
 	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 30, namespace: namespace }),
 	getAlbumById: withCache(getAlbumById, { ttl: 60 * 30, namespace: namespace }),
 	getTrackById: withCache(getTrackById, { ttl: 60 * 30, namespace: namespace }),
-	validateSpotifyId,
-	extractSpotifyIdFromUrl,
 	formatArtistSearchData,
+	formatPartialArtistObject,
 	formatArtistLookupData,
+	formatTrackObject,
 	formatArtistObject,
 	formatAlbumGetData,
 	formatAlbumObject,
