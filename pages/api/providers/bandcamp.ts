@@ -140,8 +140,7 @@ async function getArtistById(artistId) {
 	try {
 		const data = await bandcamp.searchByArtistName(artistId);
 		if (data) {
-			let artistData =
-				data.find((a) => a.url == `https://${artistId}.bandcamp.com`) || null;
+			let artistData = data.find((a) => a.url == `https://${artistId}.bandcamp.com`) || null;
 			let idData = await getArtistByIdAsync(artistId);
 			artistData.raw = (idData as any).raw;
 			return artistData;
