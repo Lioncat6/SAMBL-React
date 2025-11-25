@@ -12,7 +12,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
         if (provider_id && !provider ) {
             return res.status(400).json({ error: "Provider must be specified when provider_id is provided" });
         }
-        if (!provider_id && (!url || typeof url == "string")) {
+        if (!provider_id && (!url || typeof url != "string")) {
             return res.status(400).json({ error: "Either `provider_id` or `url` must be provided" });
         }
         if (url && typeof url == "string") {
