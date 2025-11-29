@@ -154,7 +154,7 @@ async function getCoverByMBID(mbid: string): Promise<ICoversInfo | undefined> {
 	}
 }
 
-async function serachForAlbumByArtistAndTitle(mbid: string, title: string): Promise<IReleaseList | null | undefined> {
+async function searchForAlbumByArtistAndTitle(mbid: string, title: string): Promise<IReleaseList | null | undefined> {
 	try {
 		const data = await mbApi.search("release", { query: `arid:${mbid} AND release:${title}`, inc: ["artist-rels"], limit: 20 });
 		checkError(data);
@@ -250,7 +250,7 @@ const musicbrainz = {
 	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 15, namespace: namespace }),
 	getCoverByMBID: withCache(getCoverByMBID, { ttl: 60 * 15, namespace: namespace }),
 	getAlbumsBySourceUrls: withCache(getAlbumsBySourceUrls, { ttl: 60 * 15, namespace: namespace }),
-	serachForAlbumByArtistAndTitle: withCache(serachForAlbumByArtistAndTitle, { ttl: 60 * 15, namespace: namespace }),
+	searchForAlbumByArtistAndTitle: withCache(searchForAlbumByArtistAndTitle, { ttl: 60 * 15, namespace: namespace }),
 	getArtistFeaturedReleaseCount: withCache(getArtistFeaturedReleaseCount, { ttl: 60 * 60, namespace: namespace }),
 	getArtistReleaseCount: withCache(getArtistReleaseCount, { ttl: 60 * 60, namespace: namespace }),
 	getTrackById: withCache(getTrackById, { ttl: 60 * 15, namespace: namespace }),
