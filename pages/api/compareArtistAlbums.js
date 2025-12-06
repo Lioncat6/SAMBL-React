@@ -171,7 +171,9 @@ export default async function handler(req, res) {
 					}
 					throw new Error(`Error fetching MusicBrainz albums by source URLs: ${data}`);
 				}
-				mbAlbums = [...mbAlbums, ...data.urls?.flatMap((url) => processUrlObject(url))];
+				if (data) {
+					mbAlbums = [...mbAlbums, ...data.urls?.flatMap((url) => processUrlObject(url))];
+				}
 				offset += 100;
 			} catch (error) {
 				attempts++;
