@@ -1,8 +1,8 @@
 export type ArtistObject = {
     name: string;
     url: string;
-    imageUrl: string;
-    imageUrlSmall: string;
+    imageUrl: string | null;
+    imageUrlSmall: string | null;
     bannerUrl: string | null;
     relevance: string;
     info: string;

@@ -1,13 +1,14 @@
 import { useEffect, useState, Fragment, cloneElement } from "react";
 import styles from "../styles/popups.module.css";
 import { useSettings } from "./SettingsContext";
-import { FaXmark, FaGear, FaFilter, FaCopy, FaMagnifyingGlass, FaChevronDown, FaChevronRight } from "react-icons/fa6";
+import { FaXmark, FaGear, FaFilter, FaCopy, FaMagnifyingGlass, FaChevronDown, FaChevronRight, FaBarcode } from "react-icons/fa6";
 import { TbTableExport } from "react-icons/tb";
 import { useExport } from "./ExportState";
 import { toast, Flip } from "react-toastify";
 import getConfig from "next/config";
-import { MdOutlineAlbum } from "react-icons/md";
+import { MdOutlineAlbum, MdPerson, MdOutlineCalendarMonth } from "react-icons/md";
 import { Dialog, Transition, Menu, MenuButton, MenuItem, MenuItems, TransitionChild, DialogPanel } from "@headlessui/react";
+import text from "../utils/text";
 
 function ConfigureMenu({ close }) {
 	const { publicRuntimeConfig } = getConfig();
@@ -244,11 +245,11 @@ function ExportMenu({ data, close }) {
 												<div className={styles.subPropertyDataColumn}>
 													{Object.entries(subObj).map(([subKey, subValue]) => (
 														<div key={subKey} className={styles.subPropertyData}>
-																<div className={styles.subPropertyDataKey}>
-																	<CopyButton value={Array.isArray(subValue) && typeof subValue[0] == "object" ? JSON.stringify(subValue) : subValue != null ? String(subValue) : null} />
+															<div className={styles.subPropertyDataKey}>
+																<CopyButton value={Array.isArray(subValue) && typeof subValue[0] == "object" ? JSON.stringify(subValue) : subValue != null ? String(subValue) : null} />
 
-																	{subKey}
-																</div>
+																{subKey}
+															</div>
 															<div className={styles.subPropertyDataValue}>{typeof subValue == "object" && !Array.isArray(subValue) && subValue !== null ? JSON.stringify(subValue) : Array.isArray(subValue) && typeof subValue[0] == "object" ? JSON.stringify(subValue) : subValue != null ? String(subValue) : ""}</div>
 														</div>
 													))}
@@ -289,9 +290,91 @@ function ExportMenu({ data, close }) {
 	);
 }
 
+function AlbumDetails({ data }) {
+	const {
+		provider,
+		id,
+		name,
+		url,
+		imageUrl,
+		imageUrlSmall,
+		albumArtists,
+		releaseDate,
+		trackCount,
+		albumType,
+		albumStatus,
+		albumMBUrl,
+		albumTracks,
+		mbTrackCount,
+		mbReleaseDate,
+		mbid,
+		currentArtistMBID,
+		albumIssues,
+		mbTrackNames,
+		mbTrackISRCs,
+		mbISRCs,
+		tracksWithoutISRCs,
+		highlightTracks,
+		mbBarcode,
+	} = data;
+	return (
+		<div className={styles.albumDetails}>
+			{(imageUrlSmall || imageUrl) && (
+				<div className={styles.albumCover}>
+					<a href={imageUrl} target="_blank" rel="noopener noreferrer">
+						<img src={imageUrlSmall || imageUrl} alt={`${name} cover`} loading="lazy" />
+					</a>
+				</div>
+			)}
+			<div className={styles.albumInfo}>
+				<div className={styles.albumTitle}>
+					<a href={url} target="_blank" rel="noopener noreferrer">
+						{name}
+					</a>
+					{albumMBUrl && (
+						<a href={albumMBUrl} target="_blank" rel="noopener noreferrer">
+							<img
+								className={styles.albumMB}
+								src={albumStatus === "green" ? "../assets/images/MusicBrainz_logo_icon.svg" : "../assets/images/MB_Error.svg"}
+								alt="MusicBrainz"
+								title={albumStatus === "green" ? "View on MusicBrainz" : "Warning: This could be the incorrect MB release for this album!"}
+							/>
+						</a>
+					)}
+				</div>
+				<div className={styles.artists}>
+					<MdPerson />
+					{albumArtists.map((artist, index) => (
+						<span key={artist.id}>
+							{index > 0 && ", "}
+							<a href={artist.url} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
+								{artist.name}
+							</a>
+							<a href={`../newartist?provider_id=${artist.id}&provider=${artist.provider}`} target="_blank" rel="noopener noreferrer">
+								<img className={styles.SAMBLicon} src="../assets/images/favicon.svg" alt="SAMBL" />
+							</a>
+						</span>
+					))}
+				</div>
+				<span className={styles.releaseDate}><MdOutlineCalendarMonth /> {releaseDate}</span>
+				<span className={styles.albumType}><MdOutlineAlbum /> {text.capitalizeFirst(albumType)}</span>
+				{mbBarcode && <span className={styles.barcode}><FaBarcode /> {mbBarcode} <a
+					className={styles.lookupButton}
+					href={`/find?query=${encodeURIComponent(mbBarcode)}`}
+					target="_blank"
+					rel="noopener noreferrer"
+					title={"Lookup Barcode"}
+				>
+					<FaMagnifyingGlass />
+				</a></span>}
+			</div>
+		</div>
+	);
+}
+
 function TrackMenu({ data, close }) {
 	let trackData = data.mbTrackISRCs.length > 0 ? data.mbTrackISRCs : data.albumTracks;
-	
+
 	let toastProperties = {
 		position: "top-left",
 		autoClose: 5000,
@@ -311,11 +394,14 @@ function TrackMenu({ data, close }) {
 	}
 	return (
 		<>
+			<div className={styles.trackBg} style={{ "--background-image": `url(${data.imageUrl})` }} >
 			{" "}
 			<div className={styles.header}>
 				{" "}
 				<MdOutlineAlbum /> Tracks for {data.name}
 			</div>
+			</div>
+			<AlbumDetails data={data} />
 			<div className={styles.content}>
 				{Object.entries(trackData).map(([key, value]) => {
 					return (
@@ -366,6 +452,7 @@ function TrackMenu({ data, close }) {
 					Close
 				</button>
 			</div>
+		
 		</>
 	);
 }
@@ -386,10 +473,10 @@ export default function SAMBLPopup({ button, type, data, apply }) {
 		<>
 			{/* Render the trigger button */}
 			{button &&
-			// Clone the passed element and add onClick
-			typeof button === "object" &&
-			button !== null &&
-			"type" in button ? (
+				// Clone the passed element and add onClick
+				typeof button === "object" &&
+				button !== null &&
+				"type" in button ? (
 				// React element: clone and add onClick
 				// eslint-disable-next-line react/jsx-props-no-spreading
 				cloneElement(button, { onClick: openModal })

@@ -93,8 +93,10 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
             res.status(200).json({})
         }
         let mbids = await musicbrainz.getIdsBySpotifyUrls(artistUrls);
-        for (let url of artistUrls) {
-            artistData[url].mbid = mbids[url] || mbids[url+"/"] || null
+        if (mbids) {
+            for (let url of artistUrls) {
+                artistData[url].mbid = mbids[url] || mbids[url+"/"] || null
+            }
         }
         res.status(200).json(artistData);
 	} catch (error) {

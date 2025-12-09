@@ -104,6 +104,7 @@
     border: none;
     font-size: 24px;
     cursor: pointer;
+    z-index: 1;
 }
 
 .close:hover {
@@ -114,6 +115,8 @@
     font-size: 18px;
     margin-bottom: 10px;
     align-items: center;
+    position: relative;
+    z-index: 1;
 }
 
 .subHeader {
@@ -125,6 +128,8 @@
     margin-top: 20px;
     margin-bottom: 20px;
     overflow-y: scroll;
+    position: relative;
+    z-index: 1;
 }
 /* 
 .actions .button {
@@ -147,6 +152,9 @@
     background: transparent;
     color: var(--foreground-primary);
     transition: all 0.2s ease-in-out;
+    position: relative;
+    z-index: 1;
+    cursor: pointer;
 }
 
 .actions .button:hover {
@@ -182,6 +190,7 @@ flex-direction: row;
     overflow: hidden;
     text-overflow: ellipsis;
     width: -webkit-fill-available;
+    width: moz-available;
 }
 
 .subPropertyDataValue {
@@ -192,6 +201,7 @@ flex-direction: row;
     overflow: hidden;
     text-overflow: ellipsis;
     width: -webkit-fill-available;
+    width: moz-available;
 }
 
 .subPropertyData {
@@ -204,6 +214,7 @@ flex-direction: row;
     display: flex;
     flex-direction: column;
     width: -webkit-fill-available;
+    width: moz-available;
     flex: 1 1 0;      /* Allow to grow and shrink */
     min-width: 0;     /* Allow ellipsis to work */
 }
@@ -317,6 +328,7 @@ flex-direction: row;
     display: flex;
     flex-direction: row;
     width: -webkit-fill-available;
+    width: moz-available;
 }
 
 .settingsInput {
@@ -336,4 +348,94 @@ flex-direction: row;
     display: flex;
     flex-direction: column;
     margin-bottom: 10px;
+}
+
+.trackBg::before {
+    content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-image: var(--background-image);
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+	opacity: 0.2;
+	filter: blur(14px);
+	z-index: 0;
+	transition: opacity 0.2s linear;
+}
+
+.albumDetails {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.albumInfo {
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+}
+
+.albumCover img {
+	margin: 2px 0 0 0;
+	border-radius: 10px;
+	width: 140px;
+	height: 140px;
+	transition: 0.2s all;
+    margin: 0 10px;
+}
+
+.albumCover img:hover {
+	filter: drop-shadow(0px 0px 5px #000000);
+}
+
+.albumTitle {
+	font-weight: bold !important;
+	display: flex;
+	align-items: center;
+	width: 100%;
+	overflow: hidden;
+    font-size: x-large;
+}
+
+.albumTitle a:first-child {
+	font-weight: bold !important;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	color: var(--foreground-secondary);
+    font-size: larger;
+}
+
+.albumTitle .albumMB {
+	flex-shrink: 0;
+	margin-left: 4px;
+}
+
+.albumMB {
+	width: 22px;
+	height: 26px;
+	vertical-align: middle;
+}
+
+.artists, .releaseDate, .barcode, .alb {
+	text-align: left;
+	font-weight: normal;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.barcode {
+    color: var(--foreground-secondary)
+}
+
+.SAMBLicon {
+	width: 12px;
+	height: 16px;
+	vertical-align: middle;
 }
