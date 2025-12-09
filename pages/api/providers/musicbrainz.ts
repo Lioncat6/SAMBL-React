@@ -1,8 +1,9 @@
 import { MusicBrainzApi, CoverArtArchiveApi, IRelation, RelationsIncludes, IArtist, EntityType, IBrowseReleasesQuery, IRelease, IEntity, IRecording, ICoverInfo, ICoversInfo, IReleaseList, IUrlList, IUrlLookupResult, IUrl, IBrowseReleasesResult, IRecordingList } from "musicbrainz-api";
-import { UrlInfo, UrlMBIDDict, UrlData, Provider } from "./provider-types";
+import { UrlInfo, UrlMBIDDict, UrlData, Provider, TrackObject, ArtistObject, PartialArtistObject } from "./provider-types";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
+import { format } from "path";
 const namespace = "musicbrainz";
 
 const err = new ErrorHandler(namespace);
@@ -239,6 +240,52 @@ function createUrl(type: string, id: string): string {
 	return `https://musicbrainz.org/${type}/${id}`;
 }
 
+function formatTrackObject(track: IRecording): TrackObject {
+	return {
+		provider: namespace,
+		id: track.id,
+		name: track.title,
+		url: createUrl('recording', track.id),
+		duration: track.length || 0,
+		imageUrl: null,
+		imageUrlSmall: null,
+		trackArtists: track["artist-credit"] ? track["artist-credit"].map(ac => formatArtistObject(ac.artist)) : [],
+		artistNames: track["artist-credit"] ? track["artist-credit"].map(ac => ac.name) : [],
+		albumName: track.releases && track.releases.length > 0 ? track.releases[0].title : '',
+		releaseDate: track["first-release-date"] || null,
+		trackNumber: track.releases && track.releases.length > 0 && track.releases[0]["mediums"] && track.releases[0]["mediums"].length > 0 && track.releases[0]["mediums"][0]["tracks"] ? track.releases[0]["mediums"][0]["tracks"].findIndex(t => t.id === track.id) + 1 : null,
+		isrcs: track.isrcs || [],
+	}
+}
+
+function formatArtistObject(artist: IArtist): ArtistObject {
+	return {
+		provider: namespace,
+		id: artist.id,
+		name: artist.name,
+		url: createUrl('artist', artist.id),
+		imageUrl: null,
+		imageUrlSmall: null,
+		bannerUrl: null,
+		relevance: artist.country || '',
+		info: artist.disambiguation || '',
+		genres: null, // Library is missing feature for now
+		followers: null,
+		popularity: null,
+	}
+}
+
+function formatPartialArtistObject(artist: IArtist): PartialArtistObject {
+	return {
+		provider: namespace,
+		id: artist.id,
+		name: artist.name,
+		url: createUrl('artist', artist.id),
+		imageUrl: null,
+		imageUrlSmall: null,
+	}
+}
+
 const musicbrainz = {
 	namespace,
 	getIdBySpotifyId: withCache(getIdBySpotifyId, { ttl: 60 * 15, namespace: namespace }),
@@ -257,6 +304,9 @@ const musicbrainz = {
 	getAlbumById: withCache(getAlbumByMBID, { ttl: 60 * 15, namespace: namespace }),
 	getArtistByUrl: withCache(getArtistByUrl, { ttl: 60 * 15, namespace: namespace }),
 	getArtistById: withCache(getArtistById, { ttl: 60 * 15, namespace: namespace }),
+	formatTrackObject,
+	formatArtistObject,
+	formatPartialArtistObject,
 	parseUrl,
 	createUrl,
 	validateMBID,
