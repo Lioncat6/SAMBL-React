@@ -104,6 +104,7 @@
 .viewButton {
 	margin-left: auto !important;
 	height: -webkit-fill-available;
+	width: -moz-available;
 	align-content: center;
 	text-align: center !important;
 	width: 150px;
