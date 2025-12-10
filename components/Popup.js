@@ -326,6 +326,7 @@ function AlbumDetails({ data }) {
 					</a>
 				</div>
 			)}
+			{"//"}
 			<div className={styles.albumInfo}>
 				<div className={styles.albumTitle}>
 					<a href={url} target="_blank" rel="noopener noreferrer">
@@ -372,10 +373,7 @@ function AlbumDetails({ data }) {
 	);
 }
 
-function TrackMenu({ data, close }) {
-	let trackData = data.mbTrackISRCs.length > 0 ? data.mbTrackISRCs : data.albumTracks;
-
-	let toastProperties = {
+let toastProperties = {
 		position: "top-left",
 		autoClose: 5000,
 		hideProgressBar: false,
@@ -386,6 +384,7 @@ function TrackMenu({ data, close }) {
 		transition: Flip,
 	};
 
+function TrackItem({ index, track, highlight }) {
 	function handleCopy(text, all) {
 		if (text.length > 0) {
 			navigator.clipboard.writeText(text);
@@ -393,58 +392,69 @@ function TrackMenu({ data, close }) {
 		}
 	}
 	return (
+		<div key={index} className={styles.propertyRow}>
+			<div className={styles.property}>
+				{/* Copy Button */}
+				<button
+					className={`${styles.copyButton} ${track.isrcs.length > 0 ? "" : styles.disabled}`}
+					onClick={() => handleCopy(Array.isArray(track.isrcs) && typeof track[0] === "object" ? JSON.stringify(track, null, 2) : String(track.isrcs))}
+					title={track.isrcs.length > 0 ? "Copy to Clipboard" : "No ISRC data available"}
+				>
+					<FaCopy />
+				</button>
+				{/* Lookup Button */}
+				{track.isrcs.length <= 1 ? (
+					<a
+						className={`${styles.lookupButton} ${track.isrcs.length > 0 ? "" : styles.disabled}`}
+						href={track.isrcs.length ? `/find?query=${encodeURIComponent(track.isrcs[0])}` : undefined}
+						target="_blank"
+						rel="noopener noreferrer"
+						title={track.isrcs.length > 0 ? "Lookup ISRC" : "No ISRC data available"}
+					>
+						<FaMagnifyingGlass />
+					</a>
+				) : (
+					<Menu as="div" className={styles.isrcDropdownWrapper}>
+						<MenuButton className={styles.lookupButton} title="Lookup ISRC">
+							<FaMagnifyingGlass />
+						</MenuButton>
+						<MenuItems className={styles.dropdownMenu} anchor="bottom end">
+							{track.isrcs.map((isrc, idx) => (
+								<MenuItem key={isrc}>
+									<a className={styles.menuItem} href={`/find?query=${encodeURIComponent(isrc)}`} target="_blank" rel="noopener noreferrer">
+										{isrc}
+									</a>
+								</MenuItem>
+							))}
+						</MenuItems>
+					</Menu>
+				)}
+				<div className={styles.trackNumber}>{(Number(index) + 1).toString().padStart(2, "0")}</div> {track.name}
+			</div>
+			<div className={styles.propertyData}>{Array.isArray(track) && typeof track[0] === "object" ? JSON.stringify(track, null, 2) : String(track.isrcs)}</div>
+		</div>
+	);
+}
+
+function TrackMenu({ data, close }) {
+	let trackData = data.mbTrackISRCs.length > 0 ? data.mbTrackISRCs : data.albumTracks;
+
+	return (
 		<>
 			<div className={styles.trackBg} style={{ "--background-image": `url(${data.imageUrl})` }} >
-			{" "}
-			<div className={styles.header}>
 				{" "}
-				<MdOutlineAlbum /> Tracks for {data.name}
-			</div>
+				<div className={styles.header}>
+					{" "}
+					<MdOutlineAlbum /> Tracks for {data.name}
+				</div>
 			</div>
 			<AlbumDetails data={data} />
 			<div className={styles.content}>
 				{Object.entries(trackData).map(([key, value]) => {
 					return (
-						<div key={key} className={styles.propertyRow}>
-							<div className={styles.property}>
-								<button
-									className={`${styles.copyButton} ${value.isrcs.length > 0 ? "" : styles.disabled}`}
-									onClick={() => handleCopy(Array.isArray(value.isrcs) && typeof value[0] === "object" ? JSON.stringify(value, null, 2) : String(value.isrcs))}
-									title={value.isrcs.length > 0 ? "Copy to Clipboard" : "No ISRC data available"}
-								>
-									<FaCopy />
-								</button>
-								{value.isrcs.length <= 1 ? (
-									<a
-										className={`${styles.lookupButton} ${value.isrcs.length > 0 ? "" : styles.disabled}`}
-										href={value.isrcs.length ? `/find?query=${encodeURIComponent(value.isrcs[0])}` : undefined}
-										target="_blank"
-										rel="noopener noreferrer"
-										title={value.isrcs.length > 0 ? "Lookup ISRC" : "No ISRC data available"}
-									>
-										<FaMagnifyingGlass />
-									</a>
-								) : (
-									<Menu as="div" className={styles.isrcDropdownWrapper}>
-										<MenuButton className={styles.lookupButton} title="Lookup ISRC">
-											<FaMagnifyingGlass />
-										</MenuButton>
-										<MenuItems className={styles.dropdownMenu} anchor="bottom end">
-											{value.isrcs.map((isrc, idx) => (
-												<MenuItem key={isrc}>
-													<a className={styles.menuItem} href={`/find?query=${encodeURIComponent(isrc)}`} target="_blank" rel="noopener noreferrer">
-														{isrc}
-													</a>
-												</MenuItem>
-											))}
-										</MenuItems>
-									</Menu>
-								)}
-								<div className={styles.trackNumber}>{(Number(key) + 1).toString().padStart(2, "0")}</div> {value.name}
-							</div>
-							<div className={styles.propertyData}>{Array.isArray(value) && typeof value[0] === "object" ? JSON.stringify(value, null, 2) : String(value.isrcs)}</div>
-						</div>
-					);
+						<TrackItem index={key} track={value} highlight={false} />
+					)
+
 				})}
 			</div>
 			<div className={styles.actions}>
@@ -452,7 +462,7 @@ function TrackMenu({ data, close }) {
 					Close
 				</button>
 			</div>
-		
+
 		</>
 	);
 }
