@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, FullProvider, PartialArtistObject } from "./provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, FullProvider, PartialArtistObject, RawAlbumData } from "./provider-types";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
@@ -201,7 +201,7 @@ async function getArtistAlbums(
 	}
 }
 
-function formatAlbumGetData(rawData): AlbumData {
+function formatAlbumGetData(rawData): RawAlbumData {
 	return {
 		count: null,
 		current: rawData.current,

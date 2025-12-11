@@ -5,7 +5,8 @@ import type {
   AlbumData,
   PartialArtistObject,
   UrlData,
-  FullProvider
+  FullProvider,
+  RawAlbumData
 } from './provider-types'
 import logger from '../../../utils/logger'
 import withCache from '../../../utils/cache'
@@ -110,7 +111,7 @@ async function getArtistAlbums (artistId, offset, limit) {
   }
 }
 
-function formatAlbumGetData (rawData): AlbumData {
+function formatAlbumGetData (rawData): RawAlbumData {
   let artistAlbums: any[] = []
   let playlists = rawData.artistPlaylists
   let tracks = rawData.artistTracks

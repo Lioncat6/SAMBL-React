@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider } from "./provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData } from "./provider-types";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
@@ -223,7 +223,7 @@ function createUrl(type, id) {
 	return `https://open.spotify.com/${type}/${id}`;
 }
 
-function formatAlbumGetData(rawData): AlbumData {
+function formatAlbumGetData(rawData): RawAlbumData {
 	const nextIntRegex = /offset=(\d+)/;
 	return {
 		count: rawData.total,
