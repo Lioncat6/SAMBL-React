@@ -3,7 +3,7 @@ import providers from "./providers/providers";
 import logger from "../../utils/logger";
 import { FullProvider } from "./providers/provider-types";
 import { NextApiRequest, NextApiResponse } from "next";
-
+import normalizeVars from "../../utils/normalizeVars";
 /**
  * @swagger
  * /api/searchArtists:
@@ -72,8 +72,8 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(req:NextApiRequest, res:NextApiResponse) {
     try {
-        const { query, provider } = req.query;
-        if (!query || typeof query != "string") {
+        const { query, provider } = normalizeVars(req.query);
+        if (!query) {
             return res.status(400).json({ error: "Parameter `query` is required" });
         }
         let sourceProvider: FullProvider = providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject", "getArtistUrl"]);

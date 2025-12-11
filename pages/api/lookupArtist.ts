@@ -3,19 +3,19 @@ import musicbrainz from "./providers/musicbrainz";
 import logger from "../../utils/logger";
 import { NextApiRequest, NextApiResponse } from "next";
 import { FullProvider } from "./providers/provider-types";
-
+import normalizeVars from "../../utils/normalizeVars";
 export default async function handler(req:NextApiRequest, res:NextApiResponse) {
     try {
-        var { provider_id, provider, url } = req.query;
+        var { provider_id, provider, url } = normalizeVars(req.query);
 
         const forceRefresh = Object.prototype.hasOwnProperty.call(req.query, "forceRefresh");
         if (provider_id && !provider ) {
             return res.status(400).json({ error: "Provider must be specified when provider_id is provided" });
         }
-        if (!provider_id && (!url || typeof url != "string")) {
+        if (!provider_id && !url) {
             return res.status(400).json({ error: "Either `provider_id` or `url` must be provided" });
         }
-        if (url && typeof url == "string") {
+        if (url) {
             const urlInfo = providers.getUrlInfo(url);
             if (!urlInfo) {
                 return res.status(400).json({ error: "Invalid URL" });
@@ -30,7 +30,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
         if (!providerObj) {
             return res.status(400).json({ error: "Provider doesn't exist or doesn't support this operation" });
         }
-        if (!provider_id || typeof provider_id != "string") {
+        if (!provider_id) {
             return res.status(400).json({ error: "Provider id invalid or missing" });
         }
         const artist = await providerObj.getArtistById(provider_id, { noCache: forceRefresh });
