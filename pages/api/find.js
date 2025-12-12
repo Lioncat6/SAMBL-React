@@ -67,7 +67,7 @@ export default async function handler(req, res) {
 					resultItems.push(
 						createDataObject(
 							"musicbrainz",
-							imageData.images[0]?.thumbnails?.large || "",
+							imageData.images?.[0]?.thumbnails?.large || "",
 							album.title,
 							album["artist-credit"].map((artist) => ({ name: artist.name, link: `https://musicbrainz.org/artist/${artist.artist.id}` })),
 							[album.date, `${album["track-count"]} tracks`, text.capitalizeFirst(album["release-group"]["primary-type"])],
