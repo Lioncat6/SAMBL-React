@@ -1,4 +1,4 @@
-import { MusicBrainzApi, CoverArtArchiveApi, IRelation, RelationsIncludes, IArtist, EntityType, IBrowseReleasesQuery, IRelease, IEntity, IRecording, ICoverInfo, ICoversInfo, IReleaseList, IUrlList, IUrlLookupResult, IUrl, IBrowseReleasesResult, IRecordingList } from "musicbrainz-api";
+import { MusicBrainzApi, CoverArtArchiveApi, IRelation, RelationsIncludes, IArtist, EntityType, IBrowseReleasesQuery, IRelease, IEntity, IRecording, ICoverInfo, ICoversInfo, IReleaseList, IUrlList, IUrlLookupResult, IUrl, IBrowseReleasesResult, IRecordingList, IArtistList, IArtistMatch } from "musicbrainz-api";
 import { UrlInfo, UrlMBIDDict, UrlData, Provider, TrackObject, ArtistObject, PartialArtistObject } from "./provider-types";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
@@ -36,6 +36,19 @@ async function getIdBySpotifyId(spotifyId: string): Promise<string | null | unde
 	} catch (error) {
 		err.handleError("Failed to fetch artist data", error);
 	}
+}
+
+async function searchByArtistName(name:string): Promise<IArtistList | null | undefined> {
+	try {
+		const data = await mbApi.search("artist", { query: name, inc: ["url-rels"]});
+		return data;
+	} catch (error) {
+		err.handleError("Failed to search by artist name", error);
+	}
+}
+
+function formatArtistSearchData(rawData: IArtistList): IArtistMatch[] {
+	return rawData.artists;
 }
 
 async function getArtistById(mbid: string): Promise<IArtist | null | undefined> {
@@ -114,6 +127,7 @@ async function getArtistAlbums(mbid:string, offset = 0, limit = 100, inc = ["url
 		err.handleError("Failed to fetch artist albums", error);
 	}
 }
+
 
 async function getArtistFeaturedAlbums(mbid:string, offset = 0, limit = 100, inc = ["url-rels", "recordings", "isrcs"] as any): Promise<IBrowseReleasesResult | null | undefined> {
 	try {
@@ -258,14 +272,23 @@ function formatTrackObject(track: IRecording): TrackObject {
 	}
 }
 
+function getArtistImage(artist: IArtist): string | null {
+	if (!artist || !artist.relations) return null;
+	const imageRel = artist.relations.find((rel) => rel.type.toLowerCase() === "image" && rel["target-type"] === "url");
+	if (imageRel && imageRel.url && imageRel.url.resource) {
+		return imageRel.url.resource;
+	}
+	return null;
+}
+
 function formatArtistObject(artist: IArtist): ArtistObject {
 	return {
 		provider: namespace,
 		id: artist.id,
 		name: artist.name,
 		url: createUrl('artist', artist.id),
-		imageUrl: null,
-		imageUrlSmall: null,
+		imageUrl: getArtistImage(artist),
+		imageUrlSmall: getArtistImage(artist),
 		bannerUrl: null,
 		relevance: artist.country || '',
 		info: artist.disambiguation || '',
@@ -286,6 +309,10 @@ function formatPartialArtistObject(artist: IArtist): PartialArtistObject {
 	}
 }
 
+function getArtistUrl( artist: IArtist): string | null {
+	return createUrl('artist', artist.id);
+}
+
 const musicbrainz = {
 	namespace,
 	getIdBySpotifyId: withCache(getIdBySpotifyId, { ttl: 60 * 15, namespace: namespace }),
@@ -304,6 +331,9 @@ const musicbrainz = {
 	getAlbumById: withCache(getAlbumByMBID, { ttl: 60 * 15, namespace: namespace }),
 	getArtistByUrl: withCache(getArtistByUrl, { ttl: 60 * 15, namespace: namespace }),
 	getArtistById: withCache(getArtistById, { ttl: 60 * 15, namespace: namespace }),
+	searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 15, namespace: namespace }),
+	formatArtistSearchData,
+	getArtistUrl,
 	formatTrackObject,
 	formatArtistObject,
 	formatPartialArtistObject,
