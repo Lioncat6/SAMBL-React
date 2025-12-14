@@ -16,6 +16,7 @@ import text from "../utils/text";
 import { PiPlaylistBold } from "react-icons/pi";
 import { TbPlaylistOff } from "react-icons/tb";
 import editNoteBuilder from "../utils/editNoteBuilder";
+import { IoFilter } from "react-icons/io5";
 
 function AlbumIcons({ item }) {
 	const { id, url, releaseDate, trackCount, albumStatus, mbTrackCount, mbReleaseDate, mbid, albumIssues, provider, currentArtistMBID } = item;
@@ -52,9 +53,8 @@ function AlbumIcons({ item }) {
 					className={`${styles.dateMissing} ${albumStatus === "green" ? styles.dateMissingAvaliable : ""}`}
 					href={
 						albumStatus === "green"
-							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${releaseDate.split("-")[0]}&events.0.date.month=${releaseDate.split("-")[1]}&events.0.date.day=${
-									releaseDate.split("-")[2]
-							  }&edit_note=${encodeURIComponent(editNoteBuilder.buildEditNote(`Release Date`, provider, url, `https://musicbrainz.org/artist/${currentArtistMBID}`))}`
+							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${releaseDate.split("-")[0]}&events.0.date.month=${releaseDate.split("-")[1]}&events.0.date.day=${releaseDate.split("-")[2]
+							}&edit_note=${encodeURIComponent(editNoteBuilder.buildEditNote(`Release Date`, provider, url, `https://musicbrainz.org/artist/${currentArtistMBID}`))}`
 							: undefined
 					}
 					title={albumStatus === "green" ? "This release is missing a release date!\n[Click to Fix]" : "This release is missing a release date!"}
@@ -151,7 +151,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 				},
 				toastProperties
 			)
-			.finally(() => {});
+			.finally(() => { });
 	}
 
 	const {
@@ -201,8 +201,8 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 		albumStatus === "green"
 			? "This album has a MB release with a matching Spotify URL"
 			: albumStatus === "orange"
-			? "This album has a MB release with a matching name but no associated link"
-			: "This album has no MB release with a matching name or URL";
+				? "This album has a MB release with a matching name but no associated link"
+				: "This album has no MB release with a matching name or URL";
 
 	let data_params = {
 		"data-id": id,
@@ -287,14 +287,14 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 								? (
 									albumTracks.length > 0
 										? <Popup
-										button={
-											<span className={`${styles.hasTracks} ${highlightTracks ? styles.trackHighlight : ""}`} title={"Click to view tracks"}>
-												<PiPlaylistBold /> {sourceTrackString}
-											</span>
-										}
-										type="track"
-										data={item}
-									></Popup>
+											button={
+												<span className={`${styles.hasTracks} ${highlightTracks ? styles.trackHighlight : ""}`} title={"Click to view tracks"}>
+													<PiPlaylistBold /> {sourceTrackString}
+												</span>
+											}
+											type="track"
+											data={item}
+										></Popup>
 										: (
 											<span className={`${styles.tracks} ${highlightTracks ? styles.trackHighlight : ""}`} title={"No track data available\nRefresh the album to fetch track data!"}>
 												<TbPlaylistOff /> {sourceTrackString}
@@ -519,12 +519,12 @@ function LoadingContainer({ text, showRefresh = false }) {
 	);
 }
 
-function RefreshButton({refresh, showRefresh = false}) {
+function RefreshButton({ refresh, showRefresh = false }) {
 	if (refresh != undefined) {
 		return (
 			<button id="refreshButton" className={styles.refreshButton} onClick={refresh}>
-					<IoMdRefresh />
-				</button>
+				<IoMdRefresh />
+			</button>
 		)
 	} else if (showRefresh) {
 		return (
@@ -540,15 +540,21 @@ function LoadingSearchContainer({ text, showRefresh = false }) {
 		<>
 			<div id="searchContainer" className={styles.searchContainer}>
 				<div className={styles.listSearchLoading}>{text}</div>
-				<button id="filterSearch" className={styles.filterSearch}>
-					<div id="fbText" className={styles.fbText}>
-						Filter
-					</div>
-				</button>
+				<FilterButton />
 				<RefreshButton showRefresh={showRefresh} />
 			</div>
 		</>
 	);
+}
+
+function FilterButton() {
+	return (
+		<button id="filterSearch" className={styles.filterSearch}>
+			<div id="fbText" className={styles.fbText}>
+				<IoFilter />
+			</div>
+		</button>
+	)
 }
 
 function SearchContainer({ onSearch, currentFilter, setFilter, refresh }) {
@@ -564,11 +570,7 @@ function SearchContainer({ onSearch, currentFilter, setFilter, refresh }) {
 			<Popup
 				type="filter"
 				button={
-					<button id="filterSearch" className={styles.filterSearch}>
-						<div id="fbText" className={styles.fbText}>
-							Filter
-						</div>
-					</button>
+					<FilterButton />
 				}
 				data={currentFilter}
 				apply={(newFilter) => setFilter(newFilter)}
@@ -579,7 +581,7 @@ function SearchContainer({ onSearch, currentFilter, setFilter, refresh }) {
 }
 
 export default function ItemList({ items, type, text, refresh }) {
-	const { settings  } = useSettings();
+	const { settings } = useSettings();
 	const [searchQuery, setSearchQuery] = useState(""); // State for search query
 	const [filteredItems, setFilteredItems] = useState(items || []); // State for filtered items
 	const [currentItems, setCurrentItems] = useState(items || []);

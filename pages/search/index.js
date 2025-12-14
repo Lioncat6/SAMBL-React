@@ -9,7 +9,7 @@ async function getItems(query, provider) {
         const data = await response.json();
         return data; 
     } else {
-        throw new Error("Error fetching artist data");
+        throw new Error("Error fetching artist data", response.statusText);
     }
 }
 
