@@ -9,7 +9,7 @@
 		"dev": "next dev"
 	},
 	"dependencies": {
-		"@headlessui/react": "^2.2.2",
+		"@headlessui/react": "^2.2.9",
 		"@tidal-music/api": "^0.4.0",
 		"@tidal-music/auth": "^1.3.4",
 		"@types/react": "^19.1.2",

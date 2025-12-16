@@ -16,7 +16,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
 		if (!providerObj) {
             return res.status(400).json({ error: "Provider doesn't exist or doesn't support this operation" });
         }
-		let rawData = await providerObj.getArtistAlbums(provider_id, parseInt(offset), limit, { noCache: forceRefresh });
+		let rawData = await providerObj.getArtistAlbums(provider_id, offset, limit, { noCache: forceRefresh });
 		let data: RawAlbumData = providerObj.formatAlbumGetData(rawData);
 		let formattedData: AlbumData = {
 			...data,

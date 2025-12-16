@@ -8,10 +8,14 @@
         "mbid",
         "mbids",
         "musicbrainz",
+        "noopener",
+        "noreferrer",
         "rels",
         "sambl",
         "soundcloud",
         "trackinfo",
-        "upcs"
-    ]
+        "upcs",
+        "userscript"
+    ],
+    "typescript.tsdk": "node_modules\\typescript\\lib"
 }

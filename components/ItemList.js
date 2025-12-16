@@ -540,22 +540,17 @@ function LoadingSearchContainer({ text, showRefresh = false }) {
 		<>
 			<div id="searchContainer" className={styles.searchContainer}>
 				<div className={styles.listSearchLoading}>{text}</div>
-				<FilterButton />
+				<button id="filterSearch" className={styles.filterSearch}>
+					<div id="fbText" className={styles.fbText}>
+						<IoFilter />
+					</div>
+				</button>
 				<RefreshButton showRefresh={showRefresh} />
 			</div>
 		</>
 	);
 }
 
-function FilterButton() {
-	return (
-		<button id="filterSearch" className={styles.filterSearch}>
-			<div id="fbText" className={styles.fbText}>
-				<IoFilter />
-			</div>
-		</button>
-	)
-}
 
 function SearchContainer({ onSearch, currentFilter, setFilter, refresh }) {
 	const Popup = dynamic(() => import("./Popup"), { ssr: false });
@@ -570,7 +565,11 @@ function SearchContainer({ onSearch, currentFilter, setFilter, refresh }) {
 			<Popup
 				type="filter"
 				button={
-					<FilterButton />
+					<button id="filterSearch" className={styles.filterSearch}>
+						<div id="fbText" className={styles.fbText}>
+							<IoFilter />
+						</div>
+					</button>
 				}
 				data={currentFilter}
 				apply={(newFilter) => setFilter(newFilter)}
