@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider } from "./provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData } from "./provider-types";
 import logger from "../../../utils/logger";
 import text from "../../../utils/text";
 import withCache from "../../../utils/cache";
@@ -201,7 +201,7 @@ async function getArtistAlbums(artistId, offset, limit) {
 	}
 }
 
-function formatAlbumGetData(rawData): AlbumData {
+function formatAlbumGetData(rawData): RawAlbumData {
 	const nextIntRegex = /index=(\d+)/;
 	return {
 		count: rawData.total,

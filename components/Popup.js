@@ -379,7 +379,6 @@ function AlbumDetails({ data }) {
 					</a>
 				</div>
 			)}
-			{"//"}
 			<div className={styles.albumInfo}>
 				<div className={styles.albumTitle}>
 					<a href={url} target="_blank" rel="noopener noreferrer">

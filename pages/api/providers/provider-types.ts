@@ -54,10 +54,17 @@ export type TrackObject = {
     isrcs: string[];
 };
 
-export type AlbumData = {
+export class PagingData {
     count: number | null;
     current: number | null;
     next: string | null;
+}
+
+export class RawAlbumData extends PagingData {
+    albums: any[];
+};
+
+export class AlbumData extends PagingData {
     albums: AlbumObject[];
 };
 

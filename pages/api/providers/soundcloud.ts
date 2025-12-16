@@ -5,7 +5,8 @@ import type {
   AlbumData,
   PartialArtistObject,
   UrlData,
-  FullProvider
+  FullProvider,
+  RawAlbumData
 } from './provider-types'
 import logger from '../../../utils/logger'
 import withCache from '../../../utils/cache'
@@ -79,7 +80,7 @@ function formatArtistObject (rawObject: SoundcloudUser): ArtistObject {
     url: `https://soundcloud.com/${rawObject.permalink}`,
     imageUrl: rawObject.avatar_url?.includes('default_avatar')
       ? rawObject.avatar_url
-      : rawObject.avatar_url?.replace('large', 'original') || '',
+      : rawObject.avatar_url?.replace('large', 't500x500') || '',
     imageUrlSmall: rawObject.avatar_url || '',
     bannerUrl: rawObject.visuals?.visuals[0]?.visual_url,
     relevance: `${rawObject.followers_count} Followers`,
@@ -110,7 +111,7 @@ async function getArtistAlbums (artistId, offset, limit) {
   }
 }
 
-function formatAlbumGetData (rawData): AlbumData {
+function formatAlbumGetData (rawData): RawAlbumData {
   let artistAlbums: any[] = []
   let playlists = rawData.artistPlaylists
   let tracks = rawData.artistTracks
@@ -159,7 +160,7 @@ function formatAlbumObject (rawAlbum): AlbumObject {
     id: rawAlbum.urn || `soundcloud:${rawAlbum.kind}:${rawAlbum.id}`,
     name: rawAlbum.title,
     url: rawAlbum.permalink_url?.split('?')[0],
-    imageUrl: rawAlbum.artwork_url?.replace('large', 'original') || '',
+    imageUrl: rawAlbum.artwork_url?.replace('large', 't500x500') || '',
     imageUrlSmall: rawAlbum.artwork_url || '',
     albumArtists: [formatPartialArtistObject(rawAlbum.user)],
     artistNames: [rawAlbum.user.username],
@@ -209,7 +210,7 @@ function formatTrackObject (track): TrackObject {
     id: track.urn || `soundcloud:track:${track.id}`,
     name: track.title,
     url: track.permalink_url?.split('?')[0],
-    imageUrl: track.artwork_url?.replace('large', 'original') || '',
+    imageUrl: track.artwork_url?.replace('large', 't500x500') || '',
     imageUrlSmall: track.artwork_url || '',
     albumName: track.albumName,
     trackArtists: track.user ? [formatPartialArtistObject(track.user)] : [],
@@ -231,7 +232,7 @@ function formatPartialArtistObject (
     url: artist.permalink_url?.split('?')[0],
     imageUrl: artist.avatar_url?.includes('default_avatar')
       ? artist.avatar_url
-      : artist.avatar_url?.replace('large', 'original') || '',
+      : artist.avatar_url?.replace('large', 't500x500') || '',
     imageUrlSmall: artist.avatar_url || '',
     id: artist.id,
     provider: namespace

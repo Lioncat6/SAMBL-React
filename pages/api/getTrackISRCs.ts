@@ -4,10 +4,11 @@ import logger from "../../utils/logger";
 import { getTraceEvents } from "next/dist/trace";
 import { FullProvider } from "./providers/provider-types";
 import { NextApiRequest, NextApiResponse } from "next";
+import normalizeVars from "../../utils/normalizeVars";
 
 export default async function handler(req:NextApiRequest, res:NextApiResponse) {
     try {
-        let { provider_id, provider, url } = req.query;
+        let { provider_id, provider, url } = normalizeVars(req.query);
         if (!provider_id && !url) {
             return res.status(400).json({ error: "Parameter `id` or `url` is required" });
         }
@@ -15,7 +16,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
             return res.status(400).json({ error: "Parameter `provider` is required when using `id`" });
         }
         let sourceProvider: FullProvider | null = null;
-        if (url && typeof url == "string") {
+        if (url) {
             let urlInfo = providers.getUrlInfo(url);
             if (!urlInfo) {
                 return res.status(404).json({ error: "Invalid provider URL" });
@@ -32,7 +33,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
         if (!sourceProvider) {
             return res.status(400).json({ error: `Provider \`${provider}\` does not support this operation` });
         }
-        if (!provider_id || typeof provider_id != "string") {
+        if (!provider_id) {
             return res.status(400).json({ error: "Provider id invalid or missing" });
         }
         let results = await sourceProvider.getTrackById(provider_id);
