@@ -1,13 +1,13 @@
 import { useEffect, useState, Fragment, cloneElement } from "react";
 import styles from "../styles/popups.module.css";
 import { useSettings } from "./SettingsContext";
-import { FaXmark, FaGear, FaFilter, FaCopy, FaMagnifyingGlass, FaChevronDown, FaChevronRight, FaBarcode } from "react-icons/fa6";
+import { FaXmark, FaGear, FaFilter, FaCopy, FaMagnifyingGlass, FaChevronDown, FaChevronRight, FaBarcode, FaCaretDown } from "react-icons/fa6";
 import { TbTableExport } from "react-icons/tb";
 import { useExport } from "./ExportState";
 import { toast, Flip } from "react-toastify";
 import getConfig from "next/config";
 import { MdOutlineAlbum, MdPerson, MdOutlineCalendarMonth } from "react-icons/md";
-import { Dialog, Transition, Menu, MenuButton, MenuItem, MenuItems, TransitionChild, DialogPanel } from "@headlessui/react";
+import { Dialog, Transition, Menu, MenuButton, MenuItem, MenuItems, TransitionChild, DialogPanel, Listbox, ListboxButton, ListboxOption, ListboxOptions, Label } from "@headlessui/react";
 import text from "../utils/text";
 
 function ConfigureMenu({ close }) {
@@ -72,8 +72,21 @@ function ConfigureMenu({ close }) {
 	);
 }
 
+function SelectedItem({ item, onRemove }) {
+	return <div className={styles.selectedItem}><span className={styles.selectedItemName}>{item.name}</span><div className={styles.selectedItemButton} onClick={onRemove}><FaXmark /></div></div>;
+}
+
 function FilterMenu({ close, data, apply }) {
+	const filterOptions = [
+		{ id: 1, name: 'Green', key: 'showGreen' },
+		{ id: 2, name: 'Orange', key: 'showOrange' },
+		{ id: 3, name: 'Red', key: 'showRed' },
+		{ id: 4, name: 'Various Artists', key: 'showVarious' },
+		{ id: 5, name: 'Album Issues', key: 'onlyIssues' },
+	]
 	const [filter, setFilter] = useState({ ...data });
+	const [selectedOptions, setSelectedOptions] = useState([filterOptions[0], filterOptions[1], filterOptions[2]]);
+
 	return (
 		<>
 			{" "}
@@ -144,6 +157,46 @@ function FilterMenu({ close, data, apply }) {
 						/>
 						<label htmlFor="onlyIssues">Only Albums With Issues</label>
 					</div>
+					<Listbox value={selectedOptions} onChange={setSelectedOptions} multiple>
+						{({ open }) => (
+							<>
+								<Label className={styles.selectLabel}>Status Filter</Label>
+								<ListboxButton className={styles.selectBox}>
+									<FaCaretDown className={`${styles.carrot} ${open && styles.open}`} />
+									{selectedOptions.map((item) => (
+										<SelectedItem
+											key={item.id}
+											item={item}
+											onRemove={() => setSelectedOptions(selectedOptions.filter((option) => option.id !== item.id))}
+										/>
+									))}
+								</ListboxButton>
+								<Transition
+									show={open}
+									as={Fragment}
+									enter={styles.selectOptionsEnter}
+									enterFrom={styles.selectOptionsEnterFrom}
+									enterTo={styles.selectOptionsEnterTo}
+									leave={styles.selectOptionsLeave}
+									leaveFrom={styles.selectOptionsLeaveFrom}
+									leaveTo={styles.selectOptionsLeaveTo}
+								>
+									<ListboxOptions anchor="bottom" className={styles.selectOptions}>
+										{filterOptions.map((option) => (
+											<ListboxOption key={option.id} value={option} as={Fragment}>
+												{({ selected }) => (
+													<div className={styles.selectOption}>
+														<span className={styles.optionText}>{option.name}</span>
+														{selected && <FaXmark />}
+													</div>
+												)}
+											</ListboxOption>
+										))}
+									</ListboxOptions>
+								</Transition>
+							</>
+						)}
+					</Listbox>
 				</div>
 			</div>
 			<div className={styles.actions}>
@@ -374,15 +427,15 @@ function AlbumDetails({ data }) {
 }
 
 let toastProperties = {
-		position: "top-left",
-		autoClose: 5000,
-		hideProgressBar: false,
-		closeOnClick: false,
-		pauseOnHover: true,
-		draggable: true,
-		progress: undefined,
-		transition: Flip,
-	};
+	position: "top-left",
+	autoClose: 5000,
+	hideProgressBar: false,
+	closeOnClick: false,
+	pauseOnHover: true,
+	draggable: true,
+	progress: undefined,
+	transition: Flip,
+};
 
 function TrackItem({ index, track, highlight }) {
 	function handleCopy(text, all) {

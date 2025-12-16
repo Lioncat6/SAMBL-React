@@ -439,3 +439,116 @@ flex-direction: row;
 	height: 16px;
 	vertical-align: middle;
 }
+
+.selectBox {
+    font-size: 14px;
+    border: 1px solid var(--foreground-primary);
+    border-radius: 5px;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    height: auto;
+    min-height: 28px;
+    resize: none;
+    background: transparent;
+    overflow: hidden;
+    width: 100%;
+    padding: 4px 8px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease-in-out;
+    flex-wrap: wrap;
+    row-gap: 4px;
+}
+
+.selectBox:hover {
+    cursor: pointer;
+    border-color: var(--foreground-secondary);
+}
+
+.selectOptions {
+    background-color: var(--background); 
+    border: 1px solid var(--button-border);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1003;
+    padding: 8px 0; 
+    width: var(--button-width);
+    max-height: 200px;
+    overflow-y: auto;
+    
+}
+
+.selectOptionsEnter, .selectOptionsLeave {
+    transform-origin: top;
+    transition: opacity 200ms cubic-bezier(.4,0,.2,1), transform 200ms cubic-bezier(.4,0,.2,1);
+}
+.selectOptionsEnterFrom, .selectOptionsLeaveTo  {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+}
+.selectOptionsEnterTo, .selectOptionsLeaveFrom {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+}
+
+.selectOption {
+    font-family: Arial, sans-serif;
+    display: flex;
+    padding: 4px 8px;
+    color: var(--foreground-primary);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: normal;
+    transition: background-color 0.2s, color 0.2s;
+    cursor: pointer;
+}
+
+/* highlights the elment when focused cause headless doesn't for some reason */
+.selectOption:has(data-focus) {
+    border: 2px solid var(--foreground-primary);
+    border-radius: 4px;
+}
+
+
+.selectedItem {
+    border-radius: 4px;
+    padding: 1px;
+    margin: 0 0 0 4px;
+    border: 1px solid var(--foreground-primary);
+    display: flex;
+    align-items: center;
+}
+
+
+.selectedItemButton {
+    background-color: transparent;
+    border: none;
+    color: var(--foreground-primary);
+    padding: 0;
+    transition: all 0.2s ease-in-out;
+    text-align: center;
+}
+
+.selectedItemName {
+    padding-left: 2px;
+}
+
+.selectedItemButton:hover, .selectOption:hover {
+    cursor: pointer;
+    color: var(--foreground-secondary);
+}
+
+.optionText {
+    flex-grow: 1;
+}
+
+.carrot {
+    transition: transform 0.2s ease-in-out;
+}
+
+.carrot.open {
+    transform: rotate(-180deg) translateY(-2px);
+}
