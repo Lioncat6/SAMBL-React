@@ -6,7 +6,7 @@
 function normalizeText(text) {
 	if (typeof text !== "string") text = String(text);
 	let normalizedText = text.toUpperCase().replace(/\s/g, "");
-	let textRemovedChars = normalizedText.replace(/['’!?.,:;(){}\[\]<>\/\\|_\-+=*&^%$#@~`“”«»„“”¿¡]/g, "");
+	let textRemovedChars = normalizedText.replace(/["'’!?.,:;(){}\[\]<>\/\\|_\-+=*&^%$#@~`“”«»„“”¿¡]/g, "");
 	if (textRemovedChars == "") {
 		textRemovedChars = normalizedText;
 	}
