@@ -184,8 +184,8 @@ function FilterMenu({ close, data, apply }) {
 									<ListboxOptions anchor="bottom" className={styles.selectOptions}>
 										{filterOptions.map((option) => (
 											<ListboxOption key={option.id} value={option} as={Fragment}>
-												{({ selected }) => (
-													<div className={styles.selectOption}>
+												{({ focus, selected }) => (
+													<div className={`${styles.selectOption} ${focus ? styles.focused : ""} ${selected ? styles.selected : ""}`}>
 														<span className={styles.optionText}>{option.name}</span>
 														{selected && <FaXmark />}
 													</div>

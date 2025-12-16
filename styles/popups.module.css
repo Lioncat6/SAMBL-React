@@ -536,7 +536,7 @@ flex-direction: row;
     padding-left: 2px;
 }
 
-.selectedItemButton:hover, .selectOption:hover {
+.selectedItemButton:hover, .selectOption:hover, .selectOption.focused {
     cursor: pointer;
     color: var(--foreground-secondary);
 }
