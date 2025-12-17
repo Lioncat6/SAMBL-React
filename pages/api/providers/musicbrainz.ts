@@ -1,5 +1,5 @@
-import { MusicBrainzApi, CoverArtArchiveApi, IRelation, RelationsIncludes, IArtist, EntityType, IBrowseReleasesQuery, IRelease, IEntity, IRecording, ICoverInfo, ICoversInfo, IReleaseList, IUrlList, IUrlLookupResult, IUrl, IBrowseReleasesResult, IRecordingList, IArtistList, IArtistMatch } from "musicbrainz-api";
-import { UrlInfo, UrlMBIDDict, UrlData, Provider, TrackObject, ArtistObject, PartialArtistObject } from "./provider-types";
+import { MusicBrainzApi, CoverArtArchiveApi, IRelation, RelationsIncludes, IArtist, EntityType, IBrowseReleasesQuery, IRelease, IEntity, IRecording, ICoverInfo, ICoversInfo, IReleaseList, IUrlList, IUrlLookupResult, IUrl, IBrowseReleasesResult, IRecordingList, IArtistList, IArtistMatch, ITrack } from "musicbrainz-api";
+import { UrlInfo, UrlMBIDDict, UrlData, Provider, TrackObject, ArtistObject, PartialArtistObject, AlbumObject, ExtendedAlbumObject, MusicBrainzProvider, AlbumData } from "./provider-types";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
@@ -254,7 +254,44 @@ function createUrl(type: string, id: string): string {
 	return `https://musicbrainz.org/${type}/${id}`;
 }
 
-function formatTrackObject(track: IRecording): TrackObject {
+function formatAlbumGetData(rawData: IReleaseList): AlbumData {
+	return {
+		count: rawData["release-count"] || null,
+		current: rawData.releases ? rawData.releases.length : null,
+		next: null,
+		albums: rawData.releases.map(release => formatAlbumObject(release)),
+	}
+}
+
+function formatAlbumObject(album: IRelease): ExtendedAlbumObject {
+	return {
+		provider: namespace,
+		id: album.id,
+		name: album.title,
+		comment: album.disambiguation || null,
+		url: createUrl('release', album.id),
+		imageUrl: null,
+		imageUrlSmall: null,
+		albumArtists: album["artist-credit"] ? album["artist-credit"].map(ac => formatArtistObject(ac.artist)) : [],
+		artistNames: album["artist-credit"] ? album["artist-credit"].map(ac => ac.name) : [],
+		releaseDate: album.date || null,
+		upc: album.barcode || null,
+		trackCount: album["track-count"] || null,
+		albumType: album["release-group"] ? album["release-group"]["primary-type"]: null,
+		albumTracks: album.media && album.media.length > 0 ? album.media.flatMap(medium => medium.tracks.map(track => formatTrackObject(track))) : [],
+		externalUrls: album.relations ? album.relations.filter(rel => rel.url && rel.url?.resource).map(rel => rel.url?.resource).filter(url => typeof url == 'string') : [],
+	}
+}
+
+
+function formatTrackObject(track: IRecording | ITrack): TrackObject {
+	let trackNumber: number | null = null;
+	if ('isrcs' in track) {
+		let releaseTrack: ITrack = track as unknown as ITrack
+		trackNumber = releaseTrack.position || null;
+		track = releaseTrack.recording;
+	}
+	track = track as IRecording;
 	return {
 		provider: namespace,
 		id: track.id,
@@ -267,7 +304,7 @@ function formatTrackObject(track: IRecording): TrackObject {
 		artistNames: track["artist-credit"] ? track["artist-credit"].map(ac => ac.name) : [],
 		albumName: track.releases && track.releases.length > 0 ? track.releases[0].title : '',
 		releaseDate: track["first-release-date"] || null,
-		trackNumber: track.releases && track.releases.length > 0 && track.releases[0]["mediums"] && track.releases[0]["mediums"].length > 0 && track.releases[0]["mediums"][0]["tracks"] ? track.releases[0]["mediums"][0]["tracks"].findIndex(t => t.id === track.id) + 1 : null,
+		trackNumber: trackNumber || null,
 		isrcs: track.isrcs || [],
 	}
 }
@@ -279,6 +316,10 @@ function getArtistImage(artist: IArtist): string | null {
 		return imageRel.url.resource;
 	}
 	return null;
+}
+
+function formatArtistLookupData(artist: IArtist): IArtist {
+	return artist;
 }
 
 function formatArtistObject(artist: IArtist): ArtistObject {
@@ -313,14 +354,13 @@ function getArtistUrl( artist: IArtist): string | null {
 	return createUrl('artist', artist.id);
 }
 
-const musicbrainz = {
+const musicbrainz: MusicBrainzProvider = {
 	namespace,
 	getIdBySpotifyId: withCache(getIdBySpotifyId, { ttl: 60 * 15, namespace: namespace }),
 	getIdsBySpotifyUrls: withCache(getIdsBySpotifyUrls, { ttl: 60 * 15, namespace: namespace }),
 	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 15, namespace: namespace }),
 	getArtistFeaturedAlbums: withCache(getArtistFeaturedAlbums, { ttl: 60 * 15, namespace: namespace }),
 	getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 15, namespace: namespace }),
-	getAlbumByMBID: withCache(getAlbumByMBID, { ttl: 60 * 15, namespace: namespace }),
 	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 15, namespace: namespace }),
 	getCoverByMBID: withCache(getCoverByMBID, { ttl: 60 * 15, namespace: namespace }),
 	getAlbumsBySourceUrls: withCache(getAlbumsBySourceUrls, { ttl: 60 * 15, namespace: namespace }),
@@ -336,7 +376,10 @@ const musicbrainz = {
 	getArtistUrl,
 	formatTrackObject,
 	formatArtistObject,
+	formatArtistLookupData,
 	formatPartialArtistObject,
+	formatAlbumObject,
+	formatAlbumGetData,
 	parseUrl,
 	createUrl,
 	validateMBID,

@@ -11,15 +11,18 @@ import { FaDeezer, FaSpotify } from "react-icons/fa";
 import { SiTidal } from "react-icons/si";
 import { FaAnglesRight, FaAnglesLeft } from "react-icons/fa6";
 import { IoMdRefresh } from "react-icons/io";
-import { toast, Flip } from "react-toastify";
+import { toast, Flip, ToastOptions } from "react-toastify";
 import text from "../utils/text";
 import { PiPlaylistBold } from "react-icons/pi";
 import { TbPlaylistOff } from "react-icons/tb";
 import editNoteBuilder from "../utils/editNoteBuilder";
 import { IoFilter } from "react-icons/io5";
+import { DisplayAlbum } from "./component-types";
+
 
 function AlbumIcons({ item }) {
-	const { id, url, releaseDate, trackCount, albumStatus, mbTrackCount, mbReleaseDate, mbid, albumIssues, provider, currentArtistMBID } = item;
+	const { id, url, releaseDate, mbAlbum, trackCount, albumStatus, mbid, albumIssues, provider, artistMBID } = item;
+
 	return (
 		<div className={styles.iconContainer}>
 			{albumIssues.includes("noUPC") && <img className={styles.upcIcon} src="../assets/images/noUPC.svg" title="This release is missing a UPC/Barcode!" alt="Missing UPC" />}
@@ -44,7 +47,7 @@ function AlbumIcons({ item }) {
 				/>
 			)}
 			{albumIssues.includes("trackDiff") && (
-				<div className={styles.numDiff} title={`This release has a differing track count! [SP: ${trackCount} MB: ${mbTrackCount}]`}>
+				<div className={styles.numDiff} title={`This release has a differing track count! [SP: ${trackCount} MB: ${mbAlbum?.trackCount}]`}>
 					#
 				</div>
 			)}
@@ -54,7 +57,7 @@ function AlbumIcons({ item }) {
 					href={
 						albumStatus === "green"
 							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${releaseDate.split("-")[0]}&events.0.date.month=${releaseDate.split("-")[1]}&events.0.date.day=${releaseDate.split("-")[2]
-							}&edit_note=${encodeURIComponent(editNoteBuilder.buildEditNote(`Release Date`, provider, url, `https://musicbrainz.org/artist/${currentArtistMBID}`))}`
+							}&edit_note=${encodeURIComponent(editNoteBuilder.buildEditNote(`Release Date`, provider, url, `https://musicbrainz.org/artist/${artistMBID}`))}`
 							: undefined
 					}
 					title={albumStatus === "green" ? "This release is missing a release date!\n[Click to Fix]" : "This release is missing a release date!"}
@@ -62,7 +65,7 @@ function AlbumIcons({ item }) {
 					rel={albumStatus === "green" ? "noopener" : undefined}
 				></a>
 			)}
-			{albumIssues.includes("dateDiff") && <div className={styles.dateDiff} title={`This release has a differing release date! [SP: ${releaseDate} MB: ${mbReleaseDate}]\n(This may indicate that you have to split a release.)`} />}
+			{albumIssues.includes("dateDiff") && <div className={styles.dateDiff} title={`This release has a differing release date! [SP: ${releaseDate} MB: ${mbAlbum?.releaseDate}]\n(This may indicate that you have to split a release.)`} />}
 		</div>
 	);
 }
@@ -113,17 +116,18 @@ function SelectionButtons({ item }) {
 				}
 				data={item}
 				type="export"
+				apply={null}
 			/>
 		</>
 	);
 }
 
-const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
+function AlbumItem({ item, selecting = false, onUpdate }: { item: DisplayAlbum; selecting?: boolean; onUpdate?: (updatedItem: DisplayAlbum) => void }) {
 	const [isLoading, setIsLoading] = useState(false);
 	const { exportState } = useExportState();
 	const Popup = dynamic(() => import("./Popup"), { ssr: false });
 
-	let toastProperties = {
+	let toastProperties: ToastOptions = {
 		position: "top-left",
 		autoClose: 5000,
 		hideProgressBar: false,
@@ -141,7 +145,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 			toast.warn(message, toastProperties);
 		}
 	}
-	async function dispPromise(promise, message) {
+	async function dispPromise(promise: Promise<any>, message: string): Promise<any> {
 		return toast
 			.promise(
 				promise,
@@ -165,25 +169,18 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 		releaseDate,
 		trackCount,
 		albumType,
-		albumStatus,
-		albumMBUrl,
+		status,
+		mbAlbum,
 		albumTracks,
-		mbTrackCount,
-		mbReleaseDate,
 		mbid,
-		currentArtistMBID,
+		artistMBID,
 		albumIssues,
-		mbTrackNames,
-		mbTrackISRCs,
-		mbISRCs,
-		tracksWithoutISRCs,
 		highlightTracks,
-		mbBarcode,
 	} = item;
 
 	async function refreshData() {
 		setIsLoading(true);
-		const response = await dispPromise(fetch(`/api/compareSingleAlbum?url=${url}&mbid=${currentArtistMBID}`), "Refreshing album...");
+		const response = await dispPromise(fetch(`/api/compareSingleAlbum?url=${url}&mbid=${artistMBID}`), "Refreshing album...");
 		setIsLoading(false);
 		if (response.ok) {
 			const updatedItem = await response.json();
@@ -193,14 +190,28 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 		}
 	}
 
-	const sourceTrackString = trackCount > 1 ? `${trackCount} Tracks` : "1 Track";
+	const sourceTrackString = trackCount && trackCount > 1 ? `${trackCount} Tracks` : "1 Track";
 
-	const mbTrackString = mbTrackNames.map((track) => track).join("\n");
+	const mbTrackString = mbAlbum?.albumTracks.map((track) => track.name).join(",");
+	const mbISRCString = mbAlbum?.albumTracks.map((track) => track.isrcs.join(",")).join(",");
+	const trackISRCString = albumTracks.map((track) => track.isrcs.join(",")).join(",");
+
+	function getTracksWithoutISRCs(): string {
+		let tracksWithoutISRCs: string[] = [];
+		for (const track in albumTracks) {
+			if (albumTracks[track].isrcs.length === 0) {
+				tracksWithoutISRCs.push(albumTracks[track].name);
+			}
+		}
+		return tracksWithoutISRCs.join(",");
+	}
+
+
 
 	const pillTooltipText =
-		albumStatus === "green"
+		status === "green"
 			? "This album has a MB release with a matching Spotify URL"
-			: albumStatus === "orange"
+			: status === "orange"
 				? "This album has a MB release with a matching name but no associated link"
 				: "This album has no MB release with a matching name or URL";
 
@@ -215,29 +226,29 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 		"data-release-date": releaseDate,
 		"data-track-count": trackCount,
 		"data-album-type": albumType,
-		"data-status": albumStatus,
-		"data-track-count": mbTrackCount,
-		"data-release-date": mbReleaseDate,
+		"data-status": status,
+		"data-mb-track-count": mbAlbum?.trackCount,
+		"data-mb-release-date": mbAlbum?.releaseDate,
 		"data-mbid": mbid,
 		"data-album-issues": albumIssues,
-		"data-track-names": mbTrackNames,
-		"data-track-isrcs": mbTrackISRCs,
-		"data-isrcs": mbISRCs,
-		"data-tracks-without-isrcs": tracksWithoutISRCs,
-		"data-barcode": mbBarcode,
+		"data-track-names": mbTrackString,
+		"data-track-isrcs": mbISRCString,
+		"data-isrcs": trackISRCString,
+		"data-tracks-without-isrcs": getTracksWithoutISRCs(),
+		"data-barcode": mbAlbum?.upc || "",
 	};
 
 	return (
 		<div className={`${styles.listItem} ${styles.album}`} {...data_params}>
 			<div className={styles.innerItem}>
 				{/* Status Pill */}
-				<div className={`${styles.statusPill} ${styles[albumStatus]}`} title={pillTooltipText}></div>
+				<div className={`${styles.statusPill} ${styles[status]}`} title={pillTooltipText}></div>
 
 				{/* Album Cover */}
 				{(imageUrlSmall || imageUrl) && (
 					<div className={styles.albumCover}>
-						<a href={imageUrl} target="_blank" rel="noopener noreferrer">
-							<img src={imageUrlSmall || imageUrl} alt={`${name} cover`} loading="lazy" />
+						<a href={imageUrl || undefined} target="_blank" rel="noopener noreferrer">
+							<img src={imageUrlSmall || imageUrl || undefined} alt={`${name} cover`} loading="lazy" />
 						</a>
 					</div>
 				)}
@@ -249,13 +260,13 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 						<a href={url} target="_blank" rel="noopener noreferrer">
 							{name}
 						</a>
-						{albumMBUrl && (
-							<a href={albumMBUrl} target="_blank" rel="noopener noreferrer">
+						{mbAlbum?.url && (
+							<a href={mbAlbum.url} target="_blank" rel="noopener noreferrer">
 								<img
 									className={styles.albumMB}
-									src={albumStatus === "green" ? "../assets/images/MusicBrainz_logo_icon.svg" : "../assets/images/MB_Error.svg"}
+									src={status === "green" ? "../assets/images/MusicBrainz_logo_icon.svg" : "../assets/images/MB_Error.svg"}
 									alt="MusicBrainz"
-									title={albumStatus === "green" ? "View on MusicBrainz" : "Warning: This could be the incorrect MB release for this album!"}
+									title={status === "green" ? "View on MusicBrainz" : "Warning: This could be the incorrect MB release for this album!"}
 								/>
 							</a>
 						)}
@@ -282,8 +293,8 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 					{/* Album Info */}
 					<div className={styles.albumInfo}>
 						<div>
-							{releaseDate} • {text.capitalizeFirst(albumType)} •{" "}
-							{albumStatus === "red"
+							{releaseDate} • {text.capitalizeFirst(albumType || "")} •{" "}
+							{status === "red"
 								? (
 									albumTracks.length > 0
 										? <Popup
@@ -294,6 +305,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 											}
 											type="track"
 											data={item}
+											apply={null}
 										></Popup>
 										: (
 											<span className={`${styles.tracks} ${highlightTracks ? styles.trackHighlight : ""}`} title={"No track data available\nRefresh the album to fetch track data!"}>
@@ -310,6 +322,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 										}
 										type="track"
 										data={item}
+										apply={null}
 									></Popup>
 								)
 							}
@@ -321,7 +334,7 @@ const AlbumItem = memo(function AlbumItem({ item, selecting, onUpdate }) {
 			</div>
 		</div>
 	);
-});
+};
 
 function AddButton({ item }) {
 	return (
@@ -343,7 +356,7 @@ function ViewButton({ item }) {
 
 function ArtistItem({ item }) {
 	return (
-		<div className={styles.listItem} style={{ "--background-image": `url('${item.bannerUrl || item.imageUrl || ""}')` }}>
+		<div className={styles.listItem} style={{ '--background-image': `url('${item.bannerUrl || item.imageUrl || ""}')` } as React.CSSProperties}>
 			{item.imageUrl && (
 				<div className={styles.artistIcon}>
 					<a href={item.imageUrl} target="_blank">
@@ -406,7 +419,7 @@ function GenericItem({ item }) {
 	));
 	let infoString = Array.isArray(info) ? info.filter((item) => item != null && item != "").join(" • ") : "";
 	return (
-		<div className={styles.listItem} style={{ "--background-image": `url('${imageUrl}')` }}>
+		<div className={styles.listItem} style={{ "--background-image": `url('${imageUrl}')` } as React.CSSProperties}>
 			{imageUrl && (
 				<div className={styles.artistIcon}>
 					<a href={imageUrl} target="_blank">
@@ -545,7 +558,7 @@ function LoadingSearchContainer({ text, showRefresh = false }) {
 						<IoFilter />
 					</div>
 				</button>
-				<RefreshButton showRefresh={showRefresh} />
+				<RefreshButton showRefresh={showRefresh} refresh={null} />
 			</div>
 		</>
 	);
@@ -643,7 +656,7 @@ export default function ItemList({ items, type, text, refresh }) {
 		}
 	}, [searchQuery, filter, currentItems, type]);
 
-	let itemArray = [];
+	let itemArray: any = [];
 	if (type != "album" && type != "loadingAlbum") {
 		itemArray = Array.isArray(currentItems) ? currentItems : Object.values(currentItems);
 	}

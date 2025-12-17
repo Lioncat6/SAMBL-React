@@ -1,4 +1,4 @@
-export type ArtistObject = {
+export class ArtistObject {
     name: string;
     url: string;
     imageUrl: string | null;
@@ -22,7 +22,7 @@ export type PartialArtistObject = {
     provider: string;
 };
 
-export type AlbumObject = {
+export class AlbumObject {
     provider: string;
     id: string;
     name: string;
@@ -38,7 +38,13 @@ export type AlbumObject = {
     albumTracks: TrackObject[];
 };
 
-export type TrackObject = {
+export class ExtendedAlbumObject extends AlbumObject {
+    comment: string | null;
+    externalUrls: string[] | null;
+};
+
+
+export class TrackObject {
     provider: string;
     id: string | null;
     name: string;
@@ -109,4 +115,17 @@ export class FullProvider extends Provider {
     getAlbumUPCs: (album: any) => string[] | null;
     parseUrl: (url: string) => UrlData | null;
     createUrl: (urlType: string, providerId: string) => string | null;
+}
+
+export class MusicBrainzProvider extends FullProvider {
+    getIdBySpotifyId: (spotifyId: string, options?: CacheOptions) => Promise<string | null>;
+    getIdsBySpotifyUrls: (spotifyUrls: string[], options?: CacheOptions) => Promise<UrlMBIDDict>;
+    getArtistFeaturedAlbums: (id: string, offset: string | number, limit: number, options?: CacheOptions) => Promise<any | null>;
+    getCoverByMBID: (mbid: string, options?: CacheOptions) => Promise<string | null>;
+    getAlbumsBySourceUrls: (urls: string[], options?: CacheOptions) => Promise<AlbumObject[] | null>;
+    searchForAlbumByArtistAndTitle: (artistName: string, albumTitle: string, options?: CacheOptions) => Promise<AlbumObject[] | null>;
+    getArtistFeaturedReleaseCount: (artistId: string, options?: CacheOptions) => Promise<number | null>;
+    getArtistReleaseCount: (artistId: string, options?: CacheOptions) => Promise<number | null>;
+    getArtistByUrl: (url: string, options?: CacheOptions) => Promise<ArtistObject | null>;
+    validateMBID: (mbid: string) => boolean;
 }

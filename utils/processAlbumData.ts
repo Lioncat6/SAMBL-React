@@ -1,7 +1,9 @@
+import { AlbumObject, ExtendedAlbumObject, TrackObject } from "../pages/api/providers/provider-types";
+import { AggregatedAlbum, AlbumIssue, AlbumStatus, BasicTrack } from "./aggregated-types";
 import text from "./text";
 
-export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = null, quick = false, full = false) {
-	let albumData = [];
+export default function processData(sourceAlbums: AlbumObject[], mbAlbums: ExtendedAlbumObject[], currentArtistMBID = null, quick = false, full = false) {
+	let albumData: AggregatedAlbum[] = [];
 	let green = 0;
 	let red = 0;
 	let orange = 0;
@@ -26,13 +28,10 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
 	let mbUrlAlbumMap = new Map();
 
 	mbAlbums.forEach((mbAlbum) => {
-		if (!mbAlbum?.relations) return;
-		(mbAlbum.relations || []).forEach((relation) => {
-			const resource = relation?.url?.resource?.trim();
-			if (resource) {
-				if (!mbUrlAlbumMap.has(resource)) mbUrlAlbumMap.set(resource, []);
-				mbUrlAlbumMap.get(resource).push(mbAlbum);
-			}
+		if (!mbAlbum?.externalUrls) return;
+		(mbAlbum.externalUrls || []).forEach((url) => {
+			if (!mbUrlAlbumMap.has(url)) mbUrlAlbumMap.set(url, []);
+			mbUrlAlbumMap.get(url).push(mbAlbum);
 		});
 	});
 
@@ -40,8 +39,8 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
 	let mbNameAlbumMap = new Map();
 
 	mbAlbums.forEach((mbAlbum) => {
-		if (!mbAlbum?.title) return;
-		const normalizedTitle = text.normalizeText(mbAlbum.title || "");
+		if (!mbAlbum?.name) return;
+		const normalizedTitle = text.normalizeText(mbAlbum.name || "");
 		if (normalizedTitle) {
 			if (!mbNameAlbumMap.has(normalizedTitle)) mbNameAlbumMap.set(normalizedTitle, []);
 			mbNameAlbumMap.get(normalizedTitle).push(mbAlbum);
@@ -49,7 +48,7 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
 	});
 
 	sourceAlbums.forEach((album) => {
-		let albumStatus = "red";
+		let albumStatus: AlbumStatus = "red";
 		let albumMBUrl = "";
 
 		//Provider data
@@ -71,8 +70,9 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
 		let mbReleaseDate = "";
 		let mbid = "";
 		let finalHasCoverArt = false;
-		let albumIssues = [];
-		let finalTracks = [];
+		let albumIssues: AlbumIssue[] = [];
+		let finalTracks: TrackObject[] = [];
+		let finalAlbum: ExtendedAlbumObject | null = null;
 		let mbBarcode = "";
 		
 		// Try URL map
@@ -97,6 +97,7 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
 				mbReleaseDate = MBReleaseDate;
 				finalHasCoverArt = hasCoverArt;
 				finalTracks = MBTracks;
+				finalAlbum = mbAlbum;
 				mbBarcode = MBReleaseUPC;
 				// prefer the first exact URL match
 				break;
@@ -126,6 +127,7 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
 					mbReleaseDate = MBReleaseDate;
 					finalHasCoverArt = hasCoverArt;
 					finalTracks = MBTracks;
+					finalAlbum = mbAlbum;
 					mbBarcode = MBReleaseUPC;
 					break;
 				}
@@ -135,14 +137,14 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
 		const alwaysBarcodeProviders = ["spotify", "deezer", "tidal", "itunes"]
 		const alwaysISRCProviders = ["spotify", "deezer", "tidal", "itunes"]
 		
-		let mbTrackNames = [];
-		let mbTrackISRCs = [];
-		let mbAlignedISRCs = [];
-		let mbISRCs = [];
-		let tracksWithoutISRCs = [];
+		let mbTrackNames: string[] = [];
+		let mbTrackISRCs: BasicTrack[] = [];
+		let mbAlignedISRCs: (string | null)[] = [];
+		let mbISRCs: string[] = [];
+		let tracksWithoutISRCs: string[] = [];
 		for (let track in finalTracks) {
-			let titleString = finalTracks[track].title;
-			let ISRCs = finalTracks[track].recording.isrcs;
+			let titleString = finalTracks[track].name;
+			let ISRCs = finalTracks[track].isrcs;
 			mbAlignedISRCs.push(ISRCs[0] || null)
 			if (ISRCs.length < 1) {
 				tracksWithoutISRCs.push(track);
@@ -154,14 +156,15 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
 		}
 		let providerHasISRCs = false;
 		let hasMatchingISRCs = true;
-		let albumTrackISRCs = []
+		let albumTrackISRCs: (string | null)[] = []
 		for (let track in providerTracks) {
-			if (track.isrcs){
-				if (track.isrcs[0] != null && track.isrcs[0] != undefined) {
+			const currentTrack = providerTracks[track];
+			if (currentTrack.isrcs){
+				if (currentTrack.isrcs[0] != null && currentTrack.isrcs[0] != undefined) {
 					providerHasISRCs = true;
 				}
-				albumTrackISRCs.push(track.isrcs[0] || null);
-				if ((track.isrcs[0] || null) != mbAlignedISRCs) {
+				albumTrackISRCs.push(currentTrack.isrcs[0] || null);
+				if ((currentTrack.isrcs[0] || null) != mbAlignedISRCs[track]) {
 					hasMatchingISRCs = false;
 				}
 			} else {
@@ -193,6 +196,8 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
 			}
 		}
 
+
+
 		if (!albumData.find((a) => a.id === providerId)) { //Deduplicate
 			total++;
 			if (albumStatus === "green") {
@@ -201,7 +206,7 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
 				orange++;
 			} else {
 				red++;
-			}
+			}hasMatchingISRCs
 			albumData.push({
 				provider: provider,
 				id: providerId,
@@ -214,20 +219,15 @@ export default function processData(sourceAlbums, mbAlbums, currentArtistMBID = 
 				releaseDate: providerReleaseDate,
 				trackCount: providerTrackCount,
 				albumType: providerAlbumType,
-				albumStatus,
-				albumMBUrl,
-				albumBarcode: providerBarcode,
+				status: albumStatus,
+				mbAlbum: finalAlbum,
+				upc: providerBarcode,
+				comment: finalAlbum?.comment || null,
 				albumTracks: providerTracks,
-				mbTrackCount,
-				mbReleaseDate,
 				mbid,
-				currentArtistMBID,
+				artistMBID: currentArtistMBID,
 				albumIssues,
-				mbTrackNames,
-				mbISRCs,
-				mbTrackISRCs,
-				tracksWithoutISRCs,
-				mbBarcode,
+				externalUrls: finalAlbum?.externalUrls || null,
 			});
 		}
 	});
