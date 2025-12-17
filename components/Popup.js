@@ -272,6 +272,9 @@ function ExportMenu({ data, close }) {
 			</div>
 			<div className={styles.content}>
 				{Object.entries(data).map(([key, value]) => {
+					if ((typeof value === "object" && value !== null && !Array.isArray(value))) {
+						value = [value];
+					}
 					// If value is an array of objects, display subkeys and values
 					if (Array.isArray(value) && value.length > 0 && typeof value[0] === "object" && !Array.isArray(value[0])) {
 						const [expanded, setExpanded] = useState(false);
@@ -323,7 +326,7 @@ function ExportMenu({ data, close }) {
 									<CopyButton value={value} />
 									{key}
 								</div>
-								<div className={styles.propertyData}>{!value ? "" : Array.isArray(value) && typeof value[0] === "object" ? JSON.stringify(value, null, 2) : String(value)}</div>
+								<div className={styles.propertyData}>{!value ? "" : (Array.isArray(value) && typeof value[0] === "object") ? JSON.stringify(value, null, 2) : String(value)}</div>
 							</div>
 						);
 					}
