@@ -22,7 +22,7 @@
 		"node-cache": "^5.1.2",
 		"node-musixmatch-api": "^1.0.0",
 		"nprogress": "^0.2.0",
-		"react": "^19.1.0",
+		"react": "^19.2.3",
 		"react-dom": "^19.1.0",
 		"react-icons": "^5.5.0",
 		"react-toastify": "^11.0.5",
