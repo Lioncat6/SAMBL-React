@@ -340,7 +340,7 @@ function AddButton({ item }) {
 	return (
 		<Link className={styles.viewButton} href={`/newartist?provider_id=${item.id}&provider=${item.provider}`}>
 			<div>
-				Add <img className={styles.artistMB} src="../assets/images/MusicBrainz_logo_icon.svg"></img>
+				Add <img title={"MusicBrainz"} className={styles.artistMB} src="../assets/images/MusicBrainz_logo_icon.svg"></img>
 			</div>
 		</Link>
 	);
@@ -360,7 +360,7 @@ function ArtistItem({ item }) {
 			{item.imageUrl && (
 				<div className={styles.artistIcon}>
 					<a href={item.imageUrl} target="_blank">
-						<img src={item.imageUrl} />
+						<img title={item.name} src={item.imageUrl} />
 					</a>
 				</div>
 			)}
@@ -382,11 +382,11 @@ function ArtistItem({ item }) {
 function Icon({ source }) {
 	return (
 		<>
-			{source === "spotify" && <img className={styles.spotifyIcon} src="../assets/images/Spotify_icon.svg" />}
-			{source === "musicbrainz" && <img className={styles.mbIcon} src="../assets/images/MusicBrainz_logo_icon.svg" />}
-			{source === "deezer" && <FaDeezer className={styles.deezerIcon} />}
-			{source === "musixmatch" && <img className={styles.musixMatchIcon} src="../assets/images/Musixmatch_logo_icon_only.svg" />}
-			{source === "tidal" && <SiTidal className={styles.tidalIcon} />}
+			{source === "spotify" && <img className={styles.spotifyIcon} title={"Spotify"} src="../assets/images/Spotify_icon.svg" />}
+			{source === "musicbrainz" && <img className={styles.mbIcon} title={"MusicBrainz"} src="../assets/images/MusicBrainz_logo_icon.svg" />}
+			{source === "deezer" && <FaDeezer title={"Deezer"} className={styles.deezerIcon} />}
+			{source === "musixmatch" && <img className={styles.musixMatchIcon} title={"Musixmatch"} src="../assets/images/Musixmatch_logo_icon_only.svg" />}
+			{source === "tidal" && <SiTidal title={"Tidal"} className={styles.tidalIcon} />}
 		</>
 	);
 }
@@ -423,7 +423,7 @@ function GenericItem({ item }) {
 			{imageUrl && (
 				<div className={styles.artistIcon}>
 					<a href={imageUrl} target="_blank">
-						<img src={imageUrl} />
+						<img title={title} src={imageUrl} />
 					</a>
 				</div>
 			)}
@@ -541,7 +541,7 @@ function RefreshButton({ refresh, showRefresh = false }) {
 		)
 	} else if (showRefresh) {
 		return (
-			<button id="refreshButton" className={styles.refreshButton}>
+			<button title={"Refresh Artist Albums"} id="refreshButton" className={styles.refreshButton}>
 				<IoMdRefresh />
 			</button>
 		);
@@ -553,7 +553,7 @@ function LoadingSearchContainer({ text, showRefresh = false }) {
 		<>
 			<div id="searchContainer" className={styles.searchContainer}>
 				<div className={styles.listSearchLoading}>{text}</div>
-				<button id="filterSearch" className={styles.filterSearch}>
+				<button title={"Filter & Sort Menu"} id="filterSearchLoading" className={styles.filterSearch}>
 					<div id="fbText" className={styles.fbText}>
 						<IoFilter />
 					</div>
@@ -578,7 +578,7 @@ function SearchContainer({ onSearch, currentFilter, setFilter, refresh }) {
 			<Popup
 				type="filter"
 				button={
-					<button id="filterSearch" className={styles.filterSearch}>
+					<button title={"Filter & Sort Menu"} id="filterSearch" className={styles.filterSearch}>
 						<div id="fbText" className={styles.fbText}>
 							<IoFilter />
 						</div>
