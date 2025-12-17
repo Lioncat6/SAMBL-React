@@ -11,7 +11,7 @@ const encode = str => encodeURIComponent(str).replace(/%250A/g, '%0A');
  * @param {string} artistUrl The URL of the artist's page.
  * @returns {string} The formatted edit note string.
  */
-function buildEditNote(edit, provider, sourceUrl, artistUrl, pageUrl = null) {
+function buildEditNote(edit: string, provider: string, sourceUrl: string, artistUrl: string, pageUrl: string | null = null): string {
 	const { publicRuntimeConfig } = getConfig();
     return encode(
         `${edit} imported from ''SAMBL''%0A

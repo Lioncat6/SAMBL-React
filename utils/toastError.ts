@@ -1,7 +1,7 @@
-import { toast, Flip } from "react-toastify";
+import { toast, Flip, ToastOptions } from "react-toastify";
 
-export default function dispError(message) {
-	let toastProperties = {
+export default function dispError(message: string): void {
+	let toastProperties: ToastOptions = {
 		position: "top-left",
 		autoClose: 5000,
 		hideProgressBar: false,

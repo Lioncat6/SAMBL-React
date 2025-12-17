@@ -6,6 +6,7 @@ import tidal from "./tidal"
 import bandcamp from "./bandcamp"
 import logger from "../../../utils/logger"
 import soundcloud from "./soundcloud"
+import { FullProvider, Provider, ProviderNamespace, UrlInfo } from "./provider-types";
 
 const providerList = [
     spotify,
@@ -24,7 +25,7 @@ const providerList = [
  * @param {string[]} [capabilities] - Array of required function names.
  * @returns {object|boolean} The matched provider object if all capabilities are present, otherwise false.
  */
-function parseProvider(rawProvider, capabilities) {
+function parseProvider(rawProvider: ProviderNamespace, capabilities: string[]): FullProvider | false {
     let provider = spotify;
 
     if (typeof rawProvider === "string") {
@@ -53,8 +54,8 @@ function parseProvider(rawProvider, capabilities) {
  * @param {string} url - The URL to parse for provider information.
  * @returns {object|null} An object containing the provider, id, and type if matched, otherwise null.
  */
-function getUrlInfo(url) {
-    let urlInfo = null;
+function getUrlInfo(url: string): UrlInfo | null {
+    let urlInfo: UrlInfo | null = null;
 
     providerList.forEach(p => {
         if (p.parseUrl) {

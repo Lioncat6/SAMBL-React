@@ -269,8 +269,8 @@ export default function Artist({ artist }) {
 						}
 						throw new Error(`Error fetching MusicBrainz albums: ${data}`);
 					}
-					mbAlbums.current = [...mbAlbums.current, ...data.releases];
-					mbAlbumCount = data["release-count"];
+					mbAlbums.current = [...mbAlbums.current, ...data.albums];
+					mbAlbumCount = data.count;
 					offset = mbAlbums.current.length;
 					updateLoadingText(true);
 				} catch (error) {
@@ -297,8 +297,8 @@ export default function Artist({ artist }) {
 						}
 						throw new Error(`Error fetching MusicBrainz Featured albums: ${data}`);
 					}
-					mbFeaturedAlbums.current = [...mbFeaturedAlbums.current, ...data.releases];
-					mbFeaturedAlbumCount = data["release-count"];
+					mbFeaturedAlbums.current = [...mbFeaturedAlbums.current, ...data.albums];
+					mbFeaturedAlbumCount = data.count;
 					offset = mbFeaturedAlbums.current.length;
 					updateLoadingText(true);
 				} catch (error) {

@@ -1,3 +1,8 @@
+import { ArtistIncludes, IArtist, IBrowseReleasesResult, ICoversInfo, IRecordingList, IRelease, IReleaseList, IUrl, IUrlLookupResult, RelationsIncludes, ReleaseIncludes, UrlIncludes } from "musicbrainz-api";
+import { CacheOptions } from "../../../utils/cache";
+
+export type ProviderNamespace = "spotify" | "tidal" | "deezer" | "musicbrainz" | "musixmatch" | "soundcloud" | "bandcamp"
+
 export class ArtistObject {
     name: string;
     url: string;
@@ -41,6 +46,7 @@ export class AlbumObject {
 export class ExtendedAlbumObject extends AlbumObject {
     comment: string | null;
     externalUrls: string[] | null;
+    hasImage: boolean;
 };
 
 
@@ -74,6 +80,10 @@ export class AlbumData extends PagingData {
     albums: AlbumObject[];
 };
 
+export class ExtendedAlbumData extends PagingData {
+    albums: ExtendedAlbumObject[];
+}
+
 export class UrlData {
     type: 'album' | 'track' | 'artist' | null;
     id: string | null;
@@ -88,12 +98,8 @@ export class UrlMBIDDict {
 }
 
 export class Provider {
-    namespace: string;
+    namespace: ProviderNamespace;
 }
-
-export type CacheOptions = {
-  noCache?: boolean;
-};
 
 export class FullProvider extends Provider {
     getTrackByISRC?: (isrc: string, options?: CacheOptions) => Promise<any | null>;
@@ -102,7 +108,7 @@ export class FullProvider extends Provider {
     getAlbumById: (id: string, options?: CacheOptions) => Promise<any | null>;
     getTrackById: (id: string, options?: CacheOptions) => Promise<any | null>;
     getArtistById: (id: string, options?: CacheOptions) => Promise<any | null>;
-    getArtistAlbums: (id: string, offset: string | number, limit: number, options?: CacheOptions) => Promise<any | null>;
+    getArtistAlbums: (id: string, offset?: string | number, limit?: number, options?: CacheOptions) => Promise<any | null>;
     formatArtistSearchData: (rawData: any) => any;
     formatArtistLookupData: (rawData: any) => any;
     formatArtistObject: (artist: any) => ArtistObject;
@@ -118,14 +124,24 @@ export class FullProvider extends Provider {
 }
 
 export class MusicBrainzProvider extends FullProvider {
+    override getTrackByISRC: (isrc: string, options?: CacheOptions) => Promise<IRecordingList | null>;
+    override getAlbumByUPC: (upc: string, options?: CacheOptions) => Promise<IReleaseList | null>;
+    override formatAlbumObject: (album: any) => ExtendedAlbumObject;
+    getAlbumByMBID: (id: string, inc: ReleaseIncludes[], options?: CacheOptions) => Promise<IRelease | null>;
     getIdBySpotifyId: (spotifyId: string, options?: CacheOptions) => Promise<string | null>;
     getIdsBySpotifyUrls: (spotifyUrls: string[], options?: CacheOptions) => Promise<UrlMBIDDict>;
-    getArtistFeaturedAlbums: (id: string, offset: string | number, limit: number, options?: CacheOptions) => Promise<any | null>;
-    getCoverByMBID: (mbid: string, options?: CacheOptions) => Promise<string | null>;
-    getAlbumsBySourceUrls: (urls: string[], options?: CacheOptions) => Promise<AlbumObject[] | null>;
-    searchForAlbumByArtistAndTitle: (artistName: string, albumTitle: string, options?: CacheOptions) => Promise<AlbumObject[] | null>;
+    override getArtistAlbums: (id: string, offset: string | number, limit: number, options?: CacheOptions) => Promise<IBrowseReleasesResult | null>;
+    override formatAlbumGetData: (rawData: any) => ExtendedAlbumData;
+    getMBArtistAlbums: (id: string, offset: string | number, limit: number, inc: ReleaseIncludes[], options?: CacheOptions) => Promise<IBrowseReleasesResult | null>;
+    getArtistFeaturedAlbums: (id: string, offset: string | number, limit: number, inc: ReleaseIncludes[], options?: CacheOptions) => Promise<IBrowseReleasesResult | null>;
+    getCoverByMBID: (mbid: string, options?: CacheOptions) => Promise<ICoversInfo | null>;
+    getAlbumsBySourceUrls: {
+        (urls: string[], inc?: UrlIncludes[], options?: CacheOptions): Promise<IUrlLookupResult | null | undefined>;
+        (url: string, inc?: UrlIncludes[], options?: CacheOptions): Promise<IUrl | null | undefined>;
+    };
+    searchForAlbumByArtistAndTitle: (artistName: string, albumTitle: string, options?: CacheOptions) => Promise<IReleaseList | null>;
     getArtistFeaturedReleaseCount: (artistId: string, options?: CacheOptions) => Promise<number | null>;
     getArtistReleaseCount: (artistId: string, options?: CacheOptions) => Promise<number | null>;
-    getArtistByUrl: (url: string, options?: CacheOptions) => Promise<ArtistObject | null>;
+    getArtistByUrl: (url: string, inc?: UrlIncludes[], options?: CacheOptions) => Promise<IArtist | null>;
     validateMBID: (mbid: string) => boolean;
 }

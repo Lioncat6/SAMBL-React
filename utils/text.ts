@@ -80,9 +80,9 @@ function formatDuration(duration: string): string {
  * @param {string} duration The ISO 8601 duration string to format.
  * @returns {number} The raw ms value.
  */
-function formatDurationMS(duration:string): number | string {
+function formatDurationMS(duration:string): number | null {
 	const match = /^PT(?:(\d+)M)?(?:(\d+)S)?$/.exec(duration);
-	if (!match) return duration;
+	if (!match) return null;
 	const minutes = parseInt(match[1] || "0", 10);
 	const seconds = parseInt(match[2] || "0", 10);
 	return (minutes * 60000) + (seconds * 1000);

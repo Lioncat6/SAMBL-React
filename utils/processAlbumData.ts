@@ -25,25 +25,25 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 	//
 
 	// Map of Stremaing service URLs to MB Albums
-	let mbUrlAlbumMap = new Map();
+	let mbUrlAlbumMap: Map<string, ExtendedAlbumObject[]> = new Map();
 
 	mbAlbums.forEach((mbAlbum) => {
 		if (!mbAlbum?.externalUrls) return;
 		(mbAlbum.externalUrls || []).forEach((url) => {
 			if (!mbUrlAlbumMap.has(url)) mbUrlAlbumMap.set(url, []);
-			mbUrlAlbumMap.get(url).push(mbAlbum);
+			mbUrlAlbumMap.get(url)?.push(mbAlbum);
 		});
 	});
 
 	// Map of normalized release names
-	let mbNameAlbumMap = new Map();
+	let mbNameAlbumMap: Map<string, ExtendedAlbumObject[]> = new Map();
 
 	mbAlbums.forEach((mbAlbum) => {
 		if (!mbAlbum?.name) return;
 		const normalizedTitle = text.normalizeText(mbAlbum.name || "");
 		if (normalizedTitle) {
 			if (!mbNameAlbumMap.has(normalizedTitle)) mbNameAlbumMap.set(normalizedTitle, []);
-			mbNameAlbumMap.get(normalizedTitle).push(mbAlbum);
+			mbNameAlbumMap.get(normalizedTitle)?.push(mbAlbum);
 		}
 	});
 
@@ -66,29 +66,26 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 		let providerBarcode = album.upc || null;
 		let providerTracks = album.albumTracks || [];
 
-		let mbTrackCount = 0;
-		let mbReleaseDate = "";
+		let mbTrackCount: number | null = 0;
+		let mbReleaseDate: string | null = "";
 		let mbid = "";
 		let finalHasCoverArt = false;
 		let albumIssues: AlbumIssue[] = [];
 		let finalTracks: TrackObject[] = [];
 		let finalAlbum: ExtendedAlbumObject | null = null;
-		let mbBarcode = "";
+		let mbBarcode: string | null = "";
 		
 		// Try URL map
 		const sourceUrl = providerUrl?.trim();
 		if (sourceUrl && mbUrlAlbumMap.has(sourceUrl)) {
 			const matches = mbUrlAlbumMap.get(sourceUrl) || [];
 			for (const mbAlbum of matches) {
-				if (!mbAlbum?.title) continue;
-				const MBTrackCount = (mbAlbum.media || []).reduce((count, media) => count + (media["track-count"] || 0), 0);
-				const MBReleaseDate = mbAlbum.date;
-				const MBReleaseUPC = mbAlbum.barcode;
-				const hasCoverArt = mbAlbum["cover-art-archive"]?.front || false;
-				let MBTracks = [];
-				(mbAlbum.media || []).forEach((media) => {
-					if (media.tracks) MBTracks = MBTracks.concat(media.tracks);
-				});
+				if (!mbAlbum?.name) continue;
+				const MBTrackCount = mbAlbum.trackCount;
+				const MBReleaseDate = mbAlbum.releaseDate;
+				const MBReleaseUPC = mbAlbum.upc;
+				const hasCoverArt = mbAlbum.hasImage;
+				let MBTracks = mbAlbum.albumTracks;
 
 				albumStatus = "green";
 				mbid = mbAlbum.id;
@@ -110,15 +107,12 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 			if (normalized && mbNameAlbumMap.has(normalized)) {
 				const matches = mbNameAlbumMap.get(normalized) || [];
 				for (const mbAlbum of matches) {
-					if (!mbAlbum?.title) continue;
-					const MBTrackCount = (mbAlbum.media || []).reduce((count, media) => count + (media["track-count"] || 0), 0);
-					const MBReleaseDate = mbAlbum.date;
-					const MBReleaseUPC = mbAlbum.barcode;
+					if (!mbAlbum?.name) continue;
+					const MBTrackCount = mbAlbum.trackCount;
+					const MBReleaseDate = mbAlbum.releaseDate;
+					const MBReleaseUPC = mbAlbum.upc;
 					const hasCoverArt = mbAlbum["cover-art-archive"]?.front || false;
-					let MBTracks = [];
-					(mbAlbum.media || []).forEach((media) => {
-						if (media.tracks) MBTracks = MBTracks.concat(media.tracks);
-					});
+					let MBTracks = mbAlbum.albumTracks;
 
 					albumStatus = "orange";
 					mbid = mbAlbum.id;
@@ -175,7 +169,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 		if (albumStatus != "red") {
 			if ((!mbBarcode || mbBarcode == null) && (providerBarcode || alwaysBarcodeProviders.includes(provider))) {
 				albumIssues.push("noUPC");
-			} else if (providerBarcode && providerBarcode.replace(/^0+/, '') != mbBarcode.replace(/^0+/, '')) {
+			} else if (providerBarcode && providerBarcode.replace(/^0+/, '') != mbBarcode?.replace(/^0+/, '')) {
 				albumIssues.push("UPCDiff")
 			}
 			if (tracksWithoutISRCs.length > 0 && (providerHasISRCs || alwaysISRCProviders.includes(provider))) {
@@ -228,6 +222,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 				artistMBID: currentArtistMBID,
 				albumIssues,
 				externalUrls: finalAlbum?.externalUrls || null,
+				hasImage: finalAlbum?.hasImage || false
 			});
 		}
 	});

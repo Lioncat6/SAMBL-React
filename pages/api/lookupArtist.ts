@@ -26,7 +26,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
             provider_id = urlInfo.id;
             provider = urlInfo.provider.namespace;
         }
-        const providerObj: FullProvider = providers.parseProvider(provider, ["getArtistById"]);
+        const providerObj: FullProvider | false = providers.parseProvider(provider, ["getArtistById"]);
         if (!providerObj) {
             return res.status(400).json({ error: "Provider doesn't exist or doesn't support this operation" });
         }
@@ -40,7 +40,10 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
         let providerData = providerObj.formatArtistLookupData(artist)
         providerData = providerObj.formatArtistObject(providerData);
         const providerUrl = providerObj.createUrl("artist", provider_id)
-        let mbData = await musicbrainz.getArtistByUrl(providerUrl, { noCache: forceRefresh });
+        if (!providerUrl) {
+            return res.status(400).json({ error: "Provider id invalid or missing" });
+        }
+        let mbData = await musicbrainz.getArtistByUrl(providerUrl, ["artist-rels"], { noCache: forceRefresh });
         let mbid = mbData?.id || null;
         return res.status(200).json({ mbid, provider, provider_id });
     } catch (error) {

@@ -12,7 +12,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
 		if (!provider_id || !provider) {
 			return res.status(400).json({ error: "Parameters `provider_id` and `provider` are required" });
         }
-		let providerObj: FullProvider = providers.parseProvider(provider, ["getArtistAlbums"])
+		let providerObj = providers.parseProvider(provider, ["getArtistAlbums"])
 		if (!providerObj) {
             return res.status(400).json({ error: "Provider doesn't exist or doesn't support this operation" });
         }

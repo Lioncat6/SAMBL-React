@@ -4,6 +4,11 @@ import musicbrainz from "./providers/musicbrainz";
 import processData from "../../utils/processAlbumData";
 
 import logger from "../../utils/logger";
+import { NextApiRequest, NextApiResponse } from "next";
+import { AlbumObject, ExtendedAlbumObject } from "./providers/provider-types";
+import { IUrl } from "musicbrainz-api";
+
+import normalizeVars from "../../utils/normalizeVars";
 // spotifyId - Spotify artist ID
 // mbid - MusicBrainz artist ID. Only neccesary if you want to check if the associated albums are linked to that artist
 // quick - Uses URL matching to check for spotify album links in MusicBrainz. This returns faster, but contains less information, removing the orange album status.
@@ -19,27 +24,27 @@ async function fetchSourceAlbums(providerId, provider, offset = 0, bypassCache =
 }
 
 async function fetchMbArtistAlbums(mbid, offset = 0, full = false) {
-	return await musicbrainz.getArtistAlbums(mbid, offset, 100, full ? ["url-rels", "recordings", "isrcs"] : ["url-rels"]);
+	return await musicbrainz.getMBArtistAlbums(mbid, offset, 100, full ? ["url-rels", "recordings", "isrcs"] : ["url-rels"]);
 }
 
 async function fetchMbArtistFeaturedAlbums(mbid, offset = 0, full = false) {
 	return await musicbrainz.getArtistFeaturedAlbums(mbid, offset, 100, full ? ["url-rels", "recordings", "isrcs"] : ["url-rels"]);
 }
 
-async function getBySourceAlbumLink(links) {
+async function getBySourceAlbumLink(links: string[]) {
 	return await musicbrainz.getAlbumsBySourceUrls(links, ["release-rels"]);
 }
 
 
 
-export default async function handler(req, res) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 	let sourceAlbumCount = -1;
 	let mbAlbumCount = -1;
 	let mbFeaturedAlbumCount = -1;
 	let mbUrlCount = -1;
-	let sourceAlbums = [];
-	let mbAlbums = [];
-	let mbFeaturedAlbums = [];
+	let sourceAlbums: AlbumObject[] = [];
+	let mbAlbums: ExtendedAlbumObject[] = [];
+	let mbFeaturedAlbums: ExtendedAlbumObject[] = [];
 
 	function getSourceAlbumUrls() {
 		return sourceAlbums.map((album) => {
@@ -48,40 +53,40 @@ export default async function handler(req, res) {
 	}
 
 	async function fetchProviderAlbums(pids, provider, bypassCache = false) {
-			let attempts = 0;
-			for (const pid of pids) {
-				let offset = 0;
-				let currentAlbumCount = 999;
-				let fetchedAlbums = 0;
-				while (offset != null) {
-					try {
-						const data = await fetchSourceAlbums(pid, provider, offset, bypassCache);
-						if (typeof data === "number") {
-							if (data === 404) {
-								logger.error(`Spotify ID ${pid} not found!`);
-								return;
-							}
-							throw new Error(`Error fetching Spotify albums: ${data}`);
+		let attempts = 0;
+		for (const pid of pids) {
+			let offset = 0;
+			let currentAlbumCount = 999;
+			let fetchedAlbums = 0;
+			while (offset != null) {
+				try {
+					const data = await fetchSourceAlbums(pid, provider, offset, bypassCache);
+					if (typeof data === "number") {
+						if (data === 404) {
+							logger.error(`Spotify ID ${pid} not found!`);
+							return;
 						}
-						sourceAlbums = [...sourceAlbums, ...data.albums];
-						fetchedAlbums += data.albums.length;
-						currentAlbumCount = data.count;
-						if (sourceAlbumCount < 0) {
-							sourceAlbumCount = currentAlbumCount;
-						}
-						offset = data.next;
-					} catch (error) {
-						attempts++;
-						console.error("Error fetching albums:", error);
+						throw new Error(`Error fetching Spotify albums: ${data}`);
 					}
-					if (attempts > 3) {
-						logger.error("Failed to fetch Spotify albums");
-						break;
+					sourceAlbums = [...sourceAlbums, ...data.albums];
+					fetchedAlbums += data.albums.length;
+					currentAlbumCount = data.count;
+					if (sourceAlbumCount < 0) {
+						sourceAlbumCount = currentAlbumCount;
 					}
+					offset = data.next;
+				} catch (error) {
+					attempts++;
+					console.error("Error fetching albums:", error);
 				}
-				sourceAlbumCount += currentAlbumCount;
+				if (attempts > 3) {
+					logger.error("Failed to fetch Spotify albums");
+					break;
+				}
 			}
+			sourceAlbumCount += currentAlbumCount;
 		}
+	}
 
 	async function fetchMusicbrainzArtistAlbums(mbid, full = false) {
 		let offset = 0;
@@ -91,12 +96,13 @@ export default async function handler(req, res) {
 				const data = await fetchMbArtistAlbums(mbid, offset, full);
 				if (typeof data == "number") {
 					if (data == 404) {
-						throw new Error(404);
+						throw new Error("404");
 					}
 					throw new Error(`Error fetching MusicBrainz albums: ${data}`);
 				}
-				mbAlbums = [...mbAlbums, ...data.releases];
-				mbAlbumCount = data["release-count"];
+				const formattedData = musicbrainz.formatAlbumGetData(data);
+				mbAlbums = [...mbAlbums, ...formattedData.albums];
+				mbAlbumCount = formattedData.count || 0;
 				offset = mbAlbums.length;
 				// updateLoadingText(true);
 			} catch (error) {
@@ -118,12 +124,13 @@ export default async function handler(req, res) {
 				const data = await fetchMbArtistFeaturedAlbums(mbid, offset, full);
 				if (typeof data == "number") {
 					if (data == 404) {
-						throw new Error(404);
+						throw new Error("404");
 					}
 					throw new Error(`Error fetching MusicBrainz Featured albums: ${data}`);
 				}
-				mbFeaturedAlbums = [...mbFeaturedAlbums, ...data.releases];
-				mbFeaturedAlbumCount = data["release-count"];
+				const formattedData = musicbrainz.formatAlbumGetData(data);
+				mbFeaturedAlbums = [...mbFeaturedAlbums, ...formattedData.albums];
+				mbFeaturedAlbumCount = formattedData.count || 0;
 				offset = mbFeaturedAlbums.length;
 				// updateLoadingText(true);
 			} catch (error) {
@@ -137,28 +144,43 @@ export default async function handler(req, res) {
 		}
 	}
 
-	function processUrlObject(url) {
-		let releases = [];
+	function processUrlObject(url: IUrl): ExtendedAlbumObject[] {
+		let releases: ExtendedAlbumObject[] = [];
 		let urlId = url.id;
-		let urlResaource = url.resource;
-		for (let relation of url.relations) {
-			let release = relation.release;
-			if (release) {
-				release.relations = [
-					{
-						url: {
-							resource: urlResaource,
-							id: urlId,
+		let urlResource = url.resource;
+		if (url.relations) {
+			for (let relation of url.relations) {
+				let release = relation.release;
+				if (release) {
+					release.relations = [
+						{
+							url: {
+								resource: urlResource,
+								id: urlId,
+								relations: undefined as any //TODO: Fix this when the PR goes through
+							},
+							direction: "forward",
+							"target-type": "url",
+							end: null,
+							ended: false,
+							"attributes": [],
+							"target-credit": "",
+							"type": "free streaming",
+							"begin": null,
+							"source-credit": "",
+							"type-id": "08445ccf-7b99-4438-9f9a-fb9ac18099ee",
+							"attribute-ids": {} as unknown[],
+							"attribute-values": {} as unknown[],
 						},
-					},
-				];
-				releases.push(release);
+					];
+					releases.push(musicbrainz.formatAlbumObject(release));
+				}
 			}
 		}
 		return releases;
 	}
 
-	async function fetchMusicBrainzAlbumsBySourceUrls(sourceAlbumUrls) {
+	async function fetchMusicBrainzAlbumsBySourceUrls(sourceAlbumUrls: string[]) {
 		let offset = 0;
 		let attempts = 0;
 		while (offset < sourceAlbumUrls.length) {
@@ -167,11 +189,12 @@ export default async function handler(req, res) {
 				const data = await getBySourceAlbumLink(currentUrls);
 				if (typeof data == "number") {
 					if (data == 404) {
-						throw new Error(404);
+						throw new Error("404");
 					}
 					throw new Error(`Error fetching MusicBrainz albums by source URLs: ${data}`);
 				}
 				if (data) {
+					let urls = data.urls;
 					mbAlbums = [...mbAlbums, ...data.urls?.flatMap((url) => processUrlObject(url))];
 				}
 				offset += 100;
@@ -187,7 +210,7 @@ export default async function handler(req, res) {
 	}
 
 	try {
-		var { provider_id, provider, mbid } = req.query;
+		var { provider_id, provider, mbid } = normalizeVars(req.query);
 		// Check for 'quick' or 'full' in the query string
 		const quick = Object.prototype.hasOwnProperty.call(req.query, "quick");
 		const full = Object.prototype.hasOwnProperty.call(req.query, "full");
@@ -207,7 +230,7 @@ export default async function handler(req, res) {
 			await Promise.all([fetchProviderAlbums([provider_id], provider), fetchMusicbrainzArtistAlbums(mbid, full), fetchMusicBrainzFeaturedAlbums(mbid, full)]);
 		}
 		if (raw) {
-			return res.status(200).json({ sourceAlbums: sourceAlbums, mbAlbums: mbAlbums, mbFeaturedAlbums: mbFeaturedAlbums } );
+			return res.status(200).json({ sourceAlbums: sourceAlbums, mbAlbums: mbAlbums, mbFeaturedAlbums: mbFeaturedAlbums });
 		}
 		logger.debug("Processing data");
 		let data = await processData(sourceAlbums, [...mbAlbums, ...mbFeaturedAlbums], mbid, quick, full);

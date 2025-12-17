@@ -15,18 +15,18 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
         if (provider_id && !provider) {
             return res.status(400).json({ error: "Parameter `provider` is required when using `id`" });
         }
-        let sourceProvider: FullProvider | null = null;
+        let sourceProvider: FullProvider | false | null = null;
         if (url) {
             let urlInfo = providers.getUrlInfo(url);
             if (!urlInfo) {
                 return res.status(404).json({ error: "Invalid provider URL" });
             }
-            if (urlInfo.type !== "track" && urlInfo.type !== "recording") {
+            if (urlInfo.type !== "track") {
                 return res.status(400).json({ error: `Invalid URL type. Expected a track URL.` });
             }
             provider_id = urlInfo.id;
             provider = urlInfo.provider.namespace;
-            sourceProvider = providers.parseProvider(urlInfo.provider, ["getTrackById", "getTrackISRCs"]);
+            sourceProvider = providers.parseProvider(urlInfo.provider.namespace, ["getTrackById", "getTrackISRCs"]);
         } else {
             sourceProvider = providers.parseProvider(provider, ["getTrackById", "getTrackISRCs"]);
         }
