@@ -9,20 +9,6 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 	let orange = 0;
 	let total = 0;
 
-	//     export type AlbumObject = {
-	//     provider: string;
-	//     id: string;
-	//     name: string;
-	//     url: string;
-	//     imageUrl: string;
-	//     imageUrlSmall: string;
-	//     albumArtists: AlbumArtistObject[];
-	//     artistNames: string[];
-	//     releaseDate: string;
-	//     trackCount: number;
-	//     albumType: string;
-	// };
-	//
 
 	// Map of Stremaing service URLs to MB Albums
 	let mbUrlAlbumMap: Map<string, ExtendedAlbumObject[]> = new Map();

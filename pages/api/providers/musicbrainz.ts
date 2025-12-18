@@ -65,6 +65,9 @@ async function getArtistById(mbid: string): Promise<IArtist | null | undefined> 
 
 async function getArtistByUrl(url: string, inc:UrlIncludes[] = ["artist-rels"]): Promise<IArtist | null | undefined> {
 	try {
+		if (parseUrl(url)?.type == "artist" && validateMBID(parseUrl(url)?.id)){
+			return await musicbrainz.getArtistById(parseUrl(url)?.id || "")
+		}
 		const data = await mbApi.lookupUrl(url, inc );
 		if (!data.relations || data.relations?.length == 0) {
 			return null; // No artist found
@@ -117,7 +120,7 @@ async function getAlbumsBySourceUrls(sourceUrls: string | string[], inc: UrlIncl
 	}
 }
 
-async function getArtistAlbums(mbid: string, offset = 0, limit = 100, inc: ReleaseIncludes[] = ["url-rels", "recordings", "isrcs"]): Promise<IBrowseReleasesResult | null | undefined> {
+async function getArtistAlbums(mbid: string, offset = 0, limit = 100, inc: ReleaseIncludes[] = ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"]): Promise<IBrowseReleasesResult | null | undefined> {
 	try {
 		// const data = await mbApi.browse('release', {artist: mbid, limit: limit, offset: offset});
 		const data = await mbApi.browse("release" as "release", { artist: mbid, limit: limit, offset: offset }, inc);
@@ -128,7 +131,7 @@ async function getArtistAlbums(mbid: string, offset = 0, limit = 100, inc: Relea
 	}
 }
 
-async function getArtistFeaturedAlbums(mbid: string, offset = 0, limit = 100, inc = ["url-rels", "recordings", "isrcs"] as RelationsIncludes[]): Promise<IBrowseReleasesResult | null | undefined> {
+async function getArtistFeaturedAlbums(mbid: string, offset = 0, limit = 100, inc:ReleaseIncludes[] = ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"]): Promise<IBrowseReleasesResult | null | undefined> {
 	try {
 		// const data = await mbApi.browse('release', {track_artist: mbid, limit: limit, offset: offset});
 		const data = await mbApi.browse('release' as 'release', { track_artist: mbid, limit: limit, offset: offset } as IBrowseReleasesQuery, inc);
