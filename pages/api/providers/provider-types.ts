@@ -132,8 +132,8 @@ export class MusicBrainzProvider extends FullProvider {
     getIdsBySpotifyUrls: (spotifyUrls: string[], options?: CacheOptions) => Promise<UrlMBIDDict>;
     override getArtistAlbums: (id: string, offset: string | number, limit: number, options?: CacheOptions) => Promise<IBrowseReleasesResult | null>;
     override formatAlbumGetData: (rawData: any) => ExtendedAlbumData;
-    getMBArtistAlbums: (id: string, offset: string | number, limit: number, inc: ReleaseIncludes[], options?: CacheOptions) => Promise<IBrowseReleasesResult | null>;
-    getArtistFeaturedAlbums: (id: string, offset: string | number, limit: number, inc: ReleaseIncludes[], options?: CacheOptions) => Promise<IBrowseReleasesResult | null>;
+    getMBArtistAlbums: (id: string, offset: string | number, limit: number, inc?: ReleaseIncludes[], options?: CacheOptions) => Promise<IBrowseReleasesResult | null>;
+    getArtistFeaturedAlbums: (id: string, offset: string | number, limit: number, inc?: ReleaseIncludes[], options?: CacheOptions) => Promise<IBrowseReleasesResult | null>;
     getCoverByMBID: (mbid: string, options?: CacheOptions) => Promise<ICoversInfo | null>;
     getAlbumsBySourceUrls: {
         (urls: string[], inc?: UrlIncludes[], options?: CacheOptions): Promise<IUrlLookupResult | null | undefined>;
