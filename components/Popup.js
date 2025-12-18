@@ -358,21 +358,14 @@ function AlbumDetails({ data }) {
 		releaseDate,
 		trackCount,
 		albumType,
-		albumStatus,
-		albumMBUrl,
-		albumTracks,
-		mbTrackCount,
-		mbReleaseDate,
-		mbid,
-		currentArtistMBID,
-		albumIssues,
-		mbTrackNames,
-		mbTrackISRCs,
-		mbISRCs,
-		tracksWithoutISRCs,
+		status,
+		mbAlbum,
 		highlightTracks,
-		mbBarcode,
+		upc,
 	} = data;
+
+	const barcode = upc || mbAlbum.upc;
+
 	return (
 		<div className={styles.albumDetails}>
 			{(imageUrlSmall || imageUrl) && (
@@ -387,13 +380,13 @@ function AlbumDetails({ data }) {
 					<a href={url} target="_blank" rel="noopener noreferrer">
 						{name}
 					</a>
-					{albumMBUrl && (
-						<a href={albumMBUrl} target="_blank" rel="noopener noreferrer">
+					{mbAlbum.url && (
+						<a href={mbAlbum.url} target="_blank" rel="noopener noreferrer">
 							<img
 								className={styles.albumMB}
-								src={albumStatus === "green" ? "../assets/images/MusicBrainz_logo_icon.svg" : "../assets/images/MB_Error.svg"}
+								src={status === "green" ? "../assets/images/MusicBrainz_logo_icon.svg" : "../assets/images/MB_Error.svg"}
 								alt="MusicBrainz"
-								title={albumStatus === "green" ? "View on MusicBrainz" : "Warning: This could be the incorrect MB release for this album!"}
+								title={status === "green" ? "View on MusicBrainz" : "Warning: This could be the incorrect MB release for this album!"}
 							/>
 						</a>
 					)}
@@ -414,9 +407,9 @@ function AlbumDetails({ data }) {
 				</div>
 				<span className={styles.releaseDate}><MdOutlineCalendarMonth /> {releaseDate}</span>
 				<span className={styles.albumType}><MdOutlineAlbum /> {text.capitalizeFirst(albumType)}</span>
-				{mbBarcode && <span className={styles.barcode}><FaBarcode /> {mbBarcode} <a
+				{barcode && <span className={styles.barcode}><FaBarcode /> {barcode} <a
 					className={styles.lookupButton}
-					href={`/find?query=${encodeURIComponent(mbBarcode)}`}
+					href={`/find?query=${encodeURIComponent(barcode)}`}
 					target="_blank"
 					rel="noopener noreferrer"
 					title={"Lookup Barcode"}
@@ -492,8 +485,8 @@ function TrackItem({ index, track, highlight }) {
 }
 
 function TrackMenu({ data, close }) {
-	let trackData = data.mbTrackISRCs.length > 0 ? data.mbTrackISRCs : data.albumTracks;
-
+	let trackData = data.mbAlbum.albumTracks.length > 0 ? data.mbAlbum.albumTracks : data.albumTracks;
+	console.log( data.mbAlbum.albumTracks);
 	return (
 		<>
 			<div className={styles.trackBg} style={{ "--background-image": `url(${data.imageUrl})` }} >
