@@ -10,7 +10,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 	let total = 0;
 
 
-	// Map of Stremaing service URLs to MB Albums
+	// Map of Streaming service URLs to MB Albums
 	let mbUrlAlbumMap: Map<string, ExtendedAlbumObject[]> = new Map();
 
 	mbAlbums.forEach((mbAlbum) => {
@@ -20,6 +20,20 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 			mbUrlAlbumMap.get(url)?.push(mbAlbum);
 		});
 	});
+
+	//Map of UPCs to MB Albums
+
+	let mbUPCAlbumMap: Map<string, ExtendedAlbumObject[]> = new Map();
+
+	mbAlbums.forEach((mbAlbum) => {
+		const rawUPC = mbAlbum.upc;
+		if (!rawUPC || text.removeLeadingZeros(rawUPC) == 0) return;
+		const formattedUPC = text.rmz(rawUPC).toString();
+		if (formattedUPC && formattedUPC != "") {
+			if (!mbUPCAlbumMap.has(formattedUPC)) mbUPCAlbumMap.set(formattedUPC, []);
+			mbUPCAlbumMap.get(formattedUPC)?.push(mbAlbum);
+		}
+	})
 
 	// Map of normalized release names
 	let mbNameAlbumMap: Map<string, ExtendedAlbumObject[]> = new Map();
@@ -60,47 +74,19 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 		let finalTracks: TrackObject[] = [];
 		let finalAlbum: ExtendedAlbumObject | null = null;
 		let mbBarcode: string | null = "";
-		
-		// Try URL map
-		const sourceUrl = providerUrl?.trim();
-		if (sourceUrl && mbUrlAlbumMap.has(sourceUrl)) {
-			const matches = mbUrlAlbumMap.get(sourceUrl) || [];
-			for (const mbAlbum of matches) {
-				if (!mbAlbum?.name) continue;
-				const MBTrackCount = mbAlbum.trackCount;
-				const MBReleaseDate = mbAlbum.releaseDate;
-				const MBReleaseUPC = mbAlbum.upc;
-				const hasCoverArt = mbAlbum.hasImage;
-				let MBTracks = mbAlbum.albumTracks;
 
-				albumStatus = "green";
-				mbid = mbAlbum.id;
-				albumMBUrl = `https://musicbrainz.org/release/${mbid}`;
-				mbTrackCount = MBTrackCount;
-				mbReleaseDate = MBReleaseDate;
-				finalHasCoverArt = hasCoverArt;
-				finalTracks = MBTracks;
-				finalAlbum = mbAlbum;
-				mbBarcode = MBReleaseUPC;
-				// prefer the first exact URL match
-				break;
-			}
-		}
-
-		// Try name map
-		if (albumStatus === "red") {
-			const normalized = text.normalizeText(providerAlbumName || "");
-			if (normalized && mbNameAlbumMap.has(normalized)) {
-				const matches = mbNameAlbumMap.get(normalized) || [];
+		function tryMap(map: Map<String, ExtendedAlbumObject[]>, input: string, status: AlbumStatus) {
+			if (input && map.has(input)) {
+				const matches = map.get(input) || [];
 				for (const mbAlbum of matches) {
 					if (!mbAlbum?.name) continue;
 					const MBTrackCount = mbAlbum.trackCount;
 					const MBReleaseDate = mbAlbum.releaseDate;
 					const MBReleaseUPC = mbAlbum.upc;
-					const hasCoverArt = mbAlbum["cover-art-archive"]?.front || false;
+					const hasCoverArt = mbAlbum.hasImage;
 					let MBTracks = mbAlbum.albumTracks;
 
-					albumStatus = "orange";
+					albumStatus = status;
 					mbid = mbAlbum.id;
 					albumMBUrl = `https://musicbrainz.org/release/${mbid}`;
 					mbTrackCount = MBTrackCount;
@@ -109,14 +95,33 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 					finalTracks = MBTracks;
 					finalAlbum = mbAlbum;
 					mbBarcode = MBReleaseUPC;
+					// prefer the first exact URL match
 					break;
 				}
 			}
 		}
 
+		// Try URL map
+		const sourceUrl = providerUrl?.trim();
+		tryMap(mbUrlAlbumMap, sourceUrl, "green")
+
+		// Try UPC map
+		if (albumStatus == "red" && providerBarcode) {
+			const formattedUPC = text.rmz(providerBarcode).toString()
+			if (formattedUPC != ""){
+				tryMap(mbUPCAlbumMap, formattedUPC, "blue")
+			}
+		}
+
+		// Try name map
+		if (albumStatus == "red") {
+			const normalized = text.normalizeText(providerAlbumName || "");
+			tryMap(mbNameAlbumMap, normalized, "orange")
+		}
+
 		const alwaysBarcodeProviders = ["spotify", "deezer", "tidal", "itunes"]
 		const alwaysISRCProviders = ["spotify", "deezer", "tidal", "itunes"]
-		
+
 		let mbTrackNames: string[] = [];
 		let mbTrackISRCs: BasicTrack[] = [];
 		let mbAlignedISRCs: (string | null)[] = [];
@@ -139,7 +144,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 		let albumTrackISRCs: (string | null)[] = []
 		for (let track in providerTracks) {
 			const currentTrack = providerTracks[track];
-			if (currentTrack.isrcs){
+			if (currentTrack.isrcs) {
 				if (currentTrack.isrcs[0] != null && currentTrack.isrcs[0] != undefined) {
 					providerHasISRCs = true;
 				}
@@ -151,7 +156,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 				albumTrackISRCs.push(null)
 			}
 		}
-		
+
 		if (albumStatus != "red") {
 			if ((!mbBarcode || mbBarcode == null) && (providerBarcode || alwaysBarcodeProviders.includes(provider))) {
 				albumIssues.push("noUPC");
@@ -180,13 +185,13 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 
 		if (!albumData.find((a) => a.id === providerId)) { //Deduplicate
 			total++;
-			if (albumStatus === "green") {
+			if (albumStatus == "green") {
 				green++;
-			} else if (albumStatus === "orange") {
+			} else if (albumStatus == "orange") {
 				orange++;
 			} else {
 				red++;
-			}hasMatchingISRCs
+			} hasMatchingISRCs
 			albumData.push({
 				provider: provider,
 				id: providerId,
