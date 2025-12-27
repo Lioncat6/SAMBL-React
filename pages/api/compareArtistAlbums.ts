@@ -156,8 +156,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 						{
 							url: {
 								resource: urlResource,
-								id: urlId,
-								relations: undefined as any //TODO: Fix this when the PR goes through
+								id: urlId
 							},
 							direction: "forward",
 							"target-type": "url",
