@@ -89,6 +89,17 @@ function formatDurationMS(duration:string): number | null {
 }
 
 /**
+ * Removes leading zeros on UPC or similar codes
+ * 
+ * @param {string | number} code input code
+ * @returns {number}
+ */
+function removeLeadingZeros(code: number|string): number {
+	const num = Number(code)
+	return num;
+}
+
+/**
  * Utility object for text formatting.
  *
  */
@@ -108,6 +119,8 @@ const text = {
 	fdur: formatDuration,
 	formatDurationMS,
 	fdm: formatDurationMS,
+	removeLeadingZeros,
+	rmz: removeLeadingZeros
 };
 
 export default text;
