@@ -122,7 +122,7 @@ function SelectionButtons({ item }) {
 	);
 }
 
-function AlbumItem({ item, selecting = false, onUpdate }: { item: DisplayAlbum; selecting?: boolean; onUpdate?: (updatedItem: DisplayAlbum) => void }) {
+const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; selecting?: boolean; onUpdate?: (updatedItem: DisplayAlbum) => void }) => {
 	const [isLoading, setIsLoading] = useState(false);
 	const { exportState } = useExportState();
 	const Popup = dynamic(() => import("./Popup"), { ssr: false });
@@ -208,12 +208,19 @@ function AlbumItem({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 
 
 
-	const pillTooltipText =
-		status === "green"
-			? "This album has a MB release with a matching Spotify URL"
-			: status === "orange"
-				? "This album has a MB release with a matching name but no associated link"
-				: "This album has no MB release with a matching name or URL";
+
+
+	let pillTooltipText = "This album has no MB release with a matching name, UPC, or URL"
+
+	switch(status) {
+		case "green":
+			pillTooltipText = "This album has a MB release with a matching URL"
+			break;
+		case "orange":
+			pillTooltipText = "This album has a MB release with a matching name but no associated link"
+		case "blue":
+			pillTooltipText = "This album has a MB release with a matching UPC but no associated link"
+	}
 
 	let data_params = {
 		"data-id": id,
@@ -336,6 +343,8 @@ function AlbumItem({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 	);
 };
 
+const MemorizedAlbumItem  = memo(AlbumItem);
+
 function AddButton({ item }) {
 	return (
 		<Link className={styles.viewButton} href={`/newartist?provider_id=${item.id}&provider=${item.provider}`}>
@@ -446,7 +455,7 @@ function ListBuilder({ items, type, onItemUpdate }) {
 		<>
 			{items.map((item, index) => (
 				<div id={index} key={index} className={styles.itemContainer}>
-					{type == "album" && <AlbumItem item={item} onUpdate={onItemUpdate} />}
+					{type == "album" && <MemorizedAlbumItem item={item} onUpdate={onItemUpdate} />}
 					{type == "artist" && <ArtistItem item={item} />}
 					{type == "mixed" && <GenericItem item={item} />}
 				</div>
@@ -478,7 +487,7 @@ function VirtualizedList({ items, type, text, onItemUpdate }) {
 						>
 							{({ index, style }) => (
 								<div style={style}>
-									{type === "album" && <AlbumItem item={items[index]} onUpdate={onItemUpdate} />}
+									{type === "album" && <MemorizedAlbumItem item={items[index]} onUpdate={onItemUpdate} />}
 									{type === "artist" && <ArtistItem item={items[index]} />}
 									{type === "mixed" && <GenericItem item={items[index]} />}
 								</div>

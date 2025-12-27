@@ -354,6 +354,10 @@
 	background-color: orange;
 }
 
+.statusPill.blue {
+	background-color: cornflowerblue;
+}
+
 .albumCover img {
 	margin: 2px 0 0 0;
 	border-radius: 10px;

@@ -1,7 +1,7 @@
 import { ExtendedAlbumObject, TrackObject, ArtistObject, AlbumObject } from "../pages/api/providers/provider-types";
 
 export type AlbumIssue = 'noUPC' | 'UPCDiff' | 'missingISRCs' | 'ISRCDiff' | 'trackDiff' | 'noDate' | 'dateDiff' | 'noCover';
-export type AlbumStatus = 'green' | 'orange' | 'red';
+export type AlbumStatus = 'green' | 'orange' | 'blue' | 'red';
 
 export type TrackIssue = 'noISRC' | 'ISRCDiff' | 'noUrl' | 'noDuration' | "artistDiff"
 
