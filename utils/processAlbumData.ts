@@ -9,7 +9,6 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 	let orange = 0;
 	let total = 0;
 
-
 	// Map of Streaming service URLs to MB Albums
 	let mbUrlAlbumMap: Map<string, ExtendedAlbumObject[]> = new Map();
 
@@ -48,7 +47,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 	});
 
 	sourceAlbums.forEach((album) => {
-		let albumStatus: AlbumStatus = "red";
+		let albumStatus: AlbumStatus = "red" as AlbumStatus;
 		let albumMBUrl = "";
 
 		//Provider data
@@ -72,7 +71,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 		let finalHasCoverArt = false;
 		let albumIssues: AlbumIssue[] = [];
 		let finalTracks: TrackObject[] = [];
-		let finalAlbum: ExtendedAlbumObject | null = null;
+		let finalAlbum: ExtendedAlbumObject | null = null as ExtendedAlbumObject | null; //Typescript, why must you be like this
 		let mbBarcode: string | null = "";
 
 		function tryMap(map: Map<String, ExtendedAlbumObject[]>, input: string, status: AlbumStatus) {
