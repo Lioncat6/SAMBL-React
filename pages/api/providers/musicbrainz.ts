@@ -299,8 +299,8 @@ function formatAlbumObject(album: IRelease): ExtendedAlbumObject {
 		upc: album.barcode || null,
 		trackCount: trackCount,
 		albumType: album["release-group"] ? album["release-group"]["primary-type"] : null,
-		albumTracks: album.media && album.media.length > 0 ? album.media.flatMap(medium => medium.tracks.map(track => formatTrackObject(track))) : [],
-		externalUrls: album.relations ? album.relations.filter(rel => rel.url && rel.url?.resource).map(rel => rel.url?.resource).filter(url => typeof url == 'string') : [],
+		albumTracks: album.media && album.media.length > 0 ? album.media.flatMap(medium => medium.tracks?.map(track => formatTrackObject(track))) : [],
+		externalUrls: album.relations ? album.relations.filter(rel => rel.url && rel.url?.resource)?.map(rel => rel.url?.resource).filter(url => typeof url == 'string') : [],
 		hasImage: album["cover-art-archive"].artwork
 	}
 }
