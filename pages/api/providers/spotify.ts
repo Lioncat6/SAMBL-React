@@ -205,7 +205,7 @@ function formatArtistObject(rawObject): ArtistObject {
 	return {
 		name: rawObject.name,
 		url: getArtistUrl(rawObject),
-		imageUrl: rawObject.images[0]?.url,
+		imageUrl: rawObject.images[0]?.url || "",
 		imageUrlSmall: rawObject.images[1]?.url || rawObject.images[0]?.url || "",
 		bannerUrl: null,
 		relevance: `${rawObject.followers.total} Followers`,
