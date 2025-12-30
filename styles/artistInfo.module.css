@@ -23,7 +23,8 @@
 .tidalURLContainer,
 .bandcampURLContainer,
 .urlContainer,
-.soundcloudUrlContainer {
+.soundcloudUrlContainer,
+.applemusicURLContainer {
 	display: flex;
 	flex-direction: row;
 	padding: 1.2vh 2px 0 0;
@@ -37,6 +38,12 @@
 .bandcampURLContainer svg {
 	color: var(--bandcamp-blue);
 }
+
+.applemusicURLContainer svg {
+	margin-bottom: 6px;
+	color: var(--applemusic-red);
+}
+
 
 .spURLContainer a,
 .deezerURLContainer a,

@@ -1,6 +1,6 @@
 import styles from "../styles/artistInfo.module.css";
 import { FaSpotify, FaDeezer, FaBandcamp, FaSoundcloud  } from "react-icons/fa6";
-import { SiTidal, SiBandcamp } from "react-icons/si";
+import { SiTidal, SiBandcamp, SiApplemusic } from "react-icons/si";
 import { LuImageUp } from "react-icons/lu";
 import editNoteBuilder from "../utils/editNoteBuilder";
 
@@ -60,6 +60,18 @@ function SoundcloudUrlContainer({ url }) {
 	);
 }
 
+function AppleMusicUrlContainer({ url }) {
+	return (
+		<div className={styles.applemusicURLContainer}>
+			<a id="applemusicURL" target="_blank" href={url}>
+				<div className={styles.iconWrapper}>
+					<SiApplemusic className={styles.applemusicIcon} />
+				</div>
+			</a>
+		</div>
+	);
+}
+
 function UrlContainer({ id, provider, url }) {
 	switch (provider) {
 		case "spotify":
@@ -74,6 +86,8 @@ function UrlContainer({ id, provider, url }) {
 			return <BandcampUrlContainer url={url} id={id} />;
 		case "soundcloud":
 			return <SoundcloudUrlContainer url={url} />;
+		case "applemusic":
+			return <AppleMusicUrlContainer url={url} />;
 		default:
 			return null;
 	}
@@ -116,9 +130,9 @@ function ImageContainer({ artist }) {
 
 				{mbid &&<div className={styles.imageOverlay}>
 					<span className={styles.overlayText}></span>
-					
+
 						<a href={importUrl} target="_blank"><div className={styles.importIcon} title="Import Artist Image to MusicBrainz"><LuImageUp /></div></a>
-					
+
 				</div>}
 			</div>
 		</div>
