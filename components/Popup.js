@@ -15,11 +15,12 @@ function ConfigureMenu({ close }) {
 	const { settings, updateSettings } = useSettings();
 	const [showHarmony, setShowHarmony] = useState(settings.showHarmony);
 	const [showATisket, setShowATisket] = useState(settings.showATisket);
+	const [showMet, setShowMet] = useState(settings.showMet);
 	const [showExport, setShowExport] = useState(settings.showExport);
 	const [listVirtualization, setListVirtualization] = useState(settings.listVirtualization);
 	const [quickFetchThreshold, setQuickFetchThreshold] = useState(settings.quickFetchThreshold);
 	const saveConfig = () => {
-		const newSettings = { showHarmony, showATisket, showExport, listVirtualization, quickFetchThreshold };
+		const newSettings = { showHarmony, showATisket, showMet, showExport, listVirtualization, quickFetchThreshold };
 		updateSettings(newSettings);
 		close();
 	};
@@ -40,6 +41,10 @@ function ConfigureMenu({ close }) {
 					<div className="checkbox-wrapper">
 						<input type="checkbox" id="showATisket" checked={showATisket} onChange={(e) => setShowATisket(e.target.checked)} className="substituted" />
 						<label htmlFor="showATisket">Show A-tisket Button</label>
+					</div>
+					<div className="checkbox-wrapper">
+						<input type="checkbox" id="showMet" checked={showMet} onChange={(e) => setShowMet(e.target.checked)} className="substituted" />
+						<label htmlFor="showMet">Show MET Button</label>
 					</div>
 					<div className="checkbox-wrapper">
 						<input type="checkbox" id="showExport" checked={showExport} onChange={(e) => setShowExport(e.target.checked)} className="substituted" />
