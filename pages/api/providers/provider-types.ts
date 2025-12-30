@@ -116,7 +116,7 @@ export class FullProvider extends Provider {
     formatAlbumGetData: (rawData: any) => AlbumData;
     formatAlbumObject: (album: any) => AlbumObject;
     formatTrackObject: (track: any) => TrackObject;
-    getArtistUrl: (artist: any) => string | null;
+    getArtistUrl: (artist: any) => string | string[] | null;
     getTrackISRCs: (track: any) => string[] | null;
     getAlbumUPCs: (album: any) => string[] | null;
     parseUrl: (url: string) => UrlData | null;
