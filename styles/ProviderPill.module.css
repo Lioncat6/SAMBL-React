@@ -65,7 +65,11 @@
 }
 
 .soundcloud {
-    color: var(--soundcloud-orange)
+    color: var(--soundcloud-orange);
+}
+
+.applemusic {
+    color: var(--applemusic-red);
 }
 
 /* Makes it where you only have to define the color with the provider namespace */

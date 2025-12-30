@@ -129,12 +129,19 @@
 
 .artistMB,
 .spotifyIcon,
+.deezerIcon,
+.tidalIcon,
 .musixMatchIcon,
+.applemusicIcon,
 .mbIcon {
 	width: 16px;
 	height: 20px;
 	vertical-align: middle;
 	margin-left: 4px;
+}
+
+.applemusicIcon {
+	color: var(--applemusic-red);
 }
 
 .listItem {

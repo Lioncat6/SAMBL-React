@@ -8,7 +8,7 @@ import { useExport as useExportState } from "./ExportState";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FaDeezer, FaSpotify } from "react-icons/fa";
-import { SiTidal } from "react-icons/si";
+import { SiApplemusic, SiTidal } from "react-icons/si";
 import { FaAnglesRight, FaAnglesLeft } from "react-icons/fa6";
 import { IoMdRefresh } from "react-icons/io";
 import { toast, Flip, ToastOptions } from "react-toastify";
@@ -401,6 +401,7 @@ function Icon({ source }) {
 			{source === "deezer" && <FaDeezer title={"Deezer"} className={styles.deezerIcon} />}
 			{source === "musixmatch" && <img className={styles.musixMatchIcon} title={"Musixmatch"} src="../assets/images/Musixmatch_logo_icon_only.svg" />}
 			{source === "tidal" && <SiTidal title={"Tidal"} className={styles.tidalIcon} />}
+			{source === "applemusic" && <SiApplemusic title={"Apple Music"} className={styles.applemusicIcon} />}
 		</>
 	);
 }
