@@ -10,7 +10,7 @@ export function SettingsProvider({ children }) {
         const savedConfig = JSON.parse(localStorage.getItem("samblConfig")) || {};
         setSettings({
             showHarmony: savedConfig.showHarmony !== undefined ? savedConfig.showHarmony : true,
-            showATisket: savedConfig.showATisket !== undefined ? savedConfig.showATisket : true,
+            showATisket: savedConfig.showATisket !== undefined ? savedConfig.showATisket : false,
             showMet: savedConfig.showMet !== undefined ? savedConfig.showMet : true,
             showExport: savedConfig.showExport !== undefined ? savedConfig.showExport : false,
             listVirtualization: savedConfig.listVirtualization !== undefined ? savedConfig.listVirtualization : true,
