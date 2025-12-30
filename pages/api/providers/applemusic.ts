@@ -292,7 +292,7 @@ function formatArtistObject(artist: Resource<ArtistAttributes>): ArtistObject {
 		imageUrlSmall: imageUrls.imageUrlSmall,
 		bannerUrl: getResizedImageUrl(artist.attributes.hero?.[0]?.content[0]?.artwork.url, 500, 100),
 		relevance: artist.attributes.origin,
-		info: "",
+		info: artist.attributes.genreNames.join(", "),
 		genres: artist.attributes.genreNames,
 		followers: null,
 		popularity: null,
