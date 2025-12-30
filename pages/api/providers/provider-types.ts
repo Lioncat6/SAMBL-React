@@ -1,7 +1,7 @@
 import { ArtistIncludes, IArtist, IBrowseReleasesResult, ICoversInfo, IRecordingList, IRelease, IReleaseList, IUrl, IUrlLookupResult, RelationsIncludes, ReleaseIncludes, UrlIncludes } from "musicbrainz-api";
 import { CacheOptions } from "../../../utils/cache";
 
-export type ProviderNamespace = "spotify" | "tidal" | "deezer" | "musicbrainz" | "musixmatch" | "soundcloud" | "bandcamp"
+export type ProviderNamespace = "spotify" | "tidal" | "deezer" | "musicbrainz" | "musixmatch" | "soundcloud" | "bandcamp" | "applemusic"
 
 export class ArtistObject {
     name: string;
