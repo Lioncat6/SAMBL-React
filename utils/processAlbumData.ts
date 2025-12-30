@@ -118,8 +118,8 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 			tryMap(mbNameAlbumMap, normalized, "orange")
 		}
 
-		const alwaysBarcodeProviders = ["spotify", "deezer", "tidal", "itunes"]
-		const alwaysISRCProviders = ["spotify", "deezer", "tidal", "itunes"]
+		const alwaysBarcodeProviders = ["spotify", "deezer", "tidal", "itunes", "applemusic"]
+		const alwaysISRCProviders = ["spotify", "deezer", "tidal", "itunes", "applemusic"]
 
 		let mbTrackNames: string[] = [];
 		let mbTrackISRCs: BasicTrack[] = [];

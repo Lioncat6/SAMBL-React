@@ -1,5 +1,5 @@
 import { FaSpotify, FaDeezer, FaSoundcloud } from "react-icons/fa6";
-import { SiTidal, SiBandcamp, SiItunes } from "react-icons/si";
+import { SiTidal, SiBandcamp, SiApplemusic } from "react-icons/si";
 import { useState, useEffect } from "react";
 import { useSettings } from "./SettingsContext";
 
@@ -7,11 +7,11 @@ import styles from "../styles/ProviderPill.module.css";
 
 const providers = [
     { name: "Spotify", namespace: "spotify", icon: <FaSpotify /> },
+    { name: "Apple Music", namespace: "applemusic", icon: <SiApplemusic /> },
     { name: "Deezer", namespace: "deezer", icon: <FaDeezer /> },
     { name: "Tidal", namespace: "tidal", icon: <SiTidal /> },
     { name: "Bandcamp", namespace: "bandcamp", icon: <SiBandcamp /> },
-    { name: "SoundCloud", namespace: "soundcloud", icon: <FaSoundcloud /> }
-    // { name: "Apple Music", namespace: "itunes", icon: <SiItunes /> },
+    { name: "SoundCloud", namespace: "soundcloud", icon: <FaSoundcloud /> },
 ];
 
 function LoadingPill({ handleSelect }) {
