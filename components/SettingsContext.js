@@ -11,6 +11,7 @@ export function SettingsProvider({ children }) {
         setSettings({
             showHarmony: savedConfig.showHarmony !== undefined ? savedConfig.showHarmony : true,
             showATisket: savedConfig.showATisket !== undefined ? savedConfig.showATisket : true,
+            showMet: savedConfig.showMet !== undefined ? savedConfig.showMet : true,
             showExport: savedConfig.showExport !== undefined ? savedConfig.showExport : false,
             listVirtualization: savedConfig.listVirtualization !== undefined ? savedConfig.listVirtualization : true,
             quickFetchThreshold: savedConfig.quickFetchThreshold !== undefined ? savedConfig.quickFetchThreshold : 500,
@@ -23,6 +24,7 @@ export function SettingsProvider({ children }) {
         const extractedSettings = {
             showHarmony: newSettings.showHarmony !== undefined ? newSettings.showHarmony : settings.showHarmony,
             showATisket: newSettings.showATisket !== undefined ? newSettings.showATisket : settings.showATisket,
+            showMet: newSettings.showMet !== undefined ? newSettings.showMet : settings.showMet,
             showExport: newSettings.showExport !== undefined ? newSettings.showExport : settings.showExport,
             listVirtualization: newSettings.listVirtualization !== undefined ? newSettings.listVirtualization : settings.listVirtualization,
             quickFetchThreshold: newSettings.quickFetchThreshold !== undefined ? newSettings.quickFetchThreshold : settings.quickFetchThreshold,

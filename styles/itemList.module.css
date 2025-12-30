@@ -278,6 +278,7 @@
 	margin-left: auto;
 }
 
+.metButton,
 .aTisketButton,
 .harmonyButton,
 .exportButton {
@@ -294,6 +295,14 @@
 	margin-left: auto;
 	font-weight: normal;
 	cursor: pointer;
+}
+
+.metButton:hover {
+	border: 1px solid #93c5fd;
+	transition: 0.2s all;
+	background-color: #bfdbfe;
+	text-decoration: none;
+	color: #1e40af;
 }
 
 .aTisketButton {

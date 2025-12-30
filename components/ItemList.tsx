@@ -87,6 +87,11 @@ function ActionButtons({ item }) {
 				}
 				<div className={`${collapsed ? styles.collapsed : styles.expanded}`}>
 					{settings?.showExport && <SelectionButtons item={item} />}
+					{settings?.showMet && (
+						<a className={styles.metButton} href={`https://seed.musichoarders.xyz?identifier=${url}`} target="_blank" rel="noopener noreferrer">
+							<div>MET</div>
+						</a>
+					)}
 					{settings?.showATisket && (
 						<a className={styles.aTisketButton} href={`https://atisket.pulsewidth.org.uk/?url=${url}`} target="_blank" rel="noopener noreferrer">
 							<div>A-tisket</div>
