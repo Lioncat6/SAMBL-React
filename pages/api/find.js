@@ -1,4 +1,5 @@
 import spotify from "./providers/spotify";
+import * as spotifyModule from "./providers/spotify";
 import musicbrainz from "./providers/musicbrainz";
 import musixmatch from "./providers/musixmatch";
 import deezer from "./providers/deezer";
@@ -52,7 +53,7 @@ export default async function handler(req, res) {
 					resultItems.push(
 						createDataObject(
 							"spotify",
-							album.images[0].url || "",
+							spotifyModule.getFullAlbumImageUrl(album.images[0].url),
 							album.name,
 							album.artists.map((artist) => ({ name: artist.name, link: artist.external_urls.spotify })),
 							[album.release_date, `${album.total_tracks} tracks`, text.capitalizeFirst(album.type)],
@@ -136,7 +137,7 @@ export default async function handler(req, res) {
 					resultItems.push(
 						createDataObject(
 							"spotify",
-							track.album.images[0].url || "",
+							spotifyModule.getFullAlbumImageUrl(track.album.images[0].url),
 							track.name,
 							track.artists.map((artist) => ({ name: artist.name, link: artist.external_urls.spotify })),
 							[track.album.release_date, text.formatMS(track.duration_ms), `Track ${track.track_number}`, track.album.name],

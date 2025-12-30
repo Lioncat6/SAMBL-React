@@ -45,6 +45,21 @@ async function withRetry(apiCall, retries = 3, delay = 1000) {
 	}
 }
 
+export function getFullAlbumImageUrl(url: null | undefined): null;
+export function getFullAlbumImageUrl(url: string): string;
+export function getFullAlbumImageUrl(url: string | null | undefined): string | null
+export function getFullAlbumImageUrl(url: string | null | undefined): string | null {
+	if (url == null) return null;
+
+	// from: https://i.scdn.co/image/ab67616d0000 b273 684d81c9356531f2a456b1c1
+	//   to: https://i.scdn.co/image/ab67616d0000 82c1 684d81c9356531f2a456b1c1
+
+	const urlParts = url.split("/");
+	const id = urlParts[urlParts.length - 1];
+	urlParts[urlParts.length - 1] = `${id.slice(0, 12)}82c1${id.slice(16)}`;
+	return urlParts.join("/");
+}
+
 async function checkAccessToken() {
 	const currentTime = Date.now();
 
@@ -190,7 +205,7 @@ function formatArtistObject(rawObject): ArtistObject {
 	return {
 		name: rawObject.name,
 		url: getArtistUrl(rawObject),
-		imageUrl: rawObject.images[0]?.url || "",
+		imageUrl: rawObject.images[0]?.url,
 		imageUrlSmall: rawObject.images[1]?.url || rawObject.images[0]?.url || "",
 		bannerUrl: null,
 		relevance: `${rawObject.followers.total} Followers`,
@@ -250,7 +265,7 @@ function formatAlbumObject(album): AlbumObject {
 		id: album.id,
 		name: album.name,
 		url: album.external_urls.spotify,
-		imageUrl: album.images[0]?.url || "",
+		imageUrl: getFullAlbumImageUrl(album.images[0]?.url),
 		imageUrlSmall: album.images[1]?.url || album.images[0]?.url || "",
 		albumArtists: album.artists.map(formatPartialArtistObject),
 		artistNames: album.artists.map((artist) => artist.name),
@@ -266,7 +281,7 @@ function getAlbumTracks(album): TrackObject[] {
 	let tracks = album.tracks?.items
 	if (tracks) {
 		tracks.forEach((track) => {
-			track.imageUrl = album.images[0]?.url || "";
+			track.imageUrl = getFullAlbumImageUrl(album.images[0]?.url);
 			track.imageUrlSmall = album.images[1]?.url || album.images[0]?.url || "";
 			track.albumName = album.name;
 		});
@@ -282,7 +297,7 @@ function formatTrackObject(track): TrackObject {
 		id: track.id,
 		name: track.name,
 		url: track.external_urls.spotify,
-		imageUrl: track.imageUrl || "",
+		imageUrl: getFullAlbumImageUrl(track.imageUrl),
 		imageUrlSmall: track.imageUrlSmall || "",
 		albumName: track.albumName,
 		trackArtists: track.artists.map(formatPartialArtistObject),
