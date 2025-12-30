@@ -6,6 +6,7 @@ import tidal from "./tidal"
 import bandcamp from "./bandcamp"
 import logger from "../../../utils/logger"
 import soundcloud from "./soundcloud"
+import applemusic from "./applemusic";
 import { FullProvider, Provider, ProviderNamespace, UrlInfo } from "./provider-types";
 
 const providerList = [
@@ -15,7 +16,8 @@ const providerList = [
     deezer,
     tidal,
     bandcamp,
-    soundcloud
+    soundcloud,
+    applemusic
 ];
 
 /**
