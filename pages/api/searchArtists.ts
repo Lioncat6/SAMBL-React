@@ -82,20 +82,27 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
         }
         let results = await sourceProvider.searchByArtistName(query);
         let artistUrls: string[] = [];
-        let artistData = {}
+        let artistData = {};
+        const artistAdditionalUrls: Record<string, string[]> = {};
         for (let artist of sourceProvider.formatArtistSearchData(results)) {
-            const artistUrl = sourceProvider.getArtistUrl(artist)
-            if (!artistUrl) continue;
-            artistUrls.push(artistUrl)
-            artistData[artistUrl] = sourceProvider.formatArtistObject(artist);
+            // TODO: Decide how to refactor for all sources.
+            let providerArtistUrls = sourceProvider.getArtistUrl(artist);
+            if (!providerArtistUrls) continue;
+            if (!Array.isArray(providerArtistUrls)) providerArtistUrls = [ providerArtistUrls ];
+            artistUrls.push(providerArtistUrls[0]);
+            artistData[providerArtistUrls[0]] = sourceProvider.formatArtistObject(artist);
+            for (const artistUrl of providerArtistUrls.slice(1)) {
+                artistAdditionalUrls[providerArtistUrls[0]] ??= [];
+                artistAdditionalUrls[providerArtistUrls[0]].push(artistUrl);
+            }
         }
         if (artistUrls.length == 0) {
             res.status(200).json({})
         }
-        let mbids = await musicbrainz.getIdsBySpotifyUrls(artistUrls);
+        let mbids = await musicbrainz.getIdsBySpotifyUrls([ ...artistUrls, ...Object.values(artistAdditionalUrls).flat() ]);
         if (mbids) {
             for (let url of artistUrls) {
-                artistData[url].mbid = mbids[url] || mbids[url+"/"] || null
+                artistData[url].mbid = mbids[url] || mbids[url+"/"] || artistAdditionalUrls[url]?.map(additionalUrl => mbids[additionalUrl]).find(Boolean) || null
             }
         }
         res.status(200).json(artistData);
