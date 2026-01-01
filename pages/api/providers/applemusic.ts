@@ -153,7 +153,7 @@ function getResizedImageUrl(url: string, width: number, height: number): string;
 function getResizedImageUrl(url: string | null | undefined, width: number, height: number): string | null
 function getResizedImageUrl(url: string | null | undefined, width: number, height: number): string | null {
 	if (url == null) return null;
-	return url.replace("{w}x{h}", `${width}x${height}`);
+	return url.replace("{w}x{h}", `${width}x${height}`).replace("ac.", "bb.");
 }
 
 function getArtistImageUrls(artist: Resource<ArtistAttributes>): { imageUrl: string | null, imageUrlSmall: string | null } {
