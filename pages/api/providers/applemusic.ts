@@ -158,9 +158,11 @@ function getResizedImageUrl(url: string | null | undefined, width: number, heigh
 
 function getArtistImageUrls(artist: Resource<ArtistAttributes>): { imageUrl: string | null, imageUrlSmall: string | null } {
 	const noImage = artist.attributes.artwork?.url.includes("AMCArtistImages") ?? true;
+	const imageUrl = artist.attributes.artwork?.url;
+	const alternateUrl = artist.attributes.hero?.[0]?.content[0]?.artwork?.url;
 	return {
-		imageUrl: noImage ? null : getOriginalImageUrl(artist.attributes.artwork?.url),
-		imageUrlSmall: noImage ? null : getResizedImageUrl(artist.attributes.artwork?.url, 100, 100)
+		imageUrl: !noImage ? getOriginalImageUrl(imageUrl) : getResizedImageUrl(alternateUrl, 4000, 4000),
+		imageUrlSmall: !noImage ? getResizedImageUrl(imageUrl, 250, 250) : getResizedImageUrl(alternateUrl, 250, 250) 
 	};
 }
 
@@ -290,7 +292,7 @@ function formatArtistObject(artist: Resource<ArtistAttributes>): ArtistObject {
 		url: createUrl("artist", artist.id)!,
 		imageUrl: imageUrls.imageUrl,
 		imageUrlSmall: imageUrls.imageUrlSmall,
-		bannerUrl: getResizedImageUrl(artist.attributes.hero?.[0]?.content[0]?.artwork.url, 500, 100),
+		bannerUrl: null,
 		relevance: artist.attributes.origin,
 		info: artist.attributes.genreNames.join(", "),
 		genres: artist.attributes.genreNames,
