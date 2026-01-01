@@ -326,7 +326,7 @@ function formatAlbumObject(album: Resource<AlbumAttributes>): AlbumObject {
 		name: album.attributes.name.replace(/ - (Single|EP)$/, ""),
 		url: createUrl("album", album.id)!,
 		imageUrl: getOriginalImageUrl(album.attributes.artwork.url),
-		imageUrlSmall: getResizedImageUrl(album.attributes.artwork.url, 100, 100),
+		imageUrlSmall: getResizedImageUrl(album.attributes.artwork.url, 250, 250),
 		albumArtists: album.relationships.artists?.data.map(formatPartialArtistObject) ?? [],
 		artistNames: album.relationships.artists?.data.map(artist => artist.attributes.name) ?? [],
 		releaseDate: album.attributes.releaseDate,
