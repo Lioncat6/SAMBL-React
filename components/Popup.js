@@ -9,18 +9,16 @@ import getConfig from "next/config";
 import { MdOutlineAlbum, MdPerson, MdOutlineCalendarMonth } from "react-icons/md";
 import { Dialog, Transition, Menu, MenuButton, MenuItem, MenuItems, TransitionChild, DialogPanel, Listbox, ListboxButton, ListboxOption, ListboxOptions, Label } from "@headlessui/react";
 import text from "../utils/text";
-
+import seeders from "../lib/seeders/seeders";
 function ConfigureMenu({ close }) {
 	const { publicRuntimeConfig } = getConfig();
 	const { settings, updateSettings } = useSettings();
-	const [showHarmony, setShowHarmony] = useState(settings.showHarmony);
-	const [showATisket, setShowATisket] = useState(settings.showATisket);
-	const [showMet, setShowMet] = useState(settings.showMet);
+	const [enabledSeeders, setEnabledSeeders] = useState(settings.enabledSeeders);
 	const [showExport, setShowExport] = useState(settings.showExport);
 	const [listVirtualization, setListVirtualization] = useState(settings.listVirtualization);
 	const [quickFetchThreshold, setQuickFetchThreshold] = useState(settings.quickFetchThreshold);
 	const saveConfig = () => {
-		const newSettings = { showHarmony, showATisket, showMet, showExport, listVirtualization, quickFetchThreshold };
+		const newSettings = { enabledSeeders, showExport, listVirtualization, quickFetchThreshold };
 		updateSettings(newSettings);
 		close();
 	};
@@ -34,18 +32,25 @@ function ConfigureMenu({ close }) {
 			</div>
 			<div className={styles.content}>
 				<div className={styles.configureMenu}>
-					<div className="checkbox-wrapper">
-						<input type="checkbox" className="substituted" id="showHarmony" checked={showHarmony} onChange={(e) => setShowHarmony(e.target.checked)} />
-						<label htmlFor="showHarmony">Show Harmony Button</label>
-					</div>
-					<div className="checkbox-wrapper">
-						<input type="checkbox" id="showATisket" checked={showATisket} onChange={(e) => setShowATisket(e.target.checked)} className="substituted" />
-						<label htmlFor="showATisket">Show A-tisket Button</label>
-					</div>
-					<div className="checkbox-wrapper">
-						<input type="checkbox" id="showMet" checked={showMet} onChange={(e) => setShowMet(e.target.checked)} className="substituted" />
-						<label htmlFor="showMet">Show MET Button</label>
-					</div>
+					{seeders.getAllSeeders().map((seeder) => (
+						<div key={seeder.namespace} className="checkbox-wrapper">
+							<input
+								type="checkbox"
+								id={`seeder-${seeder.namespace}`}
+								checked={enabledSeeders?.includes(seeder.namespace)}
+								onChange={(e) => {
+									if (e.target.checked) {
+										setEnabledSeeders([...enabledSeeders, seeder.namespace]);
+									} else {
+										setEnabledSeeders(enabledSeeders.filter((ns) => ns !== seeder.namespace));
+									}
+								}}
+								className="substituted"
+							/>
+							<label htmlFor={`seeder-${seeder.namespace}`}>Show {seeder.displayName} button</label>
+						</div>
+					))}
+					<br />
 					<div className="checkbox-wrapper">
 						<input type="checkbox" id="showExport" checked={showExport} onChange={(e) => setShowExport(e.target.checked)} className="substituted" />
 						<label htmlFor="showExport">Always show export Button</label>

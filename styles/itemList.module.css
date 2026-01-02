@@ -286,7 +286,7 @@
 }
 
 .metButton,
-.aTisketButton,
+.atisketButton,
 .harmonyButton,
 .exportButton {
 	position: relative;
@@ -312,11 +312,11 @@
 	color: #1e40af;
 }
 
-.aTisketButton {
+.atisketButton {
 	margin-left: auto;
 }
 
-.aTisketButton:hover {
+.atisketButton:hover {
 	border: 1px solid #ffc470;
 	transition: 0.2s all;
 	background-color: #ffeea8;

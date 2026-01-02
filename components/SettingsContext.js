@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-
+import seeders from "../lib/seeders/seeders";
 const SettingsContext = createContext();
 
 export function SettingsProvider({ children }) {
@@ -9,9 +9,7 @@ export function SettingsProvider({ children }) {
     useEffect(() => {
         const savedConfig = JSON.parse(localStorage.getItem("samblConfig")) || {};
         setSettings({
-            showHarmony: savedConfig.showHarmony !== undefined ? savedConfig.showHarmony : true,
-            showATisket: savedConfig.showATisket !== undefined ? savedConfig.showATisket : false,
-            showMet: savedConfig.showMet !== undefined ? savedConfig.showMet : true,
+            enabledSeeders: savedConfig.enabledSeeders !== undefined ? savedConfig.enabledSeeders: seeders.getDefaultSeederNamespaces(),
             showExport: savedConfig.showExport !== undefined ? savedConfig.showExport : false,
             listVirtualization: savedConfig.listVirtualization !== undefined ? savedConfig.listVirtualization : true,
             quickFetchThreshold: savedConfig.quickFetchThreshold !== undefined ? savedConfig.quickFetchThreshold : 500,
@@ -22,9 +20,7 @@ export function SettingsProvider({ children }) {
 
     const updateSettings = (newSettings) => {
         const extractedSettings = {
-            showHarmony: newSettings.showHarmony !== undefined ? newSettings.showHarmony : settings.showHarmony,
-            showATisket: newSettings.showATisket !== undefined ? newSettings.showATisket : settings.showATisket,
-            showMet: newSettings.showMet !== undefined ? newSettings.showMet : settings.showMet,
+            enabledSeeders: newSettings.enabledSeeders !== undefined ? newSettings.enabledSeeders : settings.enabledSeeders,
             showExport: newSettings.showExport !== undefined ? newSettings.showExport : settings.showExport,
             listVirtualization: newSettings.listVirtualization !== undefined ? newSettings.listVirtualization : settings.listVirtualization,
             quickFetchThreshold: newSettings.quickFetchThreshold !== undefined ? newSettings.quickFetchThreshold : settings.quickFetchThreshold,

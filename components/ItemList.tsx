@@ -18,7 +18,7 @@ import { TbPlaylistOff } from "react-icons/tb";
 import editNoteBuilder from "../utils/editNoteBuilder";
 import { IoFilter } from "react-icons/io5";
 import { DisplayAlbum } from "./component-types";
-
+import seeders from "../lib/seeders/seeders";
 
 function AlbumIcons({ item }) {
 	const { id, url, releaseDate, mbAlbum, trackCount, albumStatus, mbid, albumIssues, provider, artistMBID } = item;
@@ -70,9 +70,9 @@ function AlbumIcons({ item }) {
 	);
 }
 
-function ActionButtons({ item }) {
+function ActionButtons({ item }:  { item: DisplayAlbum }) {
 	const { settings } = useSettings();
-	const { url } = item;
+	const { url, upc } = item;
 	const [collapsed, setCollapsed] = useState(true);
 	function toggleState() {
 		setCollapsed(!collapsed);
@@ -87,21 +87,16 @@ function ActionButtons({ item }) {
 				}
 				<div className={`${collapsed ? styles.collapsed : styles.expanded}`}>
 					{settings?.showExport && <SelectionButtons item={item} />}
-					{settings?.showMet && (
-						<a className={styles.metButton} href={`https://seed.musichoarders.xyz?identifier=${url}`} target="_blank" rel="noopener noreferrer">
-							<div>MET</div>
-						</a>
-					)}
-					{settings?.showATisket && (
-						<a className={styles.aTisketButton} href={`https://atisket.pulsewidth.org.uk/?url=${url}`} target="_blank" rel="noopener noreferrer">
-							<div>A-tisket</div>
-						</a>
-					)}
-					{settings?.showHarmony && (
-						<a className={styles.harmonyButton} href={`https://harmony.pulsewidth.org.uk/release?url=${url}&category=preferred`} target="_blank" rel="noopener noreferrer">
-							<div>Harmony</div>
-						</a>
-					)}
+					{seeders.getAllSeeders().map((seeder) => {
+							if (settings?.enabledSeeders.includes(seeder.namespace)) {
+								return (
+									<a className={styles[`${seeder.namespace}Button`]} href={seeder.buildUrl(url, upc)} target="_blank" rel="noopener noreferrer">
+										<div>{seeder.displayName}</div>
+									</a>
+								)
+							}
+						})
+					}
 				</div>
 			</div>
 		</>
@@ -374,7 +369,7 @@ function ArtistItem({ item }) {
 			{item.imageUrl && (
 				<div className={styles.artistIcon}>
 					<a href={item.imageUrl} target="_blank">
-						<img title={item.name} src={item.imageUrl} />
+						<img title={item.name} src={item.imageUrlSmall} />
 					</a>
 				</div>
 			)}
@@ -526,8 +521,10 @@ function LoadingItem() {
 						<div className={`${styles.skeletonText} ${styles.skeletonInfo}`}></div>
 					</div>
 					{/* Buttons Placeholder */}
-					{settings?.showHarmony && <div className={`${styles.skeletonButton} ${styles.skeletonButton1}`}></div>}
-					{settings?.showATisket && <div className={`${styles.skeletonButton} ${styles.skeletonButton2}`}></div>}
+					{settings?.showExport && <div className={`${styles.skeletonButton} ${styles.skeletonButton1}`}></div>}
+					{seeders.getAllSeeders().filter(provider => settings?.enabledSeeders.includes(provider.namespace)).map(() => {
+						return <div className={`${styles.skeletonButton} ${styles.skeletonButton1}`}></div>
+					})}
 				</div>
 			</div>
 		</div>
