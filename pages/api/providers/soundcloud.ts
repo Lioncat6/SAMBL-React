@@ -35,6 +35,20 @@ if (!soundcloudClientId || !soundcloudOauthToken) {
 
 const scApi = new Soundcloud(soundcloudClientId, soundcloudOauthToken)
 
+function correctId(rawId: string | number): string {
+  let prefix = ""
+  let id = rawId.toString()
+  if (id.startsWith('soundcloud:')) {
+    const segments = id.split(':')
+    id = segments[2]
+    prefix = 'soundcloud:' + segments[1] + ":"
+  }
+  if (id.length < 9) {
+    id = id.padStart(9, '0')
+  }
+  return prefix + id;
+}
+
 function getReleaseDate (entity) {
   if (entity.release_day)
     return `${entity.release_year}-${entity.release_month}-${entity.release_day}`
@@ -51,9 +65,9 @@ async function searchByArtistName (artistName: string) {
   }
 }
 
-async function getArtistById (id: number) {
+async function getArtistById(id: number) {
   try {
-    const data = scApi.users.get(id)
+    const data = scApi.users.get(correctId(id))
     return data
   } catch (error) {
     err.handleError('Error fetching artist:', error)
@@ -74,7 +88,6 @@ function getArtistUrl (artist: SoundcloudUser) {
 
 function formatArtistObject (rawObject: SoundcloudUser): ArtistObject {
   const countries = new Intl.DisplayNames(['en'], { type: 'region' })
-
   return {
     name: rawObject.username,
     url: `https://soundcloud.com/${rawObject.permalink}`,
@@ -96,15 +109,15 @@ function formatArtistObject (rawObject: SoundcloudUser): ArtistObject {
     genres: null,
     followers: rawObject.followers_count,
     popularity: null,
-    id: rawObject.id.toString(),
+    id: correctId(rawObject.id),
     provider: namespace
   }
 }
 
-async function getArtistAlbums (artistId, offset, limit) {
+async function getArtistAlbums (artistId: string | number, offset: string | number, limit: number) {
   try {
-    let artistPlaylists = await scApi.users.playlists(artistId)
-    let artistTracks = await scApi.users.tracks(artistId)
+    let artistPlaylists = await scApi.users.playlists(correctId(artistId))
+    let artistTracks = await scApi.users.tracks(correctId(artistId))
     return { artistTracks: artistTracks, artistPlaylists: artistPlaylists }
   } catch (error) {
     err.handleError('Failed to fetch artist albums', error)
@@ -234,7 +247,7 @@ function formatPartialArtistObject (
       ? artist.avatar_url
       : artist.avatar_url?.replace('large', 't500x500') || '',
     imageUrlSmall: artist.avatar_url || '',
-    id: artist.id,
+    id: correctId(artist.id),
     provider: namespace
   }
 }
