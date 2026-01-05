@@ -14,14 +14,14 @@ const encode = str => encodeURIComponent(str).replace(/%250A/g, '%0A');
 function buildEditNote(edit: string, provider: string, sourceUrl: string, artistUrl: string, pageUrl: string | null = null): string {
 	const { publicRuntimeConfig } = getConfig();
     return encode(
-        `${edit} imported from ''SAMBL''%0A
-        '''Provider:''' ${provider}%0A
-        '''Source:''' ${sourceUrl}%0A
-        '''Artist:''' ${artistUrl}%0A
-        ${pageUrl ? `'''SAMBL URL:''' ${pageUrl}%0A` : ''}
-        %0A
-        '''SAMBL ${publicRuntimeConfig.version}''': https://sambl.lioncat6.com | https://github.com/lioncat6/SAMBL-React
-    `);
+        `${edit} imported from ''SAMBL''%0A` +
+        `'''Provider:''' ${provider}%0A` +
+        `'''Source:''' ${sourceUrl}%0A` +
+        `'''Artist:''' ${artistUrl}%0A` +
+        (pageUrl ? `'''SAMBL URL:''' ${pageUrl}%0A` : '') +
+        `%0A` +
+        `'''SAMBL ${publicRuntimeConfig.version}''': https://sambl.lioncat6.com | https://github.com/lioncat6/SAMBL-React`
+    );
 }
 
 function buildDeepSearchEditNote(data) {
