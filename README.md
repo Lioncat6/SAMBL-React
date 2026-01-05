@@ -43,7 +43,7 @@ TIDAL_CLIENT_SECRET=<Tidal Client Secret>
 ### Providers (See supported features above)
 | Provider | Namespace |
 |:---:|:---:|
-| Musicbrainz | musicbainz |
+| Musicbrainz | musicbrainz |
 | Spotify | spotify |
 | Deezer | deezer |
 | Tidal | tidal |
