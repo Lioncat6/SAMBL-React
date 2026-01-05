@@ -379,7 +379,7 @@ function getArtistUrl(artist: IArtist): string | null {
 const musicbrainz: MusicBrainzProvider = {
 	namespace,
 	getIdBySpotifyId: withCache(getIdBySpotifyId, { ttl: 60 * 15, namespace: namespace }),
-	getIdsBySpotifyUrls: withCache(getIdsBySpotifyUrls, { ttl: 60 * 15, namespace: namespace }),
+	getIdsByExternalUrls: withCache(getIdsBySpotifyUrls, { ttl: 60 * 15, namespace: namespace }),
 	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 15, namespace: namespace }),
 	getMBArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 15, namespace: namespace }),
 	getArtistFeaturedAlbums: withCache(getArtistFeaturedAlbums, { ttl: 60 * 15, namespace: namespace }),

@@ -76,7 +76,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
         if (!query) {
             return res.status(400).json({ error: "Parameter `query` is required" });
         }
-        let sourceProvider: FullProvider = providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject", "getArtistUrl"]);
+        let sourceProvider: FullProvider | false = providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject", "getArtistUrl"]);
         if (!sourceProvider) {
             return res.status(400).json({ error: `Provider \`${provider}\` does not support this operation` });
         }
@@ -97,15 +97,15 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
             }
         }
         if (artistUrls.length == 0) {
-            res.status(200).json({})
+            return res.status(200).json({})
         }
-        let mbids = await musicbrainz.getIdsBySpotifyUrls([ ...artistUrls, ...Object.values(artistAdditionalUrls).flat() ]);
+        let mbids = await musicbrainz.getIdsByExternalUrls([ ...artistUrls, ...Object.values(artistAdditionalUrls).flat() ]);
         if (mbids) {
             for (let url of artistUrls) {
                 artistData[url].mbid = mbids[url] || mbids[url+"/"] || artistAdditionalUrls[url]?.map(additionalUrl => mbids[additionalUrl]).find(Boolean) || null
             }
         }
-        res.status(200).json(artistData);
+        return res.status(200).json(artistData);
 	} catch (error) {
         logger.error("Error in searchArtists API:", error);
         res.status(500).json({ error: "Internal Server Error", details: error.message });

@@ -129,7 +129,7 @@ export class MusicBrainzProvider extends FullProvider {
     override formatAlbumObject: (album: any) => ExtendedAlbumObject;
     getAlbumByMBID: (id: string, inc: ReleaseIncludes[], options?: CacheOptions) => Promise<IRelease | null>;
     getIdBySpotifyId: (spotifyId: string, options?: CacheOptions) => Promise<string | null>;
-    getIdsBySpotifyUrls: (spotifyUrls: string[], options?: CacheOptions) => Promise<UrlMBIDDict>;
+    getIdsByExternalUrls: (spotifyUrls: string[], options?: CacheOptions) => Promise<UrlMBIDDict>;
     override getArtistAlbums: (id: string, offset: string | number, limit: number, options?: CacheOptions) => Promise<IBrowseReleasesResult | null>;
     override formatAlbumGetData: (rawData: any) => ExtendedAlbumData;
     getMBArtistAlbums: (id: string, offset: string | number, limit: number, inc?: ReleaseIncludes[], options?: CacheOptions) => Promise<IBrowseReleasesResult | null>;
