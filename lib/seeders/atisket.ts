@@ -1,7 +1,7 @@
 import { Seeder } from "./seeder-types";
 
 function buildUrl(url: string, upc?: string | null): string {
-    return `https://atisket.pulsewidth.org.uk/?url=${url}${upc && `&upc=${upc}`}`
+    return `https://atisket.pulsewidth.org.uk/?url=${url}${upc ? `&upc=${upc}` : ""}`
 }
 
 const atisket: Seeder = {

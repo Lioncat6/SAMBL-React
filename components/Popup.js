@@ -391,7 +391,7 @@ function AlbumDetails({ data }) {
 					<a href={url} target="_blank" rel="noopener noreferrer">
 						{name}
 					</a>
-					{mbAlbum.url && (
+					{mbAlbum?.url && (
 						<a href={mbAlbum.url} target="_blank" rel="noopener noreferrer">
 							<img
 								className={styles.albumMB}
@@ -497,7 +497,6 @@ function TrackItem({ index, track, highlight }) {
 
 function TrackMenu({ data, close }) {
 	let trackData = data.mbAlbum?.albumTracks.length > 0 ? data.mbAlbum.albumTracks : data.albumTracks;
-	console.log( data.mbAlbum.albumTracks);
 	return (
 		<>
 			<div className={styles.trackBg} style={{ "--background-image": `url(${data.imageUrl})` }} >

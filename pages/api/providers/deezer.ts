@@ -265,12 +265,13 @@ function getArtistUrl(artist) {
 }
 
 function parseUrl(url) {
-	const regex = /(?:www\.)?deezer\.com\/(artist|track|album)\/(\d+)/;
+	const regex = /(?:www\.)?deezer\.com\/(?:([a-z]{2})\/)?(artist|track|album)\/(\d+)/;
 	const match = url.match(regex);
+	console.log(match);	
 	if (match) {
 		return {
-			type: match[1],
-			id: match[2],
+			type: match[2],
+			id: match[3],
 		};
 	}
 	return null;
