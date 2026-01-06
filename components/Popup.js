@@ -6,7 +6,7 @@ import { TbTableExport } from "react-icons/tb";
 import { useExport } from "./ExportState";
 import { toast, Flip } from "react-toastify";
 import getConfig from "next/config";
-import { MdOutlineAlbum, MdPerson, MdOutlineCalendarMonth } from "react-icons/md";
+import { MdOutlineAlbum, MdPerson, MdOutlineCalendarMonth, MdDoNotDisturbOnTotalSilence } from "react-icons/md";
 import { Dialog, Transition, Menu, MenuButton, MenuItem, MenuItems, TransitionChild, DialogPanel, Listbox, ListboxButton, ListboxOption, ListboxOptions, Label } from "@headlessui/react";
 import text from "../utils/text";
 import seeders from "../lib/seeders/seeders";
@@ -82,20 +82,20 @@ function ConfigureMenu({ close }) {
 	);
 }
 
-function SelectedItem({ item, onRemove }) {
-	return <div className={styles.selectedItem}><span className={styles.selectedItemName}>{item.name}</span><div className={styles.selectedItemButton} onClick={onRemove}><FaXmark /></div></div>;
+function SelectedItem({ item, onRemove, exclusive }) {
+	return <div className={`${styles.selectedItem}  ${exclusive && styles.exclusive}`}><span className={styles.selectedItemName}>{item.name}</span><div className={styles.selectedItemButton} onClick={onRemove}><FaXmark /></div></div>;
 }
 
 function FilterMenu({ close, data, apply }) {
-	const filterOptions = [
+	const listFilterOptions = [
 		{ id: 1, name: 'Green', key: 'showGreen' },
 		{ id: 2, name: 'Orange', key: 'showOrange' },
 		{ id: 3, name: 'Red', key: 'showRed' },
 		{ id: 4, name: 'Various Artists', key: 'showVarious' },
-		{ id: 5, name: 'Album Issues', key: 'onlyIssues' },
+		{ id: 5, name: 'Album Issues', key: 'onlyIssues', exclusive: true },
 	]
 	const [filter, setFilter] = useState({ ...data });
-	const [selectedOptions, setSelectedOptions] = useState([filterOptions[0], filterOptions[1], filterOptions[2]]);
+	const [selectedOptions, setSelectedOptions] = useState([listFilterOptions[0], listFilterOptions[1], listFilterOptions[2]]);
 
 	return (
 		<>
@@ -177,6 +177,7 @@ function FilterMenu({ close, data, apply }) {
 										<SelectedItem
 											key={item.id}
 											item={item}
+											exclusive={item.exclusive}
 											onRemove={() => setSelectedOptions(selectedOptions.filter((option) => option.id !== item.id))}
 										/>
 									))}
@@ -192,11 +193,11 @@ function FilterMenu({ close, data, apply }) {
 									leaveTo={styles.selectOptionsLeaveTo}
 								>
 									<ListboxOptions anchor="bottom" className={styles.selectOptions}>
-										{filterOptions.map((option) => (
+										{listFilterOptions.map((option) => (
 											<ListboxOption key={option.id} value={option} as={Fragment}>
 												{({ focus, selected }) => (
-													<div className={`${styles.selectOption} ${focus ? styles.focused : ""} ${selected ? styles.selected : ""}`}>
-														<span className={styles.optionText}>{option.name}</span>
+													<div className={`${styles.selectOption} ${focus ? styles.focused : ""} ${selected ? styles.selected : ""}  ${option.exclusive && styles.exclusive}`}>
+														<div className={styles.optionTextContainer}><span className={styles.optionText}>{option.name} {option.exclusive && <span className={styles.exclusiveIcon} title="Shows items that only match this filter"><MdDoNotDisturbOnTotalSilence /></span>}</span></div>
 														{selected && <FaXmark />}
 													</div>
 												)}
@@ -495,7 +496,7 @@ function TrackItem({ index, track, highlight }) {
 }
 
 function TrackMenu({ data, close }) {
-	let trackData = data.mbAlbum.albumTracks.length > 0 ? data.mbAlbum.albumTracks : data.albumTracks;
+	let trackData = data.mbAlbum?.albumTracks.length > 0 ? data.mbAlbum.albumTracks : data.albumTracks;
 	console.log( data.mbAlbum.albumTracks);
 	return (
 		<>
