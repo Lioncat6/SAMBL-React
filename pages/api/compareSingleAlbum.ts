@@ -46,7 +46,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
         sourceAlbum = providerObj.formatAlbumObject(sourceAlbum);
         let mbAlbum: IRelease | null = null;
         let urlResults = (await musicbrainz.getAlbumsBySourceUrls([sourceAlbum.url], ["release-rels"], { noCache: true }))?.urls[0];
-        if (urlResults && urlResults?.relations?.length > 0 && urlResults?.relations[0].release?.id) {
+        if (urlResults?.relations && urlResults?.relations?.length > 0 && urlResults?.relations[0].release?.id) {
             mbAlbum = await musicbrainz.getAlbumByMBID(urlResults?.relations[0].release?.id, ["url-rels", "recordings", "isrcs"], { noCache: true });
         } else {
             let mbSearch = await musicbrainz.searchForAlbumByArtistAndTitle(mbid, sourceAlbum.name, { noCache: true })
@@ -54,8 +54,8 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
                 mbAlbum = await musicbrainz.getAlbumByMBID(mbSearch.releases[0].id, ["url-rels", "recordings", "isrcs"], { noCache: true });
             }
         }
-        const formattedMBAlbum = musicbrainz.formatAlbumObject(mbAlbum);
-        let albumData = processData([sourceAlbum], [formattedMBAlbum], mbid);
+        const formattedMBAlbum = mbAlbum ? musicbrainz.formatAlbumObject(mbAlbum) : null;
+        let albumData = processData([sourceAlbum], formattedMBAlbum ? [formattedMBAlbum] : [], mbid);
         if (albumData?.albumData && albumData?.albumData.length > 0) {
             res.status(200).json(albumData.albumData[0]);
         }
