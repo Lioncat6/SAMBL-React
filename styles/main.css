@@ -15,6 +15,7 @@
 	--toolsButton: #000f52;
 	--configButton: #522e00;
 	--savedArtists: #00631c;
+	--exclusive: #ffaa00;
 	/* Provider Colors */
 	--spotify-green: #1db954;
 	--itunes-red: #FF0436;
@@ -39,6 +40,8 @@
 	--toolsButton: #5d7aff;
 	--configButton: #905100;
 	--savedArtists: #00a62f;
+	--exclusive: #c15b08;
+	/* Provider Colors */
 	--tidal-black: #ffffff;
 }
 

@@ -522,6 +522,10 @@ flex-direction: row;
     align-items: center;
 }
 
+.selectedItem.exclusive {
+    border: 1px solid var(--exclusive);
+}
+
 
 .selectedItemButton {
     background-color: transparent;
@@ -541,8 +545,14 @@ flex-direction: row;
     color: var(--foreground-secondary);
 }
 
-.optionText {
+.optionTextContainer {
     flex-grow: 1;
+}
+
+.exclusive .optionText{
+   border: 1px solid var(--exclusive);
+   padding: 2px 4px;
+   border-radius: 4px;
 }
 
 .carrot {
@@ -551,4 +561,12 @@ flex-direction: row;
 
 .carrot.open {
     transform: rotate(-180deg) translateY(-2px);
+}
+
+.exclusiveIcon > svg {
+    vertical-align: text-bottom;
+}
+
+.exclusiveIcon {
+    cursor: help;
 }
