@@ -27,7 +27,7 @@
 		"react-icons": "^5.5.0",
 		"react-toastify": "^11.0.5",
 		"react-virtualized-auto-sizer": "^1.0.26",
-		"react-window": "^1.8.11",
+		"react-window": "^2.2.4",
 		"soundcloud.ts": "^0.7.1",
 		"spotify-web-api-node": "^5.0.0",
 		"string-similarity": "^4.0.4"
