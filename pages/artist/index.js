@@ -64,7 +64,7 @@ export async function getServerSideProps(context) {
 				data.push((await fetchArtistData(id, provider)).providerData);
 			}
 			const uniqueNames = [...new Set(data.map((artist) => artist.name))];
-			const genres = [...new Set(data.flatMap((artist) => artist.genres))].filter((genre) => genre.trim() != "");
+			const genres = [...new Set(data.flatMap((artist) => artist.genres))].filter((genre) => genre?.trim() != "");
 			let mostPopularIndex = 0;
 			let mostPopularity = 0;
 			for (let artist in data) {
