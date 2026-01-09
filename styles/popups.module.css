@@ -231,6 +231,9 @@ flex-direction: row;
     background: transparent;
     border: none;
     transition: all 0.1s ease-in-out;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .lookupButton {
@@ -403,12 +406,13 @@ flex-direction: row;
     font-size: x-large;
 }
 
+
 .albumTitle a:first-child {
 	font-weight: bold !important;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	color: var(--foreground-secondary);
+	color: var(--foreground-primary);
     font-size: larger;
 }
 
@@ -418,9 +422,16 @@ flex-direction: row;
 }
 
 .albumMB {
-	width: 22px;
-	height: 26px;
+	width: 28px;
+	height: 30px;
 	vertical-align: middle;
+}
+
+.trackMB {
+    width: 14px;
+    height: 18px;
+    vertical-align: middle;
+    margin-left: 2px;
 }
 
 .artists, .releaseDate, .barcode, .alb {
@@ -432,6 +443,76 @@ flex-direction: row;
 }
 .barcode {
     color: var(--foreground-secondary)
+}
+
+.trackArtists {
+    font-weight: normal;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--foreground-secondary);
+    font-size: small;
+}
+
+.trackInfo {
+    display: flex;
+    flex-direction: column;
+    margin-left: 4px;
+    overflow: hidden;
+}
+
+.trackTopRow {
+    display: flex;
+    align-items: center;
+    /* margin-bottom: 4px; */
+}
+
+.trackISRCs {
+    display: inline-block;
+    margin-left: 5px;
+    color: var(--foreground-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: -webkit-fill-available;
+    width: moz-available;
+}
+
+
+.trackTitle {
+    text-wrap: nowrap;
+    color: var(--foreground-primary)
+}
+
+.trackContainter {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 5px;
+    padding: 5px;
+    position: relative;
+}
+
+.trackContainter::before {
+    content: "";
+    background-color: var(--background-secondary);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 1px);
+    border-radius: 8px;
+    z-index: -1;
+    opacity: 20%;
+}
+
+.trackButtonContainer {
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 100%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
 }
 
 .SAMBLicon {
@@ -569,4 +650,49 @@ flex-direction: row;
 
 .exclusiveIcon {
     cursor: help;
+}
+
+.statusPill {
+	margin: 2px 2px 0 4px;
+	width: 8px;
+	height: 34px;
+	border-radius: 10px;
+	cursor: help;
+}
+
+.statusPill.red {
+	background-color: var(--status-red);
+}
+
+.statusPill.green {
+	background-color: var(--status-green);
+}
+
+.statusPill.orange {
+	background-color: var(--status-orange);
+}
+
+.statusPill.blue {
+	background-color: var(--status-blue);
+}
+
+.statusPill.grey {
+    background-color: var(--status-grey);
+}
+
+.noAggregatedTracksWarning {
+    margin-top: 8px;
+    font-weight: bold;
+    margin-bottom: -8px;
+    text-align: center;
+    z-index: 1;
+}
+
+.trackDataSource {
+    font-weight: normal;
+    font-size: small;
+}
+
+.trackDataSource span {
+    font-weight: bold;
 }

@@ -4,12 +4,33 @@ import { useSettings } from "./SettingsContext";
 import { FaXmark, FaGear, FaFilter, FaCopy, FaMagnifyingGlass, FaChevronDown, FaChevronRight, FaBarcode, FaCaretDown } from "react-icons/fa6";
 import { TbTableExport } from "react-icons/tb";
 import { useExport } from "./ExportState";
-import { toast, Flip } from "react-toastify";
+import { toast, Flip, ToastOptions } from "react-toastify";
 import getConfig from "next/config";
-import { MdOutlineAlbum, MdPerson, MdOutlineCalendarMonth, MdDoNotDisturbOnTotalSilence } from "react-icons/md";
+import { MdOutlineAlbum, MdPerson, MdOutlineCalendarMonth, MdDoNotDisturbOnTotalSilence, MdOutlineWarningAmber } from "react-icons/md";
 import { Dialog, Transition, Menu, MenuButton, MenuItem, MenuItems, TransitionChild, DialogPanel, Listbox, ListboxButton, ListboxOption, ListboxOptions, Label } from "@headlessui/react";
 import text from "../utils/text";
 import seeders from "../lib/seeders/seeders";
+import { ProviderNamespace, TrackObject } from "../pages/api/providers/provider-types";
+import { AggregatedAlbum, AggregatedTrack, AlbumStatus, TrackIssue, TrackStatus } from "../utils/aggregated-types";
+
+let toastProperties: ToastOptions = {
+	position: "top-left",
+	autoClose: 5000,
+	hideProgressBar: false,
+	closeOnClick: false,
+	pauseOnHover: true,
+	draggable: true,
+	progress: undefined,
+	transition: Flip,
+};
+
+function handleCopy(text: string, all: boolean = false) {
+	if (text.length > 0) {
+		navigator.clipboard.writeText(text);
+		toast.info(`Copied ${all ? "All Properties" : "Property"} to Clipboard`, toastProperties);
+	}
+}
+
 function ConfigureMenu({ close }) {
 	const { publicRuntimeConfig } = getConfig();
 	const { settings, updateSettings } = useSettings();
@@ -226,23 +247,6 @@ function FilterMenu({ close, data, apply }) {
 }
 
 function CopyButton({ value }) {
-	let toastProperties = {
-		position: "top-left",
-		autoClose: 5000,
-		hideProgressBar: false,
-		closeOnClick: false,
-		pauseOnHover: true,
-		draggable: true,
-		progress: undefined,
-		transition: Flip,
-	};
-
-	function handleCopy(text, all) {
-		if (text.length > 0) {
-			navigator.clipboard.writeText(text);
-			toast.info(`Copied ${all ? "All Properties" : "Property"} to Clipboard`, toastProperties);
-		}
-	}
 
 	return (
 		<button
@@ -257,22 +261,6 @@ function CopyButton({ value }) {
 }
 
 function ExportMenu({ data, close }) {
-	let toastProperties = {
-		position: "top-left",
-		autoClose: 5000,
-		hideProgressBar: false,
-		closeOnClick: false,
-		pauseOnHover: true,
-		draggable: true,
-		progress: undefined,
-		transition: Flip,
-	};
-	function handleCopy(text, all) {
-		if (text.length > 0) {
-			navigator.clipboard.writeText(text);
-			toast.info(`Copied ${all ? "All Properties" : "Property"} to Clipboard`, toastProperties);
-		}
-	}
 
 	return (
 		<>
@@ -357,6 +345,23 @@ function ExportMenu({ data, close }) {
 	);
 }
 
+function MbUrlIcon({status, url, styleClass}: {status: AlbumStatus | TrackStatus, url: string, styleClass: string}) {
+	return (
+		<>
+			{url && (
+				<a href={url} target="_blank" rel="noopener noreferrer">
+					<img
+						className={styleClass}
+						src={status === "green" ? "../assets/images/MusicBrainz_logo_icon.svg" : "../assets/images/MB_Error.svg"}
+						alt="MusicBrainz"
+						title={status === "green" ? "View on MusicBrainz" : "Warning: This could be the incorrect MB release for this album!"}
+					/>
+				</a>
+			)}
+		</>
+	)
+}
+
 function AlbumDetails({ data }) {
 	const {
 		provider,
@@ -391,16 +396,7 @@ function AlbumDetails({ data }) {
 					<a href={url} target="_blank" rel="noopener noreferrer">
 						{name}
 					</a>
-					{mbAlbum?.url && (
-						<a href={mbAlbum.url} target="_blank" rel="noopener noreferrer">
-							<img
-								className={styles.albumMB}
-								src={status === "green" ? "../assets/images/MusicBrainz_logo_icon.svg" : "../assets/images/MB_Error.svg"}
-								alt="MusicBrainz"
-								title={status === "green" ? "View on MusicBrainz" : "Warning: This could be the incorrect MB release for this album!"}
-							/>
-						</a>
-					)}
+					<MbUrlIcon status={status} url={mbAlbum?.url || ""} styleClass={styles.albumMB} />
 				</div>
 				<div className={styles.artists}>
 					<MdPerson />
@@ -432,27 +428,47 @@ function AlbumDetails({ data }) {
 	);
 }
 
-let toastProperties = {
-	position: "top-left",
-	autoClose: 5000,
-	hideProgressBar: false,
-	closeOnClick: false,
-	pauseOnHover: true,
-	draggable: true,
-	progress: undefined,
-	transition: Flip,
-};
+function TrackItem({ index, track, album, highlight }: { index: string, track: TrackObject | AggregatedTrack, album: AggregatedAlbum, highlight: boolean }) {
+	let mbid: string | null = null;
+	let mbUrl: string | null = null;
+	let status: TrackStatus = "grey"
+	let trackIssues: TrackIssue[] = [];
 
-function TrackItem({ index, track, highlight }) {
-	function handleCopy(text, all) {
-		if (text.length > 0) {
-			navigator.clipboard.writeText(text);
-			toast.info(`Copied ${all ? "All ISRCs" : "ISRCs"} to Clipboard`, toastProperties);
-		}
+	if ((track as AggregatedTrack).mbid !== undefined) {
+		mbid = (track as AggregatedTrack).mbid;
+		mbUrl = (track as AggregatedTrack).mbTrack?.url || null;
+		status = (track as AggregatedTrack).status;
+		trackIssues = (track as AggregatedTrack).trackIssues;
 	}
+
+	function showArtistCredit(): boolean {
+		const albumCredit = album.albumArtists;
+		const trackCredit = track.trackArtists;
+		if (albumCredit?.length > 0 && trackCredit?.length > 0) {
+			const albumArtistIds = albumCredit.map((artist) => artist.id);
+			const trackArtistIds = trackCredit?.map((artist) => artist.id);
+			// Check if credits differ
+			return !(albumArtistIds.every((id) => trackArtistIds.includes(id)) && trackArtistIds.every((id) => albumArtistIds.includes(id)));
+		}
+		return false;
+	}
+
+	let pillTooltipText = "There is not enough data to compare this track";
+
+	switch(status) {
+		case "green":
+			pillTooltipText = "This track has a MB track with a matching URL"
+			break;
+		case "orange":
+			pillTooltipText = "This track does not have a matching URL on MusicBrainz"
+		case "blue":
+			pillTooltipText = "This track has a matching ISRC, but no URL on MusicBrainz"
+	}
+
+
 	return (
-		<div key={index} className={styles.propertyRow}>
-			<div className={styles.property}>
+		<div key={index} className={styles.trackContainter}>
+			<div className={styles.trackButtonContainer}>
 				{/* Copy Button */}
 				<button
 					className={`${styles.copyButton} ${track.isrcs.length > 0 ? "" : styles.disabled}`}
@@ -488,18 +504,54 @@ function TrackItem({ index, track, highlight }) {
 						</MenuItems>
 					</Menu>
 				)}
-				<div className={styles.trackNumber}>{(Number(index) + 1).toString().padStart(2, "0")}</div> {track.name}
+				<div className={styles.trackNumber}>{(Number(index) + 1).toString().padStart(2, "0")}</div>
+				<div className={`${styles.statusPill} ${styles[status]}`} title={pillTooltipText}></div>
 			</div>
-			<div className={styles.propertyData}>{Array.isArray(track) && typeof track[0] === "object" ? JSON.stringify(track, null, 2) : String(track.isrcs)}</div>
+			<div className={styles.trackInfo}>
+				<div className={styles.trackTopRow}>
+					<a className={styles.trackTitle} href={track.url || ""} > {track.name}</a> <MbUrlIcon status={status} url={mbUrl || ""} styleClass={styles.trackMB} />
+					<div className={styles.trackISRCs}>{Array.isArray(track) && typeof track[0] === "object" ? JSON.stringify(track, null, 2) : String(track.isrcs)}</div>
+				</div>
+				{showArtistCredit() && (
+					<div className={styles.trackArtists}>
+						{track.trackArtists.map((artist, index) => (
+							<span key={artist.id}>
+								{index > 0 && ", "}
+								<a href={artist.url} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
+									{artist.name}
+								</a>
+								<a href={`../newartist?provider_id=${artist.id}&provider=${artist.provider}`} target="_blank" rel="noopener noreferrer">
+									<img className={styles.SAMBLicon} src="../assets/images/favicon.svg" alt="SAMBL" />
+								</a>
+							</span>
+						))}
+					</div>
+				)}
+			</div>
 		</div>
 	);
 }
 
-function TrackMenu({ data, close }) {
-	let trackData = data.mbAlbum?.albumTracks.length > 0 ? data.mbAlbum.albumTracks : data.albumTracks;
+function TrackMenu({ data, close }: { data: AggregatedAlbum, close: () => void }) {
+	let trackData: TrackObject[] | AggregatedTrack[] = [];
+	let trackDataSource: ProviderNamespace | null = null as ProviderNamespace | null;
+	let hasFullTrackData: boolean = false;
+	function getTrackData() {
+		if (data.aggregatedTracks?.length > 0){
+			trackData = data.aggregatedTracks;
+			hasFullTrackData = true;
+		} else if ( data.albumTracks?.length > 0) {
+			trackData = data.albumTracks;
+			trackDataSource = data.provider;
+		} else if (data.mbAlbum?.albumTracks && data.mbAlbum.albumTracks.length > 0) {
+			trackData = data.mbAlbum.albumTracks;
+			trackDataSource = "musicbrainz";
+		}
+	}
+	getTrackData();
 	return (
 		<>
-			<div className={styles.trackBg} style={{ "--background-image": `url(${data.imageUrl})` }} >
+			<div className={styles.trackBg} style={{ "--background-image": `url(${data.imageUrl})` } as React.CSSProperties} >
 				{" "}
 				<div className={styles.header}>
 					{" "}
@@ -507,10 +559,16 @@ function TrackMenu({ data, close }) {
 				</div>
 			</div>
 			<AlbumDetails data={data} />
+			{!hasFullTrackData && (
+				<div className={styles.noAggregatedTracksWarning}>
+					<MdOutlineWarningAmber /> Refresh this album to see full track data
+					{trackDataSource && (<div className={styles.trackDataSource}>Currently viewing track data from <span>{text.capitalizeFirst(trackDataSource)}</span></div>)}
+				</div>
+			)}
 			<div className={styles.content}>
 				{Object.entries(trackData).map(([key, value]) => {
 					return (
-						<TrackItem index={key} track={value} highlight={false} />
+						<TrackItem index={key} track={value} album={data} highlight={false} />
 					)
 
 				})}
