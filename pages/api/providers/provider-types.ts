@@ -15,7 +15,7 @@ export class ArtistObject {
     followers: number | null;
     popularity: number | null;
     id: string | number;
-    provider: string;
+    provider: ProviderNamespace;
 };
 
 export type PartialArtistObject = {
@@ -24,11 +24,11 @@ export type PartialArtistObject = {
     imageUrl: string | null;
     imageUrlSmall: string | null;
     id: string | number;
-    provider: string;
+    provider: ProviderNamespace;
 };
 
 export class AlbumObject {
-    provider: string;
+    provider: ProviderNamespace;
     id: string;
     name: string;
     url: string;
@@ -47,11 +47,11 @@ export class ExtendedAlbumObject extends AlbumObject {
     comment: string | null;
     externalUrls: string[] | null;
     hasImage: boolean;
+    override albumTracks: ExtendedTrackObject[];
 };
 
-
 export class TrackObject {
-    provider: string;
+    provider: ProviderNamespace;
     id: string | null;
     name: string;
     url: string | null;
@@ -65,6 +65,11 @@ export class TrackObject {
     duration: number | null;
     isrcs: string[];
 };
+
+export class ExtendedTrackObject extends TrackObject {
+    comment: string | null;
+    externalUrls: string[] | null;
+}
 
 export class PagingData {
     count: number | null;
