@@ -24,6 +24,12 @@
 	--bandcamp-blue: #0cacd7;
 	--soundcloud-orange: #ff7700;
 	--applemusic-red: #fe5974;
+	/* Status Colors */
+	--status-red: red;
+	--status-green: #34eb80;
+	--status-orange: orange;
+	--status-blue: cornflowerblue;
+	--status-grey: gray;
 }
 
 .dark {

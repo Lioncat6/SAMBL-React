@@ -359,19 +359,19 @@
 }
 
 .statusPill.red {
-	background-color: red;
+	background-color: var(--status-red);
 }
 
 .statusPill.green {
-	background-color: #34eb80;
+	background-color: var(--status-green);
 }
 
 .statusPill.orange {
-	background-color: orange;
+	background-color: var(--status-orange);
 }
 
 .statusPill.blue {
-	background-color: cornflowerblue;
+	background-color: var(--status-blue);
 }
 
 .albumCover img {
