@@ -1,5 +1,5 @@
 import { MusicBrainzApi, CoverArtArchiveApi, IRelation, RelationsIncludes, IArtist, EntityType, IBrowseReleasesQuery, IRelease, IEntity, IRecording, ICoverInfo, ICoversInfo, IReleaseList, IUrlList, IUrlLookupResult, IUrl, IBrowseReleasesResult, IRecordingList, IArtistList, IArtistMatch, ITrack, IBrowseRecordingsQuery, UrlIncludes, ReleaseIncludes } from "musicbrainz-api";
-import { UrlInfo, UrlMBIDDict, UrlData, Provider, TrackObject, ArtistObject, PartialArtistObject, AlbumObject, ExtendedAlbumObject, MusicBrainzProvider, AlbumData, ExtendedAlbumData } from "./provider-types";
+import { UrlInfo, UrlMBIDDict, UrlData, Provider, TrackObject, ArtistObject, PartialArtistObject, AlbumObject, ExtendedAlbumObject, MusicBrainzProvider, AlbumData, ExtendedAlbumData, ExtendedTrackObject } from "./provider-types";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
@@ -63,12 +63,12 @@ async function getArtistById(mbid: string): Promise<IArtist | null | undefined> 
 	}
 }
 
-async function getArtistByUrl(url: string, inc:UrlIncludes[] = ["artist-rels"]): Promise<IArtist | null | undefined> {
+async function getArtistByUrl(url: string, inc: UrlIncludes[] = ["artist-rels"]): Promise<IArtist | null | undefined> {
 	try {
-		if (parseUrl(url)?.type == "artist" && validateMBID(parseUrl(url)?.id)){
+		if (parseUrl(url)?.type == "artist" && validateMBID(parseUrl(url)?.id)) {
 			return await musicbrainz.getArtistById(parseUrl(url)?.id || "")
 		}
-		const data = await mbApi.lookupUrl(url, inc );
+		const data = await mbApi.lookupUrl(url, inc);
 		if (!data.relations || data.relations?.length == 0) {
 			return null; // No artist found
 		}
@@ -131,7 +131,7 @@ async function getArtistAlbums(mbid: string, offset = 0, limit = 100, inc: Relea
 	}
 }
 
-async function getArtistFeaturedAlbums(mbid: string, offset = 0, limit = 100, inc:ReleaseIncludes[] = ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"]): Promise<IBrowseReleasesResult | null | undefined> {
+async function getArtistFeaturedAlbums(mbid: string, offset = 0, limit = 100, inc: ReleaseIncludes[] = ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"]): Promise<IBrowseReleasesResult | null | undefined> {
 	try {
 		// const data = await mbApi.browse('release', {track_artist: mbid, limit: limit, offset: offset});
 		const data = await mbApi.browse('release' as 'release', { track_artist: mbid, limit: limit, offset: offset } as IBrowseReleasesQuery, inc);
@@ -181,7 +181,7 @@ async function searchForAlbumByArtistAndTitle(mbid: string, title: string): Prom
 	}
 }
 
-async function getAlbumByMBID(mbid: string, inc: ReleaseIncludes[] = ["artist-rels", "recordings", "isrcs"]): Promise<IRelease | null | undefined> {
+async function getAlbumByMBID(mbid: string, inc: ReleaseIncludes[] = ["artist-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"]): Promise<IRelease | null | undefined> {
 	try {
 		const data = await mbApi.lookup("release" as "release", mbid, inc);
 		checkError(data);
@@ -193,7 +193,7 @@ async function getAlbumByMBID(mbid: string, inc: ReleaseIncludes[] = ["artist-re
 
 async function getAlbumById(mbid: string): Promise<IRelease | null | undefined> {
 	try {
-		const data = await mbApi.lookup("release" as "release", mbid, ["artist-rels", "recordings", "isrcs"] as RelationsIncludes[]);
+		const data = await mbApi.lookup("release", mbid, ["artist-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"] as ReleaseIncludes[]);
 		checkError(data);
 		return data;
 	} catch (error) {
@@ -306,7 +306,7 @@ function formatAlbumObject(album: IRelease): ExtendedAlbumObject {
 }
 
 
-function formatTrackObject(track: IRecording | ITrack): TrackObject {
+function formatTrackObject(track: IRecording | ITrack): ExtendedTrackObject {
 	let trackNumber: number | null = null;
 	let recording: IRecording = track as IRecording;
 	if (!('isrcs' in track)) {
@@ -328,6 +328,8 @@ function formatTrackObject(track: IRecording | ITrack): TrackObject {
 		releaseDate: recording["first-release-date"] || null,
 		trackNumber: trackNumber || null,
 		isrcs: recording.isrcs || [],
+		comment: recording.disambiguation || null,
+		externalUrls: recording.relations ? recording.relations.filter(rel => rel.url && rel.url?.resource)?.map(rel => rel.url?.resource).filter(url => typeof url == 'string') : [],
 	}
 }
 

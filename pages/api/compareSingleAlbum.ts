@@ -47,11 +47,11 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
         let mbAlbum: IRelease | null = null;
         let urlResults = (await musicbrainz.getAlbumsBySourceUrls([sourceAlbum.url], ["release-rels"], { noCache: true }))?.urls[0];
         if (urlResults?.relations && urlResults?.relations?.length > 0 && urlResults?.relations[0].release?.id) {
-            mbAlbum = await musicbrainz.getAlbumByMBID(urlResults?.relations[0].release?.id, ["url-rels", "recordings", "isrcs"], { noCache: true });
+            mbAlbum = await musicbrainz.getAlbumByMBID(urlResults?.relations[0].release?.id, ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"], { noCache: true });
         } else {
             let mbSearch = await musicbrainz.searchForAlbumByArtistAndTitle(mbid, sourceAlbum.name, { noCache: true })
             if (mbSearch && mbSearch?.releases?.length > 0) {
-                mbAlbum = await musicbrainz.getAlbumByMBID(mbSearch.releases[0].id, ["url-rels", "recordings", "isrcs"], { noCache: true });
+                mbAlbum = await musicbrainz.getAlbumByMBID(mbSearch.releases[0].id, ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"], { noCache: true });
             }
         }
         const formattedMBAlbum = mbAlbum ? musicbrainz.formatAlbumObject(mbAlbum) : null;

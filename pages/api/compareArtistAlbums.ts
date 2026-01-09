@@ -24,11 +24,11 @@ async function fetchSourceAlbums(providerId, provider, offset = 0, bypassCache =
 }
 
 async function fetchMbArtistAlbums(mbid, offset = 0, full = false) {
-	return await musicbrainz.getMBArtistAlbums(mbid, offset, 100, full ? ["url-rels", "recordings", "isrcs"] : ["url-rels"]);
+	return await musicbrainz.getMBArtistAlbums(mbid, offset, 100, full ? ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"] : ["url-rels"]);
 }
 
 async function fetchMbArtistFeaturedAlbums(mbid, offset = 0, full = false) {
-	return await musicbrainz.getArtistFeaturedAlbums(mbid, offset, 100, full ? ["url-rels", "recordings", "isrcs"] : ["url-rels"]);
+	return await musicbrainz.getArtistFeaturedAlbums(mbid, offset, 100, full ? ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"] : ["url-rels"]);
 }
 
 async function getBySourceAlbumLink(links: string[]) {
