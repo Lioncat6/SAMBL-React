@@ -95,6 +95,11 @@ async function refreshApi() {
 
 refreshApi();
 
+function getSmallImageUrl(url: string): string {
+    if (!url) return "";
+    return url.replace(/\/\d+x\d+/, '/320x320');
+}
+
 async function getTrackByISRC(isrc) {
 	await refreshApi();
 	try {
@@ -376,6 +381,7 @@ function formatArtistSearchData(rawData) {
         }
 
         artist.imageUrl = coverArtUrl;
+        artist.imageUrlSmall = getSmallImageUrl(coverArtUrl || "");
     }
     return artists;
 }
