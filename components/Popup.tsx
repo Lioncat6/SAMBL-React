@@ -345,7 +345,7 @@ function ExportMenu({ data, close }) {
 	);
 }
 
-function MbUrlIcon({status, url, styleClass}: {status: AlbumStatus | TrackStatus, url: string, styleClass: string}) {
+function MbUrlIcon({status, url, styleClass, isAlbum = true}: {status: AlbumStatus | TrackStatus, url: string, styleClass: string, isAlbum?: boolean}) {
 	return (
 		<>
 			{url && (
@@ -354,7 +354,7 @@ function MbUrlIcon({status, url, styleClass}: {status: AlbumStatus | TrackStatus
 						className={styleClass}
 						src={status === "green" ? "../assets/images/MusicBrainz_logo_icon.svg" : "../assets/images/MB_Error.svg"}
 						alt="MusicBrainz"
-						title={status === "green" ? "View on MusicBrainz" : "Warning: This could be the incorrect MB release for this album!"}
+						title={status === "green" ? "View on MusicBrainz" : isAlbum ? "Warning: This could be the incorrect MB release for this album!" : "Warning: This could be the incorrect MB recording for this track!"}
 					/>
 				</a>
 			)}
@@ -380,7 +380,7 @@ function AlbumDetails({ data }) {
 		upc,
 	} = data;
 
-	const barcode = upc || mbAlbum.upc;
+	const barcode = upc || mbAlbum?.upc || null;
 
 	return (
 		<div className={styles.albumDetails}>
@@ -509,7 +509,7 @@ function TrackItem({ index, track, album, highlight }: { index: string, track: T
 			</div>
 			<div className={styles.trackInfo}>
 				<div className={styles.trackTopRow}>
-					<a className={styles.trackTitle} href={track.url || ""} > {track.name}</a> <MbUrlIcon status={status} url={mbUrl || ""} styleClass={styles.trackMB} />
+					<a className={styles.trackTitle} href={track.url || ""} > {track.name}</a> <MbUrlIcon status={status} url={mbUrl || ""} styleClass={styles.trackMB} isAlbum={false} />
 					<div className={styles.trackISRCs}>{Array.isArray(track) && typeof track[0] === "object" ? JSON.stringify(track, null, 2) : String(track.isrcs)}</div>
 				</div>
 				{showArtistCredit() && (
@@ -561,7 +561,7 @@ function TrackMenu({ data, close }: { data: AggregatedAlbum, close: () => void }
 			<AlbumDetails data={data} />
 			{!hasFullTrackData && (
 				<div className={styles.noAggregatedTracksWarning}>
-					<MdOutlineWarningAmber /> Refresh this album to see full track data
+					<MdOutlineWarningAmber /> {data.status == "red" ? "Add this album to musicbrainz to see full track data" : "Refresh this album to see full track data"}
 					{trackDataSource && (<div className={styles.trackDataSource}>Currently viewing track data from <span>{text.capitalizeFirst(trackDataSource)}</span></div>)}
 				</div>
 			)}
