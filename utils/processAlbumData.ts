@@ -1,5 +1,5 @@
-import { AlbumObject, ExtendedAlbumObject, TrackObject } from "../pages/api/providers/provider-types";
-import { AggregatedAlbum, AlbumIssue, AlbumStatus, BasicTrack } from "./aggregated-types";
+import { AlbumObject, ExtendedAlbumObject, ExtendedTrackObject, ProviderNamespace, TrackObject } from "../pages/api/providers/provider-types";
+import { AggregatedAlbum, AggregatedTrack, AlbumIssue, AlbumStatus, BasicTrack, TrackIssue, TrackStatus } from "./aggregated-types";
 import text from "./text";
 
 export default function processData(sourceAlbums: AlbumObject[], mbAlbums: ExtendedAlbumObject[], currentArtistMBID = null, quick = false, full = false) {
@@ -70,7 +70,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 		let mbid = "";
 		let finalHasCoverArt = false;
 		let albumIssues: AlbumIssue[] = [];
-		let finalTracks: TrackObject[] = [];
+		let finalTracks: ExtendedTrackObject[] = [];
 		let finalAlbum: ExtendedAlbumObject | null = null as ExtendedAlbumObject | null; //Typescript, why must you be like this
 		let mbBarcode: string | null = "";
 
@@ -118,8 +118,8 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 			tryMap(mbNameAlbumMap, normalized, "orange")
 		}
 
-		const alwaysBarcodeProviders = ["spotify", "deezer", "tidal", "itunes", "applemusic"]
-		const alwaysISRCProviders = ["spotify", "deezer", "tidal", "itunes", "applemusic"]
+		const alwaysBarcodeProviders: ProviderNamespace[] = ["spotify", "deezer", "tidal", "applemusic"]
+		const alwaysISRCProviders: ProviderNamespace[] = ["spotify", "deezer", "tidal", "applemusic"]
 
 		let mbTrackNames: string[] = [];
 		let mbTrackISRCs: BasicTrack[] = [];
@@ -156,6 +156,8 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 			}
 		}
 
+		let aggregateTracks = true;
+
 		if (albumStatus != "red") {
 			if ((!mbBarcode || mbBarcode == null) && (providerBarcode || alwaysBarcodeProviders.includes(provider))) {
 				albumIssues.push("noUPC");
@@ -168,6 +170,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 				albumIssues.push("ISRCDiff")
 			}
 			if (mbTrackCount != providerTrackCount && !quick && full) {
+				aggregateTracks = false;
 				albumIssues.push("trackDiff");
 			}
 			if (mbReleaseDate == "" || mbReleaseDate == undefined || !mbReleaseDate) {
@@ -180,7 +183,78 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 			}
 		}
 
+		if (!finalTracks || !providerTracks || finalTracks.length == 0 || providerTracks.length == 0 || finalTracks.length != providerTracks.length) {
+			aggregateTracks = false;
+		}
 
+		//Track Aggregation
+		let aggregatedTracks: AggregatedTrack[] = [];
+		if (aggregateTracks) {
+			for (let i = 0; i < providerTracks.length; i++) {
+				let trackIssues: TrackIssue[] = [];
+				let providerTrack = providerTracks[i];
+				let mbTrack = finalTracks[i] || null;
+				let status : TrackStatus = "orange";
+				
+
+
+				// export type TrackIssue = 'noISRC' | 'ISRCDiff' | 'noUrl' | 'noDuration' | "artistDiff"
+				const shouldHaveISRC = (providerTrack.isrcs && providerTrack.isrcs.length > 0);
+				if (shouldHaveISRC) {
+					if (!mbTrack.isrcs || mbTrack.isrcs.length < 1) {
+						trackIssues.push("noISRC");
+					} else if (mbTrack) {
+						const mbISRCsForTrack = mbTrack.isrcs || [];
+						if (!mbISRCsForTrack.includes(providerTrack.isrcs[0] || "")) {
+							trackIssues.push("ISRCDiff");
+						}
+					}
+				}
+
+				if (providerTrack.isrcs.some(isrc => mbTrack.isrcs.includes(isrc))) {
+					status = "blue";
+				}
+
+				if (mbTrack.externalUrls?.includes(providerTrack.url || "")) {
+					status = "green";
+				}
+
+				if (!mbTrack.duration || mbTrack.duration == 0) {
+					trackIssues.push("noDuration");
+				}
+				// if artist diff
+				let providerArtistNamesSet = new Set(providerTrack.artistNames.map(name => text.normalizeText(name)));
+				let mbArtistNamesSet = new Set<string>();
+				if (mbTrack && mbTrack.trackArtists) {
+					mbTrack.trackArtists.forEach(artist => {
+						mbArtistNamesSet.add(text.normalizeText(artist.name));
+					});
+				}
+				let artistDiff = false;
+				if (providerArtistNamesSet.size != mbArtistNamesSet.size) {
+					artistDiff = true;
+				} else {
+					providerArtistNamesSet.forEach(name => {
+						if (!mbArtistNamesSet.has(name)) {
+							artistDiff = true;
+						}
+					});
+				}
+				if (artistDiff) {
+					trackIssues.push("artistDiff");
+				}
+				
+				aggregatedTracks.push({
+					status: status,
+					...providerTrack,
+					mbid: mbTrack ? mbTrack.id : null,
+					artistMBID: currentArtistMBID,
+					mbTrack: mbTrack,
+					trackIssues: trackIssues,
+					isrcs: providerTrack.isrcs.length > 0 ? providerTrack.isrcs : mbTrack.isrcs.length > 0 ? mbTrack.isrcs : [],
+				});
+			}
+		}
 
 		if (!albumData.find((a) => a.id === providerId)) { //Deduplicate
 			total++;
@@ -206,13 +280,11 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 				status: albumStatus,
 				mbAlbum: finalAlbum,
 				upc: providerBarcode,
-				comment: finalAlbum?.comment || null,
 				albumTracks: providerTracks,
 				mbid,
 				artistMBID: currentArtistMBID,
 				albumIssues,
-				externalUrls: finalAlbum?.externalUrls || null,
-				hasImage: finalAlbum?.hasImage || false
+				aggregatedTracks: aggregatedTracks
 			});
 		}
 	});
