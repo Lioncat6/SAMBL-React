@@ -612,13 +612,18 @@ flex-direction: row;
     background-color: transparent;
     border: none;
     color: var(--foreground-primary);
-    padding: 0;
+    margin-left: -2px;
     transition: all 0.2s ease-in-out;
     text-align: center;
 }
 
 .selectedItemName {
-    padding-left: 2px;
+    padding: 0 2px;
+}
+
+.selectedSortName {
+    flex-grow: 1;
+    text-align: center;
 }
 
 .selectedItemButton:hover, .selectOption:hover, .selectOption.focused {
@@ -628,6 +633,34 @@ flex-direction: row;
 
 .optionTextContainer {
     flex-grow: 1;
+}
+
+.sortOptionsContainer {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.sortDirectionButton {
+    background: transparent;
+    border: 1px solid var(--foreground-primary);
+    color: var(--foreground-primary);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.ascendingIcon {
+    position: absolute;
+}
+
+.ascendingIcon.descending,
+.descendingIcon.descending {
+    opacity: 0;
+    transform: scale(0);
+    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
 }
 
 .exclusive .optionText{
@@ -694,5 +727,9 @@ flex-direction: row;
 }
 
 .trackDataSource span {
+    font-weight: bold;
+}
+
+.selectLabel {
     font-weight: bold;
 }

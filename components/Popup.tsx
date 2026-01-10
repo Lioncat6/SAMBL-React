@@ -7,11 +7,13 @@ import { useExport } from "./ExportState";
 import { toast, Flip, ToastOptions } from "react-toastify";
 import getConfig from "next/config";
 import { MdOutlineAlbum, MdPerson, MdOutlineCalendarMonth, MdDoNotDisturbOnTotalSilence, MdOutlineWarningAmber } from "react-icons/md";
-import { Dialog, Transition, Menu, MenuButton, MenuItem, MenuItems, TransitionChild, DialogPanel, Listbox, ListboxButton, ListboxOption, ListboxOptions, Label } from "@headlessui/react";
+import { TbSortAscending, TbSortDescending } from "react-icons/tb";
+import { Dialog, Transition, Menu, MenuButton, MenuItem, MenuItems, TransitionChild, DialogPanel, Listbox, ListboxButton, ListboxOption, ListboxOptions, Label, Button } from "@headlessui/react";
 import text from "../utils/text";
 import seeders from "../lib/seeders/seeders";
 import { ProviderNamespace, TrackObject } from "../pages/api/providers/provider-types";
 import { AggregatedAlbum, AggregatedTrack, AlbumStatus, TrackIssue, TrackStatus } from "../utils/aggregated-types";
+import { listFilterOption } from "./component-types";
 
 let toastProperties: ToastOptions = {
 	position: "top-left",
@@ -103,20 +105,29 @@ function ConfigureMenu({ close }) {
 	);
 }
 
-function SelectedItem({ item, onRemove, exclusive }) {
-	return <div className={`${styles.selectedItem}  ${exclusive && styles.exclusive}`}><span className={styles.selectedItemName}>{item.name}</span><div className={styles.selectedItemButton} onClick={onRemove}><FaXmark /></div></div>;
+function SelectedItem({ item, onRemove, exclusive }: { item: listFilterOption, onRemove: (() => void) | false, exclusive?: boolean }) {
+	return <div className={`${styles.selectedItem}  ${exclusive && styles.exclusive}`}><span className={styles.selectedItemName}>{item.name}</span>{onRemove && <div className={styles.selectedItemButton} onClick={onRemove}><FaXmark /></div>}</div>;
 }
 
 function FilterMenu({ close, data, apply }) {
-	const listFilterOptions = [
-		{ id: 1, name: 'Green', key: 'showGreen' },
-		{ id: 2, name: 'Orange', key: 'showOrange' },
-		{ id: 3, name: 'Red', key: 'showRed' },
+	const listFilterOptions: listFilterOption[] = [
+		{ id: 1, name: 'Green', key: 'showGreen', default: true },
+		{ id: 2, name: 'Orange', key: 'showOrange', default: true },
+		{ id: 3, name: 'Red', key: 'showRed', default: true },
 		{ id: 4, name: 'Various Artists', key: 'showVarious' },
 		{ id: 5, name: 'Album Issues', key: 'onlyIssues', exclusive: true },
 	]
+
+	const listSortOptions: listFilterOption[] = [
+		{ id: 1, name: 'Name', key: 'name', default: true },
+		{ id: 3, name: 'Release Date', key: 'date' },
+		{ id: 2, name: 'Status', key: 'status' },
+	]
+
 	const [filter, setFilter] = useState({ ...data });
-	const [selectedOptions, setSelectedOptions] = useState([listFilterOptions[0], listFilterOptions[1], listFilterOptions[2]]);
+	const [selectedFilterOptions, setSelectedFilterOptions] = useState(listFilterOptions.filter(option => option.default));
+	const [selectedSortOption, setSelectedSortOption] = useState(listSortOptions.find(option => option.default) || listSortOptions[0]);
+	const [isAscending, setAscending] = useState(true);
 
 	return (
 		<>
@@ -127,79 +138,18 @@ function FilterMenu({ close, data, apply }) {
 			</div>
 			<div className={styles.content}>
 				<div className={styles.configureMenu}>
-					<div className="checkbox-wrapper">
-						<input
-							type="checkbox"
-							className="substituted"
-							id="showGreen"
-							checked={filter.showGreen}
-							onChange={(e) => {
-								setFilter({ ...filter, showGreen: e.target.checked });
-							}}
-						/>
-						<label htmlFor="showGreen">Show Green</label>
-					</div>
-					<div className="checkbox-wrapper">
-						<input
-							type="checkbox"
-							className="substituted"
-							id="showOrange"
-							checked={filter.showOrange}
-							onChange={(e) => {
-								setFilter({ ...filter, showOrange: e.target.checked });
-							}}
-						/>
-						<label htmlFor="showOrange">Show Orange</label>
-					</div>
-					<div className="checkbox-wrapper">
-						<input
-							type="checkbox"
-							className="substituted"
-							id="showRed"
-							checked={filter.showRed}
-							onChange={(e) => {
-								setFilter({ ...filter, showRed: e.target.checked });
-							}}
-						/>
-						<label htmlFor="showRed">Show Red</label>
-					</div>
-					<br />
-					<div className="checkbox-wrapper">
-						<input
-							type="checkbox"
-							className="substituted"
-							id="showVarious"
-							checked={filter.showVarious}
-							onChange={(e) => {
-								setFilter({ ...filter, showVarious: e.target.checked });
-							}}
-						/>
-						<label htmlFor="showVarious">Show Various Artists</label>
-					</div>
-					<div className="checkbox-wrapper">
-						<input
-							type="checkbox"
-							className="substituted"
-							id="onlyIssues"
-							checked={filter.onlyIssues}
-							onChange={(e) => {
-								setFilter({ ...filter, onlyIssues: e.target.checked });
-							}}
-						/>
-						<label htmlFor="onlyIssues">Only Albums With Issues</label>
-					</div>
-					<Listbox value={selectedOptions} onChange={setSelectedOptions} multiple>
+					<Listbox value={selectedFilterOptions} onChange={setSelectedFilterOptions} multiple>
 						{({ open }) => (
 							<>
-								<Label className={styles.selectLabel}>Status Filter</Label>
+								<Label className={styles.selectLabel}>Filter</Label>
 								<ListboxButton className={styles.selectBox}>
 									<FaCaretDown className={`${styles.carrot} ${open && styles.open}`} />
-									{selectedOptions.map((item) => (
+									{selectedFilterOptions.map((item) => (
 										<SelectedItem
 											key={item.id}
 											item={item}
 											exclusive={item.exclusive}
-											onRemove={() => setSelectedOptions(selectedOptions.filter((option) => option.id !== item.id))}
+											onRemove={() => setSelectedFilterOptions(selectedFilterOptions.filter((option) => option.id !== item.id))}
 										/>
 									))}
 								</ListboxButton>
@@ -226,6 +176,45 @@ function FilterMenu({ close, data, apply }) {
 										))}
 									</ListboxOptions>
 								</Transition>
+							</>
+						)}
+					</Listbox>
+					<Listbox value={selectedSortOption} onChange={setSelectedSortOption}>
+						{({ open }) => (
+							<>
+								<Label className={styles.selectLabel}>Sort Items</Label>
+								<div className={styles.sortOptionsContainer}>
+									<ListboxButton className={styles.selectBox}>
+										<FaCaretDown className={`${styles.carrot} ${open && styles.open}`} />
+										<span className={styles.selectedSortName}>{selectedSortOption.name}</span>
+									</ListboxButton>
+									<Transition
+										show={open}
+										as={Fragment}
+										enter={styles.selectOptionsEnter}
+										enterFrom={styles.selectOptionsEnterFrom}
+										enterTo={styles.selectOptionsEnterTo}
+										leave={styles.selectOptionsLeave}
+										leaveFrom={styles.selectOptionsLeaveFrom}
+										leaveTo={styles.selectOptionsLeaveTo}
+									>
+										<ListboxOptions anchor="bottom" className={styles.selectOptions}>
+											{listSortOptions.map((option) => (
+												<ListboxOption key={option.id} value={option} as={Fragment}>
+													{({ focus, selected }) => (
+														<div className={`${styles.selectOption} ${focus ? styles.focused : ""} ${selected ? styles.selected : ""}  ${option.exclusive && styles.exclusive}`}>
+															<div className={styles.optionTextContainer}><span className={styles.optionText}>{option.name} {option.exclusive && <span className={styles.exclusiveIcon} title="Shows items that only match this filter"><MdDoNotDisturbOnTotalSilence /></span>}</span></div>
+														</div>
+													)}
+												</ListboxOption>
+											))}
+										</ListboxOptions>
+									</Transition>
+
+									<Button title={isAscending ? "Ascending" : "Descending"} className={styles.sortDirectionButton} onClick={() => setAscending(!isAscending)}>
+										<div className={styles.sortDirectionIcon}><TbSortAscending className={`${styles.ascendingIcon} ${isAscending ? styles.ascending : styles.descending}`} /><TbSortDescending className={`${styles.descendingIcon} ${isAscending ? styles.descending : styles.ascending}`} /></div>
+									</Button>
+								</div>
 							</>
 						)}
 					</Listbox>
@@ -345,7 +334,7 @@ function ExportMenu({ data, close }) {
 	);
 }
 
-function MbUrlIcon({status, url, styleClass}: {status: AlbumStatus | TrackStatus, url: string, styleClass: string}) {
+function MbUrlIcon({ status, url, styleClass }: { status: AlbumStatus | TrackStatus, url: string, styleClass: string }) {
 	return (
 		<>
 			{url && (
@@ -455,7 +444,7 @@ function TrackItem({ index, track, album, highlight }: { index: string, track: T
 
 	let pillTooltipText = "There is not enough data to compare this track";
 
-	switch(status) {
+	switch (status) {
 		case "green":
 			pillTooltipText = "This track has a MB track with a matching URL"
 			break;
@@ -537,10 +526,10 @@ function TrackMenu({ data, close }: { data: AggregatedAlbum, close: () => void }
 	let trackDataSource: ProviderNamespace | null = null as ProviderNamespace | null;
 	let hasFullTrackData: boolean = false;
 	function getTrackData() {
-		if (data.aggregatedTracks?.length > 0){
+		if (data.aggregatedTracks?.length > 0) {
 			trackData = data.aggregatedTracks;
 			hasFullTrackData = true;
-		} else if ( data.albumTracks?.length > 0) {
+		} else if (data.albumTracks?.length > 0) {
 			trackData = data.albumTracks;
 			trackDataSource = data.provider;
 		} else if (data.mbAlbum?.albumTracks && data.mbAlbum.albumTracks.length > 0) {
@@ -619,7 +608,7 @@ export default function SAMBLPopup({ button, type, data, apply }) {
 					<div className={styles.dialogContainer}>
 						<TransitionChild as={Fragment} enter={styles.dialogEnter} enterFrom={styles.dialogEnterFrom} enterTo={styles.dialogEnterTo} leave={styles.dialogLeave} leaveFrom={styles.dialogLeaveFrom} leaveTo={styles.dialogLeaveTo}>
 							<DialogPanel className={styles.modal}>
-								<button className={styles.close} onClick={closeModal}>
+								<button title={"Close"} className={styles.close} onClick={closeModal}>
 									<FaXmark />
 								</button>
 								{type === "configure" && <ConfigureMenu close={closeModal} />}
