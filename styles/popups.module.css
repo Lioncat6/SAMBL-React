@@ -432,6 +432,7 @@ flex-direction: row;
     height: 18px;
     vertical-align: middle;
     margin-left: 2px;
+    flex-shrink: 0;
 }
 
 .artists, .releaseDate, .barcode, .alb {
@@ -464,7 +465,8 @@ flex-direction: row;
 .trackTopRow {
     display: flex;
     align-items: center;
-    /* margin-bottom: 4px; */
+	width: 100%;
+	overflow: hidden;
 }
 
 .trackISRCs {
@@ -474,14 +476,15 @@ flex-direction: row;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    width: -webkit-fill-available;
-    width: moz-available;
 }
 
 
 .trackTitle {
     text-wrap: nowrap;
-    color: var(--foreground-primary)
+    color: var(--foreground-primary);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .trackContainter {

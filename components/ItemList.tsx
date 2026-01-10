@@ -19,6 +19,7 @@ import editNoteBuilder from "../utils/editNoteBuilder";
 import { IoFilter } from "react-icons/io5";
 import { DisplayAlbum } from "./component-types";
 import seeders from "../lib/seeders/seeders";
+import { AggregatedAlbum } from "../utils/aggregated-types";
 
 function AlbumIcons({ item }) {
 	const { id, url, releaseDate, mbAlbum, trackCount, albumStatus, mbid, albumIssues, provider, artistMBID } = item;
@@ -72,7 +73,7 @@ function AlbumIcons({ item }) {
 
 function ActionButtons({ item }:  { item: DisplayAlbum }) {
 	const { settings } = useSettings();
-	const { url, upc } = item;
+	const { url, upc, provider } = item;
 	const [collapsed, setCollapsed] = useState(true);
 	function toggleState() {
 		setCollapsed(!collapsed);
@@ -88,7 +89,7 @@ function ActionButtons({ item }:  { item: DisplayAlbum }) {
 				<div className={`${collapsed ? styles.collapsed : styles.expanded}`}>
 					{settings?.showExport && <SelectionButtons item={item} />}
 					{seeders.getAllSeeders().map((seeder) => {
-							if (settings?.enabledSeeders.includes(seeder.namespace)) {
+							if (settings?.enabledSeeders.includes(seeder.namespace) && seeder.providers.includes(provider)) {
 								return (
 									<a className={styles[`${seeder.namespace}Button`]} href={seeder.buildUrl(url, upc)} target="_blank" rel="noopener noreferrer">
 										<div>{seeder.displayName}</div>
@@ -522,7 +523,7 @@ function LoadingItem() {
 					</div>
 					{/* Buttons Placeholder */}
 					{settings?.showExport && <div className={`${styles.skeletonButton} ${styles.skeletonButton1}`}></div>}
-					{seeders.getAllSeeders().filter(provider => settings?.enabledSeeders.includes(provider.namespace)).map(() => {
+					{seeders.getAllSeeders().filter(seeder => settings?.enabledSeeders.includes(seeder.namespace)).map(() => {
 						return <div className={`${styles.skeletonButton} ${styles.skeletonButton1}`}></div>
 					})}
 				</div>
@@ -623,15 +624,18 @@ export default function ItemList({ items, type, text, refresh }) {
 		if (type !== "album") {
 			return;
 		}
+		items = items as DisplayAlbum[];
 
-		let updatedItems = currentItems;
+
+		let updatedItems = currentItems as DisplayAlbum[];
 
 		// Search
 		if (searchQuery.trim() !== "") {
 			const lowerCaseQuery = searchQuery.toLowerCase();
 			updatedItems = updatedItems
 				.map((item) => {
-					const matchesTrack = item.mbTrackNames.some((track) => track.toLowerCase().includes(lowerCaseQuery));
+					let tracks = item.aggregatedTracks && item.aggregatedTracks.length > 0 ? item.aggregatedTracks : item.aggregatedTracks && item.aggregatedTracks.length > 0 ? item.albumTracks: item.mbAlbum?.albumTracks || [];
+					const matchesTrack = tracks.map(track => track.name)?.some((track) => track.toLowerCase().includes(lowerCaseQuery));
 					const matchesTitle = item.name.toLowerCase().includes(lowerCaseQuery);
 
 					return {
@@ -647,13 +651,13 @@ export default function ItemList({ items, type, text, refresh }) {
 		// Filter
 		if (filter) {
 			if (!filter.showGreen) {
-				updatedItems = updatedItems.filter((item) => item.albumStatus !== "green");
+				updatedItems = updatedItems.filter((item) => item.status !== "green");
 			}
 			if (!filter.showOrange) {
-				updatedItems = updatedItems.filter((item) => item.albumStatus !== "orange");
+				updatedItems = updatedItems.filter((item) => item.status !== "orange");
 			}
 			if (!filter.showRed) {
-				updatedItems = updatedItems.filter((item) => item.albumStatus !== "red");
+				updatedItems = updatedItems.filter((item) => item.status !== "red");
 			}
 			const variousArtistsList = ["Various Artists", "Artistes Variés", "Verschiedene Künstler", "Varios Artistas", "ヴァリアス・アーティスト"];
 			if (!filter.showVarious) {
