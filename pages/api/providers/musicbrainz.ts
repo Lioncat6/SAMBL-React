@@ -53,7 +53,7 @@ function formatArtistSearchData(rawData: IArtistList): IArtistMatch[] {
 
 async function getArtistById(mbid: string): Promise<IArtist | null | undefined> {
 	try {
-		const data = await mbApi.lookup('artist', mbid, ["url-rels", "tags", "aliases"])
+		const data = await mbApi.lookup('artist', mbid, ["url-rels", "tags", "aliases", "genres", "ratings"])
 		if (!data.name) {
 			return null;
 		}
@@ -357,7 +357,7 @@ function formatArtistObject(artist: IArtist): ArtistObject {
 		bannerUrl: null,
 		relevance: artist.country || '',
 		info: artist.disambiguation || '',
-		genres: null, // Library is missing feature for now
+		genres: [...new Set([...(artist as any).genres.map(genre => genre.name), ...(artist as any).tags.map(tag => tag.name)])],
 		followers: null,
 		popularity: null,
 	}
