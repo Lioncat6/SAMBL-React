@@ -133,7 +133,7 @@ async function fetchMbArtistAlbums(mbid, offset = 0, bypassCache = false) {
 	});
 }
 
-async function fetchMbArtistFeaturedtAlbums(mbid, offset = 0, bypassCache = false) {
+async function fetchMbArtistFeaturedAlbums(mbid, offset = 0, bypassCache = false) {
 	return fetch(`/api/getMusicBrainzFeaturedAlbums?mbid=${mbid}&offset=${offset}&limit=100${bypassCache ? "&forceRefresh" : ""}`).then((response) => {
 		if (!response.ok) {
 			return response.status;
@@ -289,7 +289,7 @@ export default function Artist({ artist }) {
 			let attempts = 0;
 			while (offset < mbFeaturedAlbumCount || mbFeaturedAlbumCount == -1) {
 				try {
-					const data = await fetchMbArtistFeaturedtAlbums(artist.mbid, offset, bypassCache);
+					const data = await fetchMbArtistFeaturedAlbums(artist.mbid, offset, bypassCache);
 					if (typeof data == "number") {
 						if (data == 404) {
 							dispError("MBID not found!");
