@@ -71,7 +71,7 @@ function AlbumIcons({ item }) {
 	);
 }
 
-function ActionButtons({ item }:  { item: DisplayAlbum }) {
+function ActionButtons({ item }: { item: DisplayAlbum }) {
 	const { settings } = useSettings();
 	const { url, upc, provider } = item;
 	const [collapsed, setCollapsed] = useState(true);
@@ -89,14 +89,14 @@ function ActionButtons({ item }:  { item: DisplayAlbum }) {
 				<div className={`${collapsed ? styles.collapsed : styles.expanded}`}>
 					{settings?.showExport && <SelectionButtons item={item} />}
 					{seeders.getAllSeeders().map((seeder) => {
-							if (settings?.enabledSeeders.includes(seeder.namespace) && seeder.providers.includes(provider)) {
-								return (
-									<a className={styles[`${seeder.namespace}Button`]} href={seeder.buildUrl(url, upc)} target="_blank" rel="noopener noreferrer">
-										<div>{seeder.displayName}</div>
-									</a>
-								)
-							}
-						})
+						if (settings?.enabledSeeders.includes(seeder.namespace) && seeder.providers.includes(provider)) {
+							return (
+								<a className={styles[`${seeder.namespace}Button`]} href={seeder.buildUrl(url, upc)} target="_blank" rel="noopener noreferrer">
+									<div>{seeder.displayName}</div>
+								</a>
+							)
+						}
+					})
 					}
 				</div>
 			</div>
@@ -213,7 +213,7 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 
 	let pillTooltipText = "This album has no MB release with a matching name, UPC, or URL"
 
-	switch(status) {
+	switch (status) {
 		case "green":
 			pillTooltipText = "This album has a MB release with a matching URL"
 			break;
@@ -300,41 +300,26 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 
 					{/* Album Info */}
 					<div className={styles.albumInfo}>
-						<div>
-							{releaseDate} • {text.capitalizeFirst(albumType || "")} •{" "}
-							{status === "red"
-								? (
-									albumTracks.length > 0
-										? <Popup
-											button={
-												<span className={`${styles.hasTracks} ${highlightTracks ? styles.trackHighlight : ""}`} title={"Click to view tracks"}>
-													<PiPlaylistBold /> {sourceTrackString}
-												</span>
-											}
-											type="track"
-											data={item}
-											apply={null}
-										></Popup>
-										: (
-											<span className={`${styles.tracks} ${highlightTracks ? styles.trackHighlight : ""}`} title={"No track data available\nRefresh the album to fetch track data!"}>
-												<TbPlaylistOff /> {sourceTrackString}
-											</span>
-										)
-								)
-								: (
-									<Popup
-										button={
-											<span className={`${styles.hasTracks} ${highlightTracks ? styles.trackHighlight : ""}`} title={"Click to view tracks"}>
-												<PiPlaylistBold /> {sourceTrackString}
-											</span>
-										}
-										type="track"
-										data={item}
-										apply={null}
-									></Popup>
-								)
+						<Popup
+							button={<div className={styles.infoText} title={"Click for album info"}>
+								{releaseDate} • {text.capitalizeFirst(albumType || "")} •{" "}
+								{albumTracks.length > 0 || mbAlbum?.albumTracks && mbAlbum?.albumTracks?.length > 0
+									?
+									<span className={`${styles.hasTracks} ${highlightTracks ? styles.trackHighlight : ""}`} title={"Click to view tracks"}>
+										<PiPlaylistBold /> {sourceTrackString}
+									</span>
+									: (
+										<span className={`${styles.tracks} ${highlightTracks ? styles.trackHighlight : ""}`} title={"No track data available\nRefresh the album to fetch track data!"}>
+											<TbPlaylistOff /> {sourceTrackString}
+										</span>
+									)
+								}
+							</div>
 							}
-						</div>
+							type="track"
+							data={item}
+							apply={null}
+						></Popup>
 						<AlbumIcons item={item} />
 					</div>
 				</div>
@@ -344,7 +329,7 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 	);
 };
 
-const MemorizedAlbumItem  = memo(AlbumItem);
+const MemorizedAlbumItem = memo(AlbumItem);
 
 function AddButton({ item }) {
 	return (
@@ -634,7 +619,7 @@ export default function ItemList({ items, type, text, refresh }) {
 			const lowerCaseQuery = searchQuery.toLowerCase();
 			updatedItems = updatedItems
 				.map((item) => {
-					let tracks = item.aggregatedTracks && item.aggregatedTracks.length > 0 ? item.aggregatedTracks : item.aggregatedTracks && item.aggregatedTracks.length > 0 ? item.albumTracks: item.mbAlbum?.albumTracks || [];
+					let tracks = item.aggregatedTracks && item.aggregatedTracks.length > 0 ? item.aggregatedTracks : item.aggregatedTracks && item.aggregatedTracks.length > 0 ? item.albumTracks : item.mbAlbum?.albumTracks || [];
 					const matchesTrack = tracks.map(track => track.name)?.some((track) => track.toLowerCase().includes(lowerCaseQuery));
 					const matchesTitle = item.name.toLowerCase().includes(lowerCaseQuery);
 

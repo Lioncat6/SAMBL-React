@@ -346,10 +346,13 @@
 
 .hasTracks {
 	cursor: pointer;
+}
+.infoText { 
+	cursor: pointer;
 	transition: all 0.2s ease-in-out;
 }
 
-.hasTracks:hover {
+.infoText:hover {
 	color: var(--foreground-primary)
 }
 
