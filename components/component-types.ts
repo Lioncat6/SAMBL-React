@@ -9,4 +9,5 @@ export class listFilterOption {
     name: string;
     key: string;
     exclusive?: boolean;
+    default?: boolean;
 }
