@@ -357,7 +357,7 @@ function formatArtistObject(artist: IArtist): ArtistObject {
 		bannerUrl: null,
 		relevance: artist.country || '',
 		info: artist.disambiguation || '',
-		genres: [...new Set([...(artist as any).genres.map(genre => genre.name), ...(artist as any).tags.map(tag => tag.name)])],
+		genres: [...new Set([...(artist as any).genres?.map(genre => genre.name) || [], ...(artist as any).tags?.map(tag => tag.name) || []])],
 		followers: null,
 		popularity: null,
 	}

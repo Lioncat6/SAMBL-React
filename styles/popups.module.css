@@ -618,6 +618,8 @@ flex-direction: row;
     margin-left: -2px;
     transition: all 0.2s ease-in-out;
     text-align: center;
+    display: flex;
+    align-items: center;
 }
 
 .selectedItemName {

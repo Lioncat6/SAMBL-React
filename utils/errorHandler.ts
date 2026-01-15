@@ -18,6 +18,9 @@ class ErrorHandler {
         throwError: boolean = true,
         ErrorType: typeof Error = Error
     ): void {
+        if (message.includes("ETIMEDOUT") || message.includes("ECONNRESET")) {
+
+        }
         const logMessage = `[${this.namespace}]: ${message || "Internal Server Error"}`;
         logger.error(logMessage, error);
 
