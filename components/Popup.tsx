@@ -550,7 +550,7 @@ function TrackMenu({ data, close }: { data: AggregatedAlbum, close: () => void }
 			<AlbumDetails data={data} />
 			{!hasFullTrackData && (
 				<div className={styles.noAggregatedTracksWarning}>
-					<MdOutlineWarningAmber /> {data.status == "red" ? "Add this album to musicbrainz to see full track data" : "Refresh this album to see full track data"}
+					<MdOutlineWarningAmber /> {data.status == "red" && trackData.length > 0 ? "Add this album to musicbrainz to see full track data" : "Refresh this album to see full track data"}
 					{trackDataSource && (<div className={styles.trackDataSource}>Currently viewing track data from <span>{text.capitalizeFirst(trackDataSource)}</span></div>)}
 				</div>
 			)}
