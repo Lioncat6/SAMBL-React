@@ -1,12 +1,11 @@
 import styles from "../styles/itemList.module.css";
 import Link from "next/link";
-import React, { useEffect, useState, memo } from "react";
+import React, { useEffect, useState, memo, JSX } from "react";
 import { useSettings } from "./SettingsContext";
 import { FaSquarePlus } from "react-icons/fa6";
 import dynamic from "next/dynamic";
 import { useExport as useExportState } from "./ExportState";
-import { FixedSizeList as List } from "react-window";
-import AutoSizer from "react-virtualized-auto-sizer";
+import { List, RowComponentProps } from "react-window";
 import { FaDeezer, FaSpotify } from "react-icons/fa";
 import { SiApplemusic, SiTidal } from "react-icons/si";
 import { FaAnglesRight, FaAnglesLeft } from "react-icons/fa6";
@@ -461,28 +460,30 @@ function ListContainer({ items, type, text, onItemUpdate }) {
 	);
 }
 
+function ListChildren({
+	index, items, type, onItemUpdate, style
+}: RowComponentProps<{ items: any[], type: string, onItemUpdate?: (updatedItem: DisplayAlbum) => void }>) {
+	return (
+		<div style={style}>
+			{type === "album" && <MemorizedAlbumItem item={items[index]} onUpdate={onItemUpdate} />}
+			{type === "artist" && <ArtistItem item={items[index]} />}
+			{type === "mixed" && <GenericItem item={items[index]} />}
+		</div>
+	)
+}
+
 function VirtualizedList({ items, type, text, onItemUpdate }) {
 	return (
 		<>
 			<div className={styles.virtualListContainer}>
-				<AutoSizer>
-					{({ height, width }) => (
-						<List
-							height={height}
-							itemCount={items.length}
-							itemSize={69} //nice
-							width={width}
-						>
-							{({ index, style }) => (
-								<div style={style}>
-									{type === "album" && <MemorizedAlbumItem item={items[index]} onUpdate={onItemUpdate} />}
-									{type === "artist" && <ArtistItem item={items[index]} />}
-									{type === "mixed" && <GenericItem item={items[index]} />}
-								</div>
-							)}
-						</List>
-					)}
-				</AutoSizer>
+
+				<List
+					rowCount={items.length}
+					rowHeight={69} //nice
+					rowProps={{ items, type }}
+					rowComponent={ListChildren}
+				/>
+
 			</div>
 			<div className={styles.statusText}>{text}</div>
 		</>
@@ -534,7 +535,7 @@ function LoadingContainer({ text, showRefresh = false }) {
 function RefreshButton({ refresh, showRefresh = false }) {
 	if (refresh != undefined) {
 		return (
-			<button id="refreshButton" className={styles.refreshButton} onClick={refresh}>
+			<button title={"Refresh Artist Albums"} id="refreshButton" className={styles.refreshButton} onClick={refresh}>
 				<IoMdRefresh />
 			</button>
 		)
@@ -591,7 +592,12 @@ function SearchContainer({ onSearch, currentFilter, setFilter, refresh }) {
 	);
 }
 
-export default function ItemList({ items, type, text, refresh }) {
+export type listType = "album" | "loadingAlbum" | "artist" | "mixed"
+
+export function ItemList(props: { items: AggregatedAlbum[], type: "album", text?: string, refresh: () => void }): JSX.Element; 
+export function ItemList(props: { items: any[], type: listType, text?: string, refresh?: () => void }): JSX.Element;
+
+export default function ItemList({ items, type, text, refresh }: {items: any[], type: listType, text?: string, refresh?: () => void}) {
 	const { settings } = useSettings();
 	const [searchQuery, setSearchQuery] = useState(""); // State for search query
 	const [filteredItems, setFilteredItems] = useState(items || []); // State for filtered items
