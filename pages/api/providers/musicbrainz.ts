@@ -277,7 +277,7 @@ function formatAlbumGetData(rawData: IReleaseList): ExtendedAlbumData {
 
 function formatAlbumObject(album: IRelease): ExtendedAlbumObject {
 	let trackCount: number | null = null;
-	if (album.media.length > 0) {
+	if (album.media?.length > 0) {
 		let numTracks = 0
 		album.media.forEach(media => {
 			numTracks += media["track-count"];
@@ -301,7 +301,7 @@ function formatAlbumObject(album: IRelease): ExtendedAlbumObject {
 		albumType: album["release-group"] ? album["release-group"]["primary-type"] : null,
 		albumTracks: album.media && album.media.length > 0 ? album.media.flatMap(medium => medium.tracks?.map(track => formatTrackObject(track))) : [],
 		externalUrls: album.relations ? album.relations.filter(rel => rel.url && rel.url?.resource)?.map(rel => rel.url?.resource).filter(url => typeof url == 'string') : [],
-		hasImage: album["cover-art-archive"].artwork
+		hasImage: album["cover-art-archive"]?.artwork
 	}
 }
 
