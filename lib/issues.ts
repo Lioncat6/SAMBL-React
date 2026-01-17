@@ -60,11 +60,6 @@ export const TrackIssues: Record<TrackIssue, IssueDefinition> = {
         description: "ISRC differs across providers",
         severity: "medium",
     },
-    noUrl: {
-        label: "No URL",
-        description: "Track is missing a provider URL",
-        severity: "low",
-    },
     noDuration: {
         label: "No Duration",
         description: "Track duration is missing",
@@ -76,8 +71,3 @@ export const TrackIssues: Record<TrackIssue, IssueDefinition> = {
         severity: "medium"
     }
 };
-
-// export const getSeverityColor = (severity: IssueDefinition["severity"]): AlbumStatus => {
-//     const colorMap = { low: "green", medium: "orange", high: "red" } as const;
-//     return colorMap[severity];
-// };
