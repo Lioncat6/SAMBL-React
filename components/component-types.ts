@@ -1,13 +1,37 @@
-import { AggregatedAlbum, AggregatedArtist } from "../utils/aggregated-types";
+import { AggregatedAlbum, AggregatedArtist, AggregatedTrack } from "../utils/aggregated-types";
 
+export type searchReason = "artist" | "title";
+export type albumSearchReason = searchReason | "track";
 export class DisplayAlbum extends AggregatedAlbum {
-    highlightTracks: boolean;
+    searchReason?: albumSearchReason
+    override aggregatedTracks: DisplayTrack[];
 }
 
-export class listFilterOption {
+export class DisplayTrack extends AggregatedTrack {
+    highlight?: boolean
+    searchReason?: searchReason
+}
+
+export type listFilter = "showGreen" | "showOrange" | "showRed" | "showVarious" | "onlyIssues"
+
+export type listSort = "name" | "date" | "status" | "count"
+
+export class listFilterBase {
     id: number;
     name: string;
-    key: string;
     exclusive?: boolean;
     default?: boolean;
+}
+export class listFilterOption extends listFilterBase {
+    key: listFilter
+}
+
+export class listSortOption extends listFilterBase {
+    key: listSort
+}
+
+export class FilterData {
+    filters: listFilter[]
+    sort: listSort
+    ascending: boolean
 }

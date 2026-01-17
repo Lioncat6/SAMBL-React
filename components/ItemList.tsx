@@ -20,6 +20,7 @@ import { IoFilter } from "react-icons/io5";
 import { DisplayAlbum } from "./component-types";
 import seeders from "../lib/seeders/seeders";
 import { AggregatedAlbum } from "../utils/aggregated-types";
+import filters from "../lib/filters";
 
 function AlbumIcons({ item }) {
 	const { id, url, releaseDate, mbAlbum, trackCount, albumStatus, mbid, albumIssues, provider, artistMBID } = item;
@@ -176,7 +177,7 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 		mbid,
 		artistMBID,
 		albumIssues,
-		highlightTracks,
+		searchReason,
 	} = item;
 
 	async function refreshData() {
@@ -286,7 +287,7 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 					{/* Artists */}
 					<div className={styles.artists}>
 						{albumArtists.map((artist, index) => (
-							<span key={artist.id}>
+							<span key={artist.id} className={`${searchReason == "artist" ? styles.artistHighlight : ""}`}>
 								{index > 0 && ", "}
 								<a href={artist.url} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
 									{artist.name}
@@ -305,11 +306,11 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 								{releaseDate} • {text.capitalizeFirst(albumType || "")} •{" "}
 								{albumTracks.length > 0 || mbAlbum?.albumTracks && mbAlbum?.albumTracks?.length > 0
 									?
-									<span className={`${styles.hasTracks} ${highlightTracks ? styles.trackHighlight : ""}`} title={"Click to view tracks"}>
+									<span className={`${styles.hasTracks} ${searchReason == "track" ? styles.trackHighlight : ""}`} title={"Click to view tracks"}>
 										<PiPlaylistBold /> {sourceTrackString}
 									</span>
 									: (
-										<span className={`${styles.tracks} ${highlightTracks ? styles.trackHighlight : ""}`} title={"No track data available\nRefresh the album to fetch track data!"}>
+										<span className={`${styles.tracks} ${searchReason == "track" ? styles.trackHighlight : ""}`} title={"No track data available\nRefresh the album to fetch track data!"}>
 											<TbPlaylistOff /> {sourceTrackString}
 										</span>
 									)
@@ -595,7 +596,7 @@ export default function ItemList({ items, type, text, refresh }) {
 	const [searchQuery, setSearchQuery] = useState(""); // State for search query
 	const [filteredItems, setFilteredItems] = useState(items || []); // State for filtered items
 	const [currentItems, setCurrentItems] = useState(items || []);
-	const [filter, setFilter] = useState({ showGreen: true, showOrange: true, showRed: true, showVarious: true, onlyIssues: false });
+	const [filter, setFilter] = useState(filters.getDefaultOptions());
 	const { setAllItems } = useExportState();
 	if (currentItems?.length > 0) {
 		setAllItems(currentItems);
@@ -614,44 +615,8 @@ export default function ItemList({ items, type, text, refresh }) {
 
 		let updatedItems = currentItems as DisplayAlbum[];
 
-		// Search
-		if (searchQuery.trim() !== "") {
-			const lowerCaseQuery = searchQuery.toLowerCase();
-			updatedItems = updatedItems
-				.map((item) => {
-					let tracks = item.aggregatedTracks && item.aggregatedTracks.length > 0 ? item.aggregatedTracks : item.aggregatedTracks && item.aggregatedTracks.length > 0 ? item.albumTracks : item.mbAlbum?.albumTracks || [];
-					const matchesTrack = tracks.map(track => track.name)?.some((track) => track.toLowerCase().includes(lowerCaseQuery));
-					const matchesTitle = item.name.toLowerCase().includes(lowerCaseQuery);
-
-					return {
-						...item,
-						highlightTracks: matchesTrack && !matchesTitle,
-					};
-				})
-				.filter((item) => {
-					return item.name.toLowerCase().includes(lowerCaseQuery) || item.albumArtists.some((artist) => artist.name.toLowerCase().includes(lowerCaseQuery)) || item.highlightTracks;
-				});
-		}
-
-		// Filter
-		if (filter) {
-			if (!filter.showGreen) {
-				updatedItems = updatedItems.filter((item) => item.status !== "green");
-			}
-			if (!filter.showOrange) {
-				updatedItems = updatedItems.filter((item) => item.status !== "orange");
-			}
-			if (!filter.showRed) {
-				updatedItems = updatedItems.filter((item) => item.status !== "red");
-			}
-			const variousArtistsList = ["Various Artists", "Artistes Variés", "Verschiedene Künstler", "Varios Artistas", "ヴァリアス・アーティスト"];
-			if (!filter.showVarious) {
-				updatedItems = updatedItems.filter((item) => !variousArtistsList.some((artist) => item.albumArtists?.some((a) => a.name === artist)));
-			}
-			if (filter.onlyIssues) {
-				updatedItems = updatedItems.filter((item) => item.albumIssues.length > 0);
-			}
-		}
+		updatedItems = filters.filterItems(updatedItems, filter)
+		updatedItems = filters.searchItems(updatedItems, searchQuery)
 		if (updatedItems != filteredItems) {
 			setFilteredItems(updatedItems);
 		}

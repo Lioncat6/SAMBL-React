@@ -13,7 +13,8 @@ import text from "../utils/text";
 import seeders from "../lib/seeders/seeders";
 import { ProviderNamespace, TrackObject } from "../pages/api/providers/provider-types";
 import { AggregatedAlbum, AggregatedTrack, AlbumStatus, TrackIssue, TrackStatus } from "../utils/aggregated-types";
-import { listFilterOption } from "./component-types";
+import { FilterData, listFilterOption, listSortOption } from "./component-types";
+import filters from "../lib/filters";
 
 let toastProperties: ToastOptions = {
 	position: "top-left",
@@ -109,25 +110,23 @@ function SelectedItem({ item, onRemove, exclusive }: { item: listFilterOption, o
 	return <div className={`${styles.selectedItem}  ${exclusive && styles.exclusive}`}><span className={styles.selectedItemName}>{item.name}</span>{onRemove && <div className={styles.selectedItemButton} onClick={onRemove}><FaXmark /></div>}</div>;
 }
 
-function FilterMenu({ close, data, apply }) {
-	const listFilterOptions: listFilterOption[] = [
-		{ id: 1, name: 'Green', key: 'showGreen', default: true },
-		{ id: 2, name: 'Orange', key: 'showOrange', default: true },
-		{ id: 3, name: 'Red', key: 'showRed', default: true },
-		{ id: 4, name: 'Various Artists', key: 'showVarious' },
-		{ id: 5, name: 'Album Issues', key: 'onlyIssues', exclusive: true },
-	]
+function FilterMenu({ close, data, apply }: {close: () => void, data: FilterData, apply: (FilterData) => void}) {
 
-	const listSortOptions: listFilterOption[] = [
-		{ id: 1, name: 'Name', key: 'name', default: true },
-		{ id: 3, name: 'Release Date', key: 'date' },
-		{ id: 2, name: 'Status', key: 'status' },
-	]
+	const [filter, setFilter] = useState( data );
+	const [selectedFilterOptions, setSelectedFilterOptions] = useState(filters.getFilters(filter.filters) || filters.getDefaultFilters);
+	const [selectedSortOption, setSelectedSortOption] = useState(filters.getSorters(filter.sort) || filters.getDefaultSort());
+	const [isAscending, setAscending] = useState(filter.ascending);
 
-	const [filter, setFilter] = useState({ ...data });
-	const [selectedFilterOptions, setSelectedFilterOptions] = useState(listFilterOptions.filter(option => option.default));
-	const [selectedSortOption, setSelectedSortOption] = useState(listSortOptions.find(option => option.default) || listSortOptions[0]);
-	const [isAscending, setAscending] = useState(true);
+	function applyFilters() {
+		const newFilter = {
+			filters: selectedFilterOptions.map((option) => option.key),
+			sort: selectedSortOption.key,
+			ascending: isAscending
+		};
+		setFilter(newFilter);
+		apply(newFilter);
+		close();
+	}
 
 	return (
 		<>
@@ -164,7 +163,7 @@ function FilterMenu({ close, data, apply }) {
 									leaveTo={styles.selectOptionsLeaveTo}
 								>
 									<ListboxOptions anchor="bottom" className={styles.selectOptions}>
-										{listFilterOptions.map((option) => (
+										{filters.getFilters().map((option) => (
 											<ListboxOption key={option.id} value={option} as={Fragment}>
 												{({ focus, selected }) => (
 													<div className={`${styles.selectOption} ${focus ? styles.focused : ""} ${selected ? styles.selected : ""}  ${option.exclusive && styles.exclusive}`}>
@@ -199,7 +198,7 @@ function FilterMenu({ close, data, apply }) {
 										leaveTo={styles.selectOptionsLeaveTo}
 									>
 										<ListboxOptions anchor="bottom" className={styles.selectOptions}>
-											{listSortOptions.map((option) => (
+											{filters.getSorters().map((option) => (
 												<ListboxOption key={option.id} value={option} as={Fragment}>
 													{({ focus, selected }) => (
 														<div className={`${styles.selectOption} ${focus ? styles.focused : ""} ${selected ? styles.selected : ""}  ${option.exclusive && styles.exclusive}`}>
@@ -223,10 +222,7 @@ function FilterMenu({ close, data, apply }) {
 			<div className={styles.actions}>
 				<button
 					className={styles.button}
-					onClick={() => {
-						apply(filter);
-						close();
-					}}
+					onClick={applyFilters}
 				>
 					Apply
 				</button>

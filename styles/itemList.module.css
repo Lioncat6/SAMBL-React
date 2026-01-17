@@ -356,8 +356,8 @@
 	color: var(--foreground-primary)
 }
 
-.trackHighlight {
-	background: #ffff0075;
+.trackHighlight, .artistHighlight > a:nth-child(1) {
+	background-color: var(--highlight);
 	color: var(--foreground-primary);
 }
 
