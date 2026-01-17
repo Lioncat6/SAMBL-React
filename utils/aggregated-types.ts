@@ -15,6 +15,7 @@ export class AggregatedAlbum extends AlbumObject{
     status: AlbumStatus;
     albumIssues: AlbumIssue[];
     mbid: string | null;
+    artistID: string | null;
     artistMBID: string | null;
     mbAlbum: AlbumObject | null;
     aggregatedTracks: AggregatedTrack[];

@@ -377,7 +377,7 @@ export default function Artist({ artist }) {
 			if (didQuickFetch) {
 				data = await dispPromise(quickFetchAlbums(providerIds[0], artist.provider, artist.mbid, bypassCache), "Quick Fetching albums...");
 			} else {
-				data = processData(sourceAlbums.current, [ ...mbAlbums.current, ...mbFeaturedAlbums.current], artist.mbid);
+				data = processData(sourceAlbums.current, [ ...mbAlbums.current, ...mbFeaturedAlbums.current], artist.mbid, artist.provider_id);
 			}
 			setStatusText(data.statusText);
 			setAlbums(data.albumData);

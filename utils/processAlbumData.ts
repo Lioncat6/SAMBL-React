@@ -2,7 +2,7 @@ import { AlbumObject, ExtendedAlbumObject, ExtendedTrackObject, ProviderNamespac
 import { AggregatedAlbum, AggregatedTrack, AlbumIssue, AlbumStatus, BasicTrack, TrackIssue, TrackStatus } from "./aggregated-types";
 import text from "./text";
 
-export default function processData(sourceAlbums: AlbumObject[], mbAlbums: ExtendedAlbumObject[], currentArtistMBID = null, quick = false, full = false) {
+export default function processData(sourceAlbums: AlbumObject[], mbAlbums: ExtendedAlbumObject[], currentArtistMBID: string | null = null, currentArtistID: string | null = null, quick = false, full = false) {
 	let albumData: AggregatedAlbum[] = [];
 	let green = 0;
 	let red = 0;
@@ -283,6 +283,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 				albumTracks: providerTracks,
 				mbid,
 				artistMBID: currentArtistMBID,
+				artistID: currentArtistID,
 				albumIssues,
 				aggregatedTracks: aggregatedTracks
 			});

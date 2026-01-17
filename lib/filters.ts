@@ -7,6 +7,7 @@ const listFilterOptions: listFilterOption[] = [
     { id: 3, name: 'Red', key: 'showRed', default: true },
     { id: 4, name: 'Various Artists', key: 'showVarious' },
     { id: 5, name: 'Album Issues', key: 'onlyIssues', exclusive: true },
+    { id: 6, name: 'Featured Albums', key: 'featuredAlbums',exclusive: true}
 ]
 
 const listSortOptions: listSortOption[] = [
@@ -34,6 +35,9 @@ const FilterFunctions: Record<listFilter, (items: DisplayAlbum[]) => DisplayAlbu
     },
     'onlyIssues': (items) => {
         return items.filter((item) => item.albumIssues.length > 0)
+    },
+    'featuredAlbums': (items) => {
+        return items.filter((item) => (item.artistID && !item.albumArtists.map((artist) => artist.id).includes(item.artistID)))
     }
 }
 

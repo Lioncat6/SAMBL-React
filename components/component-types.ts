@@ -12,7 +12,7 @@ export class DisplayTrack extends AggregatedTrack {
     searchReason?: searchReason
 }
 
-export type listFilter = "showGreen" | "showOrange" | "showRed" | "showVarious" | "onlyIssues"
+export type listFilter = "showGreen" | "showOrange" | "showRed" | "showVarious" | "onlyIssues" | "featuredAlbums"
 
 export type listSort = "name" | "date" | "status" | "count"
 

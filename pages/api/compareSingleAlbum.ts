@@ -9,7 +9,7 @@ import { IRelease, RelationsIncludes } from "musicbrainz-api";
 
 export default async function handler(req:NextApiRequest, res:NextApiResponse) {
     try {
-		var { provider_id, provider, url, mbid } = normalizeVars(req.query);
+		var { provider_id, provider, url, mbid, artist_id } = normalizeVars(req.query);
 
         if (provider_id && !provider) {
             return res.status(400).json({ error: "Provider must be specified when provider_id is provided" });
@@ -55,7 +55,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
             }
         }
         const formattedMBAlbum = mbAlbum ? musicbrainz.formatAlbumObject(mbAlbum) : null;
-        let albumData = processData([sourceAlbum], formattedMBAlbum ? [formattedMBAlbum] : [], mbid);
+        let albumData = processData([sourceAlbum], formattedMBAlbum ? [formattedMBAlbum] : [], mbid, artist_id);
         if (albumData?.albumData && albumData?.albumData.length > 0) {
             res.status(200).json(albumData.albumData[0]);
         }

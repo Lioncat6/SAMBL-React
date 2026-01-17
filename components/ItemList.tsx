@@ -175,13 +175,14 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 		albumTracks,
 		mbid,
 		artistMBID,
+		artistID,
 		albumIssues,
 		searchReason,
 	} = item;
 
 	async function refreshData() {
 		setIsLoading(true);
-		const response = await dispPromise(fetch(`/api/compareSingleAlbum?url=${url}&mbid=${artistMBID}`), "Refreshing album...");
+		const response = await dispPromise(fetch(`/api/compareSingleAlbum?url=${url}&mbid=${artistMBID}&artist_id=${artistID}`), "Refreshing album...");
 		setIsLoading(false);
 		if (response.ok) {
 			const updatedItem = await response.json();
