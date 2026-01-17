@@ -1,6 +1,6 @@
 {
 	"name": "sambl-client",
-	"version": "2.2.7",
+	"version": "2.3.0",
 	"main": "/src/index.js",
 	"scripts": {
 		"build": "next build",
