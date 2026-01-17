@@ -110,9 +110,9 @@ function SelectedItem({ item, onRemove, exclusive }: { item: listFilterOption, o
 	return <div className={`${styles.selectedItem}  ${exclusive && styles.exclusive}`}><span className={styles.selectedItemName}>{item.name}</span>{onRemove && <div className={styles.selectedItemButton} onClick={onRemove}><FaXmark /></div>}</div>;
 }
 
-function FilterMenu({ close, data, apply }: {close: () => void, data: FilterData, apply: (FilterData) => void}) {
+function FilterMenu({ close, data, apply }: { close: () => void, data: FilterData, apply: (FilterData) => void }) {
 
-	const [filter, setFilter] = useState( data );
+	const [filter, setFilter] = useState(data);
 	const [selectedFilterOptions, setSelectedFilterOptions] = useState(filters.getFilters(filter.filters) || filters.getDefaultFilters);
 	const [selectedSortOption, setSelectedSortOption] = useState(filters.getSorters(filter.sort) || filters.getDefaultSort());
 	const [isAscending, setAscending] = useState(filter.ascending);
@@ -330,7 +330,7 @@ function ExportMenu({ data, close }) {
 	);
 }
 
-function MbUrlIcon({status, url, styleClass, isAlbum = true}: {status: AlbumStatus | TrackStatus, url: string, styleClass: string, isAlbum?: boolean}) {
+function MbUrlIcon({ status, url, styleClass, isAlbum = true }: { status: AlbumStatus | TrackStatus, url: string, styleClass: string, isAlbum?: boolean }) {
 	return (
 		<>
 			{url && (
@@ -505,9 +505,11 @@ function TrackItem({ index, track, album, highlight }: { index: string, track: T
 								<a href={artist.url} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
 									{artist.name}
 								</a>
-								<a href={`../newartist?provider_id=${artist.id}&provider=${artist.provider}`} target="_blank" rel="noopener noreferrer">
-									<img className={styles.SAMBLicon} src="../assets/images/favicon.svg" alt="SAMBL" />
-								</a>
+								{artist.provider != "musicbrainz" &&
+									<a href={`../newartist?provider_id=${artist.id}&provider=${artist.provider}`} target="_blank" rel="noopener noreferrer">
+										<img className={styles.SAMBLicon} src="../assets/images/favicon.svg" alt="SAMBL" />
+									</a>
+								}
 							</span>
 						))}
 					</div>
