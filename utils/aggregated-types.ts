@@ -42,3 +42,13 @@ export class AggregatedAlbumData {
     red: number;
     total: number;
 }
+
+export class AggregatedData {
+    albumData: AggregatedAlbum[]
+    statusText: string
+    green: number
+    orange: number
+    blue: number
+    red: number
+    total: number
+}

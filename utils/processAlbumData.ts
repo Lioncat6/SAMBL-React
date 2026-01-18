@@ -1,12 +1,13 @@
 import { AlbumObject, ExtendedAlbumObject, ExtendedTrackObject, ProviderNamespace, TrackObject } from "../pages/api/providers/provider-types";
-import { AggregatedAlbum, AggregatedTrack, AlbumIssue, AlbumStatus, BasicTrack, TrackIssue, TrackStatus } from "./aggregated-types";
+import { AggregatedAlbum, AggregatedData, AggregatedTrack, AlbumIssue, AlbumStatus, BasicTrack, TrackIssue, TrackStatus } from "./aggregated-types";
 import text from "./text";
 
-export default function processData(sourceAlbums: AlbumObject[], mbAlbums: ExtendedAlbumObject[], currentArtistMBID: string | null = null, currentArtistID: string | null = null, quick = false, full = false) {
+export default function processData(sourceAlbums: AlbumObject[], mbAlbums: ExtendedAlbumObject[], currentArtistMBID: string | null = null, currentArtistID: string | null = null, quick = false, full = false): AggregatedData {
 	let albumData: AggregatedAlbum[] = [];
 	let green = 0;
 	let red = 0;
 	let orange = 0;
+	let blue = 0;
 	let total = 0;
 
 	// Map of Streaming service URLs to MB Albums
@@ -262,6 +263,8 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 				green++;
 			} else if (albumStatus == "orange") {
 				orange++;
+			} else if (albumStatus == "blue") {
+				blue++;
 			} else {
 				red++;
 			} hasMatchingISRCs
@@ -296,6 +299,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 		statusText,
 		green,
 		orange,
+		blue,
 		red,
 		total,
 	};
