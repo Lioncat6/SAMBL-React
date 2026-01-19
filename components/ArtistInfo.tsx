@@ -1,8 +1,9 @@
 import styles from "../styles/artistInfo.module.css";
 import { FaSpotify, FaDeezer, FaBandcamp, FaSoundcloud  } from "react-icons/fa6";
-import { SiTidal, SiBandcamp } from "react-icons/si";
+import { SiTidal, SiBandcamp, SiApplemusic } from "react-icons/si";
 import { LuImageUp } from "react-icons/lu";
 import editNoteBuilder from "../utils/editNoteBuilder";
+import { ArtistObject } from "../pages/api/providers/provider-types";
 
 function SpotifyUrlContainer({ id, url }) {
 	return (
@@ -60,7 +61,20 @@ function SoundcloudUrlContainer({ url }) {
 	);
 }
 
-function UrlContainer({ id, provider, url }) {
+function AppleMusicUrlContainer({ url }) {
+	return (
+		<div className={styles.applemusicURLContainer}>
+			<a id="applemusicURL" target="_blank" href={url}>
+				<div className={styles.iconWrapper}>
+					<SiApplemusic className={styles.applemusicIcon} />
+				</div>
+			</a>
+		</div>
+	);
+}
+
+function UrlContainer({ id, provider, url }: { id?: string | number; provider: string; url?: string }) {
+	id = id?.toString();
 	switch (provider) {
 		case "spotify":
 			return <SpotifyUrlContainer url={url} id={id} />;
@@ -74,15 +88,17 @@ function UrlContainer({ id, provider, url }) {
 			return <BandcampUrlContainer url={url} id={id} />;
 		case "soundcloud":
 			return <SoundcloudUrlContainer url={url} />;
+		case "applemusic":
+			return <AppleMusicUrlContainer url={url} />;
 		default:
 			return null;
 	}
 }
 
-function MusicBrainzUrlContainer({ id }) {
+function MusicBrainzUrlContainer({ url, id }: { url?: string; id?: string }) {
 	return (
 		<div className={styles.mbURLContainer}>
-			<a id="mbURL" target="_blank" href={"https://musicbrainz.org/artist/" + id}>
+			<a id="mbURL" target="_blank" href={url || id ? "https://musicbrainz.org/artist/" + id : ""}>
 				<img alt="MusicBrainz Icon" className={styles.mbIcon} src="../assets/images/MusicBrainz_Logo.svg" />
 			</a>
 		</div>
@@ -116,9 +132,9 @@ function ImageContainer({ artist }) {
 
 				{mbid &&<div className={styles.imageOverlay}>
 					<span className={styles.overlayText}></span>
-					
+
 						<a href={importUrl} target="_blank"><div className={styles.importIcon} title="Import Artist Image to MusicBrainz"><LuImageUp /></div></a>
-					
+
 				</div>}
 			</div>
 		</div>
@@ -160,7 +176,7 @@ function GenresContainer({ artist }) {
 export default function ArtistInfo({ artist }) {
 	return (
 		<>
-			<div id="artistPageContainer" className={styles.artistPageContainer} style={{ "--background-image": `url('${artist.bannerUrl || ""}')` }}>
+			<div id="artistPageContainer" className={styles.artistPageContainer} style={{ "--background-image": `url('${artist.bannerUrl || ""}')` } as React.CSSProperties}>
 				{artist.imageUrl && <ImageContainer artist={artist}/>}
 				<div id="artistTextContainer" className={styles.artistTextContainer}>
 					<div className={styles.nameContainer}>

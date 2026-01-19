@@ -5,6 +5,7 @@
     margin-top: 12px;
     display: block;
     width: -webkit-fill-available;
+    width: -moz-available;
     font: 16px Arial;
     font-weight: bold;
     color: var(--foreground-secondary);

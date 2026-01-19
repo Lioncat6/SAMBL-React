@@ -64,7 +64,7 @@ export async function getServerSideProps(context) {
 				data.push((await fetchArtistData(id, provider)).providerData);
 			}
 			const uniqueNames = [...new Set(data.map((artist) => artist.name))];
-			const genres = [...new Set(data.flatMap((artist) => artist.genres))].filter((genre) => genre.trim() != "");
+			const genres = [...new Set(data.flatMap((artist) => artist.genres))].filter((genre) => genre?.trim() != "");
 			let mostPopularIndex = 0;
 			let mostPopularity = 0;
 			for (let artist in data) {
@@ -133,7 +133,7 @@ async function fetchMbArtistAlbums(mbid, offset = 0, bypassCache = false) {
 	});
 }
 
-async function fetchMbArtistFeaturedtAlbums(mbid, offset = 0, bypassCache = false) {
+async function fetchMbArtistFeaturedAlbums(mbid, offset = 0, bypassCache = false) {
 	return fetch(`/api/getMusicBrainzFeaturedAlbums?mbid=${mbid}&offset=${offset}&limit=100${bypassCache ? "&forceRefresh" : ""}`).then((response) => {
 		if (!response.ok) {
 			return response.status;
@@ -269,8 +269,8 @@ export default function Artist({ artist }) {
 						}
 						throw new Error(`Error fetching MusicBrainz albums: ${data}`);
 					}
-					mbAlbums.current = [...mbAlbums.current, ...data.releases];
-					mbAlbumCount = data["release-count"];
+					mbAlbums.current = [...mbAlbums.current, ...data.albums];
+					mbAlbumCount = data.count;
 					offset = mbAlbums.current.length;
 					updateLoadingText(true);
 				} catch (error) {
@@ -289,7 +289,7 @@ export default function Artist({ artist }) {
 			let attempts = 0;
 			while (offset < mbFeaturedAlbumCount || mbFeaturedAlbumCount == -1) {
 				try {
-					const data = await fetchMbArtistFeaturedtAlbums(artist.mbid, offset, bypassCache);
+					const data = await fetchMbArtistFeaturedAlbums(artist.mbid, offset, bypassCache);
 					if (typeof data == "number") {
 						if (data == 404) {
 							dispError("MBID not found!");
@@ -297,8 +297,8 @@ export default function Artist({ artist }) {
 						}
 						throw new Error(`Error fetching MusicBrainz Featured albums: ${data}`);
 					}
-					mbFeaturedAlbums.current = [...mbFeaturedAlbums.current, ...data.releases];
-					mbFeaturedAlbumCount = data["release-count"];
+					mbFeaturedAlbums.current = [...mbFeaturedAlbums.current, ...data.albums];
+					mbFeaturedAlbumCount = data.count;
 					offset = mbFeaturedAlbums.current.length;
 					updateLoadingText(true);
 				} catch (error) {
@@ -377,7 +377,7 @@ export default function Artist({ artist }) {
 			if (didQuickFetch) {
 				data = await dispPromise(quickFetchAlbums(providerIds[0], artist.provider, artist.mbid, bypassCache), "Quick Fetching albums...");
 			} else {
-				data = processData(sourceAlbums.current, [ ...mbAlbums.current, ...mbFeaturedAlbums.current], artist.mbid);
+				data = processData(sourceAlbums.current, [ ...mbAlbums.current, ...mbFeaturedAlbums.current], artist.mbid, artist.provider_id);
 			}
 			setStatusText(data.statusText);
 			setAlbums(data.albumData);

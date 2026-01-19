@@ -1,21 +1,33 @@
 import logger from "./logger";
 
 const NodeCache = require("node-cache");
-
 const requestCache = new NodeCache();
 
-export default function withCache(func, options) {
+export interface CacheOptions {
+	ttl?: number;
+	namespace?: string;
+	noCache?: boolean;
+}
+
+export default function withCache<T extends (...args: any[]) => Promise<any>>(
+	func: T,
+	options: CacheOptions
+) {
 	let { ttl = 60 * 60, namespace = "", noCache = false } = options;
-	return async function (...args) {
+	return async function (...args: any[]) {
 		let skipCache = noCache;
-		// If last arg is an object and has noCache, use it and remove it from args
-		if (args.length && typeof args[args.length - 1] === "object" && args[args.length - 1] !== null && "noCache" in args[args.length - 1]) {
+		if (
+			args.length &&
+			typeof args[args.length - 1] === "object" &&
+			args[args.length - 1] !== null &&
+			"noCache" in args[args.length - 1]
+		) {
 			skipCache = args[args.length - 1].noCache !== false;
-			args = args.slice(0, -1); // Remove the last argument (the options object)
+			args = args.slice(0, -1);
 		}
 		const cacheKey = `${namespace ? namespace + ":" : ""}${func.name}-${JSON.stringify(args)}`;
 
-		if (!skipCache) { //Not skipping cache
+		if (!skipCache) {
 			const cachedResult = requestCache.get(cacheKey);
 			if (cachedResult) {
 				logger.debug(`Returned cached result for ${namespace ? namespace + ":" : ""}${func.name}`);

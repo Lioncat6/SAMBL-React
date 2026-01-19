@@ -1,5 +1,7 @@
 {
     "cSpell.words": [
+        "applemusic",
+        "atisket",
         "bandcamp",
         "deezer",
         "isrc",
@@ -8,10 +10,14 @@
         "mbid",
         "mbids",
         "musicbrainz",
+        "noopener",
+        "noreferrer",
         "rels",
         "sambl",
         "soundcloud",
         "trackinfo",
-        "upcs"
-    ]
+        "upcs",
+        "userscript"
+    ],
+    "typescript.tsdk": "node_modules\\typescript\\lib"
 }

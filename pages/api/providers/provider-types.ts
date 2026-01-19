@@ -1,8 +1,13 @@
-export type ArtistObject = {
+import { ArtistIncludes, IArtist, IBrowseReleasesResult, ICoversInfo, IRecordingList, IRelease, IReleaseList, IUrl, IUrlLookupResult, RelationsIncludes, ReleaseIncludes, UrlIncludes } from "musicbrainz-api";
+import { CacheOptions } from "../../../utils/cache";
+
+export type ProviderNamespace = "spotify" | "tidal" | "deezer" | "musicbrainz" | "musixmatch" | "soundcloud" | "bandcamp" | "applemusic"
+
+export class ArtistObject {
     name: string;
     url: string;
-    imageUrl: string;
-    imageUrlSmall: string;
+    imageUrl: string | null;
+    imageUrlSmall: string | null;
     bannerUrl: string | null;
     relevance: string;
     info: string;
@@ -10,7 +15,7 @@ export type ArtistObject = {
     followers: number | null;
     popularity: number | null;
     id: string | number;
-    provider: string;
+    provider: ProviderNamespace;
 };
 
 export type PartialArtistObject = {
@@ -19,11 +24,11 @@ export type PartialArtistObject = {
     imageUrl: string | null;
     imageUrlSmall: string | null;
     id: string | number;
-    provider: string;
+    provider: ProviderNamespace;
 };
 
-export type AlbumObject = {
-    provider: string;
+export class AlbumObject {
+    provider: ProviderNamespace;
     id: string;
     name: string;
     url: string;
@@ -38,8 +43,15 @@ export type AlbumObject = {
     albumTracks: TrackObject[];
 };
 
-export type TrackObject = {
-    provider: string;
+export class ExtendedAlbumObject extends AlbumObject {
+    comment: string | null;
+    externalUrls: string[] | null;
+    hasImage: boolean;
+    override albumTracks: ExtendedTrackObject[];
+};
+
+export class TrackObject {
+    provider: ProviderNamespace;
     id: string | null;
     name: string;
     url: string | null;
@@ -54,12 +66,28 @@ export type TrackObject = {
     isrcs: string[];
 };
 
-export type AlbumData = {
+export class ExtendedTrackObject extends TrackObject {
+    comment: string | null;
+    externalUrls: string[] | null;
+}
+
+export class PagingData {
     count: number | null;
     current: number | null;
     next: string | null;
+}
+
+export class RawAlbumData extends PagingData {
+    albums: any[];
+};
+
+export class AlbumData extends PagingData {
     albums: AlbumObject[];
 };
+
+export class ExtendedAlbumData extends PagingData {
+    albums: ExtendedAlbumObject[];
+}
 
 export class UrlData {
     type: 'album' | 'track' | 'artist' | null;
@@ -75,12 +103,8 @@ export class UrlMBIDDict {
 }
 
 export class Provider {
-    namespace: string;
+    namespace: ProviderNamespace;
 }
-
-export type CacheOptions = {
-  noCache?: boolean;
-};
 
 export class FullProvider extends Provider {
     getTrackByISRC?: (isrc: string, options?: CacheOptions) => Promise<any | null>;
@@ -89,7 +113,7 @@ export class FullProvider extends Provider {
     getAlbumById: (id: string, options?: CacheOptions) => Promise<any | null>;
     getTrackById: (id: string, options?: CacheOptions) => Promise<any | null>;
     getArtistById: (id: string, options?: CacheOptions) => Promise<any | null>;
-    getArtistAlbums: (id: string, offset: string | number, limit: number, options?: CacheOptions) => Promise<any | null>;
+    getArtistAlbums: (id: string, offset?: string | number, limit?: number, options?: CacheOptions) => Promise<any | null>;
     formatArtistSearchData: (rawData: any) => any;
     formatArtistLookupData: (rawData: any) => any;
     formatArtistObject: (artist: any) => ArtistObject;
@@ -97,9 +121,32 @@ export class FullProvider extends Provider {
     formatAlbumGetData: (rawData: any) => AlbumData;
     formatAlbumObject: (album: any) => AlbumObject;
     formatTrackObject: (track: any) => TrackObject;
-    getArtistUrl: (artist: any) => string | null;
+    getArtistUrl: (artist: any) => string | string[] | null;
     getTrackISRCs: (track: any) => string[] | null;
     getAlbumUPCs: (album: any) => string[] | null;
     parseUrl: (url: string) => UrlData | null;
     createUrl: (urlType: string, providerId: string) => string | null;
+}
+
+export class MusicBrainzProvider extends FullProvider {
+    override getTrackByISRC: (isrc: string, options?: CacheOptions) => Promise<IRecordingList | null>;
+    override getAlbumByUPC: (upc: string, options?: CacheOptions) => Promise<IReleaseList | null>;
+    override formatAlbumObject: (album: any) => ExtendedAlbumObject;
+    getAlbumByMBID: (id: string, inc: ReleaseIncludes[], options?: CacheOptions) => Promise<IRelease | null>;
+    getIdBySpotifyId: (spotifyId: string, options?: CacheOptions) => Promise<string | null>;
+    getIdsByExternalUrls: (spotifyUrls: string[], options?: CacheOptions) => Promise<UrlMBIDDict>;
+    override getArtistAlbums: (id: string, offset: string | number, limit: number, options?: CacheOptions) => Promise<IBrowseReleasesResult | null>;
+    override formatAlbumGetData: (rawData: any) => ExtendedAlbumData;
+    getMBArtistAlbums: (id: string, offset: string | number, limit: number, inc?: ReleaseIncludes[], options?: CacheOptions) => Promise<IBrowseReleasesResult | null>;
+    getArtistFeaturedAlbums: (id: string, offset: string | number, limit: number, inc?: ReleaseIncludes[], options?: CacheOptions) => Promise<IBrowseReleasesResult | null>;
+    getCoverByMBID: (mbid: string, options?: CacheOptions) => Promise<ICoversInfo | null>;
+    getAlbumsBySourceUrls: {
+        (urls: string[], inc?: UrlIncludes[], options?: CacheOptions): Promise<IUrlLookupResult | null | undefined>;
+        (url: string, inc?: UrlIncludes[], options?: CacheOptions): Promise<IUrl | null | undefined>;
+    };
+    searchForAlbumByArtistAndTitle: (artistName: string, albumTitle: string, options?: CacheOptions) => Promise<IReleaseList | null>;
+    getArtistFeaturedReleaseCount: (artistId: string, options?: CacheOptions) => Promise<number | null>;
+    getArtistReleaseCount: (artistId: string, options?: CacheOptions) => Promise<number | null>;
+    getArtistByUrl: (url: string, inc?: UrlIncludes[], options?: CacheOptions) => Promise<IArtist | null>;
+    validateMBID: (mbid: string) => boolean;
 }

@@ -15,6 +15,8 @@
 	--toolsButton: #000f52;
 	--configButton: #522e00;
 	--savedArtists: #00631c;
+	--exclusive: #ffaa00;
+	--highlight: #ffff0075;
 	/* Provider Colors */
 	--spotify-green: #1db954;
 	--itunes-red: #FF0436;
@@ -22,6 +24,13 @@
 	--deezer-purple: #a238ff;
 	--bandcamp-blue: #0cacd7;
 	--soundcloud-orange: #ff7700;
+	--applemusic-red: #fe5974;
+	/* Status Colors */
+	--status-red: red;
+	--status-green: #34eb80;
+	--status-orange: orange;
+	--status-blue: cornflowerblue;
+	--status-grey: gray;
 }
 
 .dark {
@@ -38,6 +47,8 @@
 	--toolsButton: #5d7aff;
 	--configButton: #905100;
 	--savedArtists: #00a62f;
+	--exclusive: #c15b08;
+	/* Provider Colors */
 	--tidal-black: #ffffff;
 }
 

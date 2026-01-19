@@ -104,6 +104,7 @@
     border: none;
     font-size: 24px;
     cursor: pointer;
+    z-index: 1;
 }
 
 .close:hover {
@@ -114,6 +115,8 @@
     font-size: 18px;
     margin-bottom: 10px;
     align-items: center;
+    position: relative;
+    z-index: 1;
 }
 
 .subHeader {
@@ -125,6 +128,8 @@
     margin-top: 20px;
     margin-bottom: 20px;
     overflow-y: scroll;
+    position: relative;
+    z-index: 1;
 }
 /* 
 .actions .button {
@@ -147,6 +152,9 @@
     background: transparent;
     color: var(--foreground-primary);
     transition: all 0.2s ease-in-out;
+    position: relative;
+    z-index: 1;
+    cursor: pointer;
 }
 
 .actions .button:hover {
@@ -182,6 +190,7 @@ flex-direction: row;
     overflow: hidden;
     text-overflow: ellipsis;
     width: -webkit-fill-available;
+    width: moz-available;
 }
 
 .subPropertyDataValue {
@@ -192,6 +201,7 @@ flex-direction: row;
     overflow: hidden;
     text-overflow: ellipsis;
     width: -webkit-fill-available;
+    width: moz-available;
 }
 
 .subPropertyData {
@@ -204,6 +214,7 @@ flex-direction: row;
     display: flex;
     flex-direction: column;
     width: -webkit-fill-available;
+    width: moz-available;
     flex: 1 1 0;      /* Allow to grow and shrink */
     min-width: 0;     /* Allow ellipsis to work */
 }
@@ -220,6 +231,9 @@ flex-direction: row;
     background: transparent;
     border: none;
     transition: all 0.1s ease-in-out;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .lookupButton {
@@ -317,6 +331,7 @@ flex-direction: row;
     display: flex;
     flex-direction: row;
     width: -webkit-fill-available;
+    width: moz-available;
 }
 
 .settingsInput {
@@ -336,4 +351,390 @@ flex-direction: row;
     display: flex;
     flex-direction: column;
     margin-bottom: 10px;
+}
+
+.trackBg::before {
+    content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-image: var(--background-image);
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+	opacity: 0.2;
+	filter: blur(14px);
+	z-index: 0;
+	transition: opacity 0.2s linear;
+}
+
+.albumDetails {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.albumInfo {
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+}
+
+.albumCover img {
+	margin: 2px 0 0 0;
+	border-radius: 10px;
+	width: 140px;
+	height: 140px;
+	transition: 0.2s all;
+    margin: 0 10px;
+}
+
+.albumCover img:hover {
+	filter: drop-shadow(0px 0px 5px #000000);
+}
+
+.albumTitle {
+	font-weight: bold !important;
+	display: flex;
+	align-items: center;
+	width: 100%;
+	overflow: hidden;
+    font-size: x-large;
+}
+
+
+.albumTitle a:first-child {
+	font-weight: bold !important;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	color: var(--foreground-primary);
+    font-size: larger;
+}
+
+.albumTitle .albumMB {
+	flex-shrink: 0;
+	margin-left: 4px;
+}
+
+.albumMB {
+	width: 28px;
+	height: 30px;
+	vertical-align: middle;
+}
+
+.trackMB {
+    width: 14px;
+    height: 18px;
+    vertical-align: middle;
+    margin-left: 2px;
+    flex-shrink: 0;
+}
+
+.artists, .releaseDate, .barcode, .alb {
+	text-align: left;
+	font-weight: normal;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.barcode {
+    color: var(--foreground-secondary)
+}
+
+.trackArtists {
+    font-weight: normal;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--foreground-secondary);
+    font-size: small;
+}
+
+.trackInfo {
+    display: flex;
+    flex-direction: column;
+    margin-left: 4px;
+    overflow: hidden;
+}
+
+.trackTopRow {
+    display: flex;
+    align-items: center;
+	width: 100%;
+	overflow: hidden;
+}
+
+.trackISRCs {
+    display: inline-block;
+    margin-left: 5px;
+    color: var(--foreground-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+.trackTitle {
+    text-wrap: nowrap;
+    color: var(--foreground-primary);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.trackContainter {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 5px;
+    padding: 5px;
+    position: relative;
+}
+
+.trackContainter::before {
+    content: "";
+    background-color: var(--background-secondary);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 1px);
+    border-radius: 8px;
+    z-index: -1;
+    opacity: 20%;
+}
+
+.trackButtonContainer {
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 100%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.SAMBLicon {
+	width: 12px;
+	height: 16px;
+	vertical-align: middle;
+}
+
+.selectBox {
+    font-size: 14px;
+    border: 1px solid var(--foreground-primary);
+    border-radius: 5px;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    height: auto;
+    min-height: 28px;
+    resize: none;
+    background: transparent;
+    overflow: hidden;
+    width: 100%;
+    padding: 4px 8px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease-in-out;
+    flex-wrap: wrap;
+    row-gap: 4px;
+}
+
+.selectBox:hover {
+    cursor: pointer;
+    border-color: var(--foreground-secondary);
+}
+
+.selectOptions {
+    background-color: var(--background); 
+    border: 1px solid var(--button-border);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1003;
+    padding: 8px 0; 
+    width: var(--button-width);
+    max-height: 200px;
+    overflow-y: auto;
+    
+}
+
+.selectOptionsEnter, .selectOptionsLeave {
+    transform-origin: top;
+    transition: opacity 200ms cubic-bezier(.4,0,.2,1), transform 200ms cubic-bezier(.4,0,.2,1);
+}
+.selectOptionsEnterFrom, .selectOptionsLeaveTo  {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+}
+.selectOptionsEnterTo, .selectOptionsLeaveFrom {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+}
+
+.selectOption {
+    font-family: Arial, sans-serif;
+    display: flex;
+    padding: 4px 8px;
+    color: var(--foreground-primary);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: normal;
+    transition: background-color 0.2s, color 0.2s;
+    cursor: pointer;
+}
+
+/* highlights the elment when focused cause headless doesn't for some reason */
+.selectOption:has(data-focus) {
+    border: 2px solid var(--foreground-primary);
+    border-radius: 4px;
+}
+
+
+.selectedItem {
+    border-radius: 4px;
+    padding: 1px;
+    margin: 0 0 0 4px;
+    border: 1px solid var(--foreground-primary);
+    display: flex;
+    align-items: center;
+}
+
+.selectedItem.exclusive {
+    border: 1px solid var(--exclusive);
+}
+
+
+.selectedItemButton {
+    background-color: transparent;
+    border: none;
+    color: var(--foreground-primary);
+    margin-left: -2px;
+    transition: all 0.2s ease-in-out;
+    text-align: center;
+    display: flex;
+    align-items: center;
+}
+
+.selectedItemName {
+    padding: 0 2px;
+}
+
+.selectedSortName {
+    flex-grow: 1;
+    text-align: center;
+}
+
+.selectedItemButton:hover, .selectOption:hover, .selectOption.focused {
+    cursor: pointer;
+    color: var(--foreground-secondary);
+}
+
+.optionTextContainer {
+    flex-grow: 1;
+}
+
+.sortOptionsContainer {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.sortDirectionButton {
+    background: transparent;
+    border: 1px solid var(--foreground-primary);
+    color: var(--foreground-primary);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.ascendingIcon {
+    position: absolute;
+}
+
+.ascendingIcon.descending,
+.descendingIcon.descending {
+    opacity: 0;
+    transform: scale(0);
+    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.exclusive .optionText{
+   border: 1px solid var(--exclusive);
+   padding: 2px 4px;
+   border-radius: 4px;
+}
+
+.carrot {
+    transition: transform 0.2s ease-in-out;
+}
+
+.carrot.open {
+    transform: rotate(-180deg) translateY(-2px);
+}
+
+.exclusiveIcon > svg {
+    vertical-align: text-bottom;
+}
+
+.exclusiveIcon {
+    cursor: help;
+}
+
+.statusPill {
+	margin: 2px 2px 0 4px;
+	width: 8px;
+	height: 34px;
+	border-radius: 10px;
+	cursor: help;
+}
+
+.statusPill.red {
+	background-color: var(--status-red);
+}
+
+.statusPill.green {
+	background-color: var(--status-green);
+}
+
+.statusPill.orange {
+	background-color: var(--status-orange);
+}
+
+.statusPill.blue {
+	background-color: var(--status-blue);
+}
+
+.statusPill.grey {
+    background-color: var(--status-grey);
+}
+
+.noAggregatedTracksWarning {
+    margin-top: 8px;
+    font-weight: bold;
+    margin-bottom: -8px;
+    text-align: center;
+    z-index: 1;
+}
+
+.trackDataSource {
+    font-weight: normal;
+    font-size: small;
+}
+
+.trackDataSource span {
+    font-weight: bold;
+}
+
+.selectLabel {
+    font-weight: bold;
 }

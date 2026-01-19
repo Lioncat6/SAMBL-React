@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider } from "./provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData } from "./provider-types";
 import { credentialsProvider, init as initAuth } from '@tidal-music/auth';
 import { createAPIClient } from '@tidal-music/api';
 import logger from "../../../utils/logger";
@@ -94,6 +94,11 @@ async function refreshApi() {
 
 
 refreshApi();
+
+function getSmallImageUrl(url: string): string {
+    if (!url) return "";
+    return url.replace(/\/\d+x\d+/, '/320x320');
+}
 
 async function getTrackByISRC(isrc) {
 	await refreshApi();
@@ -201,7 +206,7 @@ async function getArtistAlbums(artistId, offset, limit) {
     }
 }
 
-function formatAlbumGetData(rawData): AlbumData {
+function formatAlbumGetData(rawData): RawAlbumData {
 	const currentPage = /%5Bcursor%5D=([a-zA-Z0-9]+)/;
     const data = rawData.data?.data;
     const included = rawData.data?.included;
@@ -376,6 +381,7 @@ function formatArtistSearchData(rawData) {
         }
 
         artist.imageUrl = coverArtUrl;
+        artist.imageUrlSmall = getSmallImageUrl(coverArtUrl || "");
     }
     return artists;
 }

@@ -1,6 +1,7 @@
 import providers from "./providers/providers";
 import musicbrainz from "./providers/musicbrainz";
 import logger from "../../utils/logger"
+import { IArtist } from "musicbrainz-api";
 
 export default async function handler(req, res) {
     try {
@@ -32,8 +33,8 @@ export default async function handler(req, res) {
         let providerData = providerObj.formatArtistLookupData(artist)
         providerData = providerObj.formatArtistObject(providerData);
         const providerUrl = providerObj.createUrl("artist", provider_id)
-        let mbData = null;
-        if (incMBData) {
+        let mbData: IArtist | null = null;
+        if (incMBData && providerUrl) {
             mbData = await musicbrainz.getArtistByUrl(providerUrl, ["url-rels"], { noCache: forceRefresh });
             return res.status(200).json({ providerData, mbData });
         }

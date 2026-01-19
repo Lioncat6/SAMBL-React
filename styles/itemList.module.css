@@ -104,6 +104,7 @@
 .viewButton {
 	margin-left: auto !important;
 	height: -webkit-fill-available;
+	width: -moz-available;
 	align-content: center;
 	text-align: center !important;
 	width: 150px;
@@ -128,12 +129,19 @@
 
 .artistMB,
 .spotifyIcon,
+.deezerIcon,
+.tidalIcon,
 .musixMatchIcon,
+.applemusicIcon,
 .mbIcon {
 	width: 16px;
 	height: 20px;
 	vertical-align: middle;
 	margin-left: 4px;
+}
+
+.applemusicIcon {
+	color: var(--applemusic-red);
 }
 
 .listItem {
@@ -277,7 +285,8 @@
 	margin-left: auto;
 }
 
-.aTisketButton,
+.metButton,
+.atisketButton,
 .harmonyButton,
 .exportButton {
 	position: relative;
@@ -295,11 +304,19 @@
 	cursor: pointer;
 }
 
-.aTisketButton {
+.metButton:hover {
+	border: 1px solid #93c5fd;
+	transition: 0.2s all;
+	background-color: #bfdbfe;
+	text-decoration: none;
+	color: #1e40af;
+}
+
+.atisketButton {
 	margin-left: auto;
 }
 
-.aTisketButton:hover {
+.atisketButton:hover {
 	border: 1px solid #ffc470;
 	transition: 0.2s all;
 	background-color: #ffeea8;
@@ -329,28 +346,35 @@
 
 .hasTracks {
 	cursor: pointer;
+}
+.infoText { 
+	cursor: pointer;
 	transition: all 0.2s ease-in-out;
 }
 
-.hasTracks:hover {
+.infoText:hover {
 	color: var(--foreground-primary)
 }
 
-.trackHighlight {
-	background: #ffff0075;
+.trackHighlight, .artistHighlight > a:nth-child(1) {
+	background-color: var(--highlight);
 	color: var(--foreground-primary);
 }
 
 .statusPill.red {
-	background-color: red;
+	background-color: var(--status-red);
 }
 
 .statusPill.green {
-	background-color: #34eb80;
+	background-color: var(--status-green);
 }
 
 .statusPill.orange {
-	background-color: orange;
+	background-color: var(--status-orange);
+}
+
+.statusPill.blue {
+	background-color: var(--status-blue);
 }
 
 .albumCover img {
