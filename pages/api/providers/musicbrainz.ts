@@ -205,7 +205,7 @@ async function getArtistFeaturedReleaseCount(mbid: string): Promise<number | nul
 	try {
 		const data = await mbApi.browse("release" as "release", { track_artist: mbid, limit: 1 } as IBrowseReleasesQuery);
 		checkError(data);
-		if (!data["release-count"]) {
+		if (data["release-count"] == undefined || data["release-count"] == null) {
 			return null;
 		}
 		return data["release-count"];
