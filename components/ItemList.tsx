@@ -511,8 +511,8 @@ function LoadingItem() {
 					</div>
 					{/* Buttons Placeholder */}
 					{settings?.showExport && <div className={`${styles.skeletonButton} ${styles.skeletonButton1}`}></div>}
-					{seeders.getAllSeeders().filter(seeder => settings?.enabledSeeders.includes(seeder.namespace)).map(() => {
-						return <div className={`${styles.skeletonButton} ${styles.skeletonButton1}`}></div>
+					{seeders.getAllSeeders().filter(seeder => settings?.enabledSeeders.includes(seeder.namespace)).map((seeder) => {
+						return <div key={seeder.namespace} className={`${styles.skeletonButton} ${styles.skeletonButton1}`}></div>
 					})}
 				</div>
 			</div>
