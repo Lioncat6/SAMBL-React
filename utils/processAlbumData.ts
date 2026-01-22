@@ -128,6 +128,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 		let mbISRCs: string[] = [];
 		let tracksWithoutISRCs: string[] = [];
 		for (let track in finalTracks) {
+			if (!finalTracks[track]) continue;
 			let titleString = finalTracks[track].name;
 			let ISRCs = finalTracks[track].isrcs;
 			mbAlignedISRCs.push(ISRCs[0] || null)
@@ -184,10 +185,10 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 			}
 		}
 
-		if (!finalTracks || !providerTracks || finalTracks.length == 0 || providerTracks.length == 0 || finalTracks.length != providerTracks.length) {
+		if (!finalTracks || !providerTracks || finalTracks.length == 0 || providerTracks.length == 0 || finalTracks.length != providerTracks.length || !finalTracks[0] || !providerTracks[0]) {
 			aggregateTracks = false;
 		}
-
+		console.log
 		//Track Aggregation
 		let aggregatedTracks: AggregatedTrack[] = [];
 		if (aggregateTracks) {

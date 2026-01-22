@@ -481,7 +481,7 @@ function VirtualizedList({ items, type, text, onItemUpdate }) {
 				<List
 					rowCount={items.length}
 					rowHeight={69} //nice
-					rowProps={{ items, type }}
+					rowProps={{ items, type, onItemUpdate }}
 					rowComponent={ListChildren}
 				/>
 
@@ -511,8 +511,8 @@ function LoadingItem() {
 					</div>
 					{/* Buttons Placeholder */}
 					{settings?.showExport && <div className={`${styles.skeletonButton} ${styles.skeletonButton1}`}></div>}
-					{seeders.getAllSeeders().filter(seeder => settings?.enabledSeeders.includes(seeder.namespace)).map(() => {
-						return <div className={`${styles.skeletonButton} ${styles.skeletonButton1}`}></div>
+					{seeders.getAllSeeders().filter(seeder => settings?.enabledSeeders.includes(seeder.namespace)).map((seeder) => {
+						return <div key={seeder.namespace} className={`${styles.skeletonButton} ${styles.skeletonButton1}`}></div>
 					})}
 				</div>
 			</div>
@@ -634,7 +634,7 @@ export default function ItemList({ items, type, text, refresh }: {items: any[], 
 		itemArray = Array.isArray(currentItems) ? currentItems : Object.values(currentItems);
 	}
 
-	const handleItemUpdate = (updatedItem) => {
+	const handleItemUpdate = (updatedItem: DisplayAlbum) => {
 		setCurrentItems((prev) => prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)));
 	};
 	return (

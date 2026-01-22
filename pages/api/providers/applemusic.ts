@@ -1,6 +1,6 @@
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
-import { AlbumData, AlbumObject, ArtistObject, FullProvider, PartialArtistObject, TrackObject, UrlData } from "./provider-types";
+import { AlbumData, AlbumObject, ArtistObject, FullProvider, PartialArtistObject, RawAlbumData, TrackObject, UrlData } from "./provider-types";
 import { URL } from "url";
 
 interface Artwork {
@@ -252,7 +252,8 @@ async function getArtistById(id: string): Promise<any | null> {
 async function getArtistAlbums(artistId: string, offset: number, limit: number): Promise<any | null> {
 	offset = Number(offset);
 	limit = Number(limit);
-	limit = 100;
+	if (isNaN(offset)) offset = 0
+	if (isNaN(limit) || limit == 0) limit = 100
 
 	try {
 		const resourceResponse = await get<ResourceResponse<Resource<AlbumAttributes>>>(`artists/${artistId}/albums`, {
@@ -264,10 +265,10 @@ async function getArtistAlbums(artistId: string, offset: number, limit: number):
 		});
 
 		const albums = resourceResponse?.data ?? [];
-
 		return {
 			current: offset,
 			next: albums.length < limit ? null : offset + limit,
+			count: albums.length < limit ? albums.length + offset : null,
 			albums
 		};
 	} catch (error) {
@@ -316,7 +317,7 @@ function formatPartialArtistObject(artist: Resource<ArtistAttributes>): PartialA
 	};
 }
 
-function formatAlbumGetData(rawData: any): any {
+function formatAlbumGetData(rawData: any): RawAlbumData {
 	return rawData;
 }
 

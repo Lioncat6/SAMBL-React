@@ -1,5 +1,6 @@
 import { ArtistIncludes, IArtist, IBrowseReleasesResult, ICoversInfo, IRecordingList, IRelease, IReleaseList, IUrl, IUrlLookupResult, RelationsIncludes, ReleaseIncludes, UrlIncludes } from "musicbrainz-api";
 import { CacheOptions } from "../../../utils/cache";
+import { AggregatedAlbum } from "../../../utils/aggregated-types";
 
 export type ProviderNamespace = "spotify" | "tidal" | "deezer" | "musicbrainz" | "musixmatch" | "soundcloud" | "bandcamp" | "applemusic"
 
@@ -89,6 +90,19 @@ export class ExtendedAlbumData extends PagingData {
     albums: ExtendedAlbumObject[];
 }
 
+export type DeepSearchMethod = "most_common" | "name_similarity"
+export class DeepSearchData {
+    provider: ProviderNamespace
+    mbid: string
+    nameSimilarity: number
+    sourceName: string
+    mbName: string
+    method: DeepSearchMethod
+    mostCommonMbid: string
+    artists: PartialArtistObject[]
+    albums: AggregatedAlbum[] 
+}
+
 export class UrlData {
     type: 'album' | 'track' | 'artist' | null;
     id: string | null;
@@ -118,7 +132,7 @@ export class FullProvider extends Provider {
     formatArtistLookupData: (rawData: any) => any;
     formatArtistObject: (artist: any) => ArtistObject;
     formatPartialArtistObject: (artist: any) => PartialArtistObject;
-    formatAlbumGetData: (rawData: any) => AlbumData;
+    formatAlbumGetData: (rawData: any) => RawAlbumData;
     formatAlbumObject: (album: any) => AlbumObject;
     formatTrackObject: (track: any) => TrackObject;
     getArtistUrl: (artist: any) => string | string[] | null;

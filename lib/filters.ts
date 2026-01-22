@@ -87,8 +87,9 @@ function searchItems(items: DisplayAlbum[], query: string): DisplayAlbum[] {
             .map((item) => {
                 const matchesTitle = item.name.toLowerCase().includes(lowerCaseQuery);
                 let matchesArtist: boolean = false;
-                if (!matchesTitle) {
-                    matchesArtist = item.artistNames.some((artist) => 
+                if (!matchesTitle && item.artistNames) {
+                    let artistArray = Array.isArray(item.artistNames) ? item.artistNames : [item.artistNames]
+                    matchesArtist = artistArray.some((artist) => 
                         artist.toLocaleLowerCase().includes(lowerCaseQuery)
                     )
                 }

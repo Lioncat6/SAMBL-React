@@ -147,7 +147,7 @@ async function fetchArtistReleaseCount(mbid) {
 	if (response.ok) {
 		return await response.json();
 	} else {
-		throw new Error("Failed to fetch artist release count");
+		return response.status;
 	}
 }
 
@@ -344,10 +344,17 @@ export default function Artist({ artist }) {
 				});
 			}
 			if (artist.mbid && settings?.quickFetchThreshold > 0) {
-				const releaseCount = await fetchArtistReleaseCount(artist.mbid);
-				if (releaseCount.releaseCount > settings?.quickFetchThreshold) {
-					setIsQuickFetched(true);
-					return true;
+				try {
+					const releaseCount = await fetchArtistReleaseCount(artist.mbid);
+					if (releaseCount.releaseCount > settings?.quickFetchThreshold) {
+						setIsQuickFetched(true);
+						return true;
+					} else if (typeof releaseCount == "number") {
+						dispError("Failed to fetch artist release count!");
+					}
+				} catch (e) {
+					console.error(e);
+					dispError("Failed to fetch artist release count!");
 				}
 			}
 			return false;
