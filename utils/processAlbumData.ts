@@ -188,7 +188,6 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 		if (!finalTracks || !providerTracks || finalTracks.length == 0 || providerTracks.length == 0 || finalTracks.length != providerTracks.length || !finalTracks[0] || !providerTracks[0]) {
 			aggregateTracks = false;
 		}
-		console.log
 		//Track Aggregation
 		let aggregatedTracks: AggregatedTrack[] = [];
 		if (aggregateTracks) {

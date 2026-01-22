@@ -54,7 +54,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         let results = await sourceProvider.getArtistAlbums(parsed_id);
         //TODO: Implement paging here (in case people want to just check the whole discography for some reason)
         let data = sourceProvider.formatAlbumGetData(results);
-        console.log(data)
         if (data == null) {
             return res.status(404).json({ error: "Artist albums not found!" });
         }
@@ -65,7 +64,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         } else {  
             for (let i = 0; i < albumData.length && i < albumCount; i++) {
                 let album = albumData[i]
-                console.log(album.id)
                 const rawAlbum = await sourceProvider.getAlbumById((album.provider == "bandcamp" ? album.url : album.id));
                 const fullAlbum = sourceProvider.formatAlbumObject(rawAlbum);
                 albumData.push(fullAlbum);
@@ -82,7 +80,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
         for (const album of albumData) {
             const upc = album.upc;
-            console.log(upc)
             if (!upc) continue;
             const mbMatch = await musicbrainz.getAlbumByUPC(upc);
             if (mbMatch && mbMatch.releases?.length > 0){
