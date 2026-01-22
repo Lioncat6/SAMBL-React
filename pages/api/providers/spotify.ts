@@ -202,24 +202,26 @@ function formatArtistLookupData(rawData) {
 }
 
 function formatArtistObject(rawObject): ArtistObject {
+	const followers = rawObject.followers?.total ?? null;
+	const genres = rawObject.genres ?? [];
 	return {
 		name: rawObject.name,
 		url: getArtistUrl(rawObject),
-		imageUrl: rawObject.images[0]?.url || "",
-		imageUrlSmall: rawObject.images[1]?.url || rawObject.images[0]?.url || "",
+		imageUrl: rawObject.images?.[0]?.url || "",
+		imageUrlSmall: rawObject.images?.[1]?.url || rawObject.images?.[0]?.url || "",
 		bannerUrl: null,
-		relevance: `${rawObject.followers.total} Followers`,
-		info: rawObject.genres.join(", "), // Convert genres array to a string
-		genres: rawObject.genres,
-		followers: rawObject.followers.total,
-		popularity: rawObject.popularity,
+		relevance: followers != null ? `${followers} Followers` : "",
+		info: genres.join(", "),
+		genres: genres,
+		followers: followers,
+		popularity: rawObject.popularity ?? null,
 		id: rawObject.id,
 		provider: namespace,
 	};
 }
 
 function getArtistUrl(artist) {
-	return artist.external_urls.spotify || `https://open.spotify.com/artist/${artist.id}`;
+	return artist.external_urls?.spotify || `https://open.spotify.com/artist/${artist.id}`;
 }
 
 function parseUrl(url) {
