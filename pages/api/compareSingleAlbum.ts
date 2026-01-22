@@ -17,15 +17,24 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
         if (!provider_id && !url) {
             return res.status(400).json({ error: "Either `provider_id` or `url` must be provided" });
         }
+        let parsed_id: string | null = null;
+
         if (url) {
             const urlInfo = providers.getUrlInfo(url);
             if (!urlInfo) {
                 return res.status(400).json({ error: "Invalid URL" });
             }
-            provider_id = urlInfo.id;
+            parsed_id = urlInfo.id;
+            if (!parsed_id) {
+                return res.status(500).json({ error: "Failed to extract provider id from URL" });
+            }
             provider = urlInfo.provider.namespace;
+        } else if (provider && provider_id) {
+            parsed_id = provider_id;
+        } else {
+            return res.status(400).json({ error: "Parameters `provider_id` and `provider` are required when not using `url`" });
         }
-        const providerObj = providers.parseProvider(provider, ["getAlbumById", "formatAlbumObject"]);
+        const providerObj = providers.parseProvider(provider || "", ["getAlbumById", "formatAlbumObject"]);
 
         if (!providerObj) {
             return res.status(400).json({ error: "Provider doesn't exist or doesn't support this operation" });
@@ -38,8 +47,8 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
         if (!providerObj) {
             return res.status(400).json({ error: "Provider doesn't exist or doesn't support this operation" });
         }
-
-        let sourceAlbum = await providerObj.getAlbumById(provider_id, { noCache: true });
+        
+        let sourceAlbum = await providerObj.getAlbumById(parsed_id, { noCache: true });
         if (!sourceAlbum) {
             return res.status(404).json({ error: "Album not found" });
         }
