@@ -1,5 +1,6 @@
 import { ArtistIncludes, IArtist, IBrowseReleasesResult, ICoversInfo, IRecordingList, IRelease, IReleaseList, IUrl, IUrlLookupResult, RelationsIncludes, ReleaseIncludes, UrlIncludes } from "musicbrainz-api";
 import { CacheOptions } from "../../../utils/cache";
+import { AggregatedAlbum } from "../../../utils/aggregated-types";
 
 export type ProviderNamespace = "spotify" | "tidal" | "deezer" | "musicbrainz" | "musixmatch" | "soundcloud" | "bandcamp" | "applemusic"
 
@@ -99,7 +100,7 @@ export class DeepSearchData {
     method: DeepSearchMethod
     mostCommonMbid: string
     artists: PartialArtistObject[]
-    albums: AlbumObject[] 
+    albums: AggregatedAlbum[] 
 }
 
 export class UrlData {

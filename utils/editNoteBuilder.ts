@@ -1,4 +1,5 @@
 import getConfig from "next/config";
+import { DeepSearchData } from "../pages/api/providers/provider-types";
 
 const encode = str => encodeURIComponent(str).replace(/%250A/g, '%0A');
 
@@ -24,13 +25,13 @@ function buildEditNote(edit: string, provider: string, sourceUrl: string, artist
     );
 }
 
-function buildDeepSearchEditNote(data: any): string {
+function buildDeepSearchEditNote(data: DeepSearchData): string {
     const { publicRuntimeConfig } = getConfig();
     return encode(
         `Artist found with ''SAMBL Deep Search''%0A` +
         `'''Provider:''' ${data.provider}%0A` +
         `'''Albums:'''%0A` +
-        `${data.albums.map((album: any) => ` • '''${album.title}''' ''Barcode: ${album.upc}'' ${album.url}%0A''Artists:'' ${album.artists?.map((artist: any) => artist.id).join(", ") || "none"}`).join("%0A ")}%0A%0A` +
+        `${data.albums.map((album) => ` • '''${album.name}''' ''Barcode: ${album.upc}'' ${album.url}%0A''Artists:'' ${album.mbAlbum?.albumArtists?.map((artist) => `${artist.name}(${artist.id})`).join(", ") || "none"}`).join("%0A ")}%0A%0A` +
         `'''Most Common MBID:''' ${data.mostCommonMbid}%0A` +
         `'''Name Similarity:''' ${Math.round(data.nameSimilarity * 100)}%%0A` +
         `${data.method == "most_common" ? `'''Method:''' Most Common MBID (${data.mostCommonMbid})%0A` : `'''Method:''' Name Similarity (''${Math.round(data.nameSimilarity * 100)}%'')%0A• ''Provider Name: ${data.sourceName}''%0A• ''Name in Musicbrainz: ${data.mbName}''`}` +

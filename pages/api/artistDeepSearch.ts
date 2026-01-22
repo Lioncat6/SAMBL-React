@@ -1,11 +1,12 @@
 import musicbrainz from "./providers/musicbrainz";
 import providers from "./providers/providers";
 import logger from "../../utils/logger";
-import { AlbumObject, ArtistObject, DeepSearchData, DeepSearchMethod, FullProvider, PartialArtistObject, ProviderNamespace } from "./providers/provider-types";
+import { AlbumObject, ArtistObject, DeepSearchData, DeepSearchMethod, ExtendedAlbumObject, FullProvider, PartialArtistObject, ProviderNamespace } from "./providers/provider-types";
 import { IArtist } from "musicbrainz-api";
 import { NextApiRequest, NextApiResponse } from "next";
 import stringSimilarity  from 'string-similarity';
 import normalizeVars from "../../utils/normalizeVars";
+import processAlbumData from "../../utils/processAlbumData";
 
 //TODO: Implement URL based deep search as a preliminary check before checking UPCs
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -73,6 +74,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (upcs.length === 0) {
             return res.status(404).json({ error: "No UPCs found!" });
         }
+        let mbAlbums: ExtendedAlbumObject[] = [];
         let artists: PartialArtistObject[] = []
         let upcArtistArray: Map<string, IArtist[]> = new Map();
         if (albumData.length > albumCount) {
@@ -82,13 +84,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const upc = album.upc;
             console.log(upc)
             if (!upc) continue;
-            const mbAlbum = await musicbrainz.getAlbumByUPC(upc);
-            if (mbAlbum && mbAlbum.releases?.length > 0){
+            const mbMatch = await musicbrainz.getAlbumByUPC(upc);
+            if (mbMatch && mbMatch.releases?.length > 0){
                 if (!upcArtistArray.has(upc)) {
                     upcArtistArray.set(upc, []);
                 }
                 const artistArray = upcArtistArray.get(upc)!;
-                for (const release of mbAlbum?.releases) {
+                for (const release of mbMatch?.releases) {
+                    mbAlbums.push(musicbrainz.formatAlbumObject(release));
                     if (!release["artist-credit"]) continue;
                     for (const credit of release["artist-credit"]) {
                         artistArray.push(credit.artist);
@@ -134,7 +137,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         nameSimilarity = stringSimilarity.compareTwoStrings(artistName, bestArtist.name);
 
-        const formattedAlbumData = albumData;
+        const formattedAlbumData = processAlbumData(albumData, mbAlbums);
 
         const dsData: DeepSearchData = { 
             provider: sourceProvider.namespace, 
@@ -145,7 +148,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             method: method, 
             mostCommonMbid: mostCommonMbid, 
             artists: artists,
-            albums: formattedAlbumData 
+            albums: formattedAlbumData.albumData 
         };
 
         res.status(200).json(dsData);
