@@ -481,7 +481,7 @@ function VirtualizedList({ items, type, text, onItemUpdate }) {
 				<List
 					rowCount={items.length}
 					rowHeight={69} //nice
-					rowProps={{ items, type }}
+					rowProps={{ items, type, onItemUpdate }}
 					rowComponent={ListChildren}
 				/>
 
@@ -634,7 +634,7 @@ export default function ItemList({ items, type, text, refresh }: {items: any[], 
 		itemArray = Array.isArray(currentItems) ? currentItems : Object.values(currentItems);
 	}
 
-	const handleItemUpdate = (updatedItem) => {
+	const handleItemUpdate = (updatedItem: DisplayAlbum) => {
 		setCurrentItems((prev) => prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)));
 	};
 	return (
