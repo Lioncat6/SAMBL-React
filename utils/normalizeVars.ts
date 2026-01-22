@@ -1,4 +1,4 @@
-export default function (vars: Partial<{ [key: string]: string | string[]; }>): any {
+export default function (vars: Partial<{ [key: string]: string | string[]; }>): Partial<{ [key: string]: string;}> {
     const normalizedVars: { [key: string]: string | undefined; } = {};
     for (const key in vars) {
         const value = vars[key];
