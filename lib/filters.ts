@@ -103,7 +103,6 @@ function searchItems(items: DisplayAlbum[], query: string): DisplayAlbum[] {
                     let itemTracks = useAggregatedTracks ? item.aggregatedTracks : useMBTracks ? mbTracks : item.albumTracks
                     itemTracks?.forEach((track) => {
                         if (track.name.toLocaleLowerCase().includes(lowerCaseQuery)) {
-                            console.log("match")
                             matchesTrack = true;
                             if (track.trackNumber) matchingTracks.push(track.trackNumber);
                         }
