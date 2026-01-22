@@ -27,7 +27,8 @@ const providerList = [
  * @param {string[]} [capabilities] - Array of required function names.
  * @returns {object|boolean} The matched provider object if all capabilities are present, otherwise false.
  */
-function parseProvider(rawProvider: ProviderNamespace, capabilities: string[]): FullProvider | false {
+function parseProvider(rawProvider: ProviderNamespace | string | FullProvider, capabilities: string[]): FullProvider | false {
+    //TODO Improve type safety here
     let provider = spotify;
 
     if (typeof rawProvider === "string") {
