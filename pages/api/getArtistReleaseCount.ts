@@ -2,7 +2,8 @@ import musicbrainz from "./providers/musicbrainz";
 import logger from "../../utils/logger";
 import normalizeVars
  from "../../utils/normalizeVars";
-export default async function handler(req, res) {
+import { NextApiRequest, NextApiResponse } from "next";
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
         const { mbid } = normalizeVars(req.query);
         const featured = Object.prototype.hasOwnProperty.call(req.query, "featured");
@@ -25,9 +26,9 @@ export default async function handler(req, res) {
             releaseCount += featuredCount;
         }
 
-        res.status(200).json({ releaseCount, ownCount, featuredCount });
+        return res.status(200).json({ releaseCount, ownCount, featuredCount });
     } catch (error) {
         logger.error("Error in getArtistReleaseCount API", error);
-        res.status(500).json({ error: "Internal Server Error", details: error.message });
+        return res.status(500).json({ error: "Internal Server Error", details: error.message });
     }
 }
