@@ -1,8 +1,10 @@
 import styles from "../styles/notices.module.css";
 import text from "../utils/text";
 import editNoteBuilder from "../utils/editNoteBuilder";
+import { ArtistPageData } from "./component-types";
+import { JSX } from "react";
 
-function NoticeBox({ color, text, button }) {
+function NoticeBox({ color, text, button}: {color: string, text: string, button?: JSX.Element | null}) {
 	return (
 		<div className={styles.noticeBox}>
 			<div className={`${styles.boxBorder} ${styles[color]}`}></div>
@@ -16,8 +18,15 @@ function noQuickfetch() {
 	window.location.assign(window.location.href + "&quickFetch=false");
 }
 
-function NoMBIDNotice(data) {
-	let editNote = editNoteBuilder.buildEditNote('Artist', data.provider, data.url, data.url);
+function NoMBIDNotice({data}: {data?: ArtistPageData | null}) {
+	if (!data) {
+		return (
+			<NoticeBox color="red"
+			text={`This artist is not in MusicBrainz`} />
+		)
+	}
+	const url = data.url || "";
+	let editNote = editNoteBuilder.buildEditNote('Artist', data.provider, url, url);
 	return (
 		<NoticeBox
 			color="red"
@@ -66,7 +75,7 @@ function AIArtistNotice() {
 	);
 }
 
-export default function Notice({ data, type }) {
+export default function Notice({ data, type }: {data?: null | ArtistPageData, type: string}) {
 	if (type === "noMBID") {
 		return <NoMBIDNotice data={data} />;
 	} else if (type === "quickFetched") {
