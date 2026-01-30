@@ -6,7 +6,7 @@ import { FullProvider } from "./providers/provider-types";
 import { NextApiRequest, NextApiResponse } from "next";
 import normalizeVars from "../../utils/normalizeVars";
 
-export default async function handler(req:NextApiRequest, res:NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
         let { provider_id, provider, url } = normalizeVars(req.query);
         if (!provider_id && !url) {
@@ -16,6 +16,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
             return res.status(400).json({ error: "Parameter `provider` is required when using `id`" });
         }
         let sourceProvider: FullProvider | false | null = null;
+        let parsed_id: string | null;
         if (url) {
             let urlInfo = providers.getUrlInfo(url);
             if (!urlInfo) {
@@ -24,25 +25,28 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
             if (urlInfo.type !== "track") {
                 return res.status(400).json({ error: `Invalid URL type. Expected a track URL.` });
             }
-            provider_id = urlInfo.id;
+            parsed_id = urlInfo.id;
+            if (!parsed_id) {
+                return res.status(500).json({ error: "Failed to extract provider id from URL" });
+            }
             provider = urlInfo.provider.namespace;
             sourceProvider = providers.parseProvider(urlInfo.provider.namespace, ["getTrackById", "getTrackISRCs"]);
-        } else {
+        } else if (provider_id && provider) {
             sourceProvider = providers.parseProvider(provider, ["getTrackById", "getTrackISRCs"]);
+            parsed_id = provider_id
+        } else {
+            return res.status(400).json({ error: "Parameters `provider_id` and `provider` are required when not using `url`" });
         }
         if (!sourceProvider) {
             return res.status(400).json({ error: `Provider \`${provider}\` does not support this operation` });
         }
-        if (!provider_id) {
-            return res.status(400).json({ error: "Provider id invalid or missing" });
-        }
-        let results = await sourceProvider.getTrackById(provider_id);
+        let results = await sourceProvider.getTrackById(parsed_id);
         let isrcs = sourceProvider.getTrackISRCs(results);
         if (isrcs == null) {
             return res.status(404).json({ error: "Track not found!" });
         }
         res.status(200).json({ isrcs });
-	} catch (error) {
+    } catch (error) {
         logger.error("Error in getTrackISRCs API:", error);
         res.status(500).json({ error: "Internal Server Error", details: error.message });
     }
