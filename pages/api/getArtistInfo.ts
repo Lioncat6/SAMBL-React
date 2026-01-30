@@ -2,10 +2,13 @@ import providers from "./providers/providers";
 import musicbrainz from "./providers/musicbrainz";
 import logger from "../../utils/logger"
 import { IArtist } from "musicbrainz-api";
-
-export default async function handler(req, res) {
+import { ArtistData } from "./api-types";
+import { NextApiRequest, NextApiResponse } from "next"; //["getArtistById", "formatArtistLookupData", "formatArtistObject", "createUrl"]
+import normalizeVars from "../../utils/normalizeVars";
+import { FullProvider } from "./providers/provider-types";
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
-        var { provider_id, provider, url } = req.query;
+        var { provider_id, provider, url } = normalizeVars(req.query);
         const incMBData = Object.prototype.hasOwnProperty.call(req.query, "mbData");
         const forceRefresh = Object.prototype.hasOwnProperty.call(req.query, "forceRefresh");
         if (provider_id && !provider) {
@@ -14,33 +17,48 @@ export default async function handler(req, res) {
         if (!provider_id && !url) {
             return res.status(400).json({ error: "Either `provider_id` or `url` must be provided" });
         }
+        let sourceProvider: FullProvider | false | null = null;
+        let parsed_id: string | null;
         if (url) {
-            const urlInfo = providers.getUrlInfo(url);
+            let urlInfo = providers.getUrlInfo(url);
             if (!urlInfo) {
-                return res.status(400).json({ error: "Invalid URL" });
+                return res.status(404).json({ error: "Invalid provider URL" });
             }
-            provider_id = urlInfo.id;
+            if (urlInfo.type !== "artist") {
+                return res.status(400).json({ error: `Invalid URL type. Expected an artist URL.` });
+            }
+            parsed_id = urlInfo.id;
+            if (!parsed_id) {
+                return res.status(500).json({ error: "Failed to extract provider id from URL" });
+            }
             provider = urlInfo.provider.namespace;
+            sourceProvider = providers.parseProvider(urlInfo.provider.namespace, ["getArtistById"]);
+        } else if (provider_id && provider) {
+            sourceProvider = providers.parseProvider(provider, ["getArtistById"]);
+            parsed_id = provider_id
+        } else {
+            return res.status(400).json({ error: "Parameters `provider_id` and `provider` are required when not using `url`" });
         }
-        const providerObj = providers.parseProvider(provider, ["getArtistById", "formatArtistLookupData", "formatArtistObject", "createUrl"]);
-        if (!providerObj) {
-            return res.status(400).json({ error: "Provider doesn't exist or doesn't support this operation" });
+        if (!sourceProvider) {
+            return res.status(400).json({ error: `Provider \`${provider}\` does not support this operation` });
         }
-        const artist = await providerObj.getArtistById(provider_id, { noCache: forceRefresh });
+        const artist = await sourceProvider.getArtistById(parsed_id, { noCache: forceRefresh });
         if (!artist) {
             return res.status(404).json({ error: "Artist not found" });
         }
-        let providerData = providerObj.formatArtistLookupData(artist)
-        providerData = providerObj.formatArtistObject(providerData);
-        const providerUrl = providerObj.createUrl("artist", provider_id)
+        let providerData = sourceProvider.formatArtistLookupData(artist)
+        let formattedData = sourceProvider.formatArtistObject(providerData);
+        const providerUrl = sourceProvider.createUrl("artist", parsed_id)
         let mbData: IArtist | null = null;
         if (incMBData && providerUrl) {
-            mbData = await musicbrainz.getArtistByUrl(providerUrl, ["url-rels"], { noCache: forceRefresh });
-            return res.status(200).json({ providerData, mbData });
+            mbData = await musicbrainz.getArtistByUrl(providerUrl, ["url-rels", "artist-rels"], { noCache: forceRefresh });
+            const fullArtist = mbData ? await musicbrainz.getArtistById(mbData.id, { noCache: forceRefresh }): null;
+            const formattedMbData = fullArtist ? musicbrainz.formatArtistObject(fullArtist) : null;
+            return res.status(200).json({ providerData: formattedData, mbData: formattedMbData } as ArtistData);
         }
-        return res.status(200).json({ providerData });
+        return res.status(200).json({ providerData: formattedData } as ArtistData);
     } catch (error) {
-		logger.error("Error in getArtistInfo API", error)
+        logger.error("Error in getArtistInfo API", error)
         return res.status(500).json({ error: "Internal Server Error", details: error.message });
     }
 }

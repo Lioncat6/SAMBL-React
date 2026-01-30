@@ -1,7 +1,8 @@
 import musicbrainz from "./providers/musicbrainz";
 import providers from "./providers/providers";
 import logger from "../../utils/logger";
-import { AlbumObject, ArtistObject, DeepSearchData, DeepSearchMethod, ExtendedAlbumObject, FullProvider, PartialArtistObject, ProviderNamespace } from "./providers/provider-types";
+import { AlbumObject, ArtistObject, ExtendedAlbumObject, FullProvider, PartialArtistObject, ProviderNamespace } from "./providers/provider-types";
+import { DeepSearchData, DeepSearchMethod } from "./api-types"
 import { IArtist } from "musicbrainz-api";
 import { NextApiRequest, NextApiResponse } from "next";
 import stringSimilarity  from 'string-similarity';
@@ -62,12 +63,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (albumData.some((album) => album.upc && album.upc?.length > 0)) {
             upcs = albumData.map(album => album.upc);
         } else {  
-            for (let i = 0; i < albumData.length && i < albumCount; i++) {
-                let album = albumData[i]
+            const albums = [ ...albumData];
+            albumData.length = 0;
+            for (let i = 0; i < albums.length && i < albumCount; i++) {
+                let album = albums[i]
                 const rawAlbum = await sourceProvider.getAlbumById((album.provider == "bandcamp" ? album.url : album.id));
                 const fullAlbum = sourceProvider.formatAlbumObject(rawAlbum);
                 albumData.push(fullAlbum);
             }
+            upcs = albumData.map(album => album.upc);
         }
         if (upcs.length === 0) {
             return res.status(404).json({ error: "No UPCs found!" });

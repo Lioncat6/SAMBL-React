@@ -1,3 +1,4 @@
+import { ProviderNamespace } from "../pages/api/providers/provider-types";
 import { AggregatedAlbum, AggregatedArtist, AggregatedTrack } from "../utils/aggregated-types";
 
 export type searchReason = "artist" | "title";
@@ -34,4 +35,30 @@ export class FilterData {
     filters: listFilter[]
     sort: listSort
     ascending: boolean
+}
+
+export type errorType = "parameter" | "provider" | "timeout" | "general" | "fetch"
+
+export class SAMBLError {
+    type: errorType
+    message?: string | null
+    code?: string | null
+    url?: string | null
+    provider?: ProviderNamespace | null
+    parameters?: string[] | null
+}
+
+export class ArtistPageData {
+    names?: string[]
+    name: string
+    imageUrl: string
+    bannerUrl: string
+    genres: string
+    followers: number | null
+    popularity: number | null
+    provider: ProviderNamespace
+    provider_ids?: string[]
+    provider_id: string
+    mbid: string | null
+    url: string | null
 }
