@@ -1,33 +1,58 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, RefObject } from "react";
 import ArtistInfo from "../../components/ArtistInfo";
 import Head from "next/head";
 import ItemList from "../../components/ItemList";
 import Notice from "../../components/notices";
 import { useRouter } from "next/router";
 import { useSettings } from "../../components/SettingsContext";
-import { toast, Flip } from "react-toastify";
-
+import { toast, Flip, ToastOptions } from "react-toastify";
 import processData from "../../utils/processAlbumData";
+import { AlbumData, AlbumObject, ArtistObject, ExtendedAlbumData, ExtendedAlbumObject, ProviderNamespace } from "../api/providers/provider-types";
+import { ApiError, ArtistData } from "../api/api-types"
+import { ArtistPageData, SAMBLError } from "../../components/component-types";
+import ErrorPage from "../../components/ErrorPage";
+import { error } from "node:console";
 
-async function fetchArtistData(id, provider) {
-	const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?provider_id=${id}&provider=${provider}`);
+async function fetchArtistData(id: string, provider: ProviderNamespace) {
+	const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?provider_id=${id}&provider=${provider}&mbData`);
 	if (response.ok) {
-		return await response.json();
+		return await response.json() as ArtistData;
 	} else {
-		throw new Error("Artist not found!");
+		let errorMessage = "";
+		try {
+			const errorJson = await response.json() as ApiError;
+			errorMessage = errorJson.details || errorJson.error;
+		} catch {
+			errorMessage = response.statusText;
+		}
+		throw new Error(`Failed to fetch artist data: ${errorMessage}`);
 	}
 }
 
 export async function getServerSideProps(context) {
+	try {
 	let { spid, spids, artist_mbid, mbid, provider_id, provider_ids, provider, pid, pids } = context.query;
 	if (spid) provider_id = spid;
 	if (spids) provider_ids = spids;
 	if ((spid || spids) && !provider) provider = "spotify";
 	if (pid) provider_id = pid;
 	if (pids) provider_ids = pids;
+	if (mbid) artist_mbid = mbid;
 
+	
 	const splitIds = provider_ids?.split(",");
-	if (!artist_mbid && !mbid) {
+	
+	if (!provider_id && !(splitIds && splitIds[0])){
+		const error: SAMBLError = {
+			type: "parameter",
+			parameters: ["provider_id"]
+		}
+		return {
+			props: { error }
+		}
+	}
+
+	if (!artist_mbid) {
 		const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/lookupArtist?provider_id=${provider_id || splitIds[0]}&provider=${provider}`);
 		if (response.ok) {
 			const { mbid: fetchedMBid } = await response.json();
@@ -46,7 +71,7 @@ export async function getServerSideProps(context) {
 		}
 	}
 	if (!provider_id && splitIds?.length == 1) {
-		let destination = `/artist?spid=${splitIds[0]}${mbid || artist_mbid ? `&artist_mbid=${artist_mbid || mbid}` : ""}`;
+		let destination = `/artist?spid=${splitIds[0]}${artist_mbid ? `&artist_mbid=${artist_mbid}` : ""}`;
 		return {
 			redirect: {
 				destination: destination,
@@ -54,9 +79,9 @@ export async function getServerSideProps(context) {
 			},
 		};
 	}
-	try {
-		let data;
-		let artist;
+	
+		let data: ArtistObject[];
+		let artist: ArtistPageData;
 		if (!provider_id && provider_ids) {
 			data = [];
 			let pIDArray = splitIds;
@@ -65,16 +90,16 @@ export async function getServerSideProps(context) {
 			}
 			const uniqueNames = [...new Set(data.map((artist) => artist.name))];
 			const genres = [...new Set(data.flatMap((artist) => artist.genres))].filter((genre) => genre?.trim() != "");
-			let mostPopularIndex = 0;
+			let mostPopularIndex: string | number = 0;
 			let mostPopularity = 0;
 			for (let artist in data) {
-				if (data[artist].popularity > mostPopularity) {
+				if (data[artist].popularity && data[artist].popularity > mostPopularity) {
 					mostPopularIndex = artist;
 					mostPopularity = data[artist].popularity;
 				}
 			}
 			const totalFollowers = data.reduce(function (total, artist) {
-				return total + artist.followers;
+				return total + (artist.followers || 0);
 			}, 0);
 			artist = {
 				names: uniqueNames,
@@ -85,60 +110,67 @@ export async function getServerSideProps(context) {
 				followers: totalFollowers,
 				popularity: data[mostPopularIndex].popularity,
 				provider_ids: pIDArray,
+				provider_id: pIDArray[0],
 				provider: provider || "spotify",
-				mbid: artist_mbid || mbid || null,
+				mbid: artist_mbid || null,
 				url: data[mostPopularIndex].url || null
 			};
 		} else {
-			data = (await fetchArtistData(provider_id, provider)).providerData;
+			const fetchedArtist = (await fetchArtistData(provider_id, provider)).providerData;
 			artist = {
-				name: data.name,
-				imageUrl: data.imageUrl || "",
-				bannerUrl: data.bannerUrl || "",
-				genres: data.genres ? data.genres.join(", ") : "",
-				followers: data.followers,
-				popularity: data.popularity,
+				name: fetchedArtist.name,
+				imageUrl: fetchedArtist.imageUrl || "",
+				bannerUrl: fetchedArtist.bannerUrl || "",
+				genres: fetchedArtist.genres ? fetchedArtist.genres.join(", ") : "",
+				followers: fetchedArtist.followers,
+				popularity: fetchedArtist.popularity,
 				provider_id: provider_id,
 				provider: provider || "spotify",
-				mbid: artist_mbid || mbid || null,
-				url: data.url || null
+				mbid: artist_mbid || null,
+				url: fetchedArtist.url || null
 			};
 		}
 		return {
 			props: { artist },
 		};
 	} catch (error) {
-		console.error("Error fetching artist data:", error);
+		console.error(error);
+		const samblError: SAMBLError = {
+			type: "general",
+			message: String(error)
+		}
 		return {
-			notFound: true,
-		};
+			props: {
+				error: samblError
+			}
+		}
 	}
 }
 
-async function fetchSourceAlbums(providerId, provider, offset = 0, bypassCache = false) {
-	return fetch(`/api/getArtistAlbums?provider_id=${providerId}&provider=${provider}&offset=${offset}&limit=50${bypassCache ? "&forceRefresh" : ""}`).then((response) => {
+async function fetchSourceAlbums(providerId: string, provider: ProviderNamespace, offset: string | number = 0, bypassCache = false) {
+	return fetch(`/api/getArtistAlbums?provider_id=${providerId}&provider=${provider}&offset=${offset}&limit=50${bypassCache ? "&forceRefresh" : ""}`).then(async (response) => {
 		if (!response.ok) {
 			return response.status;
 		}
-		return response.json();
+		return await response.json() as AlbumData;
 	});
 }
 
 async function fetchMbArtistAlbums(mbid, offset = 0, bypassCache = false) {
-	return fetch(`/api/getMusicBrainzAlbums?mbid=${mbid}&offset=${offset}&limit=100${bypassCache ? "&forceRefresh" : ""}`).then((response) => {
+	return fetch(`/api/getMusicBrainzAlbums?mbid=${mbid}&offset=${offset}&limit=100${bypassCache ? "&forceRefresh" : ""}`).then(async (response) => {
 		if (!response.ok) {
 			return response.status;
 		}
-		return response.json();
+		return await response.json() as ExtendedAlbumData;
 	});
 }
 
 async function fetchMbArtistFeaturedAlbums(mbid, offset = 0, bypassCache = false) {
-	return fetch(`/api/getMusicBrainzFeaturedAlbums?mbid=${mbid}&offset=${offset}&limit=100${bypassCache ? "&forceRefresh" : ""}`).then((response) => {
+	return fetch(`/api/getMusicBrainzFeaturedAlbums?mbid=${mbid}&offset=${offset}&limit=100${bypassCache ? "&forceRefresh" : ""}`).then(async (response) => {
 		if (!response.ok) {
 			return response.status;
 		}
-		return response.json();
+		return await response.json() as ExtendedAlbumData;
 	});
 }
 
@@ -151,7 +183,7 @@ async function fetchArtistReleaseCount(mbid) {
 	}
 }
 
-let toastProperties = {
+let toastProperties: ToastOptions = {
 	position: "top-left",
 	autoClose: 5000,
 	hideProgressBar: false,
@@ -162,27 +194,42 @@ let toastProperties = {
 
 	transition: Flip,
 };
-async function dispError(message, type = "error") {
+async function dispError(message: string, type = "error") {
 	if (type === "error") {
 		toast.error(message, toastProperties);
 	} else {
 		toast.warn(message, toastProperties);
 	}
 }
-async function dispPromise(promise, message) {
-	return toast
-		.promise(
-			promise,
-			{
-				pending: message,
-				error: "An error occured while quick fetching!",
-			},
-			toastProperties
-		)
-		.finally(() => {});
+async function dispPromise<T>(promise: Promise<T>, message: string): Promise<T> {
+    const id = toast.loading(message, toastProperties);
+    try {
+        const result = await promise;
+        toast.update(id, {
+            render: "Success!",
+            type: "success",
+            isLoading: false,
+            ...toastProperties,
+        });
+        return result;
+    } catch (err) {
+        toast.update(id, {
+            render: "An error occurred while quick fetching!",
+            type: "error",
+            isLoading: false,
+            ...toastProperties,
+        });
+        throw err; 
+    }
 }
 
-export default function Artist({ artist }) {
+
+let loadArtistAlbums: ((bypassCache: boolean) => Promise<void> )| null = null;
+
+export default function Artist({ artist, error }: {artist: ArtistPageData, error: SAMBLError} ) {
+	if (error || !artist) {
+		return <ErrorPage error={error} />
+	}
 	const { settings, loading: waitingForMount } = useSettings();
 	const router = useRouter();
 	const { quickFetch } = router.query;
@@ -195,9 +242,9 @@ export default function Artist({ artist }) {
 	let sourceAlbumCount = -1;
 	let mbAlbumCount = -1;
 	let mbFeaturedAlbumCount = -1;
-	let sourceAlbums = useRef([]);
-	let mbAlbums = useRef([]);
-	let mbFeaturedAlbums = useRef([]);
+	let sourceAlbums: RefObject<AlbumObject[]> = useRef([]);
+	let mbAlbums: RefObject<ExtendedAlbumObject[]> = useRef([]);
+	let mbFeaturedAlbums: RefObject<ExtendedAlbumObject[]> = useRef([]);
 
 	function resetData() {
 		sourceAlbumCount = -1;
@@ -209,20 +256,20 @@ export default function Artist({ artist }) {
 	}
 
 	useEffect(() => {
-		function updateLoadingText(musicBrainz) {
+		function updateLoadingText(musicBrainz = false) {
 			if (musicBrainz) {
 				if (mbAlbumCount > -1 && mbFeaturedAlbumCount > -1) {
-					setStatusText(`Loading albums from musicbrainz... ${parseInt(mbAlbums.current.length)+ parseInt(mbFeaturedAlbums.current.length)}/${Number(mbAlbumCount) + Number(mbFeaturedAlbumCount)}`);
+					setStatusText(`Loading albums from musicbrainz... ${Number(mbAlbums.current.length) + Number(mbFeaturedAlbums.current.length)}/${Number(mbAlbumCount) + Number(mbFeaturedAlbumCount)}`);
 				}
 			} else {
 				setStatusText(`Loading albums from ${artist.provider}... ${sourceAlbums.current.length}${sourceAlbumCount ? `/${sourceAlbumCount}`: ""}`);
 			}
 		}
 
-		async function fetchProviderAlbums(pids, provider, bypassCache = false) {
+		async function fetchProviderAlbums(provider_ids: string[], provider: ProviderNamespace, bypassCache = false) {
 			let attempts = 0;
-			for (const pid of pids) {
-				let offset = 0;
+			for (const pid of provider_ids) {
+				let offset: string | number | null = 0;
 				let currentAlbumCount = 999;
 				let fetchedAlbums = 0;
 				while (offset != null) {
@@ -237,7 +284,7 @@ export default function Artist({ artist }) {
 						}
 						sourceAlbums.current = [...sourceAlbums.current, ...data.albums];
 						fetchedAlbums += data.albums.length;
-						currentAlbumCount = data.count;
+						currentAlbumCount = data.count || 0;
 						if (sourceAlbumCount < 0) {
 							sourceAlbumCount = currentAlbumCount;
 						}
@@ -257,7 +304,7 @@ export default function Artist({ artist }) {
 		}
 
 		async function fetchMusicbrainzArtistAlbums(bypassCache = false) {
-			let offset = 0;
+			let offset: number = 0;
 			let attempts = 0;
 			while (offset < mbAlbumCount || mbAlbumCount == -1) {
 				try {
@@ -270,7 +317,7 @@ export default function Artist({ artist }) {
 						throw new Error(`Error fetching MusicBrainz albums: ${data}`);
 					}
 					mbAlbums.current = [...mbAlbums.current, ...data.albums];
-					mbAlbumCount = data.count;
+					mbAlbumCount = data.count || 0;
 					offset = mbAlbums.current.length;
 					updateLoadingText(true);
 				} catch (error) {
@@ -298,7 +345,7 @@ export default function Artist({ artist }) {
 						throw new Error(`Error fetching MusicBrainz Featured albums: ${data}`);
 					}
 					mbFeaturedAlbums.current = [...mbFeaturedAlbums.current, ...data.albums];
-					mbFeaturedAlbumCount = data.count;
+					mbFeaturedAlbumCount = data.count || 0;
 					offset = mbFeaturedAlbums.current.length;
 					updateLoadingText(true);
 				} catch (error) {
@@ -334,7 +381,7 @@ export default function Artist({ artist }) {
 
 		async function shouldQuickfetch() {
 			if (waitingForMount) {
-				await new Promise((resolve) => {
+				await new Promise<void>((resolve) => {
 					const interval = setInterval(() => {
 						if (!waitingForMount) {
 							clearInterval(interval);
@@ -391,14 +438,14 @@ export default function Artist({ artist }) {
 			setLoading(false);
 		}
 		loadAlbums();
-		Artist.loadAlbums = loadAlbums;
+		loadArtistAlbums = loadAlbums;
 	}, [artist.provider_id, waitingForMount]);
 
 	async function refreshAlbums() {
 		setLoading(true);
 		resetData();
 		setStatusText("Refreshing albums...");
-		await Artist.loadAlbums(true);
+		loadArtistAlbums && await loadArtistAlbums(true);
 	}
 	return (
 		<>
@@ -412,7 +459,7 @@ export default function Artist({ artist }) {
 			{!artist.mbid && <Notice type={"noMBID"} data={artist} />}
 			{isQuickFetched && <Notice type={"quickFetched"} />}
 			<ArtistInfo artist={artist} />
-			<div id="contentContainer">{loading ? <ItemList type={"loadingAlbum"} text={statusText} refresh={refreshAlbums} /> : <ItemList type={"album"} items={albums} text={statusText} refresh={refreshAlbums} />}</div>
+			<div id="contentContainer">{loading ? <ItemList type={"loadingAlbum"} text={statusText} refresh={refreshAlbums} items={[]} /> : <ItemList type={"album"} items={albums} text={statusText} refresh={refreshAlbums} />}</div>
 		</>
 	);
 }
