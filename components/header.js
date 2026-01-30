@@ -16,7 +16,7 @@ import Popup from "./Popup"
 // const Popup = dynamic(() => import("./Popup"), { ssr: false });
 
 export default function Header() {
-	const {exportItems, exportAllItems} = useExportData();
+	const { exportItems, exportAllItems } = useExportData();
 
 	return (
 		<>
