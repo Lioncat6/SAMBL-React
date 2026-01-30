@@ -4,6 +4,7 @@ import logger from "../../utils/logger";
 import { FullProvider } from "./providers/provider-types";
 import { NextApiRequest, NextApiResponse } from "next";
 import normalizeVars from "../../utils/normalizeVars";
+import { ArtistSearchData } from "./api-types";
 /**
  * @swagger
  * /api/searchArtists:
@@ -76,13 +77,13 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
         if (!query) {
             return res.status(400).json({ error: "Parameter `query` is required" });
         }
-        let sourceProvider: FullProvider | false = providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject", "getArtistUrl"]);
+        let sourceProvider: FullProvider | false = provider ? providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject", "getArtistUrl"]): false;
         if (!sourceProvider) {
             return res.status(400).json({ error: `Provider \`${provider}\` does not support this operation` });
         }
         let results = await sourceProvider.searchByArtistName(query);
         let artistUrls: string[] = [];
-        let artistData = {};
+        let artistData: ArtistSearchData = {};
         const artistAdditionalUrls: Record<string, string[]> = {};
         for (let artist of sourceProvider.formatArtistSearchData(results)) {
             // TODO: Decide how to refactor for all sources.
