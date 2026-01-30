@@ -90,19 +90,6 @@ export class ExtendedAlbumData extends PagingData {
     albums: ExtendedAlbumObject[];
 }
 
-export type DeepSearchMethod = "most_common" | "name_similarity"
-export class DeepSearchData {
-    provider: ProviderNamespace
-    mbid: string
-    nameSimilarity: number
-    sourceName: string
-    mbName: string
-    method: DeepSearchMethod
-    mostCommonMbid: string
-    artists: PartialArtistObject[]
-    albums: AggregatedAlbum[] 
-}
-
 export class UrlData {
     type: 'album' | 'track' | 'artist' | null;
     id: string | null;
