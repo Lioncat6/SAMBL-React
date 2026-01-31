@@ -3,7 +3,7 @@ import { FaSpotify, FaDeezer, FaBandcamp, FaSoundcloud  } from "react-icons/fa6"
 import { SiTidal, SiBandcamp, SiApplemusic } from "react-icons/si";
 import { LuImageUp } from "react-icons/lu";
 import editNoteBuilder from "../utils/editNoteBuilder";
-import { ArtistObject } from "../pages/api/providers/provider-types";
+import { ArtistPageData } from "../types/component-types";
 
 function SpotifyUrlContainer({ id, url }) {
 	return (
@@ -105,12 +105,12 @@ function MusicBrainzUrlContainer({ url, id }: { url?: string; id?: string }) {
 	);
 }
 
-function UrlIcons({ artist }) {
+function UrlIcons({ artist }: { artist: ArtistPageData}) {
 	return (
 		<>
-			{artist.provider_id && <UrlContainer url={artist.url} provider={artist.provider} />}
-			{artist.provider_ids &&
-				artist.provider_ids.map((providerId) =>
+			{artist.id && <UrlContainer url={artist.url} provider={artist.provider} />}
+			{artist.ids &&
+				artist.ids.map((providerId) =>
 					<UrlContainer id={providerId} provider={artist.provider} />
 				)
 			}
@@ -119,8 +119,9 @@ function UrlIcons({ artist }) {
 	);
 }
 
-function ImageContainer({ artist }) {
+function ImageContainer({ artist }: { artist: ArtistPageData}) {
 	const { mbid, imageUrl } = artist;
+	if (!imageUrl) return null;
 	let editNote = editNoteBuilder.buildEditNote('Artist image', artist.provider, imageUrl, artist.url);
 	let importUrl = `https://musicbrainz.org/artist/${mbid}/edit?edit-artist.url.0.text=https://web.archive.org/web/0/${imageUrl}&edit-artist.url.0.link_type_id=173&edit-artist.edit_note=${editNote}`
 	return (
@@ -141,7 +142,7 @@ function ImageContainer({ artist }) {
 	)
 }
 
-function PopularityContainer({ artist }) {
+function PopularityContainer({ artist }: { artist: ArtistPageData}) {
 	if (artist.popularity != null) {
 		return (
 			<div id="artistPopularityContainer" className={styles.artistPopularityContainer} title={'Popularity: ' + artist.popularity + '%'}>
@@ -155,8 +156,8 @@ function PopularityContainer({ artist }) {
 	return null;
 }
 
-function FollowerContainer({ artist }) {
-	if (artist.followers != null && artist.followers != "NaN") {
+function FollowerContainer({ artist }: { artist: ArtistPageData}) {
+	if (artist.followers != null && !Number.isNaN(artist.followers)) {
 		return (
 			<h2 id="artistFollowerCount" className={styles.artistFollowerCount}>{artist.followers} Followers</h2>
 		);
@@ -164,23 +165,23 @@ function FollowerContainer({ artist }) {
 	return null;
 }
 
-function GenresContainer({ artist }) {
+function GenresContainer({ artist }: { artist: ArtistPageData}) {
 	if (artist.genres != null) {
 		return (
-			<div id="artistGenres" className={styles.artistGenres}>{Array.isArray(artist.genres) ? artist.genres.join(", ") : artist.genres}</div>
+			<div id="artistGenres" className={styles.artistGenres}>{artist.genres.join(", ")}</div>
 		);
 	}
 	return null;
 }
 
-export default function ArtistInfo({ artist }) {
+export default function ArtistInfo({ artist }: { artist: ArtistPageData}) {
 	return (
 		<>
 			<div id="artistPageContainer" className={styles.artistPageContainer} style={{ "--background-image": `url('${artist.bannerUrl || ""}')` } as React.CSSProperties}>
-				{artist.imageUrl && <ImageContainer artist={artist}/>}
+				<ImageContainer artist={artist}/>
 				<div id="artistTextContainer" className={styles.artistTextContainer}>
 					<div className={styles.nameContainer}>
-						<h1 id="artistName" className={styles.artistName}>{artist.name || artist.names?.join(" / ")}</h1>
+						<h1 id="artistName" className={styles.artistName}>{artist.name}</h1>
 						<UrlIcons artist={artist} />
 					</div>
 					<FollowerContainer artist={artist} />
