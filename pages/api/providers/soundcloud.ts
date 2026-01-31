@@ -7,7 +7,7 @@ import type {
   UrlData,
   FullProvider,
   RawAlbumData
-} from './provider-types'
+} from '../../../types/provider-types'
 import logger from '../../../utils/logger'
 import withCache from '../../../utils/cache'
 import ErrorHandler from '../../../utils/errorHandler'
@@ -117,8 +117,8 @@ function formatArtistObject (rawObject: SoundcloudUser): ArtistObject {
 async function getArtistAlbums (artistId: string | number, offset: string | number, limit: number) {
   try {
     let artistPlaylists = await scApi.users.playlists(correctId(artistId))
-    let artistTracks = await scApi.users.tracks(correctId(artistId))
-    return { artistTracks: artistTracks, artistPlaylists: artistPlaylists }
+    // let artistTracks = await scApi.users.tracks(correctId(artistId))
+    return { artistTracks: [], artistPlaylists: artistPlaylists }
   } catch (error) {
     err.handleError('Failed to fetch artist albums', error)
   }

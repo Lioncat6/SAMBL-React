@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData } from "./provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData } from "../../../types/provider-types";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
@@ -311,6 +311,7 @@ function formatTrackObject(track): TrackObject {
 
 const spotify: FullProvider = {
 	namespace,
+	config: {default: true},
 	getArtistById: withCache(getArtistById, { ttl: 60 * 30, namespace: namespace }),
 	searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30, namespace: namespace }),
 	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 30, namespace: namespace }),

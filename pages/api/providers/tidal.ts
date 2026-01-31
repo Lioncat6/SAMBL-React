@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData } from "./provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData } from "../../../types/provider-types";
 import { credentialsProvider, init as initAuth } from '@tidal-music/auth';
 import { createAPIClient } from '@tidal-music/api';
 import logger from "../../../utils/logger";
@@ -69,7 +69,7 @@ async function requestAccessToken() {
 
     const content = await response.json();
     if (!content?.access_token) {
-        err.handleError("Failed to authenticate Tidal!", `Reason: ${content.error || response.statusText}`)
+        err.handleError("Failed to authenticate Tidal!", new Error(`Reason: ${content.error || response.statusText}`))
     }
     return {
         accessToken: content?.access_token,

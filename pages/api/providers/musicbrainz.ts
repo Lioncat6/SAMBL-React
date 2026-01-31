@@ -1,5 +1,5 @@
 import { MusicBrainzApi, CoverArtArchiveApi, IRelation, RelationsIncludes, IArtist, EntityType, IBrowseReleasesQuery, IRelease, IEntity, IRecording, ICoverInfo, ICoversInfo, IReleaseList, IUrlList, IUrlLookupResult, IUrl, IBrowseReleasesResult, IRecordingList, IArtistList, IArtistMatch, ITrack, IBrowseRecordingsQuery, UrlIncludes, ReleaseIncludes } from "musicbrainz-api";
-import { UrlInfo, UrlMBIDDict, UrlData, Provider, TrackObject, ArtistObject, PartialArtistObject, AlbumObject, ExtendedAlbumObject, MusicBrainzProvider, AlbumData, ExtendedAlbumData, ExtendedTrackObject } from "./provider-types";
+import { UrlInfo, UrlMBIDDict, UrlData, Provider, TrackObject, ArtistObject, PartialArtistObject, AlbumObject, ExtendedAlbumObject, MusicBrainzProvider, AlbumData, ExtendedAlbumData, ExtendedTrackObject } from "../../../types/provider-types";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";

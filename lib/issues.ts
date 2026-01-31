@@ -1,4 +1,4 @@
-import { AlbumIssue, TrackIssue, AlbumStatus } from "../utils/aggregated-types";
+import { AlbumIssue, TrackIssue, AlbumStatus } from "../types/aggregated-types";
 
 interface IssueDefinition {
     label: string;
