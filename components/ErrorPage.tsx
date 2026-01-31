@@ -1,6 +1,6 @@
 import { JSX } from "react";
-import { ProviderNamespace } from "../pages/api/providers/provider-types";
-import { errorType, SAMBLError } from "./component-types";
+import { ProviderNamespace } from "../types/provider-types";
+import { errorType, SAMBLError } from "../types/component-types";
 import Head from "next/head";
 import styles from "../styles/ErrorPage.module.css";
 
