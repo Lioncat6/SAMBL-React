@@ -3,7 +3,7 @@ import providers from "./providers/providers";
 import musicbrainz from "./providers/musicbrainz";
 import logger from "../../utils/logger";
 import { NextApiRequest, NextApiResponse } from "next";
-import { AlbumData, FullProvider, RawAlbumData } from "./providers/provider-types";
+import { AlbumData, FullProvider, RawAlbumData } from "../../types/provider-types";
 import normalizeVars from "../../utils/normalizeVars";
 export default async function handler(req:NextApiRequest, res:NextApiResponse) {
 	try {
@@ -12,7 +12,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
 		if (!provider_id || !provider) {
 			return res.status(400).json({ error: "Parameters `provider_id` and `provider` are required" });
         }
-		let providerObj = providers.parseProvider(provider, ["getArtistAlbums"])
+		let providerObj = providers.parseProvider(provider, ["getArtistAlbums", "formatAlbumGetData", "formatAlbumObject"]);
 		if (!providerObj) {
             return res.status(400).json({ error: "Provider doesn't exist or doesn't support this operation" });
         }
