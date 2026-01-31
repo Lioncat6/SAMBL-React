@@ -11,7 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 		if (!mbid || !musicbrainz.validateMBID(mbid)) {
 			return res.status(400).json({ error: "Parameter `mbid` is missing or malformed" });
 		}
-		const data = await musicbrainz.getMBArtistAlbums(mbid, offset, limit, ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"], { noCache: forceRefresh });
+		const data = await musicbrainz.getMBArtistAlbums(mbid, offset, limit ? Number(limit) : undefined, ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"], { noCache: forceRefresh });
 		const formattedData = musicbrainz.formatAlbumGetData(data);
 		res.status(200).json(formattedData);
 	} catch (error) {

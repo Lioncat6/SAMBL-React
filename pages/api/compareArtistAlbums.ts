@@ -5,7 +5,7 @@ import processData from "../../utils/processAlbumData";
 
 import logger from "../../utils/logger";
 import { NextApiRequest, NextApiResponse } from "next";
-import { AlbumObject, ExtendedAlbumObject } from "./providers/provider-types";
+import { AlbumObject, ExtendedAlbumObject } from "../../types/provider-types";
 import { IUrl } from "musicbrainz-api";
 
 import normalizeVars from "../../utils/normalizeVars";

@@ -2,9 +2,9 @@ import providers from "./providers/providers";
 import musicbrainz from "./providers/musicbrainz";
 import logger from "../../utils/logger";
 import { NextApiRequest, NextApiResponse } from "next";
-import { FullProvider } from "./providers/provider-types";
+import { FullProvider, ProviderWithCapabilities } from "../../types/provider-types";
 import normalizeVars from "../../utils/normalizeVars";
-import { ArtistLookupData } from "./api-types";
+import { ArtistLookupData } from "../../types/api-types";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
         var { provider_id, provider, url } = normalizeVars(req.query);
@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (!provider_id && !url) {
             return res.status(400).json({ error: "Either `provider_id` or `url` must be provided" });
         }
-        let sourceProvider: FullProvider | false | null = null;
+        let sourceProvider: ProviderWithCapabilities<["getArtistById", "formatArtistLookupData", "formatArtistObject", "createUrl"]> | false | null = null;
         let parsed_id: string | null;
         if (url) {
             let urlInfo = providers.getUrlInfo(url);
@@ -30,9 +30,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return res.status(500).json({ error: "Failed to extract provider id from URL" });
             }
             provider = urlInfo.provider.namespace;
-            sourceProvider = providers.parseProvider(urlInfo.provider.namespace, ["getArtistById"]);
+            sourceProvider = providers.parseProvider(urlInfo.provider.namespace, ["getArtistById", "formatArtistLookupData", "formatArtistObject", "createUrl"]);
         } else if (provider_id && provider) {
-            sourceProvider = providers.parseProvider(provider, ["getArtistById"]);
+            sourceProvider = providers.parseProvider(provider, ["getArtistById", "formatArtistLookupData", "formatArtistObject", "createUrl"]);
             parsed_id = provider_id
         } else {
             return res.status(400).json({ error: "Parameters `provider_id` and `provider` are required when not using `url`" });

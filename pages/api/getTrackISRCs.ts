@@ -2,7 +2,7 @@ import musicbrainz from "./providers/musicbrainz";
 import providers from "./providers/providers";
 import logger from "../../utils/logger";
 import { getTraceEvents } from "next/dist/trace";
-import { FullProvider } from "./providers/provider-types";
+import { FullProvider, ProviderWithCapabilities } from "../../types/provider-types";
 import { NextApiRequest, NextApiResponse } from "next";
 import normalizeVars from "../../utils/normalizeVars";
 
@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (provider_id && !provider) {
             return res.status(400).json({ error: "Parameter `provider` is required when using `id`" });
         }
-        let sourceProvider: FullProvider | false | null = null;
+        let sourceProvider: ProviderWithCapabilities<["getTrackById", "getTrackISRCs"]> | false | null = null;
         let parsed_id: string | null;
         if (url) {
             let urlInfo = providers.getUrlInfo(url);

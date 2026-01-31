@@ -1,8 +1,8 @@
 import musicbrainz from "./providers/musicbrainz";
 import providers from "./providers/providers";
 import logger from "../../utils/logger";
-import { AlbumObject, ArtistObject, ExtendedAlbumObject, FullProvider, PartialArtistObject, ProviderNamespace } from "./providers/provider-types";
-import { DeepSearchData, DeepSearchMethod } from "./api-types"
+import { AlbumObject, ArtistObject, ExtendedAlbumObject, FullProvider, PartialArtistObject, ProviderNamespace, ProviderWithCapabilities } from "../../types/provider-types";
+import { DeepSearchData, DeepSearchMethod } from "../../types/api-types"
 import { IArtist } from "musicbrainz-api";
 import { NextApiRequest, NextApiResponse } from "next";
 import stringSimilarity  from 'string-similarity';
@@ -21,7 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
         const albumCount = count && Number.parseInt(count) || 5;
         let parsed_id: string | null;
-        let sourceProvider: FullProvider | false | null = null;
+        let sourceProvider: ProviderWithCapabilities<["getAlbumById", "getAlbumUPCs", "getArtistAlbums", "getArtistById", "formatAlbumGetData", "formatAlbumObject", "formatArtistObject", "formatArtistLookupData"]> | false | null = null;
         if (url) {
             let urlInfo = providers.getUrlInfo(url);
             if (!urlInfo) {
@@ -35,9 +35,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return res.status(500).json({ error: "Failed to extract provider id from URL" });
             }
             provider = urlInfo.provider.namespace;
-            sourceProvider = providers.parseProvider(urlInfo.provider, ["getAlbumById", "getAlbumUPCs", "getArtistAlbums", "getArtistById", "formatAlbumGetData", "formatAlbumObject"]);
+            sourceProvider = providers.parseProvider(urlInfo.provider, ["getAlbumById", "getAlbumUPCs", "getArtistAlbums", "getArtistById", "formatAlbumGetData", "formatAlbumObject", "formatArtistObject", "formatArtistLookupData"]);
         } else if (provider_id && provider) {
-            sourceProvider = providers.parseProvider(provider, ["getAlbumById", "getAlbumUPCs", "getArtistAlbums", "getArtistById"]);
+            sourceProvider = providers.parseProvider(provider, ["getAlbumById", "getAlbumUPCs", "getArtistAlbums", "getArtistById", "formatAlbumGetData", "formatAlbumObject", "formatArtistObject", "formatArtistLookupData"]);
             parsed_id = provider_id
         } else {
             return res.status(400).json({ error: "Parameters `provider_id` and `provider` are required when not using `url`" });

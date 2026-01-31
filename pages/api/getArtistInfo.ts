@@ -2,10 +2,10 @@ import providers from "./providers/providers";
 import musicbrainz from "./providers/musicbrainz";
 import logger from "../../utils/logger"
 import { IArtist } from "musicbrainz-api";
-import { ArtistData } from "./api-types";
-import { NextApiRequest, NextApiResponse } from "next"; //["getArtistById", "formatArtistLookupData", "formatArtistObject", "createUrl"]
+import { ArtistData } from "../../types/api-types";
+import { NextApiRequest, NextApiResponse } from "next";
 import normalizeVars from "../../utils/normalizeVars";
-import { FullProvider } from "./providers/provider-types";
+import { FullProvider, ProviderWithCapabilities } from "../../types/provider-types";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
         var { provider_id, provider, url } = normalizeVars(req.query);
@@ -17,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (!provider_id && !url) {
             return res.status(400).json({ error: "Either `provider_id` or `url` must be provided" });
         }
-        let sourceProvider: FullProvider | false | null = null;
+        let sourceProvider: ProviderWithCapabilities<["getArtistById", "formatArtistObject", "formatArtistLookupData", "createUrl"]> | false | null = null;
         let parsed_id: string | null;
         if (url) {
             let urlInfo = providers.getUrlInfo(url);
@@ -32,9 +32,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return res.status(500).json({ error: "Failed to extract provider id from URL" });
             }
             provider = urlInfo.provider.namespace;
-            sourceProvider = providers.parseProvider(urlInfo.provider.namespace, ["getArtistById"]);
+            sourceProvider = providers.parseProvider(urlInfo.provider.namespace, ["getArtistById", "formatArtistObject", "formatArtistLookupData", "createUrl"]);
         } else if (provider_id && provider) {
-            sourceProvider = providers.parseProvider(provider, ["getArtistById"]);
+            sourceProvider = providers.parseProvider(provider, ["getArtistById", "formatArtistObject", "formatArtistLookupData", "createUrl"]);
             parsed_id = provider_id
         } else {
             return res.status(400).json({ error: "Parameters `provider_id` and `provider` are required when not using `url`" });
