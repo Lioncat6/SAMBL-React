@@ -4,8 +4,8 @@ import React, { createContext, useContext, useState } from "react";
 export type ExportContextType = {
     exportState: boolean,
     setExportState: React.Dispatch<React.SetStateAction<boolean>>,
-    allItems: never[];
-    setAllItems: React.Dispatch<React.SetStateAction<never[]>>;
+    allItems: any[];
+    setAllItems: React.Dispatch<React.SetStateAction<any[]>>;
 };
 
 const ExportContext = createContext<ExportContextType | undefined>(undefined);
