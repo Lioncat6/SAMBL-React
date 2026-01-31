@@ -7,7 +7,9 @@ import bandcamp from "./bandcamp"
 import logger from "../../../utils/logger"
 import soundcloud from "./soundcloud"
 import applemusic from "./applemusic";
-import { FullProvider, Provider, ProviderNamespace, UrlInfo } from "./provider-types";
+import { FullProvider, PartialProvider, Provider, ProviderCapability, ProviderNamespace, ProviderWithCapabilities, UrlInfo } from "../../../types/provider-types";
+import clientProviders from "../../../utils/clientProviders";
+const { isDisabled } = clientProviders;
 
 const providerList = [
     spotify,
@@ -20,6 +22,10 @@ const providerList = [
     applemusic
 ];
 
+function getDefaultProvider(): Provider {
+    return providerList.find(p => p.config?.default) || providerList[0];
+}
+
 /**
  * Parses the given provider input and checks for required capabilities.
  *
@@ -27,9 +33,12 @@ const providerList = [
  * @param {string[]} [capabilities] - Array of required function names.
  * @returns {object|boolean} The matched provider object if all capabilities are present, otherwise false.
  */
-function parseProvider(rawProvider: ProviderNamespace | string | FullProvider, capabilities: string[]): FullProvider | false {
-    //TODO Improve type safety here
-    let provider = spotify;
+
+function parseProvider<T extends ProviderCapability[]>( 
+    rawProvider: ProviderNamespace | string | Provider, 
+    capabilities?: T 
+): (T extends ProviderCapability[] ? ProviderWithCapabilities<T> | false : PartialProvider) | false {
+    let provider = getDefaultProvider();
 
     if (typeof rawProvider === "string") {
         providerList.forEach(p => {
@@ -41,14 +50,16 @@ function parseProvider(rawProvider: ProviderNamespace | string | FullProvider, c
         provider = rawProvider;
     }
 
+    if (isDisabled(provider)) return false;
+
     if (capabilities && capabilities.length > 0) {
         for (const capability of capabilities) {
-            if (!provider[capability]) {
+            if (!provider[capability as keyof typeof provider]) {
                 return false;
             }
         }
     }
-    return provider;
+    return provider as any;
 }
 
 /**
@@ -78,7 +89,8 @@ function getUrlInfo(url: string): UrlInfo | null {
 
 const providers = {
     parseProvider,
-    getUrlInfo
+    getUrlInfo,
+    getDefaultProvider
 };
 
 export default providers;
