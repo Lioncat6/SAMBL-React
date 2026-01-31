@@ -1,4 +1,4 @@
-import { ExtendedAlbumObject, TrackObject, ArtistObject, AlbumObject } from "../pages/api/providers/provider-types";
+import { ExtendedAlbumObject, TrackObject, ArtistObject, AlbumObject } from "./provider-types";
 
 export type AlbumIssue = 'noUPC' | 'UPCDiff' | 'missingISRCs' | 'ISRCDiff' | 'trackDiff' | 'noDate' | 'dateDiff' | 'noCover';
 export type AlbumStatus = 'green' | 'orange' | 'blue' | 'red';
@@ -8,7 +8,7 @@ export type TrackStatus = 'green' | 'orange' | 'blue' | 'grey'; // Track count m
 export type TrackIssue = 'noISRC' | 'ISRCDiff' | 'noDuration' | "artistDiff"
 
 export class AggregatedArtist extends ArtistObject {
-    mbid: string | null;
+    mbid?: string | null;
 }
 
 export class AggregatedAlbum extends AlbumObject{
