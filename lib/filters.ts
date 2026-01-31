@@ -1,5 +1,5 @@
-import { albumSearchReason, DisplayAlbum, FilterData, listFilter, listFilterOption, listSort, listSortOption } from "../components/component-types"
-import { AlbumStatus } from "../utils/aggregated-types";
+import { albumSearchReason, DisplayAlbum, FilterData, listFilter, listFilterOption, listSort, listSortOption } from "../types/component-types"
+import { AlbumStatus } from "../types/aggregated-types";
 
 const listFilterOptions: listFilterOption[] = [
     { id: 1, name: 'Green', key: 'showGreen', default: true },

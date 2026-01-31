@@ -2,7 +2,7 @@ import met from "./met";
 import harmony from "./harmony";
 import atisket from "./atisket";
 import { Seeder, SeederNamespace } from "./seeder-types";
-import { ProviderNamespace } from "../../pages/api/providers/provider-types";
+import { ProviderNamespace } from "../../types/provider-types";
 
 export const seederList: Seeder[] = [
     met,

@@ -1,7 +1,7 @@
 import styles from "../styles/notices.module.css";
 import text from "../utils/text";
 import editNoteBuilder from "../utils/editNoteBuilder";
-import { ArtistPageData } from "./component-types";
+import { ArtistPageData } from "../types/component-types";
 import { JSX } from "react";
 
 function NoticeBox({ color, text, button}: {color: string, text: string, button?: JSX.Element | null}) {

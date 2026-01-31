@@ -16,10 +16,13 @@ import { PiPlaylistBold } from "react-icons/pi";
 import { TbPlaylistOff } from "react-icons/tb";
 import editNoteBuilder from "../utils/editNoteBuilder";
 import { IoFilter } from "react-icons/io5";
-import { DisplayAlbum } from "./component-types";
+import { DisplayAlbum } from "../types/component-types";
 import seeders from "../lib/seeders/seeders";
-import { AggregatedAlbum } from "../utils/aggregated-types";
+import { AggregatedAlbum } from "../types/aggregated-types";
 import filters from "../lib/filters";
+import ExportMenuPopup from "./Popups/ExportMenu";
+import TrackMenuPopup from "./Popups/TrackMenu";
+import FilterMenuPopup from "./Popups/FilterMenu";
 
 function AlbumIcons({ item }) {
 	const { id, url, releaseDate, mbAlbum, trackCount, albumStatus, mbid, albumIssues, provider, artistMBID } = item;
@@ -109,15 +112,13 @@ function SelectionButtons({ item }) {
 
 	return (
 		<>
-			<Popup
+			<ExportMenuPopup
 				button={
 					<a className={styles.exportButton}>
 						<div>Export</div>
 					</a>
 				}
 				data={item}
-				type="export"
-				apply={null}
 			/>
 		</>
 	);
@@ -125,7 +126,7 @@ function SelectionButtons({ item }) {
 
 const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; selecting?: boolean; onUpdate?: (updatedItem: DisplayAlbum) => void }) => {
 	const [isLoading, setIsLoading] = useState(false);
-	const { exportState } = useExportState();
+	const exportState = useExportState()?.exportState;
 	const Popup = dynamic(() => import("./Popup"), { ssr: false });
 
 	let toastProperties: ToastOptions = {
@@ -301,7 +302,7 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 
 					{/* Album Info */}
 					<div className={styles.albumInfo}>
-						<Popup
+						<TrackMenuPopup
 							button={<div className={styles.infoText} title={"Click for album info"}>
 								{releaseDate} • {text.capitalizeFirst(albumType || "")} •{" "}
 								{albumTracks.length > 0 || mbAlbum?.albumTracks && mbAlbum?.albumTracks?.length > 0
@@ -317,10 +318,8 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 								}
 							</div>
 							}
-							type="track"
 							data={item}
-							apply={null}
-						></Popup>
+						/>
 						<AlbumIcons item={item} />
 					</div>
 				</div>
@@ -404,7 +403,7 @@ function LinkButton({ item }) {
 }
 
 function GenericItem({ item }) {
-	const { exportState } = useExportState();
+	const exportState = useExportState()?.exportState;
 	const { source, imageUrl, title, artists, info, link } = item;
 	let artistString = artists?.map((artist, index) => (
 		<>
@@ -576,8 +575,7 @@ function SearchContainer({ onSearch, currentFilter, setFilter, refresh }) {
 				className={styles.listSearch}
 				onChange={(e) => onSearch(e.target.value)} // Call onSearch when input changes
 			/>
-			<Popup
-				type="filter"
+			<FilterMenuPopup
 				button={
 					<button title={"Filter & Sort Menu"} id="filterSearch" className={styles.filterSearch}>
 						<div id="fbText" className={styles.fbText}>
@@ -604,8 +602,8 @@ export default function ItemList({ items, type, text, refresh }: {items: any[], 
 	const [filteredItems, setFilteredItems] = useState(items || []); // State for filtered items
 	const [currentItems, setCurrentItems] = useState(items || []);
 	const [filter, setFilter] = useState(filters.getDefaultOptions());
-	const { setAllItems } = useExportState();
-	if (currentItems?.length > 0) {
+	const setAllItems = useExportState()?.setAllItems;
+	if (currentItems?.length > 0 && setAllItems) {
 		setAllItems(currentItems);
 	}
 

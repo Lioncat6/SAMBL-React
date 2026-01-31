@@ -1,5 +1,5 @@
-import { AlbumObject, ExtendedAlbumObject, ExtendedTrackObject, ProviderNamespace, TrackObject } from "../pages/api/providers/provider-types";
-import { AggregatedAlbum, AggregatedData, AggregatedTrack, AlbumIssue, AlbumStatus, BasicTrack, TrackIssue, TrackStatus } from "./aggregated-types";
+import { AlbumObject, ExtendedAlbumObject, ExtendedTrackObject, ProviderNamespace, TrackObject } from "../types/provider-types";
+import { AggregatedAlbum, AggregatedData, AggregatedTrack, AlbumIssue, AlbumStatus, BasicTrack, TrackIssue, TrackStatus } from "../types/aggregated-types";
 import text from "./text";
 
 export default function processData(sourceAlbums: AlbumObject[], mbAlbums: ExtendedAlbumObject[], currentArtistMBID: string | null = null, currentArtistID: string | null = null, quick = false, full = false): AggregatedData {
@@ -28,7 +28,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 	mbAlbums.forEach((mbAlbum) => {
 		const rawUPC = mbAlbum.upc;
 		if (!rawUPC || text.removeLeadingZeros(rawUPC) == 0) return;
-		const formattedUPC = text.rmz(rawUPC).toString();
+		const formattedUPC = text.removeLeadingZeros(rawUPC).toString();
 		if (formattedUPC && formattedUPC != "") {
 			if (!mbUPCAlbumMap.has(formattedUPC)) mbUPCAlbumMap.set(formattedUPC, []);
 			mbUPCAlbumMap.get(formattedUPC)?.push(mbAlbum);
@@ -107,7 +107,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 
 		// Try UPC map
 		if (albumStatus == "red" && providerBarcode) {
-			const formattedUPC = text.rmz(providerBarcode).toString()
+			const formattedUPC = text.removeLeadingZeros(providerBarcode).toString()
 			if (formattedUPC != ""){
 				tryMap(mbUPCAlbumMap, formattedUPC, "blue")
 			}

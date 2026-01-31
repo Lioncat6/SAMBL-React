@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData } from "./provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData } from "../../../types/provider-types";
 import logger from "../../../utils/logger";
 import text from "../../../utils/text";
 import withCache from "../../../utils/cache";

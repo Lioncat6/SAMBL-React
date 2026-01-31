@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, FullProvider, PartialArtistObject, RawAlbumData } from "./provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, FullProvider, PartialArtistObject, RawAlbumData } from "../../../types/provider-types";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
@@ -140,8 +140,9 @@ async function getArtistById(artistId) {
 	try {
 		const data = await bandcamp.searchByArtistName(artistId);
 		if (data) {
-			let artistData = data.find((a) => a.url == `https://${artistId}.bandcamp.com`) || null;
 			let idData = await getArtistByIdAsync(artistId);
+			const url = (idData as any)?.raw?.url;
+			let artistData = data.find((a) => a.url == url) || null;
 			artistData.raw = (idData as any).raw;
 			return artistData;
 		}

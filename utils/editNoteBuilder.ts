@@ -1,5 +1,5 @@
 import getConfig from "next/config";
-import { DeepSearchData } from "../pages/api/providers/provider-types";
+import { DeepSearchData } from "../types/api-types";
 
 const encode = str => encodeURIComponent(str).replace(/%250A/g, '%0A');
 

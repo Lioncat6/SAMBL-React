@@ -1,6 +1,6 @@
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
-import { AlbumData, AlbumObject, ArtistObject, FullProvider, PartialArtistObject, RawAlbumData, TrackObject, UrlData } from "./provider-types";
+import { AlbumData, AlbumObject, ArtistObject, FullProvider, PartialArtistObject, ProviderConfig, RawAlbumData, TrackObject, UrlData } from "../../../types/provider-types";
 import { URL } from "url";
 
 interface Artwork {
