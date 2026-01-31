@@ -12,6 +12,7 @@ import ProviderPill from "./ProviderPill";
 import { useExportData } from "./Export";
 
 import Popup from "./Popup"
+import ConfigureMenuPopup from "./Popups/ConfigureMenu";
 
 // const Popup = dynamic(() => import("./Popup"), { ssr: false });
 
@@ -61,7 +62,7 @@ export default function Header() {
 							<FaUser /><div className={styles.collapse}> Artists</div>
 						</div>
 					</button>
-					<Popup
+					<ConfigureMenuPopup
 						button={
 							<button className={styles.configButton}>
 								<div className={styles.buttonText}>
@@ -69,8 +70,7 @@ export default function Header() {
 								</div>
 							</button>
 						}
-						type="configure"
-					></Popup>
+					/>
 				</div>
 			</header>
 		</>
