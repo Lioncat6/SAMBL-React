@@ -7,13 +7,14 @@ import { useRouter } from "next/router";
 import { useSettings } from "../../components/SettingsContext";
 import { toast, Flip, ToastOptions } from "react-toastify";
 import processData from "../../utils/processAlbumData";
-import { AlbumData, AlbumObject, ArtistObject, ExtendedAlbumData, ExtendedAlbumObject, ProviderNamespace } from "../api/providers/provider-types";
-import { ApiError, ArtistData } from "../api/api-types"
-import { ArtistPageData, SAMBLError } from "../../components/component-types";
+import { AlbumData, AlbumObject, ArtistObject, ExtendedAlbumData, ExtendedAlbumObject, ProviderNamespace } from "../../types/provider-types";
+import { ApiError, ArtistData } from "../../types/api-types"
+import { ArtistPageData, SAMBLError } from "../../types/component-types";
 import ErrorPage from "../../components/ErrorPage";
 import { error } from "node:console";
+import { AggregatedData } from "../../types/aggregated-types";
 
-async function fetchArtistData(id: string, provider: ProviderNamespace) {
+async function fetchArtistData(id: string, provider: ProviderNamespace | string) {
 	const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?provider_id=${id}&provider=${provider}&mbData`);
 	if (response.ok) {
 		return await response.json() as ArtistData;
@@ -31,18 +32,28 @@ async function fetchArtistData(id: string, provider: ProviderNamespace) {
 
 export async function getServerSideProps(context) {
 	try {
-	let { spid, spids, artist_mbid, mbid, provider_id, provider_ids, provider, pid, pids } = context.query;
+	let { spid, spids, artist_mbid, mbid, provider_id, provider_ids, provider, pid, pids }:
+	 {spid?: string, spids?: string, artist_mbid?: string, mbid?: string, provider_id?: string, provider_ids?: string, provider?: string, pid?: string, pids?: string} = context.query;
 	if (spid) provider_id = spid;
 	if (spids) provider_ids = spids;
 	if ((spid || spids) && !provider) provider = "spotify";
 	if (pid) provider_id = pid;
 	if (pids) provider_ids = pids;
 	if (mbid) artist_mbid = mbid;
-
-	
 	const splitIds = provider_ids?.split(",");
-	
-	if (!provider_id && !(splitIds && splitIds[0])){
+	if (!provider_id && splitIds && splitIds.length > 0) provider_id = splitIds[0];
+
+	if (!provider){
+		const error: SAMBLError = {
+			type: "parameter",
+			parameters: ["provider"]
+		}
+		return {
+			props: { error }
+		}
+	}
+
+	if (!provider_id){
 		const error: SAMBLError = {
 			type: "parameter",
 			parameters: ["provider_id"]
@@ -52,13 +63,14 @@ export async function getServerSideProps(context) {
 		}
 	}
 
-	if (!artist_mbid) {
-		const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/lookupArtist?provider_id=${provider_id || splitIds[0]}&provider=${provider}`);
+	if (!artist_mbid && provider_id || (splitIds && splitIds.length > 0)) {
+		let ids = provider_id ? provider_id : (splitIds && splitIds[0]);
+		const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/lookupArtist?provider_id=${ids}&provider=${provider}`);
 		if (response.ok) {
 			const { mbid: fetchedMBid } = await response.json();
 			if (fetchedMBid) {
-				let destination = `/artist?provider_id=${provider_id || splitIds[0]}&provider=${provider}&artist_mbid=${fetchedMBid}`;
-				if (!spid && splitIds?.length > 1) {
+				let destination = `/artist?provider_id=${ids}&provider=${provider}&artist_mbid=${fetchedMBid}`;
+				if (!spid && splitIds && splitIds?.length > 1) {
 					destination = `/artist?provider_ids=${provider_ids}&provider=${provider}&artist_mbid=${fetchedMBid}`;
 				}
 				return {
@@ -84,18 +96,18 @@ export async function getServerSideProps(context) {
 		let artist: ArtistPageData;
 		if (!provider_id && provider_ids) {
 			data = [];
-			let pIDArray = splitIds;
+			let pIDArray = splitIds || [];
 			for (let id of pIDArray) {
 				data.push((await fetchArtistData(id, provider)).providerData);
 			}
 			const uniqueNames = [...new Set(data.map((artist) => artist.name))];
 			const genres = [...new Set(data.flatMap((artist) => artist.genres))].filter((genre) => genre?.trim() != "");
-			let mostPopularIndex: string | number = 0;
+			let mostPopularArtist: ArtistObject | null = null;
 			let mostPopularity = 0;
-			for (let artist in data) {
-				if (data[artist].popularity && data[artist].popularity > mostPopularity) {
-					mostPopularIndex = artist;
-					mostPopularity = data[artist].popularity;
+			for (let artist of data) {
+				if (artist.popularity && artist.popularity > mostPopularity) {
+					mostPopularArtist = artist;
+					mostPopularity = artist.popularity;
 				}
 			}
 			const totalFollowers = data.reduce(function (total, artist) {
@@ -104,30 +116,25 @@ export async function getServerSideProps(context) {
 			artist = {
 				names: uniqueNames,
 				name: uniqueNames.join(" / "),
-				imageUrl: data[mostPopularIndex].imageUrl || "",
-				bannerUrl: data[mostPopularIndex].bannerUrl || "",
-				genres: genres.join(", "),
+				imageUrl: mostPopularArtist?.imageUrl || "",
+				imageUrlSmall: mostPopularArtist?.imageUrlSmall || "",
+				bannerUrl: mostPopularArtist?.bannerUrl || "",
+				genres: genres.filter((genre) => genre != null),
 				followers: totalFollowers,
-				popularity: data[mostPopularIndex].popularity,
-				provider_ids: pIDArray,
-				provider_id: pIDArray[0],
-				provider: provider || "spotify",
+				popularity: mostPopularArtist?.popularity || null,
+				ids: pIDArray,
+				id: pIDArray[0],
+				provider: provider as ProviderNamespace || "spotify",
 				mbid: artist_mbid || null,
-				url: data[mostPopularIndex].url || null
+				url: mostPopularArtist?.url || "",
+				relevance: mostPopularArtist?.relevance || "",
+				info: mostPopularArtist?.info || ""
 			};
 		} else {
 			const fetchedArtist = (await fetchArtistData(provider_id, provider)).providerData;
 			artist = {
-				name: fetchedArtist.name,
-				imageUrl: fetchedArtist.imageUrl || "",
-				bannerUrl: fetchedArtist.bannerUrl || "",
-				genres: fetchedArtist.genres ? fetchedArtist.genres.join(", ") : "",
-				followers: fetchedArtist.followers,
-				popularity: fetchedArtist.popularity,
-				provider_id: provider_id,
-				provider: provider || "spotify",
+				... fetchedArtist,
 				mbid: artist_mbid || null,
-				url: fetchedArtist.url || null
 			};
 		}
 		return {
@@ -365,7 +372,7 @@ export default function Artist({ artist, error }: {artist: ArtistPageData, error
 				try {
 					const response = await fetch(`/api/compareArtistAlbums?provider_id=${pId}&provider=${provider}&mbid=${mbid}&quick${bypassCache ? "&forceRefresh" : ""}`);
 					if (response.ok) {
-						return await response.json();
+						return await response.json() as AggregatedData;
 					} else {
 						throw new Error("Failed to fetch artist albums");
 					}
@@ -412,7 +419,7 @@ export default function Artist({ artist, error }: {artist: ArtistPageData, error
 		}
 
 		async function loadAlbums(bypassCache = false) {
-			const providerIds = artist.provider_ids ? artist.provider_ids : [artist.provider_id];
+			const providerIds = artist.ids ? artist.ids : [artist.id];
 			let didQuickFetch = false;
 			if (!artist.mbid) {
 				await fetchProviderAlbums(providerIds, artist.provider, bypassCache);
@@ -431,7 +438,7 @@ export default function Artist({ artist, error }: {artist: ArtistPageData, error
 			if (didQuickFetch) {
 				data = await dispPromise(quickFetchAlbums(providerIds[0], artist.provider, artist.mbid, bypassCache), "Quick Fetching albums...");
 			} else {
-				data = processData(sourceAlbums.current, [ ...mbAlbums.current, ...mbFeaturedAlbums.current], artist.mbid, artist.provider_id);
+				data = processData(sourceAlbums.current, [ ...mbAlbums.current, ...mbFeaturedAlbums.current], artist.mbid, artist.id);
 			}
 			setStatusText(data.statusText);
 			setAlbums(data.albumData);
@@ -439,7 +446,7 @@ export default function Artist({ artist, error }: {artist: ArtistPageData, error
 		}
 		loadAlbums();
 		loadArtistAlbums = loadAlbums;
-	}, [artist.provider_id, waitingForMount]);
+	}, [artist.id, waitingForMount]);
 
 	async function refreshAlbums() {
 		setLoading(true);
@@ -452,7 +459,7 @@ export default function Artist({ artist, error }: {artist: ArtistPageData, error
 			<Head>
 				<title>{`SAMBL • ${artist.name}`}</title>
 				<meta name="description" content={`View Artist • ${artist.name} • ${artist.followers} Followers`} />
-				<meta property="og:image" content={artist.imageUrl} />
+				{artist.imageUrl && <meta property="og:image" content={artist.imageUrl} />}
 				<meta property="og:title" content={`SAMBL • ${artist.name}`} />
 				<meta property="og:description" content={`View Artist • ${artist.name} • ${artist.followers} Followers`} />
 			</Head>
