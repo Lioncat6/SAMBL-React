@@ -1,3 +1,5 @@
+import toasts from "./toasts";
+
 /**
  * Uppercases text and removes special characters for various languages
  *
@@ -99,28 +101,39 @@ function removeLeadingZeros(code: number|string): number {
 	return num;
 }
 
+
+/**
+ * Handles copying text to clipboard
+ * 
+ */
+function handleCopy(text: string, all: boolean = false) {
+	if (!navigator.clipboard?.writeText) {
+		console.error("Clipboard API not supported. Try using https or a different browser.");
+		toasts.error("Unable to copy to clipboard!");
+		return;
+	}
+	if (text.length > 0) {
+		navigator.clipboard.writeText(text);
+		toasts.info(`Copied ${all ? "All Properties" : "Property"} to Clipboard`);
+	}
+}
+
 /**
  * Utility object for text formatting.
  *
  */
 const text = {
 	normalizeText,
-	nt: normalizeText,
-	capitalizeFirstLetter,
 	capitalizeFirst: capitalizeFirstLetter,
-	cf: capitalizeFirstLetter,
+	capitalizeFirstLetter,
 	formatMS,
-	fm: formatMS,
 	formatDate,
-	fd: formatDate,
 	formatSeconds,
-	fs: formatSeconds,
 	formatDuration,
-	fdur: formatDuration,
 	formatDurationMS,
-	fdm: formatDurationMS,
 	removeLeadingZeros,
-	rmz: removeLeadingZeros
+	copy: handleCopy,
+	handleCopy
 };
 
 export default text;
