@@ -3,6 +3,8 @@
 import { toast, Flip, ToastOptions } from "react-toastify";
 import { usePathname } from "next/navigation";
 import { useExport } from "./ExportState";
+import text from "../utils/text";
+import toasts from "../utils/toasts";
 
 export function useExportData() {
     const router = usePathname();
@@ -13,43 +15,25 @@ export function useExportData() {
     }
     const { exportState, setExportState, allItems } = export_context;
 
-    let toastProperties: ToastOptions = {
-        position: "top-left",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        transition: Flip,
-    };
-
     const exportItems = () => {
         if (router === "/artist" || router === "/find") {
             setExportState(!exportState);
             if (!exportState) {
-                toast.info("Revealing export buttons...", toastProperties);
+                toasts.info("Revealing export buttons...");
             } else {
-                toast.info("Hiding export buttons...", toastProperties);
+                toasts.info("Hiding export buttons...");
             }
         } else {
-            toast.warn(
-                "Individual data export is not avaliable on this page",
-                toastProperties,
-            );
+            toasts.warn("Individual data export is not avaliable on this page");
             return null;
         }
     };
 
     const exportAllItems = () => {
         if (router === "/artist" || router === "/find") {
-            navigator.clipboard.writeText(JSON.stringify(allItems));
-            toast.info("Copied all items to clipboard", toastProperties);
+            text.copy(JSON.stringify(allItems), true);
         } else {
-            toast.warn(
-                "Full data export is not avaliable on this page",
-                toastProperties,
-            );
+            toasts.warn("Full data export is not avaliable on this page")
             return null;
         }
     };
