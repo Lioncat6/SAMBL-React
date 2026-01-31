@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
-import { toast, Flip } from "react-toastify";
+import { toast, Flip, ToastOptions } from "react-toastify";
 import { FaMagnifyingGlass } from "react-icons/fa6";
 import { useSettings } from "./SettingsContext";
-
 import styles from "../styles/SearchBox.module.css";
+import { SearchBoxType } from "../types/component-types";
 function SearchBox() {
 	const [loadingState, setLoadingState] = useState(false);
 	const [inputValue, setInputValue] = useState("");
@@ -14,12 +14,12 @@ function SearchBox() {
 	useEffect(() => {
 		// Populate box if URL has a query param
 		if (router && router.query && router.query.query) {
-			setInputValue(router.query.query);
+			setInputValue(Array.isArray(router.query.query) ? router.query.query[0] : router.query.query);
 		}
 	}, [router.query]);
 
-	function dispError(message, type = "warn") {
-		let toastProperties = {
+	function dispError(message: string, type = "warn") {
+		let toastProperties: ToastOptions = {
 			position: "top-left",
 			autoClose: 5000,
 			hideProgressBar: false,
@@ -126,46 +126,55 @@ function SearchBox() {
 }
 
 function FindBox() {
-    const [loadingState, setLoadingState] = useState(false);
-    const router = useRouter();
+	const [loadingState, setLoadingState] = useState(false);
+	const router = useRouter();
 
-    async function handleSearch() {
-        const query = document.getElementById("findBox").value.trim();
-        setLoadingState(true);
-        if (query !== "") {
-            router.push(`/find?query=${encodeURIComponent(query)}`);
-        } else {
-            setLoadingState(false);
-        }
-    }
+	async function handleSearch() {
+		const query = (document.getElementById("findBox") as HTMLTextAreaElement)?.value.trim() || "";
+		setLoadingState(true);
+		if (query !== "") {
+			router.push(`/find?query=${encodeURIComponent(query)}`);
+		} else {
+			setLoadingState(false);
+		}
+	}
 
-    useEffect(() => {
-        const findBox = document.getElementById("findBox");
-        if (findBox) {
-            findBox.focus();
-        }
-        function handleKeyDown(e) {
-            if (e.keyCode === 13 && document.activeElement === findBox) {
-                e.preventDefault();
-                handleSearch();
-            }
-        }
-        document.addEventListener("keydown", handleKeyDown);
-        return () => {
-            document.removeEventListener("keydown", handleKeyDown);
-        };
-    }, []);
+	useEffect(() => {
+		// Handle enter key
+		const findBox = document.getElementById("findBox");
+		if (findBox) {
+			findBox.focus();
+		}
+		function handleKeyDown(e: KeyboardEvent) {
+			if (e.keyCode === 13 && document.activeElement === findBox) {
+				e.preventDefault();
+				handleSearch();
+			}
+		}
+		document.addEventListener("keydown", handleKeyDown);
+		return () => {
+			document.removeEventListener("keydown", handleKeyDown);
+		};
+	}, []);
 
-    return (
-        <>
-            <textarea id="findBox" className={styles.findBox} rows={1} placeholder="Find by ISRC, MBID, Barcode..." defaultValue={""} />
-            <button type="button" className={styles.findButton} id="findEnter" onClick={handleSearch}>
-                <><FaMagnifyingGlass /> Find</>
-            </button>
-        </>
-    );
+	return (
+		<>
+			<textarea
+				id="findBox"
+				className={styles.findBox}
+				rows={1}
+				placeholder="Find by ISRC, MBID, Barcode..."
+				defaultValue={""}
+			/>
+			<button type="button" className={styles.findButton} onClick={handleSearch}>
+				<><FaMagnifyingGlass /> Find</>
+			</button>
+		</>
+	);
 }
 
-export default function Box({ type }) {
+//TODO: refactor to remove duplication
+
+export default function Box({ type = "search" }: { type?: SearchBoxType}) {
 	return <>{type == "find" ? <FindBox /> : <SearchBox />}</>;
 }

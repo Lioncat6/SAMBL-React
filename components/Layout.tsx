@@ -1,12 +1,12 @@
-import React from "react";
+import React, { JSX } from "react";
 import Header from "./header";
 import Footer from "./footer";
 import Head from "next/head";
 import { ThemeProvider, useTheme } from "next-themes";
 import { ToastContainer, Flip } from "react-toastify";
-import { ExportState } from "../components/ExportState";
+import { ExportState } from "./ExportState";
 
-function LayoutContent({ children }) {
+function LayoutContent({ children }: { children: JSX.Element}) {
     const { systemTheme } = useTheme();
     return (
         <>
@@ -36,7 +36,7 @@ function LayoutContent({ children }) {
     );
 }
 
-export default function Layout({ children }) {
+export default function Layout({ children }: { children: JSX.Element}) {
     return (
         <ThemeProvider
             attribute="class"
