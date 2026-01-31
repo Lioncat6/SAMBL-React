@@ -1,11 +1,12 @@
-const { Musixmatch } = require('node-musixmatch-api');
+import { Musixmatch } from 'node-musixmatch-api';
 import logger from "../../../utils/logger";
 import musixmatchAlternate from "./musixmatch-alt"
 import withCache from "../../../utils/cache";
+import { PartialProvider } from "../../../types/provider-types";
 
 const namespace = "musixmatch";
 
-let mxm = null;
+let mxm: null | Musixmatch  = null;
 
 if (!process.env.MUSIXMATCH_API_KEY) {
     logger.warn("MUSIXMATCH_API_KEY is not set. Musixmatch API client will not be initialized.");
@@ -14,7 +15,7 @@ if (!process.env.MUSIXMATCH_API_KEY) {
 } else {
     try {
         mxm = new Musixmatch(process.env.MUSIXMATCH_API_KEY);
-        testInfo = await mxm.artistGet("37602084"); //Rachie
+        const testInfo = await mxm.artistGet("37602084"); //Rachie
     } catch (error) {
         mxm = null;
         logger.error("Error initializing Musixmatch API client:", error);
@@ -40,7 +41,7 @@ async function getTrackByISRC(isrc) {
     }
 }
 
-let musixmatch = null
+let musixmatch: PartialProvider;
 
 if (process.env.MUSIXMATCH_ALTERNATE === "1") {
     logger.debug("Using alternate Musixmatch implementation (musixmatch-alt).");

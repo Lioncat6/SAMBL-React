@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  
 // SOFTWARE.
 import crypto from 'crypto';
-import axios from 'axios';
+import axios, { AxiosHeaders, AxiosProxyConfig, RawAxiosRequestHeaders } from 'axios';
 import { Buffer } from 'buffer';
 
 const USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36";
@@ -42,7 +42,13 @@ const EndPoints = {
 };
 
 class MusixMatchAPI {
-    constructor(proxies = null, cookie = null, base_url = null) {
+    proxy: AxiosProxyConfig | false;
+    secret: Promise<string>;
+    base_url: string;
+    alternate_base_url: string | null;
+    headers: RawAxiosRequestHeaders;
+
+    constructor(proxy: AxiosProxyConfig | null = null, cookie: string | null = null, base_url: string | null = null) {
         this.alternate_base_url = base_url ? `${base_url}/ws/1.1/` : null;
         this.base_url = "https://www.musixmatch.com/ws/1.1/";
         this.headers = {
@@ -55,7 +61,7 @@ class MusixMatchAPI {
             "sec-ch-ua-mobile": "?0",
             "sec-ch-ua-platform": '"Chrome OS"',
         };
-        this.proxies = proxies;
+        this.proxy = proxy || false;
         this.secret = this.get_secret();
     }
 
@@ -82,7 +88,7 @@ class MusixMatchAPI {
     async get_secret() {
         const data = await axios.get(
             await this.get_latest_app(),
-            { headers: this.headers, proxies: this.proxies, timeout: 10000 }
+            { headers: this.headers, proxy: this.proxy, timeout: 10000 }
         );
         const javascript_code = data.data;
 
@@ -118,7 +124,7 @@ class MusixMatchAPI {
         return await this.make_request(url);
     }
 
-    async get_track(track_id = null, track_isrc = null) {
+    async get_track(track_id : string | null = null, track_isrc : string | null = null) {
         if (!(track_id || track_isrc)) {
             throw new Error("Either track_id or track_isrc must be provided.");
         }
@@ -128,7 +134,7 @@ class MusixMatchAPI {
         return await this.make_request(url);
     }
 
-    async get_track_lyrics(track_id = null, track_isrc = null) {
+    async get_track_lyrics(track_id : string | null = null, track_isrc : string | null = null) {
         if (!(track_id || track_isrc)) {
             throw new Error("Either track_id or track_isrc must be provided.");
         }
@@ -178,8 +184,8 @@ class MusixMatchAPI {
         return await this.make_request(url);
     }
 
-    async get_track_richsync(commontrack_id = null, track_id = null, track_isrc = null, f_richsync_length = null, f_richsync_length_max_deviation = null) {
-        const base_url = `${EndPoints.GET_TRACK_RICHSYNC}?app_id=web-desktop-app-v1.0&format=json`;
+    async get_track_richsync(commontrack_id : string | null = null, track_id : string | null = null, track_isrc : string | null = null, f_richsync_length : string | null = null, f_richsync_length_max_deviation : string | null = null) {
+        let base_url = `${EndPoints.GET_TRACK_RICHSYNC}?app_id=web-desktop-app-v1.0&format=json`;
 
         if (commontrack_id) base_url += `&commontrack_id=${commontrack_id}`;
         if (track_id) base_url += `&track_id=${track_id}`;
@@ -197,7 +203,7 @@ class MusixMatchAPI {
         if (this.alternate_base_url) {
             signed_url = signed_url.replace(this.base_url, this.alternate_base_url);
         }
-        const response = await axios.get(signed_url, { headers: this.headers, proxies: this.proxies, timeout: 10000 });
+        const response = await axios.get(signed_url, { headers: this.headers, proxy: this.proxy, timeout: 10000 });
         return response.data;
     }
 }
