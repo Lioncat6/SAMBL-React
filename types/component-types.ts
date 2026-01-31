@@ -1,5 +1,6 @@
-import { ProviderNamespace } from "../pages/api/providers/provider-types";
-import { AggregatedAlbum, AggregatedArtist, AggregatedTrack } from "../utils/aggregated-types";
+import { ProviderNamespace } from "./provider-types";
+import { AggregatedAlbum, AggregatedArtist, AggregatedTrack } from "./aggregated-types";
+import { JSX } from "react";
 
 export type searchReason = "artist" | "title";
 export type albumSearchReason = searchReason | "track";
@@ -48,17 +49,15 @@ export class SAMBLError {
     parameters?: string[] | null
 }
 
-export class ArtistPageData {
-    names?: string[]
-    name: string
-    imageUrl: string
-    bannerUrl: string
-    genres: string
-    followers: number | null
-    popularity: number | null
-    provider: ProviderNamespace
-    provider_ids?: string[]
-    provider_id: string
-    mbid: string | null
-    url: string | null
+export class ArtistPageData extends AggregatedArtist {
+    ids?: string[] | null;
+    names?: string[] | null;
+}
+
+export type SearchBoxType = "search" | "find";
+
+export class ProviderDisplay {
+    name: string;
+    namespace: ProviderNamespace;
+    icon: JSX.Element;
 }
