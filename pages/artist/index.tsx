@@ -5,14 +5,13 @@ import ItemList from "../../components/ItemList";
 import Notice from "../../components/notices";
 import { useRouter } from "next/router";
 import { useSettings } from "../../components/SettingsContext";
-import { toast, Flip, ToastOptions } from "react-toastify";
 import processData from "../../utils/processAlbumData";
 import { AlbumData, AlbumObject, ArtistObject, ExtendedAlbumData, ExtendedAlbumObject, ProviderNamespace } from "../../types/provider-types";
-import { ApiError, ArtistData } from "../../types/api-types"
+import { SAMBLApiError, ArtistData } from "../../types/api-types"
 import { ArtistPageData, SAMBLError } from "../../types/component-types";
 import ErrorPage from "../../components/ErrorPage";
-import { error } from "node:console";
-import { AggregatedData } from "../../types/aggregated-types";
+import { AggregatedAlbum, AggregatedData } from "../../types/aggregated-types";
+import toasts from "../../utils/toasts";
 
 async function fetchArtistData(id: string, provider: ProviderNamespace | string) {
 	const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?provider_id=${id}&provider=${provider}&mbData`);
@@ -21,7 +20,7 @@ async function fetchArtistData(id: string, provider: ProviderNamespace | string)
 	} else {
 		let errorMessage = "";
 		try {
-			const errorJson = await response.json() as ApiError;
+			const errorJson = await response.json() as SAMBLApiError;
 			errorMessage = errorJson.details || errorJson.error;
 		} catch {
 			errorMessage = response.statusText;
@@ -190,47 +189,6 @@ async function fetchArtistReleaseCount(mbid) {
 	}
 }
 
-let toastProperties: ToastOptions = {
-	position: "top-left",
-	autoClose: 5000,
-	hideProgressBar: false,
-	closeOnClick: false,
-	pauseOnHover: true,
-	draggable: true,
-	progress: undefined,
-
-	transition: Flip,
-};
-async function dispError(message: string, type = "error") {
-	if (type === "error") {
-		toast.error(message, toastProperties);
-	} else {
-		toast.warn(message, toastProperties);
-	}
-}
-async function dispPromise<T>(promise: Promise<T>, message: string): Promise<T> {
-    const id = toast.loading(message, toastProperties);
-    try {
-        const result = await promise;
-        toast.update(id, {
-            render: "Success!",
-            type: "success",
-            isLoading: false,
-            ...toastProperties,
-        });
-        return result;
-    } catch (err) {
-        toast.update(id, {
-            render: "An error occurred while quick fetching!",
-            type: "error",
-            isLoading: false,
-            ...toastProperties,
-        });
-        throw err; 
-    }
-}
-
-
 let loadArtistAlbums: ((bypassCache: boolean) => Promise<void> )| null = null;
 
 export default function Artist({ artist, error }: {artist: ArtistPageData, error: SAMBLError} ) {
@@ -241,7 +199,7 @@ export default function Artist({ artist, error }: {artist: ArtistPageData, error
 	const router = useRouter();
 	const { quickFetch } = router.query;
 	const [isQuickFetched, setIsQuickFetched] = useState(false);
-	const [albums, setAlbums] = useState([]);
+	const [albums, setAlbums] = useState<AggregatedAlbum[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [statusText, setStatusText] = useState("Loading albums...");
 	// const { setExportData } = useExport(); // Access setExportData from context
@@ -284,7 +242,7 @@ export default function Artist({ artist, error }: {artist: ArtistPageData, error
 						const data = await fetchSourceAlbums(pid, provider, offset, bypassCache);
 						if (typeof data === "number") {
 							if (data === 404) {
-								dispError(`Artist ID ${pid} not found!`);
+								toasts.error(`Artist ID ${pid} not found!`);
 								return;
 							}
 							throw new Error(`Error fetching provider albums: ${data}`);
@@ -302,7 +260,7 @@ export default function Artist({ artist, error }: {artist: ArtistPageData, error
 						console.error("Error fetching albums:", error);
 					}
 					if (attempts > 3) {
-						dispError("Failed to fetch provider albums");
+						toasts.error("Failed to fetch provider albums");
 						break;
 					}
 				}
@@ -318,7 +276,7 @@ export default function Artist({ artist, error }: {artist: ArtistPageData, error
 					const data = await fetchMbArtistAlbums(artist.mbid, offset, bypassCache);
 					if (typeof data == "number") {
 						if (data == 404) {
-							dispError("MBID not found!");
+							toasts.error("MBID not found!");
 							return;
 						}
 						throw new Error(`Error fetching MusicBrainz albums: ${data}`);
@@ -332,7 +290,7 @@ export default function Artist({ artist, error }: {artist: ArtistPageData, error
 					console.error("Error fetching albums:", error);
 				}
 				if (attempts > 3) {
-					dispError("Failed to MusicBrainz albums");
+					toasts.error("Failed to MusicBrainz albums");
 					break;
 				}
 			}
@@ -346,7 +304,7 @@ export default function Artist({ artist, error }: {artist: ArtistPageData, error
 					const data = await fetchMbArtistFeaturedAlbums(artist.mbid, offset, bypassCache);
 					if (typeof data == "number") {
 						if (data == 404) {
-							dispError("MBID not found!");
+							toasts.error("MBID not found!");
 							return;
 						}
 						throw new Error(`Error fetching MusicBrainz Featured albums: ${data}`);
@@ -360,7 +318,7 @@ export default function Artist({ artist, error }: {artist: ArtistPageData, error
 					console.error("Error fetching albums:", error);
 				}
 				if (attempts > 3) {
-					dispError("Failed to fetch MusicBrainz Featured albums");
+					toasts.error("Failed to fetch MusicBrainz Featured albums");
 					return;
 				}
 			}
@@ -404,11 +362,11 @@ export default function Artist({ artist, error }: {artist: ArtistPageData, error
 						setIsQuickFetched(true);
 						return true;
 					} else if (typeof releaseCount == "number") {
-						dispError("Failed to fetch artist release count!");
+						toasts.error("Failed to fetch artist release count!");
 					}
 				} catch (e) {
 					console.error(e);
-					dispError("Failed to fetch artist release count!");
+					toasts.error("Failed to fetch artist release count!");
 				}
 			}
 			return false;
@@ -434,9 +392,9 @@ export default function Artist({ artist, error }: {artist: ArtistPageData, error
 				}
 			}
 
-			let data;
+			let data: AggregatedData;
 			if (didQuickFetch) {
-				data = await dispPromise(quickFetchAlbums(providerIds[0], artist.provider, artist.mbid, bypassCache), "Quick Fetching albums...");
+				data = await toasts.dispPromise(quickFetchAlbums(providerIds[0], artist.provider, artist.mbid, bypassCache), "Quick Fetching albums...", "Failed to quick fetch albums!");
 			} else {
 				data = processData(sourceAlbums.current, [ ...mbAlbums.current, ...mbFeaturedAlbums.current], artist.mbid, artist.id);
 			}

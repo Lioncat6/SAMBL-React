@@ -4,7 +4,7 @@ import Head from "next/head";
 import { ProviderNamespace } from "../../types/provider-types";
 import { ArtistPageData, SAMBLError } from "../../types/component-types";
 import ErrorPage from "../../components/ErrorPage";
-import { ApiError, ArtistData } from "../../types/api-types";
+import { SAMBLApiError, ArtistData } from "../../types/api-types";
 
 async function fetchArtistData(id: string, provider: ProviderNamespace) {
     const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?provider_id=${id}&provider=${provider}&mbData`);
@@ -13,7 +13,7 @@ async function fetchArtistData(id: string, provider: ProviderNamespace) {
     } else {
         let errorMessage = "";
         try {
-            const errorJson = await response.json() as ApiError;
+            const errorJson = await response.json() as SAMBLApiError;
             errorMessage = errorJson.details || errorJson.error;
         } catch {
             errorMessage = response.statusText;
