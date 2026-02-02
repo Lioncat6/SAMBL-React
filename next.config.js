@@ -6,10 +6,6 @@ module.exports = {
     locales: ['en'],
     defaultLocale: 'en',
   },
-  publicRuntimeConfig: {
-    version,
-    mastodonUrl: process.env.NEXT_PUBLIC_MASTODON_URL
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
