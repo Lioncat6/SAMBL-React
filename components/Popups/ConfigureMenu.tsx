@@ -2,13 +2,11 @@ import { useState, JSX } from "react";
 import styles from "../../styles/popups.module.css";
 import { useSettings } from "../SettingsContext";
 import { FaGear } from "react-icons/fa6";
-import getConfig from "next/config";
 import seeders from "../../lib/seeders/seeders";
 import Popup from "../Popup";
 
 
 function ConfigureMenu({ close }: { close?: () => void }) {
-    const { publicRuntimeConfig } = getConfig();
     const { settings, updateSettings } = useSettings();
     const [enabledSeeders, setEnabledSeeders] = useState(settings.enabledSeeders);
     const [showExport, setShowExport] = useState(settings.showExport);
@@ -25,7 +23,7 @@ function ConfigureMenu({ close }: { close?: () => void }) {
             {" "}
             <div className={styles.header}>
                 {" "}
-                <FaGear /> Configure SAMBL <p className={styles.version}>{publicRuntimeConfig?.version}</p>
+                <FaGear /> Configure SAMBL <p className={styles.version}>{process.env.NEXT_PUBLIC_VERSION}</p>
             </div>
             <div className={styles.content}>
                 <div className={styles.configureMenu}>
