@@ -1,7 +1,7 @@
 import styles from "../styles/itemList.module.css";
 import Link from "next/link";
 import React, { useEffect, useState, memo, JSX } from "react";
-import { useSettings } from "./SettingsContext";
+import { SAMBLSettingsContext, useSettings } from "./SettingsContext";
 import { FaSquarePlus } from "react-icons/fa6";
 import dynamic from "next/dynamic";
 import { useExport as useExportState } from "./ExportState";
@@ -75,7 +75,7 @@ function AlbumIcons({ item }) {
 }
 
 function ActionButtons({ item }: { item: DisplayAlbum }) {
-	const { settings } = useSettings();
+	const { settings } = useSettings() as SAMBLSettingsContext;
 	const { url, upc, provider } = item;
 	const [collapsed, setCollapsed] = useState(true);
 	function toggleState() {
@@ -388,7 +388,7 @@ function Icon({ source }) {
 }
 
 function LinkButton({ item }) {
-	const { settings } = useSettings();
+	const { settings } = useSettings() as SAMBLSettingsContext;
 
 	return (
 		<div className={styles.actionButtons}>
@@ -491,7 +491,7 @@ function VirtualizedList({ items, type, text, onItemUpdate }) {
 }
 
 function LoadingItem() {
-	const { settings } = useSettings();
+	const { settings } = useSettings() as SAMBLSettingsContext;
 	return (
 		<div className={styles.listItemContainer}>
 			<div className={`${styles.listItem} ${styles.skeleton}`}>
@@ -597,7 +597,7 @@ export function ItemList(props: { items: AggregatedAlbum[], type: "album", text?
 export function ItemList(props: { items: any[], type: listType, text?: string, refresh?: () => void }): JSX.Element;
 
 export default function ItemList({ items, type, text, refresh }: {items: any[], type: listType, text?: string, refresh?: () => void}) {
-	const { settings } = useSettings();
+	const { settings } = useSettings() as SAMBLSettingsContext;
 	const [searchQuery, setSearchQuery] = useState(""); // State for search query
 	const [filteredItems, setFilteredItems] = useState(items || []); // State for filtered items
 	const [currentItems, setCurrentItems] = useState(items || []);

@@ -1,7 +1,7 @@
 import { FaSpotify, FaDeezer, FaSoundcloud } from "react-icons/fa6";
 import { SiTidal, SiBandcamp, SiApplemusic } from "react-icons/si";
 import { useState, useEffect } from "react";
-import { useSettings } from "./SettingsContext";
+import { SAMBLSettingsContext, useSettings } from "./SettingsContext";
 import styles from "../styles/ProviderPill.module.css";
 import { ProviderDisplay } from "../types/component-types";
 import { ProviderNamespace } from "../types/provider-types";
@@ -38,7 +38,7 @@ function LoadingPill({ handleSelect }) {
 }
 
 export default function ProviderPill() {
-    const { settings, updateSettings, loading } = useSettings();
+    const { settings, updateSettings, loading } = useSettings() as SAMBLSettingsContext;
     const [currentProvider, setCurrentProvider] = useState(null as ProviderNamespace | null);
 
     const handleSelect = (namespace: ProviderNamespace) => {

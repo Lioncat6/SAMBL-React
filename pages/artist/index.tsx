@@ -4,7 +4,7 @@ import Head from "next/head";
 import ItemList from "../../components/ItemList";
 import Notice from "../../components/notices";
 import { useRouter } from "next/router";
-import { useSettings } from "../../components/SettingsContext";
+import { SAMBLSettingsContext, useSettings } from "../../components/SettingsContext";
 import processData from "../../utils/processAlbumData";
 import { AlbumData, AlbumObject, ArtistObject, ExtendedAlbumData, ExtendedAlbumObject, ProviderNamespace } from "../../types/provider-types";
 import { SAMBLApiError, ArtistData } from "../../types/api-types"
@@ -195,7 +195,7 @@ export default function Artist({ artist, error }: {artist: ArtistPageData, error
 	if (error || !artist) {
 		return <ErrorPage error={error} />
 	}
-	const { settings, loading: waitingForMount } = useSettings();
+	const { settings, loading: waitingForMount } = useSettings() as SAMBLSettingsContext;
 	const router = useRouter();
 	const { quickFetch } = router.query;
 	const [isQuickFetched, setIsQuickFetched] = useState(false);
