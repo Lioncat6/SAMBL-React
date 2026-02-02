@@ -27,7 +27,7 @@ export class ArtistLookupData {
 
 export type ArtistSearchData = Record<string, AggregatedArtist>
 
-export class ApiError {
+export class SAMBLApiError {
     error: string
     details?: string | null
 }
