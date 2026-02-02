@@ -1,10 +1,11 @@
 import musicbrainz from "./providers/musicbrainz";
 import providers from "./providers/providers";
 import logger from "../../utils/logger";
-import { FullProvider, ProviderWithCapabilities } from "../../types/provider-types";
 import { NextApiRequest, NextApiResponse } from "next";
 import normalizeVars from "../../utils/normalizeVars";
 import { ArtistSearchData } from "../../types/api-types";
+import { SAMBLApiError } from "../../types/api-types";
+
 /**
  * @swagger
  * /api/searchArtists:
@@ -75,11 +76,11 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
     try {
         const { query, provider } = normalizeVars(req.query);
         if (!query) {
-            return res.status(400).json({ error: "Parameter `query` is required" });
+            return res.status(400).json({ error: "Parameter `query` is required" } as SAMBLApiError);
         }
         let sourceProvider = provider ? providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject", "getArtistUrl"]): false;
         if (!sourceProvider) {
-            return res.status(400).json({ error: `Provider \`${provider}\` does not support this operation` });
+            return res.status(400).json({ error: `Provider \`${provider}\` does not support this operation` } as SAMBLApiError);
         }
         let results = await sourceProvider.searchByArtistName(query);
         let artistUrls: string[] = [];
@@ -109,6 +110,6 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
         return res.status(200).json(artistData);
 	} catch (error) {
         logger.error("Error in searchArtists API:", error);
-        res.status(500).json({ error: "Internal Server Error", details: error.message });
+        res.status(500).json({ error: "Internal Server Error", details: error.message } as SAMBLApiError);
     }
 }

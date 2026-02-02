@@ -1,56 +1,56 @@
 import logger from "../../utils/logger";
 import providers from "./providers/providers"
 import musicbrainz from "./providers/musicbrainz";
-
 import processData from "../../utils/processAlbumData";
 import { NextApiRequest, NextApiResponse } from "next";
 import normalizeVars from "../../utils/normalizeVars";
-import { IRelease, RelationsIncludes } from "musicbrainz-api";
+import { IRelease } from "musicbrainz-api";
+import { SAMBLApiError } from "../../types/api-types";
 
 export default async function handler(req:NextApiRequest, res:NextApiResponse) {
     try {
 		var { provider_id, provider, url, mbid, artist_id } = normalizeVars(req.query);
 
         if (provider_id && !provider) {
-            return res.status(400).json({ error: "Provider must be specified when provider_id is provided" });
+            return res.status(400).json({ error: "Provider must be specified when provider_id is provided" } as SAMBLApiError);
         }
         if (!provider_id && !url) {
-            return res.status(400).json({ error: "Either `provider_id` or `url` must be provided" });
+            return res.status(400).json({ error: "Either `provider_id` or `url` must be provided" } as SAMBLApiError);
         }
         let parsed_id: string | null = null;
 
         if (url) {
             const urlInfo = providers.getUrlInfo(url);
             if (!urlInfo) {
-                return res.status(400).json({ error: "Invalid URL" });
+                return res.status(400).json({ error: "Invalid URL" } as SAMBLApiError);
             }
             parsed_id = urlInfo.id;
             if (!parsed_id) {
-                return res.status(500).json({ error: "Failed to extract provider id from URL" });
+                return res.status(500).json({ error: "Failed to extract provider id from URL" } as SAMBLApiError);
             }
             provider = urlInfo.provider.namespace;
         } else if (provider && provider_id) {
             parsed_id = provider_id;
         } else {
-            return res.status(400).json({ error: "Parameters `provider_id` and `provider` are required when not using `url`" });
+            return res.status(400).json({ error: "Parameters `provider_id` and `provider` are required when not using `url`" } as SAMBLApiError);
         }
         const providerObj = providers.parseProvider(provider || "", ["getAlbumById", "formatAlbumObject"]);
 
         if (!providerObj) {
-            return res.status(400).json({ error: "Provider doesn't exist or doesn't support this operation" });
+            return res.status(400).json({ error: "Provider doesn't exist or doesn't support this operation" } as SAMBLApiError);
         }
 
 		if (!mbid || !musicbrainz.validateMBID(mbid)) {
-			return res.status(400).json({ error: "Parameter `mbid` is missing or malformed" });
+			return res.status(400).json({ error: "Parameter `mbid` is missing or malformed" } as SAMBLApiError);
 		}
 
         if (!providerObj) {
-            return res.status(400).json({ error: "Provider doesn't exist or doesn't support this operation" });
+            return res.status(400).json({ error: "Provider doesn't exist or doesn't support this operation" } as SAMBLApiError);
         }
         
         let sourceAlbum = await providerObj.getAlbumById(parsed_id, { noCache: true });
         if (!sourceAlbum) {
-            return res.status(404).json({ error: "Album not found" });
+            return res.status(404).json({ error: "Album not found" } as SAMBLApiError);
         }
         sourceAlbum = providerObj.formatAlbumObject(sourceAlbum);
         let mbAlbum: IRelease | null = null;
@@ -70,6 +70,6 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
         }
     } catch (error) {
 		logger.error("Error in CompareSingleAlbum API", error);
-		res.status(500).json({ error: "Internal Server Error", details: error.message });
+		res.status(500).json({ error: "Internal Server Error", details: error.message } as SAMBLApiError);
 	}
 }

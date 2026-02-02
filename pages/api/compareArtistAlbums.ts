@@ -1,14 +1,13 @@
 import spotify from "./providers/spotify";
 import musicbrainz from "./providers/musicbrainz";
-
 import processData from "../../utils/processAlbumData";
-
 import logger from "../../utils/logger";
 import { NextApiRequest, NextApiResponse } from "next";
 import { AlbumObject, ExtendedAlbumObject } from "../../types/provider-types";
 import { IUrl } from "musicbrainz-api";
-
 import normalizeVars from "../../utils/normalizeVars";
+import { SAMBLApiError } from "../../types/api-types";
+
 // spotifyId - Spotify artist ID
 // mbid - MusicBrainz artist ID. Only neccesary if you want to check if the associated albums are linked to that artist
 // quick - Uses URL matching to check for spotify album links in MusicBrainz. This returns faster, but contains less information, removing the orange album status.
@@ -215,11 +214,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 		const full = Object.prototype.hasOwnProperty.call(req.query, "full");
 		const raw = Object.prototype.hasOwnProperty.call(req.query, "raw");
 		if (!provider_id || !provider) {
-			return res.status(400).json({ error: "Parameters `provider_id` and `provider` are required!" });
+			return res.status(400).json({ error: "Parameters `provider_id` and `provider` are required!" } as SAMBLApiError);
 		}
 
 		if (mbid && !musicbrainz.validateMBID(mbid) || (!quick && !mbid)) {
-			return res.status(400).json({ error: "Parameter `mbid` is missing or malformed" });
+			return res.status(400).json({ error: "Parameter `mbid` is missing or malformed" } as SAMBLApiError);
 		}
 
 		if (quick) {
@@ -236,6 +235,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 		res.status(200).json(data);
 	} catch (error) {
 		logger.error("Error in CompareArtistAlbums API", error);
-		res.status(500).json({ error: "Internal Server Error", details: error.message });
+		res.status(500).json({ error: "Internal Server Error", details: error.message } as SAMBLApiError);
 	}
 }
