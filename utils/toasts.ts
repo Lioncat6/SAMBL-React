@@ -23,6 +23,23 @@ function info(message: string): void {
 	toast.info(message, toastProperties);
 }
 
+async function dispPromise<T>(promise: Promise<T>, message: string, errorMessage: string): Promise<T> {
+	const id = toast.loading(message, toastProperties);
+	try {
+		const result = await promise;
+		toast.dismiss(id);
+		return result;
+	} catch (err) {
+		toast.update(id, {
+			render: errorMessage,
+			type: "error",
+			isLoading: false,
+			...toastProperties,
+		});
+		throw err; 
+	}
+}
+
 /**
  * Custom react-toastify wrapper
  *
@@ -30,7 +47,8 @@ function info(message: string): void {
 const toasts = {
 	error,
 	info,
-	warn
+	warn,
+	dispPromise
 };
 
 export default toasts
