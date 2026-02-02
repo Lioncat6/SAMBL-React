@@ -1,13 +1,13 @@
 import { useState, JSX } from "react";
 import styles from "../../styles/popups.module.css";
-import { useSettings } from "../SettingsContext";
+import { SAMBLSettingsContext, useSettings } from "../SettingsContext";
 import { FaGear } from "react-icons/fa6";
 import seeders from "../../lib/seeders/seeders";
 import Popup from "../Popup";
 
 
 function ConfigureMenu({ close }: { close?: () => void }) {
-    const { settings, updateSettings } = useSettings();
+    const { settings, updateSettings } = useSettings() as SAMBLSettingsContext;
     const [enabledSeeders, setEnabledSeeders] = useState(settings.enabledSeeders);
     const [showExport, setShowExport] = useState(settings.showExport);
     const [listVirtualization, setListVirtualization] = useState(settings.listVirtualization);

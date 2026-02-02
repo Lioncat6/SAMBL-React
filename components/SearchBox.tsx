@@ -2,14 +2,14 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { toast, Flip, ToastOptions } from "react-toastify";
 import { FaMagnifyingGlass } from "react-icons/fa6";
-import { useSettings } from "./SettingsContext";
+import { SAMBLSettingsContext, useSettings } from "./SettingsContext";
 import styles from "../styles/SearchBox.module.css";
 import { SearchBoxType } from "../types/component-types";
 function SearchBox() {
 	const [loadingState, setLoadingState] = useState(false);
 	const [inputValue, setInputValue] = useState("");
 	const router = useRouter();
-	const { settings, updateSettings, loading } = useSettings();
+	const { settings, updateSettings, loading } = useSettings() as SAMBLSettingsContext;
 
 	useEffect(() => {
 		// Populate box if URL has a query param

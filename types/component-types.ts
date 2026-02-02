@@ -61,3 +61,10 @@ export class ProviderDisplay {
     namespace: ProviderNamespace;
     icon: JSX.Element;
 }
+export interface SAMBLSettings {
+    enabledSeeders: string[];
+    showExport: boolean;
+    listVirtualization: boolean;
+    quickFetchThreshold: number;
+    currentProvider: ProviderNamespace | null;
+}
