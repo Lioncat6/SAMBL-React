@@ -28,8 +28,8 @@ export default async function handler(req, res) {
             if (!parsed_id) {
                 return res.status(500).json({ error: "Failed to extract provider id from URL" } as SAMBLApiError);
             }
-            provider = urlInfo.provider.namespace;
-            sourceProvider = providers.parseProvider(urlInfo.provider.namespace, ["getAlbumById", "getAlbumUPCs"]);
+            provider = urlInfo.provider;
+            sourceProvider = providers.parseProvider(urlInfo.provider, ["getAlbumById", "getAlbumUPCs"]);
         } else if (provider_id && provider) {
             sourceProvider = providers.parseProvider(provider, ["getAlbumById", "getAlbumUPCs"]);
             parsed_id = provider_id
