@@ -76,7 +76,7 @@ function getUrlInfo(url: string): UrlInfo | null {
             let match = p.parseUrl(url);
             if (match) {
                 urlInfo = {
-                    provider: p,
+                    provider: p.namespace,
                     id: match.id,
                     type: match.type
                 };

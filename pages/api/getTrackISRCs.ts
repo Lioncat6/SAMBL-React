@@ -28,8 +28,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             if (!parsed_id) {
                 return res.status(500).json({ error: "Failed to extract provider id from URL" } as SAMBLApiError);
             }
-            provider = urlInfo.provider.namespace;
-            sourceProvider = providers.parseProvider(urlInfo.provider.namespace, ["getTrackById", "getTrackISRCs"]);
+            provider = urlInfo.provider;
+            sourceProvider = providers.parseProvider(urlInfo.provider, ["getTrackById", "getTrackISRCs"]);
         } else if (provider_id && provider) {
             sourceProvider = providers.parseProvider(provider, ["getTrackById", "getTrackISRCs"]);
             parsed_id = provider_id

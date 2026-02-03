@@ -31,8 +31,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             if (!parsed_id) {
                 return res.status(500).json({ error: "Failed to extract provider id from URL" } as SAMBLApiError);
             }
-            provider = urlInfo.provider.namespace;
-            sourceProvider = providers.parseProvider(urlInfo.provider.namespace, ["getArtistById", "formatArtistLookupData", "formatArtistObject", "createUrl"]);
+            provider = urlInfo.provider;
+            sourceProvider = providers.parseProvider(urlInfo.provider, ["getArtistById", "formatArtistLookupData", "formatArtistObject", "createUrl"]);
         } else if (provider_id && provider) {
             sourceProvider = providers.parseProvider(provider, ["getArtistById", "formatArtistLookupData", "formatArtistObject", "createUrl"]);
             parsed_id = provider_id

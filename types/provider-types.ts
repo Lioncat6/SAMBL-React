@@ -38,6 +38,23 @@ export class AlbumObject {
     albumTracks: TrackObject[];
 };
 
+export type urlType = 'album' | 'track' | 'artist';
+
+export class UrlData {
+    type: urlType | null;
+    id: string | null;
+};
+
+export class UrlInfo extends UrlData {
+    provider: ProviderNamespace;
+}
+
+
+export class ExternalUrlData {
+    url: string;
+    urlInfo: UrlInfo | null;
+}
+
 export class ExtendedAlbumObject extends AlbumObject {
     comment: string | null;
     externalUrls: string[] | null;
@@ -82,17 +99,6 @@ export class AlbumData extends PagingData {
 
 export class ExtendedAlbumData extends PagingData {
     albums: ExtendedAlbumObject[];
-}
-
-export type urlType = 'album' | 'track' | 'artist';
-
-export class UrlData {
-    type: urlType | null;
-    id: string | null;
-};
-
-export class UrlInfo extends UrlData {
-    provider: PartialProvider | FullProvider;
 }
 
 export class UrlMBIDDict {

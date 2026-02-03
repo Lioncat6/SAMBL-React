@@ -28,7 +28,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
             if (!parsed_id) {
                 return res.status(500).json({ error: "Failed to extract provider id from URL" } as SAMBLApiError);
             }
-            provider = urlInfo.provider.namespace;
+            provider = urlInfo.provider;
         } else if (provider && provider_id) {
             parsed_id = provider_id;
         } else {
