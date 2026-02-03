@@ -1,6 +1,6 @@
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
-import { AlbumData, AlbumObject, ArtistObject, FullProvider, PartialArtistObject, ProviderConfig, RawAlbumData, TrackObject, UrlData } from "../../../types/provider-types";
+import { AlbumData, AlbumObject, ArtistObject, FullProvider, PartialArtistObject, ProviderConfig, RawAlbumData, RegexArtistUrlQuery, TrackObject, UrlData, urlType } from "../../../types/provider-types";
 import { URL } from "url";
 
 interface Artwork {
@@ -361,14 +361,10 @@ function formatTrackObject(track: Resource<SongAttributes>): TrackObject {
 	};
 }
 
-function getArtistUrl(artist: Resource<ArtistAttributes>): string | string[] | null {
+function getArtistUrl(artist: Resource<ArtistAttributes>): string | null {
 	// Most used Apple Music storefronts links on MusicBrainz.
 	//TODO https://tickets.metabrainz.org/browse/MBS-14227
-	return [
-		createUrl("artist", artist.id, "us")!,
-		createUrl("artist", artist.id, "gb")!,
-		createUrl("artist", artist.id, "jp")!
-	];
+	return createUrl("artist", artist.id, "us");
 }
 
 function getTrackISRCs(track: Resource<SongAttributes>): string[] | null {
@@ -402,7 +398,7 @@ function parseUrl(url: string): UrlData | null {
 	};
 }
 
-function createUrl(urlType: string, providerId: string, country: string = "us"): string | null {
+function createUrl(urlType: urlType, providerId: string, country: string = "us"): string | null {
 	switch (urlType) {
 		case "artist":
 			return `https://music.apple.com/${country}/artist/${providerId}`;
@@ -413,6 +409,25 @@ function createUrl(urlType: string, providerId: string, country: string = "us"):
 		default:
 			return null;
 	}
+}
+
+function buildUrlSearchQuery(type: urlType, ids: string[]): RegexArtistUrlQuery {
+	const appleType: Record<urlType, string> = {
+		"artist": "artist",
+		"album": "album",
+		"track": "song"
+	}
+	const regex: RegExp | null = new RegExp(`https:\/\/music\\\.apple\\\.com\/[a-zA-Z]{2}\/${appleType[type]}\/(${ids.join("|")})`);
+	let idQueryMap: { [key: string]: RegExp["source"] } = {};
+	ids.forEach((id) => {
+		const regex: RegExp | null = new RegExp(`https:\/\/music\\\.apple\\\.com\/[a-zA-Z]{2}\/${appleType[type]}\/${id}`);
+		idQueryMap[id]= regex.source
+	})
+	const query: RegexArtistUrlQuery = {
+		fullQuery: regex.source,
+		idQueries: idQueryMap
+	}
+	return query;
 }
 
 const applemusic: FullProvider = {
@@ -435,7 +450,8 @@ const applemusic: FullProvider = {
 	getTrackISRCs,
 	getAlbumUPCs,
 	parseUrl,
-	createUrl
+	createUrl,
+	buildUrlSearchQuery
 };
 
 export default applemusic;

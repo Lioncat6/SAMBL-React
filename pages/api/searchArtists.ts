@@ -5,6 +5,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import normalizeVars from "../../utils/normalizeVars";
 import { ArtistSearchData } from "../../types/api-types";
 import { SAMBLApiError } from "../../types/api-types";
+import { ArtistObject } from "../../types/provider-types";
 
 /**
  * @swagger
@@ -72,43 +73,46 @@ import { SAMBLApiError } from "../../types/api-types";
  *                   example: Error details
  */
 
-export default async function handler(req:NextApiRequest, res:NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
         const { query, provider } = normalizeVars(req.query);
         if (!query) {
             return res.status(400).json({ error: "Parameter `query` is required" } as SAMBLApiError);
         }
-        let sourceProvider = provider ? providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject", "getArtistUrl"]): false;
+        let sourceProvider = provider ? providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject", "getArtistUrl"]) : false;
         if (!sourceProvider) {
             return res.status(400).json({ error: `Provider \`${provider}\` does not support this operation` } as SAMBLApiError);
         }
         let results = await sourceProvider.searchByArtistName(query);
-        let artistUrls: string[] = [];
+        let artists: ArtistObject[] = [];
         let artistData: ArtistSearchData = {};
-        const artistAdditionalUrls: Record<string, string[]> = {};
         for (let artist of sourceProvider.formatArtistSearchData(results)) {
-            // TODO: Decide how to refactor for all sources.
-            let providerArtistUrls = sourceProvider.getArtistUrl(artist);
-            if (!providerArtistUrls) continue;
-            if (!Array.isArray(providerArtistUrls)) providerArtistUrls = [ providerArtistUrls ];
-            artistUrls.push(providerArtistUrls[0]);
-            artistData[providerArtistUrls[0]] = sourceProvider.formatArtistObject(artist);
-            for (const artistUrl of providerArtistUrls.slice(1)) {
-                artistAdditionalUrls[providerArtistUrls[0]] ??= [];
-                artistAdditionalUrls[providerArtistUrls[0]].push(artistUrl);
-            }
+            const formattedArtist = sourceProvider.formatArtistObject(artist);
+            artists.push(formattedArtist);
+            artistData[formattedArtist.url] = formattedArtist;
         }
-        if (artistUrls.length == 0) {
+        if (artists.length == 0) {
             return res.status(200).json({})
         }
-        let mbids = await musicbrainz.getIdsByExternalUrls([ ...artistUrls, ...Object.values(artistAdditionalUrls).flat() ]);
+        let regexProvider = provider ? providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject", "getArtistUrl", "buildUrlSearchQuery"]) : false;
+        if (regexProvider) {
+            let urlQuery = regexProvider.buildUrlSearchQuery("artist", artists.map((artist) => artist.id));
+            const urlResults = await musicbrainz.getIdsByUrlQuery(urlQuery);
+            if (urlResults){
+                for (let artist of artists) {
+                    artistData[artist.url].mbid = urlResults[artist.id] || null;
+                }
+            }
+            res.status(200).json(artistData);
+        }
+        let mbids = await musicbrainz.getIdsByExternalUrls(artists.map((artist) => artist.url));
         if (mbids) {
-            for (let url of artistUrls) {
-                artistData[url].mbid = mbids[url] || mbids[url+"/"] || artistAdditionalUrls[url]?.map(additionalUrl => mbids[additionalUrl]).find(Boolean) || null
+            for (let artist of artists) {
+                artistData[artist.url].mbid = mbids[artist.url] || mbids[artist.url + "/"] || null
             }
         }
         return res.status(200).json(artistData);
-	} catch (error) {
+    } catch (error) {
         logger.error("Error in searchArtists API:", error);
         res.status(500).json({ error: "Internal Server Error", details: error.message } as SAMBLApiError);
     }

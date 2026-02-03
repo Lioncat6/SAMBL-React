@@ -1,5 +1,5 @@
 import { MusicBrainzApi, CoverArtArchiveApi, IRelation, RelationsIncludes, IArtist, EntityType, IBrowseReleasesQuery, IRelease, IEntity, IRecording, ICoverInfo, ICoversInfo, IReleaseList, IUrlList, IUrlLookupResult, IUrl, IBrowseReleasesResult, IRecordingList, IArtistList, IArtistMatch, ITrack, IBrowseRecordingsQuery, UrlIncludes, ReleaseIncludes } from "musicbrainz-api";
-import { UrlInfo, UrlMBIDDict, UrlData, Provider, TrackObject, ArtistObject, PartialArtistObject, AlbumObject, ExtendedAlbumObject, MusicBrainzProvider, AlbumData, ExtendedAlbumData, ExtendedTrackObject } from "../../../types/provider-types";
+import { UrlInfo, UrlMBIDDict, UrlData, Provider, TrackObject, ArtistObject, PartialArtistObject, AlbumObject, ExtendedAlbumObject, MusicBrainzProvider, AlbumData, ExtendedAlbumData, ExtendedTrackObject, RegexArtistUrlQuery, IdMBIDDict } from "../../../types/provider-types";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
@@ -95,6 +95,33 @@ async function getIdsBySpotifyUrls(spotifyUrls: string[]): Promise<UrlMBIDDict |
 		return mbids;
 	} catch (error) {
 		err.handleError("Failed to get ids", error);
+	}
+}
+
+async function getIdsByUrlQuery(query: RegexArtistUrlQuery): Promise<UrlMBIDDict | null | undefined> {
+	try {
+		const data = await mbApi.search("url", {query: `url:${(new RegExp(query.fullQuery)).toString()}`, inc: ["artist-rels", "url-rels"], limit: 100})
+		if (data["url-count"] === 0) {
+			return null; // No artist found
+		}
+		let mbids: IdMBIDDict = {}
+		for (let url of data.urls) {
+			const relations = (url["relation-list"]?.[0]?.relations || undefined) as IRelation[] | undefined //TODO replace this when https://github.com/metabrainz/mb-solr/pull/69 gets merged
+			if (url && relations) {
+				if (relations?.length > 0) {
+					for (const id in query.idQueries) {
+						console.log(id)
+						const rgx = query.idQueries[id];
+						if ((new RegExp(rgx)).test(url.resource) && relations){
+							mbids[id] = relations[0]?.artist?.id;
+						}
+					}
+				}
+			}
+		}
+		return mbids;
+	} catch (error) {
+		err.handleError("Failed to get artist ids by url regex query", error)
 	}
 }
 
@@ -398,6 +425,7 @@ const musicbrainz: MusicBrainzProvider = {
 	getArtistByUrl: withCache(getArtistByUrl, { ttl: 60 * 15, namespace: namespace }),
 	getArtistById: withCache(getArtistById, { ttl: 60 * 15, namespace: namespace }),
 	searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 15, namespace: namespace }),
+	getIdsByUrlQuery: withCache(getIdsByUrlQuery, { ttl: 60 * 15, namespace: namespace }),
 	formatArtistSearchData,
 	getArtistUrl,
 	formatTrackObject,
