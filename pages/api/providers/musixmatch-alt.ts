@@ -2,7 +2,7 @@ import MusixMatchAPI from "./lib/musixmatch-alt";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
-import { MusixMatchProvider, Provider } from "../../../types/provider-types";
+import { PartialProvider } from "../../../types/provider-types";
 import { AxiosBasicCredentials, AxiosProxyConfig } from "axios";
 const namespace = "musixmatch";
 
@@ -92,7 +92,7 @@ async function getTrackByISRC(isrc: string) {
 
 
 
-const musixmatch: MusixMatchProvider = {
+const musixmatch: PartialProvider = {
 	namespace,
 	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 10,  namespace: namespace }),
 };

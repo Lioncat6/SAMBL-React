@@ -99,6 +99,8 @@ export class UrlMBIDDict {
     [key: string]: string | undefined;
 }
 
+export type IdMBIDDict = UrlMBIDDict;
+
 export class ProviderConfig {
     default?: boolean;
 }
@@ -106,6 +108,11 @@ export class ProviderConfig {
 export class Provider {
     namespace: ProviderNamespace;
     config?: ProviderConfig;
+}
+
+export class RegexArtistUrlQuery {
+    fullQuery: RegExp["source"]
+    idQueries: { [key: string]: RegExp["source"] }
 }
 
 export class FullProvider extends Provider {
@@ -123,11 +130,12 @@ export class FullProvider extends Provider {
     formatAlbumGetData: (rawData: any) => RawAlbumData;
     formatAlbumObject: (album: any) => AlbumObject;
     formatTrackObject: (track: any) => TrackObject;
-    getArtistUrl: (artist: any) => string | string[] | null;
+    getArtistUrl: (artist: any) => string | null;
     getTrackISRCs: (track: any) => string[] | null;
     getAlbumUPCs: (album: any) => string[] | null;
     parseUrl: (url: string) => UrlData | null;
     createUrl: (urlType: urlType, providerId: string) => string | null;
+    buildUrlSearchQuery?: (type: urlType, ids: string[]) => RegexArtistUrlQuery;
 }
 
 export type PartialProvider = Partial<FullProvider> & Provider;
@@ -157,4 +165,5 @@ export class MusicBrainzProvider extends FullProvider {
     getArtistReleaseCount: (artistId: string, options?: CacheOptions) => Promise<number | null>;
     getArtistByUrl: (url: string, inc?: UrlIncludes[], options?: CacheOptions) => Promise<IArtist | null>;
     validateMBID: (mbid: string) => boolean;
+    getIdsByUrlQuery: (query: RegexArtistUrlQuery, options?:CacheOptions) => Promise<IdMBIDDict | null>;
 }
