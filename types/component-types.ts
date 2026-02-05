@@ -1,4 +1,4 @@
-import { ProviderNamespace } from "./provider-types";
+import { ProviderNamespace, UrlData, UrlType } from "./provider-types";
 import { AggregatedAlbum, AggregatedArtist, AggregatedTrack } from "./aggregated-types";
 import { JSX } from "react";
 
@@ -67,4 +67,9 @@ export interface SAMBLSettings {
     listVirtualization: boolean;
     quickFetchThreshold: number;
     currentProvider: ProviderNamespace | null;
+}
+
+export class UrlParser {
+    parseUrl: (url: string) => UrlData | null;
+    createUrl: (urlType: UrlType, providerId: string, country?: string)=> string | null
 }
