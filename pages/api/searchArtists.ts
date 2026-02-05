@@ -79,7 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (!query) {
             return res.status(400).json({ error: "Parameter `query` is required" } as SAMBLApiError);
         }
-        let sourceProvider = provider ? providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject", "getArtistUrl"]) : false;
+        let sourceProvider = provider ? providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject"]) : false;
         if (!sourceProvider) {
             return res.status(400).json({ error: `Provider \`${provider}\` does not support this operation` } as SAMBLApiError);
         }
@@ -94,7 +94,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (artists.length == 0) {
             return res.status(200).json({})
         }
-        let regexProvider = provider ? providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject", "getArtistUrl", "buildUrlSearchQuery"]) : false;
+        let regexProvider = provider ? providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject", "buildUrlSearchQuery"]) : false;
         if (regexProvider) {
             let urlQuery = regexProvider.buildUrlSearchQuery("artist", artists.map((artist) => artist.id));
             const urlResults = await musicbrainz.getIdsByUrlQuery(urlQuery);
