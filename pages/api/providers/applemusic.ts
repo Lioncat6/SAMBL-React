@@ -1,7 +1,8 @@
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
-import { AlbumData, AlbumObject, ArtistObject, FullProvider, PartialArtistObject, ProviderConfig, RawAlbumData, RegexArtistUrlQuery, TrackObject, UrlData, urlType } from "../../../types/provider-types";
+import { AlbumData, AlbumObject, ArtistObject, FullProvider, PartialArtistObject, ProviderConfig, RawAlbumData, RegexArtistUrlQuery, TrackObject, UrlData, UrlType } from "../../../types/provider-types";
 import { URL } from "url";
+import parsers from "../../../lib/parsers/parsers";
 
 interface Artwork {
 	url: string;
@@ -81,6 +82,8 @@ const HEADERS = {
 };
 
 const namespace = "applemusic";
+
+const {createUrl, parseUrl} = parsers.getParser(namespace);
 
 const err = new ErrorHandler(namespace);
 
@@ -287,7 +290,6 @@ function formatArtistLookupData(rawData: any): any {
 
 function formatArtistObject(artist: Resource<ArtistAttributes>): ArtistObject {
 	const imageUrls = getArtistImageUrls(artist);
-
 	return {
 		name: artist.attributes.name,
 		url: createUrl("artist", artist.id)!,
@@ -375,44 +377,9 @@ function getAlbumUPCs(album: Resource<AlbumAttributes>): string[] | null {
 	return album.attributes.upc ? [ album.attributes.upc ] : [];
 }
 
-function parseUrl(url: string): UrlData | null {
-	const match = url.match(/music\.apple\.com\/.+?\/(?<type>artist|album|song)(\/(.+?))?\/(?<id>\d+)/);
-	if (!match?.groups) return null;
 
-	let type: "artist" | "album" | "track" | null = null;
-	switch (match.groups["type"]) {
-		case "artist":
-			type = "artist";
-			break;
-		case "album":
-			type = "album";
-			break;
-		case "song":
-			type = "track";
-			break;
-	}
-
-	return {
-		type,
-		id: match.groups["id"],
-	};
-}
-
-function createUrl(urlType: urlType, providerId: string, country: string = "us"): string | null {
-	switch (urlType) {
-		case "artist":
-			return `https://music.apple.com/${country}/artist/${providerId}`;
-		case "album":
-			return `https://music.apple.com/${country}/album/${providerId}`;
-		case "track":
-			return `https://music.apple.com/${country}/song/${providerId}`;
-		default:
-			return null;
-	}
-}
-
-function buildUrlSearchQuery(type: urlType, ids: string[]): RegexArtistUrlQuery {
-	const appleType: Record<urlType, string> = {
+function buildUrlSearchQuery(type: UrlType, ids: string[]): RegexArtistUrlQuery {
+	const appleType: Record<UrlType, string> = {
 		"artist": "artist",
 		"album": "album",
 		"track": "song"
@@ -446,7 +413,6 @@ const applemusic: FullProvider = {
 	formatAlbumGetData,
 	formatAlbumObject,
 	formatTrackObject,
-	getArtistUrl,
 	getTrackISRCs,
 	getAlbumUPCs,
 	parseUrl,

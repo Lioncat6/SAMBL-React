@@ -19,10 +19,13 @@ import Soundcloud, {
 } from 'soundcloud.ts'
 import { getRawAsset } from 'node:sea'
 import { backup } from 'node:sqlite'
+import parsers from '../../../lib/parsers/parsers'
 
 const namespace = 'soundcloud'
 
 const err = new ErrorHandler(namespace)
+
+const {parseUrl, createUrl} = parsers.getParser(namespace);
 
 const soundcloudClientId: string = process.env.SOUNDCLOUD_CLIENT_ID ?? ''
 const soundcloudOauthToken: string = process.env.SOUNDCLOUD_OAUTH_TOKEN ?? ''
@@ -80,10 +83,6 @@ function formatArtistLookupData (rawData: SoundcloudUser) {
 
 function formatArtistSearchData (rawData: SoundcloudUserSearch) {
   return rawData.collection
-}
-
-function getArtistUrl (artist: SoundcloudUser) {
-  return `https://soundcloud.com/${artist.permalink}`
 }
 
 function formatArtistObject (rawObject: SoundcloudUser): ArtistObject {
@@ -279,38 +278,7 @@ async function getAlbumById (
   }
 }
 
-function createUrl (type:string, id:string):string|null {
-  if (type == "artist"){
-    return id;
-  }
-  
-  return null
-}
 
-function parseUrl (url:string): UrlData | null {
-  const setRegex = /soundcloud\.com\/[^\/]*\/sets\/([^\/]*)/
-  const trackRegex = /soundcloud\.com\/[^\/]*\/([^\/]*)/
-  const artistRegex = /soundcloud\.com\/([^\/]*)/
-  if (url.match(setRegex)) {
-    return {
-      type: 'album',
-      id: url
-    }
-  } else if (url.match(trackRegex)) {
-    return {
-      type: 'track',
-      id: url
-    }
-  } else if (url.match(artistRegex)) {
-    const artistMatch = url.match(artistRegex);
-    if (!artistMatch) return null
-    return {
-      type: 'artist',
-      id: url
-    }
-  }
-  return null
-}
 
 const soundcloud: FullProvider = {
   namespace,
@@ -341,7 +309,6 @@ const soundcloud: FullProvider = {
   formatPartialArtistObject,
   formatAlbumGetData,
   formatArtistLookupData,
-  getArtistUrl,
   getAlbumUPCs,
   getTrackISRCs,
   createUrl,

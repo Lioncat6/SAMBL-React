@@ -3,8 +3,11 @@ import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
 import SpotifyWebApi from "spotify-web-api-node";
+import parsers from "../../../lib/parsers/parsers";
 
 const namespace = "spotify";
+
+const {parseUrl, createUrl} = parsers.getParser(namespace);
 
 const err = new ErrorHandler(namespace);
 
@@ -222,22 +225,6 @@ function getArtistUrl(artist) {
 	return artist.external_urls.spotify || `https://open.spotify.com/artist/${artist.id}`;
 }
 
-function parseUrl(url) {
-	const regex = /(?:www\.)?open\.spotify\.com\/(artist|track|album)\/([A-Za-z0-9]{22})/;
-	const match = url.match(regex);
-	if (match) {
-		return {
-			type: match[1],
-			id: match[2],
-		};
-	}
-	return null;
-}
-
-function createUrl(type, id) {
-	return `https://open.spotify.com/${type}/${id}`;
-}
-
 function formatAlbumGetData(rawData): RawAlbumData {
 	const nextIntRegex = /offset=(\d+)/;
 	return {
@@ -326,7 +313,6 @@ const spotify: FullProvider = {
 	formatArtistObject,
 	formatAlbumGetData,
 	formatAlbumObject,
-	getArtistUrl,
 	getTrackISRCs,
 	getAlbumUPCs,
 	parseUrl,

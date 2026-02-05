@@ -4,9 +4,12 @@ import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
 import { format } from "path";
+import parsers from "../../../lib/parsers/parsers";
 const namespace = "musicbrainz";
 
 const err = new ErrorHandler(namespace);
+
+const {createUrl, parseUrl} = parsers.getParser(namespace);
 
 const coverArtArchiveApiClient = new CoverArtArchiveApi();
 const mbApi = new MusicBrainzApi({
@@ -110,7 +113,6 @@ async function getIdsByUrlQuery(query: RegexArtistUrlQuery): Promise<UrlMBIDDict
 			if (url && relations) {
 				if (relations?.length > 0) {
 					for (const id in query.idQueries) {
-						console.log(id)
 						const rgx = query.idQueries[id];
 						if ((new RegExp(rgx)).test(url.resource) && relations){
 							mbids[id] = relations[0]?.artist?.id;
@@ -276,23 +278,6 @@ function getAlbumUPCs(album: IRelease): string[] | null {
 	return upcs;
 }
 
-function parseUrl(url: string): UrlData | null {
-	const regex = /musicbrainz\.org\/([a-z\-]+)\/([0-9a-fA-F\-]{36})/;
-	const match = url.match(regex);
-	if (match) {
-		const typeDict = { 'release': 'album', 'recording': 'track', 'artist': 'artist' };
-		return {
-			type: typeDict[match[1]],
-			id: match[2],
-		};
-	}
-	return null;
-}
-
-function createUrl(type: string, id: string): string {
-	return `https://musicbrainz.org/${type}/${id}`;
-}
-
 function formatAlbumGetData(rawData: IReleaseList): ExtendedAlbumData {
 	return {
 		count: rawData["release-count"] || null,
@@ -317,7 +302,7 @@ function formatAlbumObject(album: IRelease): ExtendedAlbumObject {
 		id: album.id,
 		name: album.title,
 		comment: album.disambiguation || null,
-		url: createUrl('release', album.id),
+		url: createUrl('album', album.id) || "",
 		imageUrl: null,
 		imageUrlSmall: null,
 		albumArtists: album["artist-credit"] ? album["artist-credit"].map(ac => formatArtistObject(ac.artist)) : [],
@@ -345,7 +330,7 @@ function formatTrackObject(track: IRecording | ITrack): ExtendedTrackObject {
 		provider: namespace,
 		id: recording.id,
 		name: recording.title,
-		url: createUrl('recording', recording.id),
+		url: createUrl('track', recording.id),
 		duration: recording.length || 0,
 		imageUrl: null,
 		imageUrlSmall: null,
@@ -378,7 +363,7 @@ function formatArtistObject(artist: IArtist): ArtistObject {
 		provider: namespace,
 		id: artist.id,
 		name: artist.name,
-		url: createUrl('artist', artist.id),
+		url: createUrl('artist', artist.id)|| "",
 		imageUrl: getArtistImage(artist),
 		imageUrlSmall: getArtistImage(artist),
 		bannerUrl: null,
@@ -395,7 +380,7 @@ function formatPartialArtistObject(artist: IArtist): PartialArtistObject {
 		provider: namespace,
 		id: artist.id,
 		name: artist.name,
-		url: createUrl('artist', artist.id),
+		url: createUrl('artist', artist.id) || "",
 		imageUrl: null,
 		imageUrlSmall: null,
 	}
@@ -427,7 +412,6 @@ const musicbrainz: MusicBrainzProvider = {
 	searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 15, namespace: namespace }),
 	getIdsByUrlQuery: withCache(getIdsByUrlQuery, { ttl: 60 * 15, namespace: namespace }),
 	formatArtistSearchData,
-	getArtistUrl,
 	formatTrackObject,
 	formatArtistObject,
 	formatArtistLookupData,
