@@ -4,10 +4,39 @@ import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
 import text from "../../../utils/text";
 import bcApi from "bandcamp-scraper";
+import parsers from "../../../lib/parsers/parsers";
 
 const namespace = "bandcamp";
 
+const {createUrl, parseUrl} = parsers.getParser(namespace);
+
 const err = new ErrorHandler(namespace);
+
+class bandcampId {
+	artist: string
+	type: "album" | "track"
+	id: string
+}
+
+function parseId(id: string | null): bandcampId {
+	if (!id) {
+		throw new Error("Invalid entity id!")
+	}
+	const idArray = id.split("/");
+	if (idArray.length != 3){
+		throw new Error("Invalid entity id!")
+	}
+	const bcId = {
+		artist: idArray[0],
+		type: idArray[1] as "album" | "track",
+		id: idArray[2]
+	}
+	return bcId;
+}
+
+function createId(bcId: bandcampId){
+	return `${bcId.artist}/${bcId.type}/${bcId.id}`
+}
 
 function searchAsync(params) {
 	return new Promise((resolve, reject) => {
@@ -22,10 +51,10 @@ function searchAsync(params) {
 	});
 }
 
-function getArtistByIdAsync(id) {
+function getArtistByIdAsync(id: string) {
 	return new Promise((resolve, reject) => {
 		try {
-			bcApi.getArtistInfo(`https://${id}.bandcamp.com`, (error, artistData) => {
+			bcApi.getArtistInfo(createUrl('artist', id), (error, artistData) => {
 				if (error) reject(error);
 				else resolve(artistData);
 			});
@@ -82,13 +111,14 @@ async function init() {
 	}
 }
 
-async function getAlbumById(url: string) {
+async function getAlbumById(id: string) {
+	const bcId = parseId(id)
 	try {
 		let albumData: any = null;
-		if (url.includes("/album/")) {
-			albumData = await getAlbumInfoAsync(url as string);
-		} else if (url.includes("/track/")) {
-			albumData = await getTrackInfoAsync(url as string);
+		if (bcId.type = "album") {
+			albumData = await getAlbumInfoAsync(createUrl('album', id));
+		} else {
+			albumData = await getTrackInfoAsync(createUrl('track', id));
 		}
 		return albumData;
 	} catch (error) {
@@ -103,9 +133,10 @@ function getAlbumUPCs(album) {
 	return null;
 }
 
-async function getTrackById(url) {
+async function getTrackById(id: string) {
+	const bcId = parseId(id);
 	try {
-		let trackData = await getTrackInfoAsync(url);
+		let trackData = await getTrackInfoAsync(createUrl('track', id));
 		return trackData;
 	} catch (error) {
 		err.handleError("Error fetching track by ID:", error);
@@ -136,14 +167,17 @@ function formatArtistSearchData(rawData) {
 	return data;
 }
 
-async function getArtistById(artistId) {
+async function getArtistById(artistId: string) {
 	try {
 		const data = await bandcamp.searchByArtistName(artistId);
+		console.log(data);
 		if (data) {
 			let idData = await getArtistByIdAsync(artistId);
-			const url = (idData as any)?.raw?.url;
-			let artistData = data.find((a) => a.url == url) || null;
+			const url = (idData as any)?.raw?.url || createUrl("artist", artistId);;
+			let artistData = data.find((a) => text.trimUrl(a.url) == text.trimUrl(url)) || null;
+			if (!artistData) return null
 			artistData.raw = (idData as any).raw;
+			artistData.bannerImage = (idData as any).bannerImage;
 			return artistData;
 		}
 		return null;
@@ -166,13 +200,13 @@ function formatArtistObject(rawData): ArtistObject {
 			? `https://f4.bcbits.com/img/${rawData.raw.design.bg_image_id}_0.jpg`
 			: rawData.raw?.header_desktop
 				? `https://f4.bcbits.com/img/${rawData.raw.header_desktop.image_id}_0.jpg`
-				: "",
+				: rawData.bannerImage ? rawData.bannerImage : "",
 		relevance: rawData.location,
 		info: rawData.tags.join(", "),
 		genres: rawData.tags,
 		followers: null,
 		popularity: null,
-		id: getArtistId(rawData),
+		id: getArtistId(rawData) || "",
 		provider: namespace,
 	};
 }
@@ -190,7 +224,7 @@ async function getArtistAlbums(
 		let albumItems = searchResults.filter(
 			(a) =>
 				(a.type == "album" || (a.type == "track" && a.artist == "")) &&
-				a.url.includes(`https://${artistId}.bandcamp.com/`)
+				a.url.includes(createUrl('artist', artistId))
 		); // Yes, this filters out tracks that have an album because of a coding error in the bandcamp library :3
 		return {
 			current: offset,
@@ -212,12 +246,11 @@ function formatAlbumGetData(rawData): RawAlbumData {
 }
 
 function formatAlbumObject(album): AlbumObject {
-	const artistId = album.url.match(/^https?:\/\/([^.]+)\.bandcamp\.com/)[1];
-	const albumIdMatch = album.url.match(/\/(album|track)\/([^/]+)/);
-	const albumId = albumIdMatch ? albumIdMatch[2] : null;
+	const bcId: bandcampId = parseId(parseUrl(album.url)?.id || null)
+	console.log(bcId);
 	let albumType = "album";
 	if (!album.artist) {
-		album.artist = artistId;
+		album.artist = bcId.artist;
 		albumType = "single";
 	}
 	let imageUrl =
@@ -228,18 +261,18 @@ function formatAlbumObject(album): AlbumObject {
 		`https://f4.bcbits.com/img/a${album.raw.art_id}_3.jpg`;
 	return {
 		provider: namespace,
-		id: albumId,
+		id: createId(bcId),
 		name: album.name || album.title,
 		url: album.url,
 		imageUrl: imageUrl,
 		imageUrlSmall: imageUrlSmall,
 		albumArtists: [
 			{
-				url: `https://${artistId}.bandcamp.com`,
+				url: createUrl('artist', bcId.artist) || "",
 				name: album.artist,
 				imageUrl: null,
 				imageUrlSmall: null,
-				id: artistId,
+				id: bcId.artist,
 				provider: namespace,
 			},
 		],
@@ -255,18 +288,15 @@ function formatAlbumObject(album): AlbumObject {
 }
 
 function getAlbumTracks(album): TrackObject[] {
-	const trackUrlRegex = /(https?:\/\/[^/]+\/(track|album)\/[^#]+)/;
-	const trackIdRegex = /\/(track|album)\/([^/]+)/;
 	let tracks: TrackObject[] = [];
 	if (album && album.tracks) {
 		album.tracks = album.tracks.filter((track) => track.url && track.duration);
 		for (let trackNumber in album.tracks) {
 			let trackinfo = album.raw.trackinfo[trackNumber];
 			let currentTrack = album.tracks[trackNumber];
-			trackinfo.url = trackUrlRegex.exec(currentTrack.url)?.[1] || null;
-			trackinfo.id = trackinfo.url?.match(trackIdRegex)
-				? trackinfo.url.match(trackIdRegex)[2]
-				: null;
+			trackinfo.url = currentTrack.url;
+			console.log(trackinfo.url)
+			trackinfo.id = parseUrl(trackinfo.url)?.id
 			if (!trackinfo.artist) {
 				trackinfo.artist = album.artist;
 			}
@@ -288,10 +318,8 @@ function getAlbumTracks(album): TrackObject[] {
 		}
 	} else if (album && album.raw?.current?.type == "track") {
 		let trackinfo = album.raw.trackinfo[0];
-		trackinfo.url = trackUrlRegex.exec(album.url)?.[1] || null;
-		trackinfo.id = trackinfo.url?.match(trackIdRegex)
-			? trackinfo.url.match(trackIdRegex)[2]
-			: null;
+		trackinfo.url = album.url;
+		trackinfo.id = parseUrl(trackinfo.url)?.id
 		trackinfo.albumName = album.name || album.title;
 		trackinfo.releaseDate = text.formatDate(
 			album.releaseDate || album.raw?.current?.release_date
@@ -333,56 +361,23 @@ function formatTrackObject(track): TrackObject {
 }
 
 function formatPartialArtistObject(track): PartialArtistObject {
-	const artistId = track.url.match(/^https?:\/\/([^.]+)\.bandcamp\.com/)[1];
+	const artistId = parseUrl(track.url)?.id
 	return {
-		url: `https://${artistId}.bandcamp.com`,
+		url: (artistId ? createUrl('artist', artistId) : "") || "",
 		name: track.artist,
 		imageUrl: null,
 		imageUrlSmall: null,
-		id: artistId,
+		id: artistId || "",
 		provider: namespace,
 	};
 }
 
 function getArtistId(artist) {
-	const idRegex = /^https?:\/\/([^.]+)\.bandcamp\.com/;
-	const match = artist.url.match(idRegex);
-	return match ? match[1] : null;
+	return parseUrl(artist.url)?.id
 }
 
 function getArtistUrl(artist) {
 	return artist.url;
-}
-
-function createUrl(type: string, id: string): string {
-	const baseUrl = "bandcamp.com";
-	switch (type) {
-		case "artist":
-			return `https://${id}.bandcamp.com`;
-		default:
-			return `${baseUrl}/${id}`;
-	}
-}
-
-function parseUrl(url) {
-	const musicRegex =
-		/^https?:\/\/([^.]+)\.bandcamp\.com\/(track|album)\/([^.]+)/;
-	const musicMatch = url.match(musicRegex);
-	if (musicMatch) {
-		return {
-			type: musicMatch[2],
-			id: url,
-		};
-	}
-	const artistRegex = /^https?:\/\/([^.]+)\.bandcamp\.com/;
-	const artistMatch = url.match(artistRegex);
-	if (artistMatch) {
-		return {
-			type: "artist",
-			id: artistMatch[1],
-		};
-	}
-	return null;
 }
 
 init();
@@ -393,7 +388,6 @@ const bandcamp: FullProvider = {
 	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 30, namespace: namespace }),
 	getAlbumById: withCache(getAlbumById, { ttl: 60 * 30, namespace: namespace }),
 	getTrackById: withCache(getTrackById, { ttl: 60 * 30, namespace: namespace }),
-	getArtistUrl,
 	createUrl,
 	formatArtistSearchData,
 	formatArtistObject,
