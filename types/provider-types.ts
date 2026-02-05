@@ -2,7 +2,9 @@ import { ArtistIncludes, IArtist, IBrowseReleasesResult, ICoversInfo, IRecording
 import { CacheOptions } from "../utils/cache";
 import { AggregatedAlbum } from "./aggregated-types";
 
-export type ProviderNamespace = "spotify" | "tidal" | "deezer" | "musicbrainz" | "musixmatch" | "soundcloud" | "bandcamp" | "applemusic"
+export type ProviderNamespace = FullProviderNamespace | "musixmatch"
+
+export type FullProviderNamespace = "spotify" | "tidal" | "deezer" | "musicbrainz" | "soundcloud" | "bandcamp" | "applemusic" 
 
 export class PartialArtistObject {
     name: string
@@ -38,10 +40,10 @@ export class AlbumObject {
     albumTracks: TrackObject[];
 };
 
-export type urlType = 'album' | 'track' | 'artist';
+export type UrlType = 'album' | 'track' | 'artist';
 
 export class UrlData {
-    type: urlType | null;
+    type: UrlType | null;
     id: string | null;
 };
 
@@ -136,12 +138,11 @@ export class FullProvider extends Provider {
     formatAlbumGetData: (rawData: any) => RawAlbumData;
     formatAlbumObject: (album: any) => AlbumObject;
     formatTrackObject: (track: any) => TrackObject;
-    getArtistUrl: (artist: any) => string | null;
     getTrackISRCs: (track: any) => string[] | null;
     getAlbumUPCs: (album: any) => string[] | null;
     parseUrl: (url: string) => UrlData | null;
-    createUrl: (urlType: urlType, providerId: string) => string | null;
-    buildUrlSearchQuery?: (type: urlType, ids: string[]) => RegexArtistUrlQuery;
+    createUrl: (urlType: UrlType, providerId: string) => string | null;
+    buildUrlSearchQuery?: (type: UrlType, ids: string[]) => RegexArtistUrlQuery;
 }
 
 export type PartialProvider = Partial<FullProvider> & Provider;
