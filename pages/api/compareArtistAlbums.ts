@@ -3,10 +3,12 @@ import musicbrainz from "./providers/musicbrainz";
 import processData from "../../utils/processAlbumData";
 import logger from "../../utils/logger";
 import { NextApiRequest, NextApiResponse } from "next";
-import { AlbumObject, ExtendedAlbumObject } from "../../types/provider-types";
+import { AlbumData, AlbumObject, ExtendedAlbumObject, ProviderWithCapabilities, RawAlbumData } from "../../types/provider-types";
 import { IUrl } from "musicbrainz-api";
 import normalizeVars from "../../utils/normalizeVars";
 import { SAMBLApiError } from "../../types/api-types";
+import providers from "./providers/providers";
+import { error } from "node:console";
 
 // spotifyId - Spotify artist ID
 // mbid - MusicBrainz artist ID. Only neccesary if you want to check if the associated albums are linked to that artist
@@ -51,29 +53,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 		});
 	}
 
-	async function fetchProviderAlbums(pids, provider, bypassCache = false) {
+	async function fetchProviderAlbums(providerIds: string[], provider: ProviderWithCapabilities<["getArtistAlbums", "formatAlbumGetData", "formatAlbumObject"]>, bypassCache = false) {
 		let attempts = 0;
-		for (const pid of pids) {
-			let offset = 0;
+		for (const pid of providerIds) {
+			let offset: string | number | null = 0;
 			let currentAlbumCount = 999;
 			let fetchedAlbums = 0;
 			while (offset != null) {
 				try {
-					const data = await fetchSourceAlbums(pid, provider, offset, bypassCache);
-					if (typeof data === "number") {
-						if (data === 404) {
-							logger.error(`Spotify ID ${pid} not found!`);
-							return;
-						}
-						throw new Error(`Error fetching Spotify albums: ${data}`);
+					// const data = await fetchSourceAlbums(pid, provider, offset, bypassCache);
+					const rawData = provider.getArtistAlbums(pid, offset, 100, { noCache: true })
+					let data: RawAlbumData = provider.formatAlbumGetData(rawData);
+					let formattedData: AlbumData = {
+						...data,
+						albums: data.albums.map(album => provider.formatAlbumObject(album))
 					}
-					sourceAlbums = [...sourceAlbums, ...data.albums];
-					fetchedAlbums += data.albums.length;
-					currentAlbumCount = data.count;
+					sourceAlbums = [...sourceAlbums, ...formattedData.albums];
+					fetchedAlbums += formattedData.albums.length;
+					currentAlbumCount = formattedData.count || 0;
 					if (sourceAlbumCount < 0) {
 						sourceAlbumCount = currentAlbumCount;
 					}
-					offset = data.next;
+					offset = formattedData.next;
 				} catch (error) {
 					attempts++;
 					console.error("Error fetching albums:", error);
@@ -87,7 +88,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 		}
 	}
 
-	async function fetchMusicbrainzArtistAlbums(mbid, full = false) {
+	async function fetchMusicbrainzArtistAlbums(mbid: string, full = false) {
 		let offset = 0;
 		let attempts = 0;
 		while (offset < mbAlbumCount || mbAlbumCount == -1) {
@@ -115,7 +116,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 		}
 	}
 
-	async function fetchMusicBrainzFeaturedAlbums(mbid, full = false) {
+	async function fetchMusicBrainzFeaturedAlbums(mbid: string, full = false) {
 		let offset = 0;
 		let attempts = 0;
 		while (offset < mbFeaturedAlbumCount || mbFeaturedAlbumCount == -1) {
@@ -217,21 +218,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 			return res.status(400).json({ error: "Parameters `provider_id` and `provider` are required!" } as SAMBLApiError);
 		}
 
-		if (mbid && !musicbrainz.validateMBID(mbid) || (!quick && !mbid)) {
+		if ((mbid && !musicbrainz.validateMBID(mbid)) || (!quick && !mbid)) {
 			return res.status(400).json({ error: "Parameter `mbid` is missing or malformed" } as SAMBLApiError);
 		}
 
+		const sourceProvider = providers.parseProvider(provider, ["getArtistAlbums", "formatAlbumGetData", "formatAlbumObject"])
+		 
+		if (!sourceProvider) {
+			return res.status(400).json({error: `Provider ${provider} doesn't support this operation!`})
+		}
+
 		if (quick) {
-			await fetchProviderAlbums([provider_id], provider);
+			await fetchProviderAlbums([provider_id], sourceProvider);
 			await fetchMusicBrainzAlbumsBySourceUrls(getSourceAlbumUrls());
 		} else {
-			await Promise.all([fetchProviderAlbums([provider_id], provider), fetchMusicbrainzArtistAlbums(mbid, full), fetchMusicBrainzFeaturedAlbums(mbid, full)]);
+			if (!mbid) {
+				return res.status(400).json({ error: "Parameter `mbid` is required when not using `quick`" } as SAMBLApiError);
+			}
+			await Promise.all([fetchProviderAlbums([provider_id], sourceProvider), fetchMusicbrainzArtistAlbums(mbid, full), fetchMusicBrainzFeaturedAlbums(mbid, full)]);
 		}
 		if (raw) {
 			return res.status(200).json({ sourceAlbums: sourceAlbums, mbAlbums: mbAlbums, mbFeaturedAlbums: mbFeaturedAlbums });
 		}
 		logger.debug("Processing data");
-		let data = await processData(sourceAlbums, [...mbAlbums, ...mbFeaturedAlbums], mbid, quick, full);
+		let data = await processData(sourceAlbums, [...mbAlbums, ...mbFeaturedAlbums], mbid, provider_id, sourceProvider.namespace, quick, full);
 		res.status(200).json(data);
 	} catch (error) {
 		logger.error("Error in CompareArtistAlbums API", error);

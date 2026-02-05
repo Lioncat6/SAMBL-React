@@ -64,7 +64,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
             }
         }
         const formattedMBAlbum = mbAlbum ? musicbrainz.formatAlbumObject(mbAlbum) : null;
-        let albumData = processData([sourceAlbum], formattedMBAlbum ? [formattedMBAlbum] : [], mbid, artist_id);
+        let albumData = processData([sourceAlbum], formattedMBAlbum ? [formattedMBAlbum] : [], mbid, artist_id, providerObj.namespace);
         if (albumData?.albumData && albumData?.albumData.length > 0) {
             res.status(200).json(albumData.albumData[0]);
         }
