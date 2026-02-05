@@ -95,9 +95,12 @@ export async function getServerSideProps(context) {
 		let artist: ArtistPageData;
 		if (!provider_id && provider_ids) {
 			data = [];
+			let mbArtist: null | ArtistObject = null;
 			let pIDArray = splitIds || [];
 			for (let id of pIDArray) {
-				data.push((await fetchArtistData(id, provider)).providerData);
+				const artistData = await fetchArtistData(id, provider)
+				data.push(artistData.providerData);
+				if (!mbArtist && artistData.mbData) mbArtist = artistData.mbData;
 			}
 			const uniqueNames = [...new Set(data.map((artist) => artist.name))];
 			const genres = [...new Set(data.flatMap((artist) => artist.genres))].filter((genre) => genre?.trim() != "");
@@ -127,12 +130,14 @@ export async function getServerSideProps(context) {
 				mbid: artist_mbid || null,
 				url: mostPopularArtist?.url || "",
 				relevance: mostPopularArtist?.relevance || "",
-				info: mostPopularArtist?.info || ""
+				info: mostPopularArtist?.info || "",
+				mbData: mbArtist
 			};
 		} else {
-			const fetchedArtist = (await fetchArtistData(provider_id, provider)).providerData;
+			const fetchedData = (await fetchArtistData(provider_id, provider));
 			artist = {
-				... fetchedArtist,
+				... fetchedData.providerData,
+				mbData: fetchedData.mbData,
 				mbid: artist_mbid || null,
 			};
 		}
@@ -412,6 +417,8 @@ export default function Artist({ artist, error }: {artist: ArtistPageData, error
 		setStatusText("Refreshing albums...");
 		loadArtistAlbums && await loadArtistAlbums(true);
 	}
+	const aiTags = ["ai", "ai-generated", "ai generated"]
+	const isAi = artist?.mbData?.genres?.some((tag) => aiTags.includes(tag));
 	return (
 		<>
 			<Head>
@@ -423,6 +430,7 @@ export default function Artist({ artist, error }: {artist: ArtistPageData, error
 			</Head>
 			{!artist.mbid && <Notice type={"noMBID"} data={artist} />}
 			{isQuickFetched && <Notice type={"quickFetched"} />}
+			{isAi && <Notice type={"aiArtist"} />}
 			<ArtistInfo artist={artist} />
 			<div id="contentContainer">{loading ? <ItemList type={"loadingAlbum"} text={statusText} refresh={refreshAlbums} items={[]} /> : <ItemList type={"album"} items={albums} text={statusText} refresh={refreshAlbums} />}</div>
 		</>
