@@ -104,9 +104,10 @@ function removeLeadingZeros(code: number|string): number {
 
 /**
  * Handles copying text to clipboard
- * 
+ * @param text Text to copy
+ * @param all Toggle 'all properties' vs 'property' message
  */
-function handleCopy(text: string, all: boolean = false) {
+function handleCopy(text: string, all: boolean = false): void {
 	if (!navigator.clipboard?.writeText) {
 		console.error("Clipboard API not supported. Try using https or a different browser.");
 		toasts.error("Unable to copy to clipboard!");
@@ -116,6 +117,15 @@ function handleCopy(text: string, all: boolean = false) {
 		navigator.clipboard.writeText(text);
 		toasts.info(`Copied ${all ? "All Properties" : "Property"} to Clipboard`);
 	}
+}
+
+/**
+ * Trims ending slashes (/) from URLs
+ * @param url URL to trim
+ * @returns Trimmed URL
+ */
+function trimUrl(url: string): string {
+	return url.replace(/\/+$/, "");
 }
 
 /**
@@ -133,7 +143,8 @@ const text = {
 	formatDurationMS,
 	removeLeadingZeros,
 	copy: handleCopy,
-	handleCopy
+	handleCopy,
+	trimUrl
 };
 
 export default text;
