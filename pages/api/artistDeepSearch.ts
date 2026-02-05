@@ -138,7 +138,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         nameSimilarity = stringSimilarity.compareTwoStrings(artistName, bestArtist.name);
 
-        const formattedAlbumData = processAlbumData(albumData, mbAlbums);
+        const formattedAlbumData = processAlbumData(albumData, mbAlbums, undefined, undefined, sourceProvider.namespace);
 
         const dsData: DeepSearchData = { 
             provider: sourceProvider.namespace, 
