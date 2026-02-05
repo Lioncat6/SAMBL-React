@@ -75,7 +75,7 @@ function AIArtistNotice() {
 	);
 }
 
-export default function Notice({ data, type }: {data?: null | ArtistPageData, type: string}) {
+export default function Notice({ data, type }: {data?: null | ArtistPageData, type:  "noMBID" | "quickFetched" | "aiArtist"}) {
 	if (type === "noMBID") {
 		return <NoMBIDNotice data={data} />;
 	} else if (type === "quickFetched") {
