@@ -396,7 +396,7 @@ export default function Artist({ artist, error }: {artist: ArtistPageData, error
 			if (didQuickFetch) {
 				data = await toasts.dispPromise(quickFetchAlbums(providerIds[0], artist.provider, artist.mbid, bypassCache), "Quick Fetching albums...", "Failed to quick fetch albums!");
 			} else {
-				data = processData(sourceAlbums.current, [ ...mbAlbums.current, ...mbFeaturedAlbums.current], artist.mbid, artist.id);
+				data = processData(sourceAlbums.current, [ ...mbAlbums.current, ...mbFeaturedAlbums.current], artist.mbid, artist.id, artist.provider);
 			}
 			setStatusText(data.statusText);
 			setAlbums(data.albumData);
