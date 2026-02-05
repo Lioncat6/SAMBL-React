@@ -20,7 +20,7 @@ const SettingsContext = createContext<SAMBLSettingsContext | undefined>(undefine
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [settings, setSettings] = useState<SAMBLSettings>(defaultSettings);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const savedConfig = JSON.parse(localStorage.getItem("samblConfig") || "{}");
