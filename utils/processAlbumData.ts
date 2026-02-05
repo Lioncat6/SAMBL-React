@@ -1,8 +1,9 @@
-import { AlbumObject, ExtendedAlbumObject, ExtendedTrackObject, ProviderNamespace, TrackObject } from "../types/provider-types";
+import { AlbumObject, ExtendedAlbumObject, ExtendedTrackObject, FullProviderNamespace, ProviderNamespace, TrackObject } from "../types/provider-types";
 import { AggregatedAlbum, AggregatedData, AggregatedTrack, AlbumIssue, AlbumStatus, BasicTrack, TrackIssue, TrackStatus } from "../types/aggregated-types";
 import text from "./text";
+import parsers from "../lib/parsers/parsers";
 
-export default function processData(sourceAlbums: AlbumObject[], mbAlbums: ExtendedAlbumObject[], currentArtistMBID: string | null = null, currentArtistID: string | null = null, quick = false, full = false): AggregatedData {
+export default function processData(sourceAlbums: AlbumObject[], mbAlbums: ExtendedAlbumObject[], currentArtistMBID: string | null = null, currentArtistID: string | null = null, provider: ProviderNamespace, quick = false, full = false ): AggregatedData {
 	let albumData: AggregatedAlbum[] = [];
 	let green = 0;
 	let red = 0;
@@ -10,14 +11,19 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 	let blue = 0;
 	let total = 0;
 
+	const parser = parsers.getParser(provider);
+
 	// Map of Streaming service URLs to MB Albums
-	let mbUrlAlbumMap: Map<string, ExtendedAlbumObject[]> = new Map();
+	let mbIdAlbumMap: Map<string, ExtendedAlbumObject[]> = new Map();
 
 	mbAlbums.forEach((mbAlbum) => {
 		if (!mbAlbum?.externalUrls) return;
 		(mbAlbum.externalUrls || []).forEach((url) => {
-			if (!mbUrlAlbumMap.has(url)) mbUrlAlbumMap.set(url, []);
-			mbUrlAlbumMap.get(url)?.push(mbAlbum);
+			const id = parser.parseUrl(url)?.id;
+			if (!id) return
+			console.log(id)
+			if (!mbIdAlbumMap.has(id)) mbIdAlbumMap.set(id, []);
+			mbIdAlbumMap.get(id)?.push(mbAlbum);
 		});
 	});
 
@@ -103,7 +109,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 
 		// Try URL map
 		const sourceUrl = providerUrl?.trim();
-		tryMap(mbUrlAlbumMap, sourceUrl, "green")
+		tryMap(mbIdAlbumMap, parser.parseUrl(sourceUrl)?.id || providerId, "green")
 
 		// Try UPC map
 		if (albumStatus == "red" && providerBarcode) {
