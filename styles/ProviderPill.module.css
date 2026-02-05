@@ -1,4 +1,4 @@
-.ProviderPill {
+/* .ProviderPill {
     display: inline-flex;
     align-items: center;
     border: 1px solid var(--foreground-secondary);
@@ -18,7 +18,7 @@
     overflow: hidden;
     flex-wrap: nowrap;
     z-index: 3;
-}
+} */
 .provider {
     border-radius: 50px;
     width: 30px;
@@ -27,10 +27,15 @@
     align-items: center;
     background-color: var(--foreground-background);
     transition: color 0.3s ease, filter 0.3s ease;
+
 }
 
 .SelectedProvider {
-    position: absolute;
+    position: relative;
+
+    /* Removes the space created by the `position: relative;`. Must be equal to the width */
+    margin-right: -30px;
+
     pointer-events: none;
     border-radius: 50px;
     width: 30px;
@@ -86,17 +91,32 @@
 }
 
 @keyframes logoShake {
-    0% { transform: rotate(0deg); }
-    25% { transform: rotate(5deg); }
-    50% { transform: rotate(-5deg); }
-    75% { transform: rotate(5deg); }
-    100% { transform: rotate(0deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    25% {
+        transform: rotate(5deg);
+    }
+
+    50% {
+        transform: rotate(-5deg);
+    }
+
+    75% {
+        transform: rotate(5deg);
+    }
+
+    100% {
+        transform: rotate(0deg);
+    }
 }
 
 @keyframes colorPulse {
     0% {
         filter: blur(0.2px) drop-shadow(0 0 1px currentColor);
     }
+
     100% {
         filter: blur(0.2px) drop-shadow(0 0 5px currentColor);
     }
@@ -107,24 +127,25 @@
     0% {
         opacity: 0;
     }
+
     100% {
         opacity: 1;
     }
 }
 
 @media (max-width: 800px) {
-    .ProviderPillContainer {
+    /* .ProviderPillContainer {
         width: 100%;
         bottom: 0;
         left: 0;
         position: absolute;
         display: flex;
         align-items: center;
-    }
-    .ProviderPill {
+    } */
+    /* .ProviderPill {
         position: relative !important;
         z-index: 10;
         -webkit-backdrop-filter: blur(5px);
         backdrop-filter: blur(5px);
-    }
+    } */
 }

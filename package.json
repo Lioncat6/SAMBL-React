@@ -29,6 +29,7 @@
 		"react-icons": "^5.5.0",
 		"react-toastify": "^11.0.5",
 		"react-window": "^2.2.5",
+		"sass": "^1.97.3",
 		"soundcloud.ts": "^0.7.1",
 		"spotify-web-api-node": "^5.0.0",
 		"string-similarity": "^4.0.4"
