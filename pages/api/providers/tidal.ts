@@ -5,9 +5,12 @@ import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
 import text from "../../../utils/text"
+import parsers from "../../../lib/parsers/parsers";
 const namespace = "tidal";
 
 const err = new ErrorHandler(namespace);
+
+const {parseUrl, createUrl} = parsers.getParser(namespace);
 
 type Credentials = {
     clientId: string;
@@ -412,22 +415,6 @@ function getArtistUrl(artist) {
     return `https://tidal.com/artist/${artist.id}`;
 }
 
-function parseUrl(url) {
-    const regex = /(?:www\.)?tidal\.com\/(artist|track|album)\/(\d+)/;
-    const match = url.match(regex);
-    if (match) {
-        return {
-            type: match[1],
-            id: match[2],
-        };
-    }
-    return null;
-}
-
-function createUrl(type, id) {
-    return `https://tidal.com/${type}/${id}`;
-}
-
 let tidal: FullProvider = {
     namespace,
     getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 30, namespace: namespace }),
@@ -444,7 +431,6 @@ let tidal: FullProvider = {
     formatPartialArtistObject,
     formatAlbumObject,
     formatTrackObject,
-    getArtistUrl,
     getTrackISRCs,
     getAlbumUPCs,
     parseUrl,

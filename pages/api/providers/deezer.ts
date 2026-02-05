@@ -4,10 +4,13 @@ import text from "../../../utils/text";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
 import DeezerPublicApi from "deezer-public-api";
+import parsers from "../../../lib/parsers/parsers";
 
 const namespace = "deezer";
 
 const err = new ErrorHandler(namespace);
+
+const {parseUrl, createUrl}  = parsers.getParser(namespace); 
 
 let deezerApi = new DeezerPublicApi();
 let lastRefreshed = Date.now();
@@ -264,22 +267,6 @@ function getArtistUrl(artist) {
 	return artist.link || `https://www.deezer.com/artist/${artist.id}`;
 }
 
-function parseUrl(url) {
-	const regex = /(?:www\.)?deezer\.com\/(?:([a-z]{2})\/)?(artist|track|album)\/(\d+)/;
-	const match = url.match(regex);
-	if (match) {
-		return {
-			type: match[2],
-			id: match[3],
-		};
-	}
-	return null;
-}
-
-function createUrl(type, id) {
-	return `https://www.deezer.com/${type}/${id}`;
-}
-
 const deezer: FullProvider = {
 	namespace,
 	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 30, namespace: namespace }),
@@ -296,7 +283,6 @@ const deezer: FullProvider = {
 	formatAlbumGetData,
 	formatAlbumObject,
 	formatTrackObject,
-    getArtistUrl,
 	getTrackISRCs,
 	getAlbumUPCs,
 	parseUrl,
