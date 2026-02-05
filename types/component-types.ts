@@ -1,4 +1,4 @@
-import { ProviderNamespace, UrlData, UrlType } from "./provider-types";
+import { ArtistObject, ProviderNamespace, UrlData, UrlType } from "./provider-types";
 import { AggregatedAlbum, AggregatedArtist, AggregatedTrack } from "./aggregated-types";
 import { JSX } from "react";
 
@@ -52,6 +52,7 @@ export class SAMBLError {
 export class ArtistPageData extends AggregatedArtist {
     ids?: string[] | null;
     names?: string[] | null;
+    mbData?: ArtistObject | null;
 }
 
 export type SearchBoxType = "search" | "find";
