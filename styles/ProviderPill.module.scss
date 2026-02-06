@@ -1,0 +1,26 @@
+.ProviderPillContainer {
+    order: 0;
+    margin-left: 20px;
+
+    display: flex;
+
+    @media (max-width: 938px) {
+        order: 99;
+        width: 100%;
+
+        justify-content: center;
+    }
+}
+
+.ProviderPill {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+
+    border: 1px solid var(--foreground-secondary);
+    border-radius: 10px;
+
+    padding: 5px;
+
+    width: min-content;
+}

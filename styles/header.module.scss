@@ -1,0 +1,17 @@
+.subtitle {
+    color: #28292c;
+
+    margin-left: 20px;
+
+    @media (max-width: 728px) {
+        display: none;
+    }
+}
+
+.collapse {
+    display: inline;
+
+    @media (max-width: 440px) {
+        display: none;
+    }
+}
