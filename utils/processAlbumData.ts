@@ -21,7 +21,6 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 		(mbAlbum.externalUrls || []).forEach((url) => {
 			const id = parser.parseUrl(url)?.id;
 			if (!id) return
-			console.log(id)
 			if (!mbIdAlbumMap.has(id)) mbIdAlbumMap.set(id, []);
 			mbIdAlbumMap.get(id)?.push(mbAlbum);
 		});

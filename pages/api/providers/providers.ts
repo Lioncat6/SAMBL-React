@@ -37,7 +37,7 @@ function getDefaultProvider(): Provider {
 function parseProvider<T extends ProviderCapability[]>( 
     rawProvider: ProviderNamespace | string | Provider, 
     capabilities?: T 
-): (T extends ProviderCapability[] ? ProviderWithCapabilities<T> | false : PartialProvider) | false {
+): (T extends ProviderCapability[] ? ProviderWithCapabilities<T> : PartialProvider) | false {
     let provider = getDefaultProvider();
 
     if (typeof rawProvider === "string") {
@@ -60,6 +60,19 @@ function parseProvider<T extends ProviderCapability[]>(
         }
     }
     return provider as any;
+}
+
+function getAllProviders<T extends ProviderCapability[]>( 
+    capabilities?: T 
+): (T extends ProviderCapability[] ? ProviderWithCapabilities<T> : PartialProvider  )[] {
+    let allProviders: (T extends ProviderCapability[] ? ProviderWithCapabilities<T> : PartialProvider)[] = []
+    providerList.forEach((p)=>{
+        const parsedProvider = parseProvider(p, capabilities)
+        if (parsedProvider != false) {
+            allProviders.push(parsedProvider)
+        }
+    })
+    return allProviders;
 }
 
 /**
@@ -90,7 +103,8 @@ function getUrlInfo(url: string): UrlInfo | null {
 const providers = {
     parseProvider,
     getUrlInfo,
-    getDefaultProvider
+    getDefaultProvider,
+    getAllProviders
 };
 
 export default providers;

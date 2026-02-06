@@ -170,7 +170,6 @@ function formatArtistSearchData(rawData) {
 async function getArtistById(artistId: string) {
 	try {
 		const data = await bandcamp.searchByArtistName(artistId);
-		console.log(data);
 		if (data) {
 			let idData = await getArtistByIdAsync(artistId);
 			const url = (idData as any)?.raw?.url || createUrl("artist", artistId);;
@@ -247,7 +246,6 @@ function formatAlbumGetData(rawData): RawAlbumData {
 
 function formatAlbumObject(album): AlbumObject {
 	const bcId: bandcampId = parseId(parseUrl(album.url)?.id || null)
-	console.log(bcId);
 	let albumType = "album";
 	if (!album.artist) {
 		album.artist = bcId.artist;
@@ -295,7 +293,6 @@ function getAlbumTracks(album): TrackObject[] {
 			let trackinfo = album.raw.trackinfo[trackNumber];
 			let currentTrack = album.tracks[trackNumber];
 			trackinfo.url = currentTrack.url;
-			console.log(trackinfo.url)
 			trackinfo.id = parseUrl(trackinfo.url)?.id
 			if (!trackinfo.artist) {
 				trackinfo.artist = album.artist;
