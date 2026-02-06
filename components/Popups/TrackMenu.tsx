@@ -7,8 +7,10 @@ import { ProviderNamespace, TrackObject } from "../../types/provider-types";
 import { AggregatedAlbum, AggregatedTrack, AlbumStatus, TrackIssue, TrackStatus } from "../../types/aggregated-types";
 import Popup from "../Popup";
 import { JSX } from "react";
+import { IoMdRefresh } from "react-icons/io";
+import { DisplayAlbum } from "../../types/component-types";
 
-function MbUrlIcon({ status, url, styleClass, isAlbum = true }: { status: AlbumStatus | TrackStatus, url: string, styleClass: string, isAlbum?: boolean }) {
+function MbUrlIcon({ status, url, styleClass, isAlbum = true }: { status: AlbumStatus | TrackStatus, url: string | null, styleClass: string, isAlbum?: boolean }) {
 	return (
 		<>
 			{url && (
@@ -25,7 +27,7 @@ function MbUrlIcon({ status, url, styleClass, isAlbum = true }: { status: AlbumS
 	)
 }
 
-function AlbumDetails({ data }) {
+function AlbumDetails({ data }: {data: DisplayAlbum}) {
 	const {
 		provider,
 		id,
@@ -39,18 +41,17 @@ function AlbumDetails({ data }) {
 		albumType,
 		status,
 		mbAlbum,
-		highlightTracks,
 		upc,
 	} = data;
 
 	const barcode = upc || mbAlbum?.upc || null;
-
+	const mbBarcode = !upc;
 	return (
 		<div className={styles.albumDetails}>
 			{(imageUrlSmall || imageUrl) && (
 				<div className={styles.albumCover}>
-					<a href={imageUrl} target="_blank" rel="noopener noreferrer">
-						<img src={imageUrlSmall || imageUrl} alt={`${name} cover`} loading="lazy" />
+					<a href={(imageUrl || imageUrlSmall || undefined)} target="_blank" rel="noopener noreferrer">
+						<img src={(imageUrlSmall || imageUrl || undefined)} alt={`${name} cover`} loading="lazy" />
 					</a>
 				</div>
 			)}
@@ -59,7 +60,7 @@ function AlbumDetails({ data }) {
 					<a href={url} target="_blank" rel="noopener noreferrer">
 						{name}
 					</a>
-					<MbUrlIcon status={status} url={mbAlbum?.url || ""} styleClass={styles.albumMB} />
+					<MbUrlIcon status={status} url={mbAlbum?.url || null} styleClass={styles.albumMB} />
 				</div>
 				<div className={styles.artists}>
 					<MdPerson />
@@ -76,7 +77,7 @@ function AlbumDetails({ data }) {
 					))}
 				</div>
 				<span className={styles.releaseDate}><MdOutlineCalendarMonth /> {releaseDate}</span>
-				<span className={styles.albumType}><MdOutlineAlbum /> {text.capitalizeFirst(albumType)}</span>
+				{albumType && <span className={styles.albumType}><MdOutlineAlbum /> {text.capitalizeFirst(albumType)}</span>}
 				{barcode && <span className={styles.barcode}><FaBarcode /> {barcode} <a
 					className={styles.lookupButton}
 					href={`/find?query=${encodeURIComponent(barcode)}`}
@@ -197,7 +198,7 @@ function TrackItem({ index, track, album, highlight }: { index: string, track: T
 	);
 }
 
-function TrackMenu({ data, close }: { data: AggregatedAlbum, close?: () => void }) {
+function TrackMenu({ data, refresh, close }: { data: AggregatedAlbum, refresh: () => void, close?: () => void }) {
 	let trackData: TrackObject[] | AggregatedTrack[] = [];
 	let trackDataSource: ProviderNamespace | null = null as ProviderNamespace | null;
 	let hasFullTrackData: boolean = false;
@@ -226,7 +227,7 @@ function TrackMenu({ data, close }: { data: AggregatedAlbum, close?: () => void 
 			<AlbumDetails data={data} />
 			{!hasFullTrackData && (
 				<div className={styles.noAggregatedTracksWarning}>
-					<MdOutlineWarningAmber /> {data.status == "red" && trackData.length > 0 ? "Add this album to musicbrainz to see full track data" : "Refresh this album to see full track data"}
+					<MdOutlineWarningAmber /> {data.status == "red" && trackData.length > 0 ? "Add this album to musicbrainz to see full track data" : <><button className={styles.textButton} onClick={refresh}>Refresh</button> this album to see full track data</>}
 					{trackDataSource && (<div className={styles.trackDataSource}>Currently viewing track data from <span>{text.capitalizeFirst(trackDataSource)}</span></div>)}
 				</div>
 			)}
@@ -248,10 +249,10 @@ function TrackMenu({ data, close }: { data: AggregatedAlbum, close?: () => void 
 	);
 }
 
-export default function TrackMenuPopup({ data, button }: { data: AggregatedAlbum, button?: JSX.Element }) {
+export default function TrackMenuPopup({ data, button, refresh }: { data: AggregatedAlbum, button?: JSX.Element, refresh: () => void }) {
     return (
         <Popup button={button}>
-            <TrackMenu data={data} />
+            <TrackMenu data={data} refresh={refresh} />
         </Popup>
     );
 }

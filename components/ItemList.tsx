@@ -319,6 +319,7 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 							</div>
 							}
 							data={item}
+							refresh={refreshData}
 						/>
 						<AlbumIcons item={item} />
 					</div>
