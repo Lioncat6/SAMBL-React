@@ -98,17 +98,19 @@
 
 .close {
     position: absolute;
-    top: 8px;
+    top: 14px;
     right: 10px;
     background: none;
     border: none;
     font-size: 24px;
     cursor: pointer;
     z-index: 1;
+    color: var(--foreground-primary);
+    transition: all 0.2s ease-in-out;
 }
 
 .close:hover {
-    background: transparent
+    color: var(--foreground-secondary)
 }
 
 .header {
@@ -117,6 +119,7 @@
     align-items: center;
     position: relative;
     z-index: 1;
+    width: fit-content;
 }
 
 .subHeader {
