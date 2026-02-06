@@ -237,6 +237,7 @@ flex-direction: row;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    vertical-align: text-top;
 }
 
 .lookupButton {
@@ -740,4 +741,21 @@ flex-direction: row;
 
 .selectLabel {
     font-weight: bold;
+}
+
+.textButton{
+    background: transparent;
+    border-radius: 15px;
+    font: inherit;
+    border: none;
+    padding: 0;
+    margin: 0;
+    filter: drop-shadow(1px 1px 2px currentColor);
+    transition: all .2s ease-in-out;
+}
+
+.textButton:hover {
+    cursor: pointer;
+    text-decoration: underline;
+    filter: drop-shadow(1px 1px 8px currentColor);
 }
