@@ -446,8 +446,14 @@ flex-direction: row;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
+
 .barcode {
-    color: var(--foreground-secondary)
+    color: var(--foreground-primary)
+}
+
+.barcode.mbBarcode > span {
+    text-decoration: underline dashed var(--musicbrainz-orange);
+    cursor: help;
 }
 
 .trackArtists {

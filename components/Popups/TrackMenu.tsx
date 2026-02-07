@@ -78,7 +78,7 @@ function AlbumDetails({ data }: {data: DisplayAlbum}) {
 				</div>
 				<span className={styles.releaseDate}><MdOutlineCalendarMonth /> {releaseDate}</span>
 				{albumType && <span className={styles.albumType}><MdOutlineAlbum /> {text.capitalizeFirst(albumType)}</span>}
-				{barcode && <span className={styles.barcode}><FaBarcode /> {barcode} <a
+				{barcode && <span className={`${styles.barcode} ${mbBarcode && styles.mbBarcode}`} title={barcode && "This barcode is sourced from MusicBrainz."}><FaBarcode /> <span>{barcode}</span> <a
 					className={styles.lookupButton}
 					href={`/find?query=${encodeURIComponent(barcode)}`}
 					target="_blank"
@@ -227,7 +227,7 @@ function TrackMenu({ data, refresh, close }: { data: AggregatedAlbum, refresh: (
 			<AlbumDetails data={data} />
 			{!hasFullTrackData && (
 				<div className={styles.noAggregatedTracksWarning}>
-					<MdOutlineWarningAmber /> {data.status == "red" && trackData.length > 0 ? "Add this album to musicbrainz to see full track data" : <><button className={styles.textButton} onClick={refresh}>Refresh</button> this album to see full track data</>}
+					<MdOutlineWarningAmber /> {data.status == "red" && trackData.length > 0 ? "Add this album to musicbrainz to see full track data" : <><button className={styles.textButton} onClick={refresh} title={"Refresh Album"}>Refresh</button> this album to see full track data</>}
 					{trackDataSource && (<div className={styles.trackDataSource}>Currently viewing track data from <span>{text.capitalizeFirst(trackDataSource)}</span></div>)}
 				</div>
 			)}
