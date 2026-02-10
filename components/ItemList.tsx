@@ -2,11 +2,10 @@ import styles from "../styles/itemList.module.css";
 import Link from "next/link";
 import React, { useEffect, useState, memo, JSX } from "react";
 import { SAMBLSettingsContext, useSettings } from "./SettingsContext";
-import { FaSquarePlus } from "react-icons/fa6";
 import dynamic from "next/dynamic";
 import { useExport as useExportState } from "./ExportState";
 import { List, RowComponentProps } from "react-window";
-import { FaDeezer, FaSpotify } from "react-icons/fa";
+import { FaDeezer } from "react-icons/fa";
 import { SiApplemusic, SiTidal } from "react-icons/si";
 import { FaAnglesRight, FaAnglesLeft } from "react-icons/fa6";
 import { IoMdRefresh } from "react-icons/io";
@@ -108,8 +107,6 @@ function ActionButtons({ item }: { item: DisplayAlbum }) {
 }
 
 function SelectionButtons({ item }) {
-	const Popup = dynamic(() => import("./Popup"), { ssr: false });
-
 	return (
 		<>
 			<ExportMenuPopup
@@ -127,7 +124,6 @@ function SelectionButtons({ item }) {
 const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; selecting?: boolean; onUpdate?: (updatedItem: DisplayAlbum) => void }) => {
 	const [isLoading, setIsLoading] = useState(false);
 	const exportState = useExportState()?.exportState;
-	const Popup = dynamic(() => import("./Popup"), { ssr: false });
 
 	let toastProperties: ToastOptions = {
 		position: "top-left",
