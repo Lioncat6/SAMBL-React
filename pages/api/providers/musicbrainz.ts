@@ -1,5 +1,5 @@
 import { MusicBrainzApi, CoverArtArchiveApi, IRelation, RelationsIncludes, IArtist, EntityType, IBrowseReleasesQuery, IRelease, IEntity, IRecording, ICoverInfo, ICoversInfo, IReleaseList, IUrlList, IUrlLookupResult, IUrl, IBrowseReleasesResult, IRecordingList, IArtistList, IArtistMatch, ITrack, IBrowseRecordingsQuery, UrlIncludes, ReleaseIncludes } from "musicbrainz-api";
-import { UrlInfo, UrlMBIDDict, UrlData, Provider, TrackObject, ArtistObject, PartialArtistObject, AlbumObject, ExtendedAlbumObject, MusicBrainzProvider, AlbumData, ExtendedAlbumData, ExtendedTrackObject, RegexArtistUrlQuery, IdMBIDDict } from "../../../types/provider-types";
+import { UrlInfo, UrlMBIDDict, UrlData, Provider, TrackObject, ArtistObject, PartialArtistObject, AlbumObject, ExtendedAlbumObject, MusicBrainzProvider, AlbumData, ExtendedAlbumData, ExtendedTrackObject, RegexArtistUrlQuery, IdMBIDDict, Capabilities } from "../../../types/provider-types";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
@@ -390,8 +390,21 @@ function getArtistUrl(artist: IArtist): string | null {
 	return createUrl('artist', artist.id);
 }
 
+const capabilities: Capabilities = {
+  isrcs: {
+    availability: "sometimes",
+    presence: "always"
+  },
+  upcs: {
+    availability: "sometimes",
+    presence: "always"
+  }
+}
+
+
 const musicbrainz: MusicBrainzProvider = {
 	namespace,
+	config: {capabilities},
 	getIdBySpotifyId: withCache(getIdBySpotifyId, { ttl: 60 * 15, namespace: namespace }),
 	getIdsByExternalUrls: withCache(getIdsBySpotifyUrls, { ttl: 60 * 15, namespace: namespace }),
 	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 15, namespace: namespace }),

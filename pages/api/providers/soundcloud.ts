@@ -6,7 +6,8 @@ import type {
   PartialArtistObject,
   UrlData,
   FullProvider,
-  RawAlbumData
+  RawAlbumData,
+  Capabilities
 } from '../../../types/provider-types'
 import logger from '../../../utils/logger'
 import withCache from '../../../utils/cache'
@@ -280,8 +281,20 @@ async function getAlbumById (
 
 
 
+const capabilities: Capabilities = {
+  isrcs: {
+    availability: "sometimes",
+    presence: "onAlbumRefresh"
+  },
+  upcs: {
+    availability: "sometimes",
+    presence: "always"
+  }
+}
+
 const soundcloud: FullProvider = {
   namespace,
+  config: {capabilities},
   searchByArtistName: withCache(searchByArtistName, {
     ttl: 60 * 30,
     namespace: namespace
