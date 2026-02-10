@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, FullProvider, PartialArtistObject, RawAlbumData } from "../../../types/provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, FullProvider, PartialArtistObject, RawAlbumData, Capabilities } from "../../../types/provider-types";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
@@ -379,8 +379,20 @@ function getArtistUrl(artist) {
 
 init();
 
+const capabilities: Capabilities = {
+  isrcs: {
+	availability: "sometimes",
+	presence: "onAlbumRefresh"
+  },
+  upcs: {
+	availability: "sometimes",
+	presence: "onAlbumRefresh"
+  }
+}
+
 const bandcamp: FullProvider = {
 	namespace,
+	config: {capabilities},
 	searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30, namespace: namespace }),
 	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 30, namespace: namespace }),
 	getAlbumById: withCache(getAlbumById, { ttl: 60 * 30, namespace: namespace }),

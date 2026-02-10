@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData } from "../../../types/provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities } from "../../../types/provider-types";
 import logger from "../../../utils/logger";
 import text from "../../../utils/text";
 import withCache from "../../../utils/cache";
@@ -267,8 +267,20 @@ function getArtistUrl(artist) {
 	return artist.link || `https://www.deezer.com/artist/${artist.id}`;
 }
 
+const capabilities: Capabilities = {
+  isrcs: {
+	availability: "always",
+	presence: "onTrackRefresh"
+  },
+  upcs: {
+	availability: "always",
+	presence: "onAlbumRefresh"
+  }
+}
+
 const deezer: FullProvider = {
 	namespace,
+	config: {capabilities},
 	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 30, namespace: namespace }),
 	getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 30, namespace: namespace }),
     searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30,  namespace: namespace }),

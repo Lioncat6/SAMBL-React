@@ -109,7 +109,21 @@ export class UrlMBIDDict {
 
 export type IdMBIDDict = UrlMBIDDict;
 
+export type DataAvailability = "always" | "sometimes" | "never"
+export type AlbumDataPresence = "always" | "onAlbumRefresh" | "never"
+export type TracKDataPresence = AlbumDataPresence | "onTrackRefresh"
+export class Capabilities {
+    isrcs?: {
+        availability: DataAvailability
+        presence: TracKDataPresence
+    }
+    upcs?: {
+        availability: DataAvailability
+        presence: AlbumDataPresence
+    }
+}
 export class ProviderConfig {
+    capabilities: Capabilities
     default?: boolean;
 }
 
