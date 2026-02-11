@@ -6,7 +6,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import normalizeVars from "../../utils/normalizeVars";
 import { IRelease } from "musicbrainz-api";
 import { SAMBLApiError } from "../../types/api-types";
-import { TrackObject } from "../../types/provider-types";
+import { AlbumObject, TrackObject } from "../../types/provider-types";
 
 export default async function handler(req:NextApiRequest, res:NextApiResponse) {
     try {
@@ -51,15 +51,16 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
             return res.status(400).json({ error: "Provider doesn't exist or doesn't support this operation" } as SAMBLApiError);
         }
         
-        let sourceAlbum = await providerObj.getAlbumById(parsed_id, { noCache: true });
-        if (!sourceAlbum) {
+        const rawAlbum = await providerObj.getAlbumById(parsed_id, { noCache: true });
+        if (!rawAlbum) {
             return res.status(404).json({ error: "Album not found" } as SAMBLApiError);
         }
-        sourceAlbum = providerObj.formatAlbumObject(sourceAlbum);
+        const sourceAlbum = providerObj.formatAlbumObject(rawAlbum);
         let mbAlbum: IRelease | null = null;
         let urlResults = (await musicbrainz.getAlbumsBySourceUrls([sourceAlbum.url], ["release-rels"], { noCache: true }))?.urls[0];
-        if (urlResults?.relations && urlResults?.relations?.length > 0 && urlResults?.relations[0].release?.id) {
-            mbAlbum = await musicbrainz.getAlbumByMBID(urlResults?.relations[0].release?.id, ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"], { noCache: true });
+        let barcodeResults = sourceAlbum.upc ? (await musicbrainz.getAlbumByUPC(sourceAlbum.upc, {noCache: true}))?.releases : [];
+        if (urlResults?.relations?.[0]?.release?.id || barcodeResults?.[0]?.id) {
+            mbAlbum = await musicbrainz.getAlbumByMBID((urlResults?.relations?.[0]?.release?.id || barcodeResults?.[0]?.id)!, ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"], { noCache: true });
         } else if (mbid && musicbrainz.validateMBID(mbid)){
             let mbSearch = await musicbrainz.searchForAlbumByArtistAndTitle(mbid, sourceAlbum.name, { noCache: true })
             if (mbSearch && mbSearch?.releases?.length > 0) {
@@ -79,12 +80,14 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
                 const formattedTrack = rawTrack ? providerObj.formatTrackObject(rawTrack): null;
                 tracks.push(formattedTrack)
             }
+            let finalTracks: TrackObject[] = [];
             for (const newTrack in tracks){
-                if (!tracks[newTrack]) tracks[newTrack] = album.albumTracks[newTrack];
+                finalTracks.push(tracks[newTrack] || album.albumTracks[newTrack]);
             }
-            const newAlbum = {
+            tracks.filter((track) => (track));
+            const newAlbum: AlbumObject = {
                 ...sourceAlbum,
-                albumTracks: tracks
+                albumTracks: finalTracks
             }
             let finalAlbum = processData([newAlbum], formattedMBAlbum ? [formattedMBAlbum] : [], mbid, artist_id, providerObj.namespace);
             return res.status(200).json(finalAlbum.albumData[0]);
