@@ -43,9 +43,9 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
             return res.status(400).json({ error: "Provider doesn't exist or doesn't support this operation" } as SAMBLApiError);
         }
 
-		if (!mbid || !musicbrainz.validateMBID(mbid)) {
-			return res.status(400).json({ error: "Parameter `mbid` is missing or malformed" } as SAMBLApiError);
-		}
+		// if (!mbid || !musicbrainz.validateMBID(mbid)) {
+		// 	return res.status(400).json({ error: "Parameter `mbid` is missing or malformed" } as SAMBLApiError);
+		// }
 
         if (!providerObj) {
             return res.status(400).json({ error: "Provider doesn't exist or doesn't support this operation" } as SAMBLApiError);
@@ -60,7 +60,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
         let urlResults = (await musicbrainz.getAlbumsBySourceUrls([sourceAlbum.url], ["release-rels"], { noCache: true }))?.urls[0];
         if (urlResults?.relations && urlResults?.relations?.length > 0 && urlResults?.relations[0].release?.id) {
             mbAlbum = await musicbrainz.getAlbumByMBID(urlResults?.relations[0].release?.id, ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"], { noCache: true });
-        } else {
+        } else if (mbid && musicbrainz.validateMBID(mbid)){
             let mbSearch = await musicbrainz.searchForAlbumByArtistAndTitle(mbid, sourceAlbum.name, { noCache: true })
             if (mbSearch && mbSearch?.releases?.length > 0) {
                 mbAlbum = await musicbrainz.getAlbumByMBID(mbSearch.releases[0].id, ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"], { noCache: true });
