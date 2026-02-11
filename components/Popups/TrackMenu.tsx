@@ -27,7 +27,7 @@ function MbUrlIcon({ status, url, styleClass, isAlbum = true }: { status: AlbumS
 	)
 }
 
-function AlbumDetails({ data }: {data: DisplayAlbum}) {
+function AlbumDetails({ data }: { data: DisplayAlbum }) {
 	const {
 		provider,
 		id,
@@ -78,7 +78,7 @@ function AlbumDetails({ data }: {data: DisplayAlbum}) {
 				</div>
 				<span className={styles.releaseDate}><MdOutlineCalendarMonth /> {releaseDate}</span>
 				{albumType && <span className={styles.albumType}><MdOutlineAlbum /> {text.capitalizeFirst(albumType)}</span>}
-				{barcode && <span className={`${styles.barcode} ${mbBarcode && styles.mbBarcode}`} title={barcode && "This barcode is sourced from MusicBrainz."}><FaBarcode /> <span>{barcode}</span> <a
+				{barcode && <span className={styles.barcode} title={barcode && "This barcode is sourced from MusicBrainz."}><FaBarcode /> <span className={`${mbBarcode && styles.mbUnderline}`}>{barcode}</span> <a
 					className={styles.lookupButton}
 					href={`/find?query=${encodeURIComponent(barcode)}`}
 					target="_blank"
@@ -92,7 +92,7 @@ function AlbumDetails({ data }: {data: DisplayAlbum}) {
 	);
 }
 
-function TrackItem({ index, track, album, highlight }: { index: string, track: TrackObject | AggregatedTrack, album: AggregatedAlbum, highlight: boolean }) {
+function TrackItem({ index, track, album, isrcSource, highlight }: { index: string, track: TrackObject | AggregatedTrack, album: AggregatedAlbum, isrcSource: ProviderNamespace | null, highlight: boolean }) {
 	let mbid: string | null = null;
 	let mbUrl: string | null = null;
 	let status: TrackStatus = "grey"
@@ -174,7 +174,7 @@ function TrackItem({ index, track, album, highlight }: { index: string, track: T
 			<div className={styles.trackInfo}>
 				<div className={styles.trackTopRow}>
 					<a className={styles.trackTitle} href={track.url || ""} > {track.name}</a> <MbUrlIcon status={status} url={mbUrl || ""} styleClass={styles.trackMB} isAlbum={false} />
-					<div className={styles.trackISRCs}>{Array.isArray(track) && typeof track[0] === "object" ? JSON.stringify(track, null, 2) : String(track.isrcs)}</div>
+					<div className={`${styles.trackISRCs} ${isrcSource == "musicbrainz" && styles.mbUnderline}`} title={isrcSource == "musicbrainz" ? "This ISRC is sourced from MusicBrainz" : undefined}>{Array.isArray(track) && typeof track[0] === "object" ? JSON.stringify(track, null, 2) : String(track.isrcs)}</div>
 				</div>
 				{showArtistCredit() && (
 					<div className={styles.trackArtists}>
@@ -227,14 +227,20 @@ function TrackMenu({ data, refresh, close }: { data: AggregatedAlbum, refresh: (
 			<AlbumDetails data={data} />
 			{!hasFullTrackData && (
 				<div className={styles.noAggregatedTracksWarning}>
-					<MdOutlineWarningAmber /> {data.status == "red" && trackData.length > 0 ? "Add this album to musicbrainz to see full track data" : <><button className={styles.textButton} onClick={refresh} title={"Refresh Album"}>Refresh</button> this album to see full track data</>}
+					<MdOutlineWarningAmber /> {data.status == "red" && trackData.length > 0 ? "Add this album to musicbrainz to see full track data" : <><button className={styles.textButton} onClick={() => (refresh())} title={"Refresh Album"}>Refresh</button> this album to see full track data</>}
 					{trackDataSource && (<div className={styles.trackDataSource}>Currently viewing track data from <span>{text.capitalizeFirst(trackDataSource)}</span></div>)}
 				</div>
 			)}
 			<div className={styles.content}>
 				{Object.entries(trackData).map(([key, value]) => {
 					return (
-						<TrackItem index={key} track={value} album={data} highlight={false} />
+						<TrackItem 
+							index={key} 
+							track={value} 
+							album={data} 
+							isrcSource={data.albumTracks[(value.trackNumber || 1) - 1]?.isrcs.length > 0 ? data.provider : "musicbrainz"} 
+							highlight={false} 
+						/>
 					)
 
 				})}
@@ -250,9 +256,9 @@ function TrackMenu({ data, refresh, close }: { data: AggregatedAlbum, refresh: (
 }
 
 export default function TrackMenuPopup({ data, button, refresh }: { data: AggregatedAlbum, button?: JSX.Element, refresh: () => void }) {
-    return (
-        <Popup button={button}>
-            <TrackMenu data={data} refresh={refresh} />
-        </Popup>
-    );
+	return (
+		<Popup button={button}>
+			<TrackMenu data={data} refresh={refresh} />
+		</Popup>
+	);
 }

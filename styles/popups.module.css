@@ -451,7 +451,7 @@ flex-direction: row;
     color: var(--foreground-primary)
 }
 
-.barcode.mbBarcode > span {
+.mbUnderline {
     text-decoration: underline dashed var(--musicbrainz-orange);
     cursor: help;
 }

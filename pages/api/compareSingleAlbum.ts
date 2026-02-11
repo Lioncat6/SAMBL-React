@@ -6,10 +6,13 @@ import { NextApiRequest, NextApiResponse } from "next";
 import normalizeVars from "../../utils/normalizeVars";
 import { IRelease } from "musicbrainz-api";
 import { SAMBLApiError } from "../../types/api-types";
+import { TrackObject } from "../../types/provider-types";
 
 export default async function handler(req:NextApiRequest, res:NextApiResponse) {
     try {
 		var { provider_id, provider, url, mbid, artist_id } = normalizeVars(req.query);
+
+        const fetchISRCs: boolean = Object.prototype.hasOwnProperty.call(req.query, "fetchISRCs");
 
         if (provider_id && !provider) {
             return res.status(400).json({ error: "Provider must be specified when provider_id is provided" } as SAMBLApiError);
@@ -34,7 +37,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
         } else {
             return res.status(400).json({ error: "Parameters `provider_id` and `provider` are required when not using `url`" } as SAMBLApiError);
         }
-        const providerObj = providers.parseProvider(provider || "", ["getAlbumById", "formatAlbumObject"]);
+        const providerObj = providers.parseProvider(provider || "", ["getAlbumById", "formatAlbumObject", "getTrackById", "formatTrackObject"]);
 
         if (!providerObj) {
             return res.status(400).json({ error: "Provider doesn't exist or doesn't support this operation" } as SAMBLApiError);
@@ -65,11 +68,30 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
         }
         const formattedMBAlbum = mbAlbum ? musicbrainz.formatAlbumObject(mbAlbum) : null;
         let albumData = processData([sourceAlbum], formattedMBAlbum ? [formattedMBAlbum] : [], mbid, artist_id, providerObj.namespace);
-        if (albumData?.albumData && albumData?.albumData.length > 0) {
-            res.status(200).json(albumData.albumData[0]);
+        let album = albumData.albumData?.[0]
+        if (!album) return res.status(500).json({error: "Error processing album data"} as SAMBLApiError)
+        const ISRCConfig = providerObj.config?.capabilities.isrcs;
+        if (fetchISRCs && ISRCConfig?.availability != "never" && ISRCConfig?.presence == "onTrackRefresh") {
+            console.log("refreshing tracks")
+            let tracks: (TrackObject | null)[] = [];
+            for (const track of album.albumTracks) {
+                const rawTrack = track.id ? await providerObj.getTrackById(track.id) : null
+                const formattedTrack = rawTrack ? providerObj.formatTrackObject(rawTrack): null;
+                tracks.push(formattedTrack)
+            }
+            for (const newTrack in tracks){
+                if (!tracks[newTrack]) tracks[newTrack] = album.albumTracks[newTrack];
+            }
+            const newAlbum = {
+                ...sourceAlbum,
+                albumTracks: tracks
+            }
+            let finalAlbum = processData([newAlbum], formattedMBAlbum ? [formattedMBAlbum] : [], mbid, artist_id, providerObj.namespace);
+            return res.status(200).json(finalAlbum.albumData[0]);
         }
+        return res.status(200).json(album);
     } catch (error) {
 		logger.error("Error in CompareSingleAlbum API", error);
-		res.status(500).json({ error: "Internal Server Error", details: error.message } as SAMBLApiError);
+		return res.status(500).json({ error: "Internal Server Error", details: error.message } as SAMBLApiError);
 	}
 }

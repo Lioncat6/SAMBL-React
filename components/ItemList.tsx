@@ -23,31 +23,65 @@ import filters from "../lib/filters";
 import ExportMenuPopup from "./Popups/ExportMenu";
 import TrackMenuPopup from "./Popups/TrackMenu";
 import FilterMenuPopup from "./Popups/FilterMenu";
+import toasts from "../utils/toasts";
 
-function AlbumIcons({ item }) {
-	const { id, url, releaseDate, mbAlbum, trackCount, albumStatus, mbid, albumIssues, provider, artistMBID } = item;
+function AlbumIcons({ item, refresh }: {item: DisplayAlbum, refresh: (fetchISRCs: boolean) => void}) {
+	const { id, url, releaseDate, mbAlbum, trackCount, status, mbid, albumIssues, provider, artistMBID, aggregatedTracks, albumTracks, albumArtists} = item;
+
+	const [isSubmitting, setIsSubmitting] = useState(false);
+
+	async function submitISRCs(){
+		if (status == "green"){
+			if (!(albumTracks.some((track)=> track.isrcs.length >= 1)) && !isSubmitting)
+			{
+				setIsSubmitting(true);
+				refresh(true);
+			} else {
+				setIsSubmitting(false);
+				if (albumTracks.some((track)=> track.isrcs.length >= 1)){
+					const edit_note = editNoteBuilder.buildEditNote("ISRCs", provider, url, albumArtists[0]?.url);
+					let params = "?"
+					albumTracks.forEach((track) => {
+						if (track.isrcs.length>=1){
+							params+=`isrc${track.trackNumber}=${track.isrcs[0]}&`
+						}
+					})
+					params+="mbid="+mbid
+					params+="&edit-note="+edit_note;
+					const ISRCurl = "https://magicisrc.kepstin.ca/"+params;
+					window.open(ISRCurl, "_blank");
+				} else {
+					toasts.info("No ISRCs Found")
+				}
+			}
+		}
+	}
+
+	useEffect(() => {
+		if (isSubmitting) {
+			submitISRCs();
+		}
+	}, [item])
 
 	return (
 		<div className={styles.iconContainer}>
 			{albumIssues.includes("noUPC") && <img className={styles.upcIcon} src="../assets/images/noUPC.svg" title="This release is missing a UPC/Barcode!" alt="Missing UPC" />}
 			{albumIssues.includes("missingISRCs") && (
 				<a
-					className={albumStatus === "green" ? styles.isrcTextAvaliable : styles.isrcText}
-					href={albumStatus === "green" ? `https://isrchunt.com/${provider}/importisrc?releaseId=${id}` : undefined}
-					target={albumStatus === "green" ? "_blank" : undefined}
-					rel={albumStatus === "green" ? "noopener" : undefined}
-					title={albumStatus === "green" ? "This release has missing ISRCs! [Click to Fix]" : "This release has missing ISRCs!"}
+					className={status === "green" ? styles.isrcTextAvaliable : styles.isrcText}
+					onClick={status === "green" ? async () => (await submitISRCs()) : undefined}
+					title={status === "green" ? "This release has missing ISRCs! [Click to Fix]" : "This release has missing ISRCs!"}
 				>
 					ISRC
 				</a>
 			)}
 			{albumIssues.includes("noCover") && (
 				<a
-					className={albumStatus === "green" ? styles.coverArtMissingAvaliable : styles.coverArtMissing}
-					href={albumStatus === "green" ? `https://musicbrainz.org/release/${mbid}/cover-art` : undefined}
-					target={albumStatus === "green" ? "_blank" : undefined}
-					rel={albumStatus === "green" ? "noopener" : undefined}
-					title={albumStatus === "green" ? "This release is missing cover art! [Click to Fix]" : "This release is missing cover art!"}
+					className={status === "green" ? styles.coverArtMissingAvaliable : styles.coverArtMissing}
+					href={status === "green" ? `https://musicbrainz.org/release/${mbid}/cover-art` : undefined}
+					target={status === "green" ? "_blank" : undefined}
+					rel={status === "green" ? "noopener" : undefined}
+					title={status === "green" ? "This release is missing cover art! [Click to Fix]" : "This release is missing cover art!"}
 				/>
 			)}
 			{albumIssues.includes("trackDiff") && (
@@ -57,16 +91,16 @@ function AlbumIcons({ item }) {
 			)}
 			{albumIssues.includes("noDate") && (
 				<a
-					className={`${styles.dateMissing} ${albumStatus === "green" ? styles.dateMissingAvaliable : ""}`}
+					className={`${styles.dateMissing} ${status === "green" ? styles.dateMissingAvaliable : ""}`}
 					href={
-						albumStatus === "green"
-							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${releaseDate.split("-")[0]}&events.0.date.month=${releaseDate.split("-")[1]}&events.0.date.day=${releaseDate.split("-")[2]
+						status === "green"
+							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${releaseDate?.split("-")[0]}&events.0.date.month=${releaseDate?.split("-")[1]}&events.0.date.day=${releaseDate?.split("-")[2]
 							}&edit_note=${encodeURIComponent(editNoteBuilder.buildEditNote(`Release Date`, provider, url, `https://musicbrainz.org/artist/${artistMBID}`))}`
 							: undefined
 					}
-					title={albumStatus === "green" ? "This release is missing a release date!\n[Click to Fix]" : "This release is missing a release date!"}
-					target={albumStatus === "green" ? "_blank" : undefined}
-					rel={albumStatus === "green" ? "noopener" : undefined}
+					title={status === "green" ? "This release is missing a release date!\n[Click to Fix]" : "This release is missing a release date!"}
+					target={status === "green" ? "_blank" : undefined}
+					rel={status === "green" ? "noopener" : undefined}
 				></a>
 			)}
 			{albumIssues.includes("dateDiff") && <div className={styles.dateDiff} title={`This release has a differing release date! [SP: ${releaseDate} MB: ${mbAlbum?.releaseDate}]\n(This may indicate that you have to split a release.)`} />}
@@ -108,8 +142,6 @@ function ActionButtons({ item }: { item: DisplayAlbum }) {
 }
 
 function SelectionButtons({ item }) {
-	const Popup = dynamic(() => import("./Popup"), { ssr: false });
-
 	return (
 		<>
 			<ExportMenuPopup
@@ -181,9 +213,9 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 		searchReason,
 	} = item;
 
-	async function refreshData() {
+	async function refreshData(fetchISRCs = false) {
 		setIsLoading(true);
-		const response = await dispPromise(fetch(`/api/compareSingleAlbum?url=${url}&mbid=${artistMBID}&artist_id=${artistID}`), "Refreshing album...");
+		const response = await dispPromise(fetch(`/api/compareSingleAlbum?url=${url}&mbid=${artistMBID}&artist_id=${artistID}${fetchISRCs ? '&fetchISRCs' : ""}`), "Refreshing album...");
 		setIsLoading(false);
 		if (response.ok) {
 			const updatedItem = await response.json();
@@ -280,7 +312,7 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 								/>
 							</a>
 						)}
-						<div className={`${styles.refreshIcon} ${isLoading && styles.loading}`} onClick={refreshData} title="Refresh Album Data">
+						<div className={`${styles.refreshIcon} ${isLoading && styles.loading}`} onClick={() => (refreshData())} title="Refresh Album Data">
 							<IoMdRefresh />
 						</div>
 					</div>
@@ -321,7 +353,7 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 							data={item}
 							refresh={refreshData}
 						/>
-						<AlbumIcons item={item} />
+						<AlbumIcons item={item} refresh={refreshData}/>
 					</div>
 				</div>
 				{exportState ? <SelectionButtons item={item} /> : <ActionButtons item={item} />}
@@ -536,7 +568,7 @@ function LoadingContainer({ text, showRefresh = false }) {
 function RefreshButton({ refresh, showRefresh = false }) {
 	if (refresh != undefined) {
 		return (
-			<button title={"Refresh Artist Albums"} id="refreshButton" className={styles.refreshButton} onClick={refresh}>
+			<button title={"Refresh Artist Albums"} id="refreshButton" className={styles.refreshButton} onClick={() => (refresh())}>
 				<IoMdRefresh />
 			</button>
 		)
