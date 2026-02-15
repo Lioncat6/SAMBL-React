@@ -71,6 +71,11 @@ function AIArtistNotice() {
 		<NoticeBox
 			color="orange"
 			text={`This artist uses partially or entirely AI-generated content.`}
+			button={
+				<a href="https://en.wikipedia.org/wiki/AI_slop#In_music" rel="noopener" target="_blank" className={styles.addToMBButton}>
+					Learn More
+				</a>
+			}
 		/>
 	);
 }
