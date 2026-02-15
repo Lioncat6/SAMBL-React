@@ -24,8 +24,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             if (!urlInfo) {
                 return res.status(404).json({ error: "Invalid provider URL" } as SAMBLApiError);
             }
-            if (urlInfo.type !== "track") {
-                return res.status(400).json({ error: `Invalid URL type. Expected a track URL.` } as SAMBLApiError);
+            if (urlInfo.type !== "artist") {
+                return res.status(400).json({ error: `Invalid URL type. Expected a artist URL.` } as SAMBLApiError);
             }
             parsed_id = urlInfo.id;
             if (!parsed_id) {

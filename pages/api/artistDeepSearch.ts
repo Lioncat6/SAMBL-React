@@ -86,14 +86,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const upc = album.upc;
             if (!upc) continue;
             const mbMatch = await musicbrainz.getAlbumByUPC(upc);
-            if (mbMatch && mbMatch.releases?.length > 0){
+            if (mbMatch && mbMatch.length > 0){
                 if (!upcArtistArray.has(upc)) {
                     upcArtistArray.set(upc, []);
                 }
                 const artistArray = upcArtistArray.get(upc)!;
-                for (const release of mbMatch?.releases) {
-                    mbAlbums.push(musicbrainz.formatAlbumObject(release));
-                    if (!release["artist-credit"]) continue;
+                for (const release of mbMatch) {
+                    mbAlbums.push(release);
+                    if (release.albumArtists.length == 0) continue;
                     for (const credit of release["artist-credit"]) {
                         artistArray.push(credit.artist);
                         artists.push(musicbrainz.formatPartialArtistObject(credit.artist));
