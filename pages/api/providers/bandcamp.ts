@@ -19,11 +19,9 @@ class bandcampId {
 }
 
 function parseId(id: string | null): bandcampId {
-	console.log(id)
 	if (id && parseUrl(id)){
 		id = parseUrl(id)?.id || null
 	}
-	console.log(id)
 	if (!id) {
 		throw new Error("Invalid entity id!")
 	}
