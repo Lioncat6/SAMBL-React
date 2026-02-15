@@ -78,7 +78,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
         let mbAlbums: ExtendedAlbumObject[] = [];
         let artists: PartialArtistObject[] = []
-        let upcArtistArray: Map<string, IArtist[]> = new Map();
+        let upcArtistArray: Map<string, PartialArtistObject[]> = new Map();
         if (albumData.length > albumCount) {
             albumData.length = albumCount;
         }
@@ -94,9 +94,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 for (const release of mbMatch) {
                     mbAlbums.push(release);
                     if (release.albumArtists.length == 0) continue;
-                    for (const credit of release["artist-credit"]) {
-                        artistArray.push(credit.artist);
-                        artists.push(musicbrainz.formatPartialArtistObject(credit.artist));
+                    for (const artist of release.albumArtists) {
+                        artistArray.push(artist);
+                        artists.push(artist);
                     }
                 }
             }
