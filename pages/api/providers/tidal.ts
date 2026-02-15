@@ -230,7 +230,7 @@ async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
                             artistNames: getArtists(album.relationships?.artists?.data?.map((artist) => artist.id) || []).map((artist) => artist.name),
                             releaseDate: album.attributes.releaseDate || null,
                             trackCount: album.attributes.numberOfItems,
-                            albumType: album.attributes.type,
+                            albumType: album.attributes.albumType,
                             upc: album.attributes.barcodeId,
                             albumTracks: [] //TODO: Implement album track fetching for getting album by UPC
                         }
