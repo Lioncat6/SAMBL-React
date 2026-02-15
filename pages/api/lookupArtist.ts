@@ -54,7 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
         let mbData = await musicbrainz.getArtistByUrl(providerUrl, ["artist-rels", "url-rels"], { noCache: forceRefresh });
         let mbid = mbData?.id || null;
-        return res.status(200).json({ mbid, provider: sourceProvider.namespace, provider_id } as ArtistLookupData);
+        return res.status(200).json({ mbid, provider: sourceProvider.namespace, provider_id: parsed_id } as ArtistLookupData);
     } catch (error) {
         logger.error("Error in lookupArtist API", error);
         return res.status(500).json({ error: "Internal Server Error", details: error.message } as SAMBLApiError);
