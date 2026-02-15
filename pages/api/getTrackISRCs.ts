@@ -3,7 +3,7 @@ import logger from "../../utils/logger";
 import { ProviderWithCapabilities } from "../../types/provider-types";
 import { NextApiRequest, NextApiResponse } from "next";
 import normalizeVars from "../../utils/normalizeVars";
-import { SAMBLApiError } from "../../types/api-types";
+import { ISRCData, SAMBLApiError } from "../../types/api-types";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
@@ -44,7 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (isrcs == null) {
             return res.status(404).json({ error: "Track not found!" } as SAMBLApiError);
         }
-        res.status(200).json({ isrcs });
+        res.status(200).json({ isrcs } as ISRCData);
     } catch (error) {
         logger.error("Error in getTrackISRCs API:", error);
         res.status(500).json({ error: "Internal Server Error", details: error.message } as SAMBLApiError);

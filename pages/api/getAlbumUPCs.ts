@@ -2,7 +2,7 @@ import providers from "./providers/providers";
 import logger from "../../utils/logger";
 import normalizeVars from "../../utils/normalizeVars";
 import { ProviderWithCapabilities } from "../../types/provider-types";
-import { SAMBLApiError } from "../../types/api-types";
+import { SAMBLApiError, UPCData } from "../../types/api-types";
 
 export default async function handler(req, res) {
     try {
@@ -47,7 +47,7 @@ export default async function handler(req, res) {
         // if (upcs == -1) {
         //     return res.status(200).json({ upcs: [] });
         // }
-        res.status(200).json({ upcs });
+        res.status(200).json({ upcs } as UPCData);
     } catch (error) {
         logger.error("Error in getAlbumUPCs API:", error);
         res.status(500).json({ error: "Internal Server Error", details: error.message } as SAMBLApiError);
