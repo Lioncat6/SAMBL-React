@@ -73,6 +73,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
             upcs = albumData.map(album => album.upc);
         }
+        upcs = albumData.map(album => album.upc).filter(upc => upc);
         if (upcs.length === 0) {
             return res.status(404).json({ error: "No UPCs found!" } as SAMBLApiError);
         }
@@ -101,7 +102,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 }
             }
         }
-
         if (artists.length === 0) {
             return res.status(404).json({ error: "No artists found!" } as SAMBLApiError);
         }
