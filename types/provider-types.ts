@@ -81,13 +81,14 @@ export class TrackObject {
 };
 
 export class ExtendedTrackObject extends TrackObject {
-    comment: string | null;
-    externalUrls: string[] | null;
+    comment?: string | null;
+    extraInfo?: {[key: string]: any}
+    externalUrls?: string[] | null;
 }
 
 export class PagingData {
     count: number | null;
-    current: number | null;
+    current: string | number | null;
     next: string | null;
 }
 
@@ -138,14 +139,14 @@ export class RegexArtistUrlQuery {
 }
 
 export class FullProvider extends Provider {
-    getTrackByISRC?: (isrc: string, options?: CacheOptions) => Promise<any | null>;
-    getAlbumByUPC?: (upc: string, options?: CacheOptions) => Promise<any | null>;
+    getTrackByISRC?: (isrc: string, options?: CacheOptions) => Promise<TrackObject[] | null>;
+    getAlbumByUPC?: (upc: string, options?: CacheOptions) => Promise<AlbumObject[] | null>;
     searchByArtistName: (query: string, options?: CacheOptions) => Promise<any | null>;
     getAlbumById: (id: string, options?: CacheOptions) => Promise<any | null>;
     getTrackById: (id: string, options?: CacheOptions) => Promise<any | null>;
     getArtistById: (id: string, options?: CacheOptions) => Promise<any | null>;
     getArtistAlbums: (id: string, offset?: string | number, limit?: number, options?: CacheOptions) => Promise<any | null>;
-    formatArtistSearchData: (rawData: any) => any;
+    formatArtistSearchData: (rawData: any) => any[];
     formatArtistLookupData: (rawData: any) => any;
     formatArtistObject: (artist: any) => ArtistObject;
     formatPartialArtistObject: (artist: any) => PartialArtistObject;
@@ -166,8 +167,8 @@ export type ProviderCapability = (keyof PartialProvider);
 export type ProviderWithCapabilities<T extends ProviderCapability[]> = Omit<PartialProvider, T[number]> & Required<Pick<PartialProvider, T[number]>>;
 
 export class MusicBrainzProvider extends FullProvider {
-    override getTrackByISRC: (isrc: string, options?: CacheOptions) => Promise<IRecordingList | null>;
-    override getAlbumByUPC: (upc: string, options?: CacheOptions) => Promise<IReleaseList | null>;
+    override getTrackByISRC: (isrc: string, options?: CacheOptions) => Promise<ExtendedTrackObject[] | null>;
+    override getAlbumByUPC: (upc: string, options?: CacheOptions) => Promise<ExtendedAlbumObject[] | null>;
     override formatAlbumObject: (album: any) => ExtendedAlbumObject;
     getAlbumByMBID: (id: string, inc: ReleaseIncludes[], options?: CacheOptions) => Promise<IRelease | null>;
     getIdBySpotifyId: (spotifyId: string, options?: CacheOptions) => Promise<string | null>;
