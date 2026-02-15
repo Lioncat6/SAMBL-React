@@ -5,123 +5,72 @@ import ItemList from "../../components/ItemList";
 import Head from "next/head";
 import SearchBox from "../../components/SearchBox";
 import { FaWindowRestore } from "react-icons/fa6";
+import toasts from "../../utils/toasts";
+import { FindData, ISRCData, UPCData } from "../../types/api-types";
+import normalizeVars from "../../utils/normalizeVars";
+import { AlbumObject, TrackObject } from "../../types/provider-types";
 
 async function serverFind(query, type) {
-	return new Promise((resolve) => {
-		fetch(`/api/find?query=${query}&type=${type}`)
-			.then((response) => {
-				if (response.ok) {
-					return response.json();
-				} else {
-					return null;
-				}
-			})
-			.then((data) => {
-				resolve(data);
-			})
-			.catch((error) => {
-				console.error("Error fetching data:", error);
-				resolve([]);
-			});
-	});
+	try {
+		const response = await fetch(`/api/find?query=${query}&type=${type}`)
+		if (response.ok) {
+			return await response.json() as FindData;
+		} else {
+			throw new Error((await response.json()).error || response.statusText);
+		}
+	} catch (error) {
+		throw new Error(error)
+	}
+
 }
 
 async function getISRCFromURL(url) {
-	return new Promise((resolve) => {
-		fetch(`/api/getTrackISRCs?url=${encodeURIComponent(url)}`)
-			.then(async (response) => {
-				if (response.ok) {
-					return response.json();
-				} else {
-					throw new Error((await response.json()).error || response.statusText);
-				}
-			})
-			.then((data) => {
-				resolve(data);
-			})
-			.catch((error) => {
-				console.error("Error fetching data:", error);
-				resolve([]);
-			});
-	});
+	try {
+		const response = await fetch(`/api/getTrackISRCs?url=${encodeURIComponent(url)}`)
+		if (response.ok) {
+			return await response.json() as ISRCData;
+		} else {
+			throw new Error((await response.json()).error || response.statusText);
+		}
+	} catch (error) {
+		throw new Error(error)
+	}
 }
 
 async function getUPCFromURL(url) {
-	return new Promise((resolve) => {
-		fetch(`/api/getAlbumUPCs?url=${encodeURIComponent(url)}`)
-			.then(async (response) => {
-				if (response.ok) {
-					return response.json();
-				} else {
-					throw new Error((await response.json()).error || response.statusText);
-				}
-			})
-			.then((data) => {
-				resolve(data);
-			})
-			.catch((error) => {
-				console.error("Error fetching data:", error);
-				resolve([]);
-			});
-	});
+	try {
+		const response = await fetch(`/api/getAlbumUPCs?url=${encodeURIComponent(url)}`)
+		if (response.ok) {
+			return await response.json() as UPCData;
+		} else {
+			throw new Error((await response.json()).error || response.statusText);
+		}
+	} catch (error) {
+		throw new Error(error)
+	}
 }
 
 export default function Find() {
-	const [results, setResults] = useState([]);
+	const [results, setResults] = useState([] as AlbumObject[] | TrackObject[]);
 	const [isLoading, setIsLoading] = useState(false);
 	const router = useRouter();
-	const { query: urlQuery } = router.query;
-	const lastSearchedQuery = useRef(null);
+	const { query: urlQuery } = normalizeVars(router.query);
+	const lastSearchedQuery = useRef(null as string | null);
 	const lastSearchTime = useRef(0);
 
-	let toastProperties = {
-		position: "top-left",
-		autoClose: 5000,
-		hideProgressBar: false,
-		closeOnClick: false,
-		pauseOnHover: true,
-		draggable: true,
-		progress: undefined,
-
-		transition: Flip,
-	};
-	function dispError(message, type = "warn") {
-		if (type === "error") {
-			toast.error(message, toastProperties);
-		} else {
-			toast.warn(message, toastProperties);
-		}
-
-		setIsLoading(false);
-	}
-	function dispPromise(promise, message) {
-		return toast
-			.promise(
-				promise,
-				{
-					pending: message,
-					error: "Data not found!",
-				},
-				toastProperties
-			)
-			.finally(() => {
-				setIsLoading(false);
-			});
-	}
-
-	function handleResults(results) {
+	function handleResults(results: FindData) {
 		let data = results.data || [];
 		let issues = results.issues || [];
 
 		if (data.length > 0) {
 			setResults(data);
 		} else {
-			dispError("No results found!");
+			toasts.warn("No results found!");
 		}
 
 		if (issues.length > 0) {
 			issues.forEach((issue) => {
-				dispError(`Error with provider ${issue.provider}: ${issue.error}`, "error");
+				toasts.error(`Error with provider ${issue.provider}: ${issue.error}`);
 			});
 		}
 	}
@@ -150,54 +99,53 @@ export default function Find() {
 					const soundcloudTrackPattern = /^(https?|http):\/\/(www\.)?soundcloud\.com\/[A-Za-z0-9_\-]+\/[A-Za-z0-9_\-]+$/i;
 					const soundcloudSetPattern = /^(https?|http):\/\/(www\.)?soundcloud\.com\/[A-Za-z0-9_\-]+\/sets\/[A-Za-z0-9_\-]+$/i;
 					if (isrcPattern.test(query)) {
-						const matchedQuery = query.match(isrcPattern)[0];
-						handleResults(await dispPromise(serverFind(matchedQuery, "ISRC"), "Finding by ISRC..."));
+						const matchedQuery = query.match(isrcPattern)?.[0];
+						handleResults(await toasts.dispPromise(serverFind(matchedQuery, "ISRC"), "Finding by ISRC...", "Error finding by ISRC!"));
 					} else if (urlPattern.test(query)) {
 						if (query.includes("/track") || query.includes("/recording") || soundcloudTrackPattern.test(query)) {
-							let response = await dispPromise(getISRCFromURL(query), "Looking up ISRC...");
+							let response = await toasts.dispPromise(getISRCFromURL(query), "Looking up ISRC...", "Error looking up ISRC!");
 							if (response.isrcs?.length > 0) {
 								router.push(`find?query=${response.isrcs[0]}`);
 							} else {
-								dispError("No ISRC found for this URL");
+								toasts.warn("No ISRC found for this URL");
 							}
 						} else if (query.includes("/album") || query.includes("/release/") || query.includes("/releases/") || query.includes("/set/") || soundcloudSetPattern.test(query)) {
-							let response = await dispPromise(getUPCFromURL(query), "Looking up Barcode...");
+							let response = await toasts.dispPromise(getUPCFromURL(query), "Looking up Barcode...", "Error looking up Barcode!");
 							if (response.upcs?.length > 0) {
 								router.push(`find?query=${response.upcs[0]}`);
 							} else {
-								dispError("No Barcode found for this URL");
+								toasts.warn("No Barcode found for this URL");
 							}
 						} else if (query.includes("/artist")) {
-							dispError("This finding method isn't supported yet. Try using a barcode or ISRC!");
+							toasts.warn("This finding method isn't supported yet. Try using a barcode or ISRC!");
 						} else {
-							dispError("This URL is currently not supported. Please enter a valid provider track or album URL.");
+							toasts.warn("This URL is currently not supported. Please enter a valid provider track or album URL.");
 						}
 					} else if (upcPattern.test(query)) {
-						const matchedQuery = query.match(upcPattern)[0];
-						handleResults(await dispPromise(serverFind(matchedQuery, "UPC"), "Finding by Barcode..."));
+						const matchedQuery = query.match(upcPattern)?.[0];
+						handleResults(await toasts.dispPromise(serverFind(matchedQuery, "UPC"), "Finding by Barcode...", "Error finding by Barcode!"));
 					} else if (mbidPattern.test(query) || spfPattern.test(query)) {
-						dispError("Please enter a full URL for the MBID or Spotify ID!");
+						toasts.warn("Please enter a full URL for the MBID or Spotify ID!");
 					} else {
-						dispError("Invalid input format. Please enter a valid ISRC, MBID, Barcode, or Spotify link.");
+						toasts.warn("Invalid input format. Please enter a valid ISRC, MBID, Barcode, or Spotify link.");
 					}
 				} catch (error) {
-					console.error("Error occurred while searching:", error);
-					dispError("An error occurred while searching.", "error");
+					toasts.error("An error occurred while searching.", error);
 				} finally {
 					setIsLoading(false);
 				}
 			}
 		} else {
-			dispError("Please enter a query");
+			toast.warn("Please enter a query");
 		}
 	}
 
 	useEffect(() => {
 		const handleRouteChange = (url) => {
 			if (url.startsWith("/find")) {
-				const findBox = document.getElementById("findBox");
+				const findBox = document.getElementById("findBox") as HTMLInputElement | null;
 				if (findBox) {
-					findBox.value = router.query.query || "";
+					findBox.value = String(router.query.query) || "";
 				}
 				handleSearch();
 			}
@@ -205,9 +153,9 @@ export default function Find() {
 
 		// Initial run
 		if (router.query.query) {
-			const findBox = document.getElementById("findBox");
+			const findBox = document.getElementById("findBox") as HTMLInputElement | null;
 			if (findBox) {
-				findBox.value = router.query.query || "";
+				findBox.value = String(router.query.query) || "";
 			}
 			handleSearch();
 		}
