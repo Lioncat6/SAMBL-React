@@ -438,6 +438,7 @@ function GenericItem({ item }: { item: AlbumObject | ExtendedTrackObject }) {
 	const { provider, imageUrl, imageUrlSmall, name, url } = item;
 	const info = [
 		// text.capitalizeFirst(provider),
+		"comment" in item && item.comment,
 		item.releaseDate,
 		"albumType" in item && item.albumType ? text.capitalizeFirst(item.albumType) : null,
 		"trackCount" in item && `${item.trackCount} tracks`,
