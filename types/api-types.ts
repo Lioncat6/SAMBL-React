@@ -1,5 +1,5 @@
 import { AggregatedAlbum, AggregatedArtist } from "./aggregated-types"
-import { ArtistObject, PartialArtistObject, ProviderNamespace } from "./provider-types"
+import { AlbumObject, ArtistObject, PartialArtistObject, ProviderNamespace, TrackObject } from "./provider-types"
 
 export type DeepSearchMethod = "most_common" | "name_similarity"
 export class DeepSearchData {
@@ -31,5 +31,20 @@ export class SAMBLApiError {
     error: string
     details?: string | null
     parameters?: string[]
+    url?: string
     provider?: ProviderNamespace
+}
+
+export class FindData {
+    type: 'UPC' | 'ISRC'
+    data: AlbumObject[] | TrackObject[]
+    issues: SAMBLApiError[]
+}
+
+export class ISRCData {
+    isrcs: string[]
+}
+
+export class UPCData {
+    upcs: string[]
 }
