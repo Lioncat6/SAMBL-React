@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities } from "../../../types/provider-types";
+import { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities } from "../../../types/provider-types";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
@@ -85,7 +85,7 @@ async function checkAccessToken() {
 	}
 }
 
-async function getArtistById(spotifyId) {
+async function getArtistById(spotifyId: string) {
 	try {
 		await checkAccessToken();
 		// Fetch artist data
@@ -99,7 +99,7 @@ async function getArtistById(spotifyId) {
 	}
 }
 
-async function searchByArtistName(artistName) {
+async function searchByArtistName(artistName: string) {
 	try {
 		await checkAccessToken();
 		// Fetch artist data
@@ -111,7 +111,7 @@ async function searchByArtistName(artistName) {
 	}
 }
 
-async function getArtistAlbums(spotifyId, offset = 0, limit = 50) {
+async function getArtistAlbums(spotifyId: string, offset = 0, limit = 50) {
 	try {
 		await checkAccessToken();
 		// Fetch artist albums
@@ -123,23 +123,25 @@ async function getArtistAlbums(spotifyId, offset = 0, limit = 50) {
 	}
 }
 
-async function getAlbumByUPC(upc) {
+async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
 	try {
 		await checkAccessToken();
 		const data = await spotifyApi.searchAlbums(`upc:${upc}`, { limit: 20 });
-		return data.body;
+		return data.body.albums?.items.map(formatAlbumObject) || [];
 	} catch (error) {
 		err.handleError("Error fetching album data:", error);
+		return null;
 	}
 }
 
-async function getTrackByISRC(isrc: string) {
+async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> {
 	try {
 		await checkAccessToken();
 		const data = await spotifyApi.searchTracks(`isrc:${isrc}`, { limit: 20 });
-		return data.body;
+		return data.body.tracks?.items.map(formatTrackObject) || [];
 	} catch (error) {
 		err.handleError("Error fetching track data:", error);
+		return null;
 	}
 }
 
@@ -148,7 +150,8 @@ async function getAlbumById(spotifyId: string) {
 		await checkAccessToken();
 		const data = await spotifyApi.getAlbum(spotifyId);
 		if (data.body?.tracks?.total > 50) {
-			data.body.tracks = await getAlbumTracksById(spotifyId);
+			let tracks = await getAlbumTracksById(spotifyId);
+			if (tracks) data.body.tracks = tracks.items;
 		}
 		return data.body;
 	} catch (error) {
@@ -184,58 +187,67 @@ async function getTrackById(spotifyId) {
 	}
 }
 
-function getTrackISRCs(track) {
+export interface ExtendedTrack extends SpotifyApi.TrackObjectSimplified, Partial<Omit<SpotifyApi.TrackObjectFull, keyof SpotifyApi.TrackObjectSimplified>> {}
+
+function getTrackISRCs(track: SpotifyApi.TrackObjectSimplified | SpotifyApi.TrackObjectFull) {
 	if (!track) return null;
-	let isrcs = track?.external_ids?.isrc ? [track.external_ids.isrc] : [];
+	const extendedTrack = track as ExtendedTrack
+	let isrcs = extendedTrack?.external_ids?.isrc ? [extendedTrack.external_ids.isrc] : [];
 	return isrcs;
 }
 
-function getAlbumUPCs(album) {
+export interface ExtendedAlbum extends SpotifyApi.AlbumObjectSimplified, Partial<Omit<SpotifyApi.AlbumObjectFull, keyof SpotifyApi.AlbumObjectSimplified	>> {}
+
+function getAlbumUPCs(album: SpotifyApi.AlbumObjectFull | SpotifyApi.AlbumObjectSimplified) {
 	if (!album) return null;
-	let upcs = album?.external_ids?.upc ? [album.external_ids.upc] : [];
+	const extendedAlbum = album as ExtendedAlbum;
+	let upcs = extendedAlbum?.external_ids?.upc ? [extendedAlbum.external_ids.upc] : [];
 	return upcs;
 }
 
-function formatArtistSearchData(rawData) {
-	return rawData.artists.items;
+function formatArtistSearchData(rawData: SpotifyApi.SearchResponse) {
+	return rawData.artists?.items || [];
 }
 
-function formatArtistLookupData(rawData) {
+function formatArtistLookupData(rawData: SpotifyApi.SingleAlbumResponse) {
 	return rawData;
 }
 
-function formatArtistObject(rawObject): ArtistObject {
+export interface extendedArtist extends SpotifyApi.ArtistObjectSimplified, Partial<Omit<SpotifyApi.ArtistObjectFull, keyof SpotifyApi.ArtistObjectSimplified>> {}
+
+function formatArtistObject(rawObject: SpotifyApi.ArtistObjectSimplified | SpotifyApi.ArtistObjectFull): ArtistObject {
+	const extendedArtist = rawObject as extendedArtist;
 	return {
-		name: rawObject.name,
-		url: getArtistUrl(rawObject),
-		imageUrl: rawObject.images[0]?.url || "",
-		imageUrlSmall: rawObject.images[1]?.url || rawObject.images[0]?.url || "",
+		name: extendedArtist.name,
+		url: getArtistUrl(extendedArtist),
+		imageUrl: extendedArtist.images?.[0]?.url || "",
+		imageUrlSmall: extendedArtist.images?.[1]?.url || extendedArtist.images?.[0]?.url || "",
 		bannerUrl: null,
-		relevance: `${rawObject.followers.total} Followers`,
-		info: rawObject.genres.join(", "), // Convert genres array to a string
-		genres: rawObject.genres,
-		followers: rawObject.followers.total,
-		popularity: rawObject.popularity,
+		relevance: extendedArtist.followers ? `${extendedArtist.followers.total} Followers`: "",
+		info: extendedArtist.genres?.join(", ") || "", // Convert genres array to a string
+		genres: extendedArtist.genres || null,
+		followers: extendedArtist.followers?.total || null,
+		popularity: extendedArtist.popularity || null,
 		id: rawObject.id,
 		provider: namespace,
 	};
 }
 
-function getArtistUrl(artist) {
+function getArtistUrl(artist: SpotifyApi.ArtistObjectSimplified) {
 	return artist.external_urls.spotify || `https://open.spotify.com/artist/${artist.id}`;
 }
 
-function formatAlbumGetData(rawData): RawAlbumData {
+function formatAlbumGetData(rawData: SpotifyApi.ArtistsAlbumsResponse): RawAlbumData {
 	const nextIntRegex = /offset=(\d+)/;
 	return {
 		count: rawData.total,
 		current: rawData.offset,
-		next: rawData.next ? rawData.next?.match(nextIntRegex)[1] : null,
+		next: rawData.next ? rawData.next.match(nextIntRegex)?.[1] || null : null,
 		albums: rawData.items,
 	};
 }
 
-function formatPartialArtistObject(artist): PartialArtistObject {
+function formatPartialArtistObject(artist: SpotifyApi.ArtistObjectSimplified): PartialArtistObject {
 	return {
 		name: artist.name,
 		url: getArtistUrl(artist),
@@ -246,7 +258,7 @@ function formatPartialArtistObject(artist): PartialArtistObject {
 	};
 }
 
-function formatAlbumObject(album): AlbumObject {
+function formatAlbumObject(album: SpotifyApi.SingleAlbumResponse): AlbumObject {
 	return {
 		provider: namespace,
 		id: album.id,
@@ -264,35 +276,46 @@ function formatAlbumObject(album): AlbumObject {
 	};
 }
 
-function getAlbumTracks(album): TrackObject[] {
-	let tracks = album.tracks?.items
+
+export interface ExtendedTrack extends SpotifyApi.TrackObjectSimplified, Partial<Omit<SpotifyApi.TrackObjectFull, keyof SpotifyApi.TrackObjectSimplified>> {}
+export interface trackWithAlbumData extends ExtendedTrack {
+		imageUrl?: string
+		imageUrlSmall?: string
+		albumName?: string
+		release_date?: string
+	}
+
+function getAlbumTracks(album: SpotifyApi.SingleAlbumResponse): TrackObject[] {
+	let tracks: trackWithAlbumData[] = album.tracks?.items
 	if (tracks) {
 		tracks.forEach((track) => {
 			track.imageUrl = getFullAlbumImageUrl(album.images[0]?.url);
 			track.imageUrlSmall = album.images[1]?.url || album.images[0]?.url || "";
 			track.albumName = album.name;
+			track.release_date = album.release_date
 		});
-		tracks = tracks.map(formatTrackObject);
-		return tracks;
+		const formattedTracks = tracks.map(formatTrackObject);
+		return formattedTracks;
 	}
 	return []
 }
 
-function formatTrackObject(track): TrackObject {
+function formatTrackObject(track: trackWithAlbumData | SpotifyApi.TrackObjectSimplified | SpotifyApi.TrackObjectFull): TrackObject {
+	let extendedTrack = track as trackWithAlbumData	
 	return {
 		provider: namespace,
-		id: track.id,
-		name: track.name,
-		url: track.external_urls.spotify,
-		imageUrl: getFullAlbumImageUrl(track.imageUrl),
-		imageUrlSmall: track.imageUrlSmall || "",
-		albumName: track.albumName,
-		trackArtists: track.artists.map(formatPartialArtistObject),
-		artistNames: track.artists.map((artist) => artist.name),
-		duration: track.duration_ms,
-		trackNumber: track.track_number,
-		releaseDate: track.release_date || null,
-		isrcs: track.external_ids?.isrc ? [track.external_ids.isrc] : [],
+		id: extendedTrack.id,
+		name: extendedTrack.name,
+		url: extendedTrack.external_urls.spotify,
+		imageUrl: extendedTrack.imageUrl ? getFullAlbumImageUrl(extendedTrack.imageUrl) : null,
+		imageUrlSmall: extendedTrack.imageUrlSmall || "",
+		albumName: extendedTrack.albumName || null,
+		trackArtists: extendedTrack.artists.map(formatPartialArtistObject),
+		artistNames: extendedTrack.artists.map((artist) => artist.name),
+		duration: extendedTrack.duration_ms,
+		trackNumber: extendedTrack.track_number,
+		releaseDate: extendedTrack.release_date || null,
+		isrcs: extendedTrack.external_ids?.isrc ? [extendedTrack.external_ids.isrc] : [],
 	};
 }
 

@@ -24,35 +24,38 @@ async function refreshApi() {
 	}
 }
 
-async function getTrackByISRC(isrc) {
+async function getTrackByISRC(isrc: number): Promise<TrackObject[] | null> {
 	await refreshApi();
 	try {
 		const data = await deezerApi.track(`isrc:${isrc}`);
 		if (data.title) {
-			return data;
+			return [formatTrackObject(data)];
 		} else {
 			return null;
 		}
 	} catch (error) {
 		err.handleError("Error fetching track by ISRC:", error);
+		return null;
 		
 	}
 }
 
-async function getAlbumByUPC(upc) {
+async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
 	await refreshApi();
 	try {
 		const data = await deezerApi.album(`upc:${upc.replace(/^0+/, "")}`);
 		if (data.title) {
-			return data;
+			return [formatAlbumObject(data)];
 		} else {
 			return null;
 		}
 	} catch (error) {
 		err.handleError("Error fetching album by UPC:", error);
+		return null;
 		
 	}
 }
+
 
 async function searchByArtistName(query) {
 	await refreshApi();

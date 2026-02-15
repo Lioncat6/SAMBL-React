@@ -176,7 +176,6 @@ async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> {
 			"include[songs]": "artists",
 			"filter[isrc]": isrc
 		});
-
 		return resourceResponse?.data.map(formatTrackObject) ?? [];
 	} catch (error) {
 		err.handleError("Error fetching track data:", error);
@@ -184,7 +183,7 @@ async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> {
 	}
 }
 
-async function getAlbumByUPC(upc: string): Promise<Resource<AlbumAttributes> | null> {
+async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
 	try {
 		const resourceResponse = await get<ResourceResponse<Resource<AlbumAttributes>>>("albums", {
 			"include": "artists",
@@ -194,7 +193,7 @@ async function getAlbumByUPC(upc: string): Promise<Resource<AlbumAttributes> | n
 			"filter[upc]": upc
 		});
 
-		return resourceResponse?.data[0] ?? null;
+		return resourceResponse?.data.map(formatAlbumObject) ?? null;
 	} catch (error) {
 		err.handleError("Error fetching album data:", error);
 		return null;

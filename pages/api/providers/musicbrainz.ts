@@ -5,6 +5,7 @@ import withCache from "../../../utils/cache";
 import ErrorHandler from "../../../utils/errorHandler";
 import { format } from "path";
 import parsers from "../../../lib/parsers/parsers";
+import { FaPray } from "react-icons/fa";
 const namespace = "musicbrainz";
 
 const err = new ErrorHandler(namespace);
@@ -171,21 +172,21 @@ async function getArtistFeaturedAlbums(mbid: string, offset = 0, limit = 100, in
 	}
 }
 
-async function getAlbumByUPC(upc: string): Promise<IReleaseList | null | undefined> {
+async function getAlbumByUPC(upc: string): Promise<ExtendedAlbumObject[] | null | undefined> {
 	try {
 		const data = await mbApi.search("release", { query: `barcode:${upc}`, inc: ["artist-rels"], limit: 20 });
 		checkError(data);
-		return data;
+		return data.releases.map(formatAlbumObject);
 	} catch (error) {
 		err.handleError("Failed to fetch album", error);
 	}
 }
 
-async function getTrackByISRC(isrc: string): Promise<IRecordingList | null | undefined> {
+async function getTrackByISRC(isrc: string): Promise<ExtendedTrackObject[] | null | undefined> {
 	try {
 		const data = await mbApi.search("recording", { query: `isrc:${isrc}`, inc: ["artist-rels"], limit: 20 });
 		checkError(data);
-		return data;
+		return data.recordings.map(formatTrackObject);
 	} catch (error) {
 		err.handleError("Failed to fetch album", error);
 	}
@@ -311,7 +312,7 @@ function formatAlbumObject(album: IRelease): ExtendedAlbumObject {
 		upc: album.barcode || null,
 		trackCount: trackCount,
 		albumType: album["release-group"] ? album["release-group"]["primary-type"] : null,
-		albumTracks: album.media && album.media.length > 0 ? album.media.flatMap(medium => medium.tracks?.map(track => formatTrackObject(track))) : [],
+		albumTracks: ( album.media && album.media.length > 0 ) ? album.media.flatMap(medium => medium.tracks?.map(track => formatTrackObject(track))).filter((track) => track != null) : [],
 		externalUrls: album.relations ? album.relations.filter(rel => rel.url && rel.url?.resource)?.map(rel => rel.url?.resource).filter(url => typeof url == 'string') : [],
 		hasImage: album["cover-art-archive"]?.artwork
 	}
