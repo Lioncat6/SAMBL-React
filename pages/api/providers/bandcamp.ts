@@ -19,6 +19,11 @@ class bandcampId {
 }
 
 function parseId(id: string | null): bandcampId {
+	console.log(id)
+	if (id && parseUrl(id)){
+		id = parseUrl(id)?.id || null
+	}
+	console.log(id)
 	if (!id) {
 		throw new Error("Invalid entity id!")
 	}
@@ -113,6 +118,7 @@ async function init() {
 
 async function getAlbumById(id: string) {
 	const bcId = parseId(id)
+	id = createId(bcId)
 	try {
 		let albumData: any = null;
 		if (bcId.type = "album") {
@@ -134,7 +140,8 @@ function getAlbumUPCs(album) {
 }
 
 async function getTrackById(id: string) {
-	const bcId = parseId(id);
+	const bcId = parseId(id)
+	id = createId(bcId)
 	try {
 		let trackData = await getTrackInfoAsync(createUrl('track', id));
 		return trackData;
