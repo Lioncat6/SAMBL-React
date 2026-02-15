@@ -58,7 +58,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
         const sourceAlbum = providerObj.formatAlbumObject(rawAlbum);
         let mbAlbum: IRelease | null = null;
         let urlResults = (await musicbrainz.getAlbumsBySourceUrls([sourceAlbum.url], ["release-rels"], { noCache: true }))?.urls[0];
-        let barcodeResults = sourceAlbum.upc ? (await musicbrainz.getAlbumByUPC(sourceAlbum.upc, {noCache: true}))?.releases : [];
+        let barcodeResults = sourceAlbum.upc ? (await musicbrainz.getAlbumByUPC(sourceAlbum.upc, {noCache: true})) : [];
         if (urlResults?.relations?.[0]?.release?.id || barcodeResults?.[0]?.id) {
             mbAlbum = await musicbrainz.getAlbumByMBID((urlResults?.relations?.[0]?.release?.id || barcodeResults?.[0]?.id)!, ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"], { noCache: true });
         } else if (mbid && musicbrainz.validateMBID(mbid)){
@@ -73,7 +73,6 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
         if (!album) return res.status(500).json({error: "Error processing album data"} as SAMBLApiError)
         const ISRCConfig = providerObj.config?.capabilities.isrcs;
         if (fetchISRCs && ISRCConfig?.availability != "never" && ISRCConfig?.presence == "onTrackRefresh") {
-            console.log("refreshing tracks")
             let tracks: (TrackObject | null)[] = [];
             for (const track of album.albumTracks) {
                 const rawTrack = track.id ? await providerObj.getTrackById(track.id) : null
