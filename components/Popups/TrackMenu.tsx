@@ -168,7 +168,7 @@ function TrackItem({ index, track, album, isrcSource, highlight }: { index: stri
 						</MenuItems>
 					</Menu>
 				)}
-				<div className={styles.trackNumber}>{(Number(index) + 1).toString().padStart(2, "0")}</div>
+				<div className={styles.trackNumber}>{(track.trackNumber || (Number(index) + 1)).toString().padStart(2, "0")}</div>
 				<div className={`${styles.statusPill} ${styles[status]}`} title={pillTooltipText}></div>
 			</div>
 			<div className={styles.trackInfo}>
