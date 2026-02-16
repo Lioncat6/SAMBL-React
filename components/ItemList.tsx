@@ -23,31 +23,31 @@ import ExportMenuPopup from "./Popups/ExportMenu";
 import TrackMenuPopup from "./Popups/TrackMenu";
 import FilterMenuPopup from "./Popups/FilterMenu";
 import toasts from "../utils/toasts";
+import { AlbumObject, ExtendedTrackObject, TrackObject } from "../types/provider-types";
 
-function AlbumIcons({ item, refresh }: {item: DisplayAlbum, refresh: (fetchISRCs: boolean) => void}) {
-	const { id, url, releaseDate, mbAlbum, trackCount, status, mbid, albumIssues, provider, artistMBID, aggregatedTracks, albumTracks, albumArtists} = item;
+function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRCs: boolean) => void }) {
+	const { id, url, releaseDate, mbAlbum, trackCount, status, mbid, albumIssues, provider, artistMBID, aggregatedTracks, albumTracks, albumArtists } = item;
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	async function submitISRCs(){
-		if (status == "green"){
-			if (!(albumTracks.some((track)=> track.isrcs.length >= 1)) && !isSubmitting)
-			{
+	async function submitISRCs() {
+		if (status == "green") {
+			if (!(albumTracks.some((track) => track.isrcs.length >= 1)) && !isSubmitting) {
 				setIsSubmitting(true);
 				refresh(true);
 			} else {
 				setIsSubmitting(false);
-				if (albumTracks.some((track)=> track.isrcs.length >= 1)){
+				if (albumTracks.some((track) => track.isrcs.length >= 1)) {
 					const edit_note = editNoteBuilder.buildEditNote("ISRCs", provider, url, albumArtists[0]?.url);
 					let params = "?"
 					albumTracks.forEach((track) => {
-						if (track.isrcs.length>=1){
-							params+=`isrc${track.trackNumber}=${track.isrcs[0]}&`
+						if (track.isrcs.length >= 1) {
+							params += `isrc${track.trackNumber}=${track.isrcs[0]}&`
 						}
 					})
-					params+="mbid="+mbid
-					params+="&edit-note="+edit_note;
-					const ISRCurl = "https://magicisrc.kepstin.ca/"+params;
+					params += "mbid=" + mbid
+					params += "&edit-note=" + edit_note;
+					const ISRCurl = "https://magicisrc.kepstin.ca/" + params;
 					window.open(ISRCurl, "_blank");
 				} else {
 					toasts.info("No ISRCs Found")
@@ -351,7 +351,7 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 							data={item}
 							refresh={refreshData}
 						/>
-						<AlbumIcons item={item} refresh={refreshData}/>
+						<AlbumIcons item={item} refresh={refreshData} />
 					</div>
 				</div>
 				{exportState ? <SelectionButtons item={item} /> : <ActionButtons item={item} />}
@@ -418,28 +418,37 @@ function Icon({ source }) {
 	);
 }
 
-function LinkButton({ item }) {
+function LinkButton({ item }: { item: AlbumObject | TrackObject }) {
 	const { settings } = useSettings() as SAMBLSettingsContext;
 
 	return (
 		<div className={styles.actionButtons}>
 			{settings?.showExport && <SelectionButtons item={item} />}
-			<a href={item.link} target="_blank" className={styles.viewButton}>
+			<a href={item.url || undefined} target="_blank" className={styles.viewButton} title={`View on ${text.capitalizeFirst(item.provider)}`}>
 				<div>
-					View <Icon source={item.source} />
+					View <Icon source={item.provider} />
 				</div>
 			</a>
 		</div>
 	);
 }
 
-function GenericItem({ item }) {
+function GenericItem({ item }: { item: AlbumObject | ExtendedTrackObject }) {
 	const exportState = useExportState()?.exportState;
-	const { source, imageUrl, title, artists, info, link } = item;
+	const { provider, imageUrl, imageUrlSmall, name, url } = item;
+	const info = [
+		// text.capitalizeFirst(provider),
+		"comment" in item && item.comment,
+		item.releaseDate,
+		"albumType" in item && item.albumType ? text.capitalizeFirst(item.albumType) : null,
+		"trackCount" in item && `${item.trackCount} tracks`,
+		"duration" in item && item.duration ? text.formatMS(item.duration) : null
+	]
+	const artists = "albumArtists" in item ? item.albumArtists : item.trackArtists;
 	let artistString = artists?.map((artist, index) => (
 		<>
 			{index > 0 && ", "}
-			<a href={artist.link} target="_blank" rel="noopener noreferrer" className={styles.artists}>
+			<a href={artist.url} target="_blank" rel="noopener noreferrer" className={styles.artists}>
 				{artist.name}
 			</a>
 		</>
@@ -450,14 +459,14 @@ function GenericItem({ item }) {
 			{imageUrl && (
 				<div className={styles.artistIcon}>
 					<a href={imageUrl} target="_blank">
-						<img title={title} src={imageUrl} />
+						<img title={name} src={imageUrl} />
 					</a>
 				</div>
 			)}
 			<div className={styles.textContainer}>
 				<div className={styles.artistName}>
-					<a href={link} target="_blank">
-						{title}
+					<a href={url || undefined} target="_blank">
+						{name}
 					</a>
 				</div>
 				<div className={styles.artistFollowers}>{artistString}</div>
@@ -624,10 +633,10 @@ function SearchContainer({ onSearch, currentFilter, setFilter, refresh }) {
 
 export type listType = "album" | "loadingAlbum" | "artist" | "mixed"
 
-export function ItemList(props: { items: AggregatedAlbum[], type: "album", text?: string, refresh: () => void }): JSX.Element; 
+export function ItemList(props: { items: AggregatedAlbum[], type: "album", text?: string, refresh: () => void }): JSX.Element;
 export function ItemList(props: { items: any[], type: listType, text?: string, refresh?: () => void }): JSX.Element;
 
-export default function ItemList({ items, type, text, refresh }: {items: any[], type: listType, text?: string, refresh?: () => void}) {
+export default function ItemList({ items, type, text, refresh }: { items: any[], type: listType, text?: string, refresh?: () => void }) {
 	const { settings } = useSettings() as SAMBLSettingsContext;
 	const [searchQuery, setSearchQuery] = useState(""); // State for search query
 	const [filteredItems, setFilteredItems] = useState(items || []); // State for filtered items

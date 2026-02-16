@@ -24,8 +24,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             if (!urlInfo) {
                 return res.status(404).json({ error: "Invalid provider URL" } as SAMBLApiError);
             }
-            if (urlInfo.type !== "track") {
-                return res.status(400).json({ error: `Invalid URL type. Expected a track URL.` } as SAMBLApiError);
+            if (urlInfo.type !== "artist") {
+                return res.status(400).json({ error: `Invalid URL type. Expected a artist URL.` } as SAMBLApiError);
             }
             parsed_id = urlInfo.id;
             if (!parsed_id) {
@@ -54,7 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
         let mbData = await musicbrainz.getArtistByUrl(providerUrl, ["artist-rels", "url-rels"], { noCache: forceRefresh });
         let mbid = mbData?.id || null;
-        return res.status(200).json({ mbid, provider: sourceProvider.namespace, provider_id } as ArtistLookupData);
+        return res.status(200).json({ mbid, provider: sourceProvider.namespace, provider_id: parsed_id } as ArtistLookupData);
     } catch (error) {
         logger.error("Error in lookupArtist API", error);
         return res.status(500).json({ error: "Internal Server Error", details: error.message } as SAMBLApiError);

@@ -10,7 +10,6 @@ async function deepSearch(url) {
 	try {
 		const response = await toasts.dispPromise(fetch(`/api/artistDeepSearch?url=${encodeURIComponent(url)}`), "Running Deep Search...", "Deep Search failed!");
 		if (response.ok) {
-			console.log("a")
 			let data = await response.json();
 			let editNote = editNoteBuilder.buildDeepSearchEditNote(data);
 			let editUrl = `https://musicbrainz.org/artist/${data.mbid}/edit?edit-artist.url.0.text=${url}&edit-artist.url.0.link_type_id=194&edit-artist.edit_note=${editNote}`;

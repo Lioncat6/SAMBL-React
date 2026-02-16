@@ -150,6 +150,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 		let albumTrackISRCs: (string | null)[] = []
 		for (let track in providerTracks) {
 			const currentTrack = providerTracks[track];
+			if (!currentTrack.trackNumber) currentTrack.trackNumber = Number(track) + 1
 			if (currentTrack.isrcs) {
 				if (currentTrack.isrcs[0] != null && currentTrack.isrcs[0] != undefined) {
 					providerHasISRCs = true;
@@ -258,6 +259,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 					mbTrack: mbTrack,
 					trackIssues: trackIssues,
 					isrcs: providerTrack.isrcs.length > 0 ? providerTrack.isrcs : mbTrack.isrcs.length > 0 ? mbTrack.isrcs : [],
+					trackNumber: providerTrack.trackNumber || mbTrack.trackNumber || Number(i)
 				});
 			}
 		}

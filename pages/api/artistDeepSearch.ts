@@ -73,12 +73,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
             upcs = albumData.map(album => album.upc);
         }
+        upcs = albumData.map(album => album.upc).filter(upc => upc);
         if (upcs.length === 0) {
             return res.status(404).json({ error: "No UPCs found!" } as SAMBLApiError);
         }
         let mbAlbums: ExtendedAlbumObject[] = [];
         let artists: PartialArtistObject[] = []
-        let upcArtistArray: Map<string, IArtist[]> = new Map();
+        let upcArtistArray: Map<string, PartialArtistObject[]> = new Map();
         if (albumData.length > albumCount) {
             albumData.length = albumCount;
         }
@@ -86,22 +87,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const upc = album.upc;
             if (!upc) continue;
             const mbMatch = await musicbrainz.getAlbumByUPC(upc);
-            if (mbMatch && mbMatch.releases?.length > 0){
+            if (mbMatch && mbMatch.length > 0){
                 if (!upcArtistArray.has(upc)) {
                     upcArtistArray.set(upc, []);
                 }
                 const artistArray = upcArtistArray.get(upc)!;
-                for (const release of mbMatch?.releases) {
-                    mbAlbums.push(musicbrainz.formatAlbumObject(release));
-                    if (!release["artist-credit"]) continue;
-                    for (const credit of release["artist-credit"]) {
-                        artistArray.push(credit.artist);
-                        artists.push(musicbrainz.formatPartialArtistObject(credit.artist));
+                for (const release of mbMatch) {
+                    mbAlbums.push(release);
+                    if (release.albumArtists.length == 0) continue;
+                    for (const artist of release.albumArtists) {
+                        artistArray.push(artist);
+                        artists.push(artist);
                     }
                 }
             }
         }
-
         if (artists.length === 0) {
             return res.status(404).json({ error: "No artists found!" } as SAMBLApiError);
         }

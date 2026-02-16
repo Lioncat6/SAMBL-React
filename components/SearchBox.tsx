@@ -5,6 +5,9 @@ import { FaMagnifyingGlass } from "react-icons/fa6";
 import { SAMBLSettingsContext, useSettings } from "./SettingsContext";
 import styles from "../styles/SearchBox.module.css";
 import { SearchBoxType } from "../types/component-types";
+import toasts from "../utils/toasts";
+import { ArtistLookupData, SAMBLApiError } from "../types/api-types";
+import { PiBoatDuotone } from "react-icons/pi";
 function SearchBox() {
 	const [loadingState, setLoadingState] = useState(false);
 	const [inputValue, setInputValue] = useState("");
@@ -18,25 +21,6 @@ function SearchBox() {
 		}
 	}, [router.query]);
 
-	function dispError(message: string, type = "warn") {
-		let toastProperties: ToastOptions = {
-			position: "top-left",
-			autoClose: 5000,
-			hideProgressBar: false,
-			closeOnClick: false,
-			pauseOnHover: true,
-			draggable: true,
-			progress: undefined,
-			transition: Flip,
-		};
-		if (type === "error") {
-			toast.error(message, toastProperties);
-		} else {
-			toast.warn(message, toastProperties);
-		}
-		setLoadingState(false);
-	}
-
 	async function handleSearch() {
 		const query = inputValue.trim();
 		setLoadingState(true);
@@ -48,27 +32,27 @@ function SearchBox() {
 			if (urlPattern.test(query)) {
 				checkArtist(query);
 			} else if (spfPattern.test(query) || uuidPattern.test(query)) {
-				dispError("This type of lookup is currently unsupported. Please enter a provider link instead!");
+				toasts.warn("This type of lookup is currently unsupported. Please enter a provider link instead!");
 			} else {
 				router.push(`/search?query=${encodeURIComponent(query)}&provider=${settings.currentProvider}`);
 			}
 		} else {
-			dispError("Please enter a query");
+			toasts.warn("Please enter a query");
 		}
 	}
 
 	async function checkArtist(url) {
 		const response = await fetch(`/api/lookupArtist?url=${encodeURIComponent(url)}`);
 		if (response.ok) {
-			const { mbid, provider, provider_id } = await response.json();
+			const { mbid, provider, provider_id } = await response.json() as ArtistLookupData;
 			if (mbid) {
 				router.push(`/artist?provider_id=${provider_id}&provider=${provider}&artist_mbid=${mbid}`);
 			} else {
 				router.push(`/newartist?provider_id=${provider_id}&provider=${provider}`);
 			}
 		} else {
-			let body = await response.json()
-			dispError(body.error || "An error occured while looking up this URL!", "error");
+			let body = await response.json() as SAMBLApiError;
+			toasts.error(body.error || "An error occured while looking up this URL!");
 		}
 	}
 
