@@ -302,19 +302,22 @@ function getAlbumTracks(album: SpotifyApi.SingleAlbumResponse): TrackObject[] {
 
 function formatTrackObject(track: trackWithAlbumData | SpotifyApi.TrackObjectSimplified | SpotifyApi.TrackObjectFull): TrackObject {
 	let extendedTrack = track as trackWithAlbumData	
+	const album = extendedTrack.album
+	const imageUrl = extendedTrack.imageUrl || album?.images?.[0]?.url || null
+	const imageUrlSmall = extendedTrack.imageUrlSmall || album?.images?.[1]?.url || imageUrl
 	return {
 		provider: namespace,
 		id: extendedTrack.id,
 		name: extendedTrack.name,
 		url: extendedTrack.external_urls.spotify,
-		imageUrl: extendedTrack.imageUrl ? getFullAlbumImageUrl(extendedTrack.imageUrl) : null,
-		imageUrlSmall: extendedTrack.imageUrlSmall || "",
-		albumName: extendedTrack.albumName || null,
+		imageUrl: imageUrl ? getFullAlbumImageUrl(imageUrl): null ,
+		imageUrlSmall: imageUrlSmall || null,
+		albumName: extendedTrack.albumName || album?.name || null,
 		trackArtists: extendedTrack.artists.map(formatPartialArtistObject),
 		artistNames: extendedTrack.artists.map((artist) => artist.name),
 		duration: extendedTrack.duration_ms,
 		trackNumber: extendedTrack.track_number,
-		releaseDate: extendedTrack.release_date || null,
+		releaseDate: extendedTrack.release_date || album?.release_date || null,
 		isrcs: extendedTrack.external_ids?.isrc ? [extendedTrack.external_ids.isrc] : [],
 	};
 }
