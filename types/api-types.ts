@@ -29,6 +29,7 @@ export type ArtistSearchData = Record<string, AggregatedArtist>
 
 export class SAMBLApiError {
     error: string
+    code?: number
     details?: string | null
     parameters?: string[]
     request?: string
