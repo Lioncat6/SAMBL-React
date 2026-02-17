@@ -31,6 +31,7 @@ export class SAMBLApiError {
     error: string
     details?: string | null
     parameters?: string[]
+    request?: string
     url?: string
     provider?: ProviderNamespace
 }
