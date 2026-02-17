@@ -21,7 +21,7 @@ export default async function handler(req, res) {
             if (!urlInfo) {
                 return res.status(404).json({ error: "Invalid provider URL" } as SAMBLApiError);
             }
-            if (urlInfo.type !== "track") {
+            if (urlInfo.type !== "album") {
                 return res.status(400).json({ error: `Invalid URL type. Expected a track URL.` } as SAMBLApiError);
             }
             parsed_id = urlInfo.id;
