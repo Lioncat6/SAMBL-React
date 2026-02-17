@@ -40,6 +40,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(400).json({ error: `Provider \`${provider}\` does not support this operation` } as SAMBLApiError);
         }
         let results = await sourceProvider.getTrackById(parsed_id);
+        if (!results) {
+            return res.status(404).json({ error: "Track not found!" } as SAMBLApiError);
+        }
         let isrcs = sourceProvider.getTrackISRCs(results);
         if (isrcs == null) {
             return res.status(404).json({ error: "Track not found!" } as SAMBLApiError);
