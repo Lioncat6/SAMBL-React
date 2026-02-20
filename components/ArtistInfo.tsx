@@ -108,11 +108,12 @@ function MusicBrainzUrlContainer({ url, id }: { url?: string; id?: string }) {
 function UrlIcons({ artist }: { artist: ArtistPageData}) {
 	return (
 		<>
-			{artist.id && <UrlContainer url={artist.url} provider={artist.provider} />}
-			{artist.ids &&
-				artist.ids.map((providerId) =>
-					<UrlContainer id={providerId} provider={artist.provider} />
-				)
+			{artist.urls ?
+				artist.urls.map((url) =>
+					<UrlContainer url={url} provider={artist.provider} />
+				) 
+				:
+				<UrlContainer url={artist.url} provider={artist.provider} />
 			}
 			{artist.mbid && <MusicBrainzUrlContainer id={artist.mbid} />}
 		</>
