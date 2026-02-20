@@ -1,4 +1,4 @@
-import { Seeder } from "./seeder-types";
+import { Seeder } from "../../types/seeder-types";
 
 function buildUrl(url: string, upc?: string | null): string {
     return `https://atisket.pulsewidth.org.uk/?url=${url}${upc ? `&upc=${upc}` : ""}`

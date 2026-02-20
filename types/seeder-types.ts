@@ -1,4 +1,4 @@
-import { ProviderNamespace } from "../../types/provider-types";
+import { ProviderNamespace } from "./provider-types";
 export type SeederNamespace = "met" | "harmony" | "atisket";
 
 export class Seeder {

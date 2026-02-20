@@ -1,4 +1,4 @@
-import { Seeder } from "./seeder-types";
+import { Seeder } from "../../types/seeder-types";
 
 function buildUrl(url: string, upc?: string | null): string {
     return `https://harmony.pulsewidth.org.uk/release?url=${url}${upc ? `&gtin=${upc}` : ""}&category=preferred`
