@@ -100,9 +100,10 @@ li {
 }
 
 hr {
-	margin-top: 20px;
-	width: 100%;
-	border: 1px solid var(--foreground-secondary);
+	border: 1px solid var(--foreground-tertiary);
+	width: 80%;
+	opacity: 50%;
+	margin: 10px 0;
 }
 
 a {
