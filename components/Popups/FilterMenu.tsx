@@ -4,16 +4,17 @@ import { FaXmark, FaFilter, FaCaretDown } from "react-icons/fa6";
 import { MdDoNotDisturbOnTotalSilence } from "react-icons/md";
 import { TbSortAscending, TbSortDescending } from "react-icons/tb";
 import { Transition, Listbox, ListboxButton, ListboxOption, ListboxOptions, Label, Button } from "@headlessui/react";
-import { FilterData, listFilterOption } from "../../types/component-types";
+import { FilterData, listFilterOption, SAMBLSettings } from "../../types/component-types";
 import filters from "../../lib/filters";
 import Popup from "../Popup";
+import { SAMBLSettingsContext, useSettings } from "../SettingsContext";
 
 function SelectedItem({ item, onRemove, exclusive }: { item: listFilterOption, onRemove: (() => void) | false, exclusive?: boolean }) {
 	return <div className={`${styles.selectedItem}  ${exclusive && styles.exclusive}`}><span className={styles.selectedItemName}>{item.name}</span>{onRemove && <div className={styles.selectedItemButton} onClick={onRemove}><FaXmark /></div>}</div>;
 }
 
 function FilterMenu({ close, data, apply }: { close?: () => void, data: FilterData, apply: (data: any) => void }) {
-
+	const { settings, updateSettings } = useSettings() as SAMBLSettingsContext;
 	const [filter, setFilter] = useState(data);
 	const [selectedFilterOptions, setSelectedFilterOptions] = useState(filters.getFilters(filter.filters) || filters.getDefaultFilters);
 	const [selectedSortOption, setSelectedSortOption] = useState(filters.getSorters(filter.sort) || filters.getDefaultSort());
@@ -26,6 +27,19 @@ function FilterMenu({ close, data, apply }: { close?: () => void, data: FilterDa
 			ascending: isAscending
 		};
 		setFilter(newFilter);
+		let newSettings: Partial<SAMBLSettings> = {
+
+		}
+		if (settings.saveFilter){
+			if (!newSettings.currentFilter) newSettings.currentFilter = {};
+			newSettings.currentFilter.filters = newFilter.filters;
+		}
+		if (settings.saveSort) {
+			if (!newSettings.currentFilter) newSettings.currentFilter = {};
+			newSettings.currentFilter.sort = newFilter.sort;
+			newSettings.currentFilter.ascending = newFilter.ascending;
+		}
+		updateSettings(newSettings);
 		apply(newFilter);
 		if (close) close();
 	}

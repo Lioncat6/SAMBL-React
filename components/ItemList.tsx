@@ -15,7 +15,7 @@ import { PiPlaylistBold } from "react-icons/pi";
 import { TbPlaylistOff } from "react-icons/tb";
 import editNoteBuilder from "../utils/editNoteBuilder";
 import { IoFilter } from "react-icons/io5";
-import { DisplayAlbum } from "../types/component-types";
+import { DisplayAlbum, FilterData } from "../types/component-types";
 import seeders from "../lib/seeders/seeders";
 import { AggregatedAlbum } from "../types/aggregated-types";
 import filters from "../lib/filters";
@@ -641,7 +641,18 @@ export default function ItemList({ items, type, text, refresh }: { items: any[],
 	const [searchQuery, setSearchQuery] = useState(""); // State for search query
 	const [filteredItems, setFilteredItems] = useState(items || []); // State for filtered items
 	const [currentItems, setCurrentItems] = useState(items || []);
-	const [filter, setFilter] = useState(filters.getDefaultOptions());
+	function getSavedFilter(): Partial<FilterData> {
+		let filter: Partial<FilterData> = {};
+		if (settings.saveFilter){
+			filter.filters = settings.currentFilter?.filters;
+		}
+		if (settings.saveSort){
+			filter.sort = settings.currentFilter?.sort
+			filter.ascending = settings.currentFilter?.ascending
+		}
+		return filter;
+	}
+	const [filter, setFilter] = useState({ ...filters.getDefaultOptions(), ...getSavedFilter()  });
 	const setAllItems = useExportState()?.setAllItems;
 	if (currentItems?.length > 0 && setAllItems) {
 		setAllItems(currentItems);
