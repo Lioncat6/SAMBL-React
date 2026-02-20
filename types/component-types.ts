@@ -1,6 +1,7 @@
 import { ArtistObject, ProviderNamespace, UrlData, UrlType } from "./provider-types";
 import { AggregatedAlbum, AggregatedArtist, AggregatedTrack } from "./aggregated-types";
 import { JSX } from "react";
+import { SeederNamespace } from "./seeder-types";
 
 export type searchReason = "artist" | "title";
 export type albumSearchReason = searchReason | "track";
@@ -31,7 +32,6 @@ export class listFilterOption extends listFilterBase {
 export class listSortOption extends listFilterBase {
     key: listSort
 }
-
 export class FilterData {
     filters: listFilter[]
     sort: listSort
@@ -51,6 +51,8 @@ export class SAMBLError {
 
 export class ArtistPageData extends AggregatedArtist {
     ids?: string[] | null;
+    mbids?: string[] | null;
+    urls?: string[] | null;
     names?: string[] | null;
     mbData?: ArtistObject | null;
 }
@@ -63,11 +65,14 @@ export class ProviderDisplay {
     icon: JSX.Element;
 }
 export interface SAMBLSettings {
-    enabledSeeders: string[];
+    enabledSeeders: SeederNamespace[];
     showExport: boolean;
     listVirtualization: boolean;
     quickFetchThreshold: number;
     currentProvider: ProviderNamespace | null;
+    saveFilter: boolean
+    saveSort: boolean
+    currentFilter: Partial<FilterData> | null
 }
 
 export class UrlParser {
