@@ -7,7 +7,7 @@ import { useExport as useExportState } from "./ExportState";
 import { List, RowComponentProps } from "react-window";
 import { FaDeezer } from "react-icons/fa";
 import { SiApplemusic, SiTidal } from "react-icons/si";
-import { FaAnglesRight, FaAnglesLeft } from "react-icons/fa6";
+import { FaAnglesRight, FaAnglesLeft, FaNotEqual } from "react-icons/fa6";
 import { IoMdRefresh } from "react-icons/io";
 import { toast, Flip, ToastOptions } from "react-toastify";
 import text from "../utils/text";
@@ -64,7 +64,8 @@ function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRC
 
 	return (
 		<div className={styles.iconContainer}>
-			{albumIssues.includes("noUPC") && <img className={styles.upcIcon} src="../assets/images/noUPC.svg" title="This release is missing a UPC/Barcode!" alt="Missing UPC" />}
+			{albumIssues.includes("noUPC") && <span className={styles.upcIcon}title="This release is missing a UPC/Barcode!">UPC</span>}
+			{albumIssues.includes("UPCDiff") && <span className={styles.upcDiff}title="This release has the wrong barcode for this album!">UPC<FaNotEqual /></span>}
 			{albumIssues.includes("missingISRCs") && (
 				<a
 					className={status === "green" ? styles.isrcTextAvaliable : styles.isrcText}
@@ -74,6 +75,7 @@ function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRC
 					ISRC
 				</a>
 			)}
+			{albumIssues.includes("ISRCDiff") && <span className={styles.upcDiff}title="This release has the wrong ISRCs for this album!">ISRC<FaNotEqual /></span>}
 			{albumIssues.includes("noCover") && (
 				<a
 					className={status === "green" ? styles.coverArtMissingAvaliable : styles.coverArtMissing}
