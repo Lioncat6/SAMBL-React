@@ -156,7 +156,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 					providerHasISRCs = true;
 				}
 				albumTrackISRCs.push(currentTrack.isrcs[0] || null);
-				if ((currentTrack.isrcs[0] || null) != mbAlignedISRCs[track]) {
+				if (providerHasISRCs && (currentTrack.isrcs[0] || null) != mbAlignedISRCs[track]) {
 					hasMatchingISRCs = false;
 				}
 			} else {
