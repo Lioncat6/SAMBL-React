@@ -78,7 +78,7 @@ function AlbumDetails({ data }: { data: DisplayAlbum }) {
 				</div>
 				<span className={styles.releaseDate}><MdOutlineCalendarMonth /> {releaseDate}</span>
 				{albumType && <span className={styles.albumType}><MdOutlineAlbum /> {text.capitalizeFirst(albumType)}</span>}
-				{barcode && <span className={styles.barcode} title={barcode && "This barcode is sourced from MusicBrainz."}><FaBarcode /> <span className={`${mbBarcode && styles.mbUnderline}`}>{barcode}</span> <a
+				{barcode && <span className={styles.barcode} title={mbBarcode ? "This barcode is sourced from MusicBrainz" : undefined}><FaBarcode /> <span className={`${mbBarcode && styles.mbUnderline}`}>{barcode}</span> <a
 					className={styles.lookupButton}
 					href={`/find?query=${encodeURIComponent(barcode)}`}
 					target="_blank"
