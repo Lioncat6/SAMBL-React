@@ -92,7 +92,7 @@ async function withRefresh<T>(apiCall: () => Promise<T>): Promise<T> {
 			return await apiCall();
 		}
 	}
-	checkAccessToken();
+	await checkAccessToken();
 	return await apiCall();
 }
 
