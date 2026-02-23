@@ -7,18 +7,64 @@ import parsers from "../../../lib/parsers/parsers";
 
 const namespace = "spotify";
 
-const {parseUrl, createUrl} = parsers.getParser(namespace);
+const { parseUrl, createUrl } = parsers.getParser(namespace);
 
 const err = new ErrorHandler(namespace);
 
-const spotifyApi = new SpotifyWebApi({
-	clientId: process.env.SPOTIFY_CLIENT_ID,
-	clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-	redirectUri: process.env.SPOTIFY_REDIRECT_URI,
-});
+let spotifyApi: SpotifyWebApi;
+
+const useAlternate = process.env.SPOTIFY_ALTERNATE != undefined
+const alternate = process.env.SPOTIFY_ALTERNATE
+const clientId = process.env.SPOTIFY_CLIENT_ID;
+const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+const redirectUri = process.env.SPOTIFY_REDIRECT_URI
+
+if (useAlternate) {
+	spotifyApi = new SpotifyWebApi({
+		clientId: "",
+		clientSecret: "",
+		redirectUri: ""
+	});
+} else {
+	spotifyApi = new SpotifyWebApi({
+		clientId: clientId,
+		clientSecret: clientSecret,
+		redirectUri: redirectUri,
+	});
+}
 
 let accessToken: string | null = null;
 let tokenExpirationTime: number | null = null;
+
+async function getAlternateAccessToken() {
+	if (!clientId || !clientSecret || !redirectUri || !alternate) {
+		err.handleError("Missing required process.env.SPOTIFY_CLIENT_SECRET or process.env.SPOTIFY_CLIENT_ID or process.env.SPOTIFY_REDIRECT_URI", new Error("Missing required environment variables!"))
+		return;
+	}
+	if (!redirectUri.includes('CLIENTID')){
+		err.handleError("process.env.SPOTIFY_REDIRECT_URI missing required placeholder string CLIENTID")
+	}
+	if (!alternate.includes('CLIENTSECRET')){
+		err.handleError("process.env.SPOTIFY_CLIENT_SECRET missing required placeholder string CLIENTSECRET")
+	}
+	let data;
+	try {
+	const headers: Record<string, string> = JSON.parse(
+		alternate.replace('CLIENTSECRET', clientSecret)
+	);
+	const response = await fetch(redirectUri?.replace('CLIENTID', clientId), {
+		"headers": headers
+	});
+	data = await response.json()
+	} catch (error){
+		err.handleError("Error fetching alternate spotify access token", error)
+	}
+	if ("access_token" in data){
+		accessToken = data.access_token as string
+		spotifyApi.setAccessToken(accessToken)
+		logger.debug("Successfully refreshed alternate spotify auth token")
+	}
+}
 
 function validateSpotifyId(spotifyId) {
 	const spfPattern = /[A-Za-z0-9]{22}/;
@@ -33,19 +79,21 @@ function extractSpotifyIdFromUrl(url) {
 	}
 }
 
-async function withRetry(apiCall, retries = 3, delay = 1000) {
-	for (let attempt = 1; attempt <= retries; attempt++) {
+async function withRefresh<T>(apiCall: () => Promise<T>): Promise<T> {
+	if (useAlternate) {
 		try {
-			return await apiCall();
-		} catch (error) {
-			if (attempt < retries) {
-				logger.warn(`Retrying API call (attempt ${attempt} of ${retries})...`);
-				await new Promise((resolve) => setTimeout(resolve, delay));
-			} else {
-				err.handleError("API call failed after retries:", error);
+			if (!spotifyApi.getAccessToken){
+				await getAlternateAccessToken();
 			}
+			let response = await apiCall();
+			return response;
+		} catch {
+			await getAlternateAccessToken();
+			return await apiCall();
 		}
 	}
+	checkAccessToken();
+	return await apiCall();
 }
 
 export function getFullAlbumImageUrl(url: null | undefined): null;
@@ -87,9 +135,7 @@ async function checkAccessToken() {
 
 async function getArtistById(spotifyId: string) {
 	try {
-		await checkAccessToken();
-		// Fetch artist data
-		const data = await spotifyApi.getArtist(spotifyId);
+		const data = await withRefresh(() => spotifyApi.getArtist(spotifyId))
 		if (data.statusCode === 404) {
 			return null;
 		}
@@ -101,9 +147,7 @@ async function getArtistById(spotifyId: string) {
 
 async function searchByArtistName(artistName: string) {
 	try {
-		await checkAccessToken();
-		// Fetch artist data
-		const data = await spotifyApi.searchArtists(artistName);
+		const data = await withRefresh(() => spotifyApi.searchArtists(artistName));
 		return data.body;
 	} catch (error) {
 		err.handleError("Error searching for artist:", error);
@@ -112,10 +156,9 @@ async function searchByArtistName(artistName: string) {
 }
 
 async function getArtistAlbums(spotifyId: string, offset = 0, limit = 50) {
+	if (limit > 50) limit = 50 //Oh how I wish js had Math.clamp()...
 	try {
-		await checkAccessToken();
-		// Fetch artist albums
-		const data = await spotifyApi.getArtistAlbums(spotifyId, { limit: limit, offset: offset });
+		const data = await withRefresh(() => spotifyApi.getArtistAlbums(spotifyId, { limit: limit, offset: offset }));
 		return data.body;
 	} catch (error) {
 		err.handleError("Error fetching artist albums:", error);
@@ -125,8 +168,7 @@ async function getArtistAlbums(spotifyId: string, offset = 0, limit = 50) {
 
 async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
 	try {
-		await checkAccessToken();
-		const data = await spotifyApi.searchAlbums(`upc:${upc}`, { limit: 20 });
+		const data = await withRefresh(() => spotifyApi.searchAlbums(`upc:${upc}`, { limit: 20 }));
 		return data.body.albums?.items.map(formatAlbumObject) || [];
 	} catch (error) {
 		err.handleError("Error fetching album data:", error);
@@ -136,8 +178,7 @@ async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
 
 async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> {
 	try {
-		await checkAccessToken();
-		const data = await spotifyApi.searchTracks(`isrc:${isrc}`, { limit: 20 });
+		const data = await withRefresh(() => spotifyApi.searchTracks(`isrc:${isrc}`, { limit: 20 }));
 		return data.body.tracks?.items.map(formatTrackObject) || [];
 	} catch (error) {
 		err.handleError("Error fetching track data:", error);
@@ -147,8 +188,7 @@ async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> {
 
 async function getAlbumById(spotifyId: string) {
 	try {
-		await checkAccessToken();
-		const data = await spotifyApi.getAlbum(spotifyId);
+		const data = await withRefresh(() => spotifyApi.getAlbum(spotifyId));
 		if (data.body?.tracks?.total > 50) {
 			let tracks = await getAlbumTracksById(spotifyId);
 			if (tracks) data.body.tracks = tracks.items;
@@ -161,12 +201,11 @@ async function getAlbumById(spotifyId: string) {
 
 async function getAlbumTracksById(spotifyId) {
 	try {
-		await checkAccessToken();
 		let itemsArray: any = [];
 		let offset = 0;
 		let data: any;
 		do {
-			data = await spotifyApi.getAlbumTracks(spotifyId, { limit: 50, offset: offset });
+			data = await withRefresh(() => spotifyApi.getAlbumTracks(spotifyId, { limit: 50, offset: offset }));
 			itemsArray = itemsArray.concat(data.body.items);
 			offset += data.body.items.length;
 		}
@@ -179,15 +218,14 @@ async function getAlbumTracksById(spotifyId) {
 
 async function getTrackById(spotifyId) {
 	try {
-		await checkAccessToken();
-		const data = await spotifyApi.getTrack(spotifyId);
+		const data = await withRefresh(() => spotifyApi.getTrack(spotifyId));
 		return data.body;
 	} catch (error) {
 		err.handleError("Error fetching track by Spotify ID:", error);
 	}
 }
 
-export interface ExtendedTrack extends SpotifyApi.TrackObjectSimplified, Partial<Omit<SpotifyApi.TrackObjectFull, keyof SpotifyApi.TrackObjectSimplified>> {}
+export interface ExtendedTrack extends SpotifyApi.TrackObjectSimplified, Partial<Omit<SpotifyApi.TrackObjectFull, keyof SpotifyApi.TrackObjectSimplified>> { }
 
 function getTrackISRCs(track: SpotifyApi.TrackObjectSimplified | SpotifyApi.TrackObjectFull) {
 	if (!track) return null;
@@ -196,7 +234,7 @@ function getTrackISRCs(track: SpotifyApi.TrackObjectSimplified | SpotifyApi.Trac
 	return isrcs;
 }
 
-export interface ExtendedAlbum extends SpotifyApi.AlbumObjectSimplified, Partial<Omit<SpotifyApi.AlbumObjectFull, keyof SpotifyApi.AlbumObjectSimplified	>> {}
+export interface ExtendedAlbum extends SpotifyApi.AlbumObjectSimplified, Partial<Omit<SpotifyApi.AlbumObjectFull, keyof SpotifyApi.AlbumObjectSimplified>> { }
 
 function getAlbumUPCs(album: SpotifyApi.AlbumObjectFull | SpotifyApi.AlbumObjectSimplified) {
 	if (!album) return null;
@@ -213,7 +251,7 @@ function formatArtistLookupData(rawData: SpotifyApi.SingleAlbumResponse) {
 	return rawData;
 }
 
-export interface extendedArtist extends SpotifyApi.ArtistObjectSimplified, Partial<Omit<SpotifyApi.ArtistObjectFull, keyof SpotifyApi.ArtistObjectSimplified>> {}
+export interface extendedArtist extends SpotifyApi.ArtistObjectSimplified, Partial<Omit<SpotifyApi.ArtistObjectFull, keyof SpotifyApi.ArtistObjectSimplified>> { }
 
 function formatArtistObject(rawObject: SpotifyApi.ArtistObjectSimplified | SpotifyApi.ArtistObjectFull): ArtistObject {
 	const extendedArtist = rawObject as extendedArtist;
@@ -223,7 +261,7 @@ function formatArtistObject(rawObject: SpotifyApi.ArtistObjectSimplified | Spoti
 		imageUrl: extendedArtist.images?.[0]?.url || "",
 		imageUrlSmall: extendedArtist.images?.[1]?.url || extendedArtist.images?.[0]?.url || "",
 		bannerUrl: null,
-		relevance: extendedArtist.followers ? `${extendedArtist.followers.total} Followers`: "",
+		relevance: extendedArtist.followers ? `${extendedArtist.followers.total} Followers` : "",
 		info: extendedArtist.genres?.join(", ") || "", // Convert genres array to a string
 		genres: extendedArtist.genres || null,
 		followers: extendedArtist.followers?.total || null,
@@ -277,13 +315,13 @@ function formatAlbumObject(album: SpotifyApi.SingleAlbumResponse): AlbumObject {
 }
 
 
-export interface ExtendedTrack extends SpotifyApi.TrackObjectSimplified, Partial<Omit<SpotifyApi.TrackObjectFull, keyof SpotifyApi.TrackObjectSimplified>> {}
+export interface ExtendedTrack extends SpotifyApi.TrackObjectSimplified, Partial<Omit<SpotifyApi.TrackObjectFull, keyof SpotifyApi.TrackObjectSimplified>> { }
 export interface trackWithAlbumData extends ExtendedTrack {
-		imageUrl?: string
-		imageUrlSmall?: string
-		albumName?: string
-		release_date?: string
-	}
+	imageUrl?: string
+	imageUrlSmall?: string
+	albumName?: string
+	release_date?: string
+}
 
 function getAlbumTracks(album: SpotifyApi.SingleAlbumResponse): TrackObject[] {
 	let tracks: trackWithAlbumData[] = album.tracks?.items
@@ -301,7 +339,7 @@ function getAlbumTracks(album: SpotifyApi.SingleAlbumResponse): TrackObject[] {
 }
 
 function formatTrackObject(track: trackWithAlbumData | SpotifyApi.TrackObjectSimplified | SpotifyApi.TrackObjectFull): TrackObject {
-	let extendedTrack = track as trackWithAlbumData	
+	let extendedTrack = track as trackWithAlbumData
 	const album = extendedTrack.album
 	const imageUrl = extendedTrack.imageUrl || album?.images?.[0]?.url || null
 	const imageUrlSmall = extendedTrack.imageUrlSmall || album?.images?.[1]?.url || imageUrl
@@ -310,7 +348,7 @@ function formatTrackObject(track: trackWithAlbumData | SpotifyApi.TrackObjectSim
 		id: extendedTrack.id,
 		name: extendedTrack.name,
 		url: extendedTrack.external_urls.spotify,
-		imageUrl: imageUrl ? getFullAlbumImageUrl(imageUrl): null ,
+		imageUrl: imageUrl ? getFullAlbumImageUrl(imageUrl) : null,
 		imageUrlSmall: imageUrlSmall || null,
 		albumName: extendedTrack.albumName || album?.name || null,
 		trackArtists: extendedTrack.artists.map(formatPartialArtistObject),
@@ -335,7 +373,7 @@ const capabilities: Capabilities = {
 
 const spotify: FullProvider = {
 	namespace,
-	config: {default: true, capabilities},
+	config: { default: true, capabilities },
 	getArtistById: withCache(getArtistById, { ttl: 60 * 30, namespace: namespace }),
 	searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30, namespace: namespace }),
 	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 30, namespace: namespace }),
