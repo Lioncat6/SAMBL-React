@@ -453,6 +453,9 @@ function GenericItem({ item }: { item: AlbumObject | ExtendedTrackObject }) {
 			<a href={artist.url} target="_blank" rel="noopener noreferrer" className={styles.artists}>
 				{artist.name}
 			</a>
+			<a href={`../newartist?provider_id=${artist.id}&provider=${artist.provider}`} target="_blank" rel="noopener noreferrer">
+				<img className={styles.SAMBLicon} src="../assets/images/favicon.svg" alt="SAMBL" />
+			</a>
 		</>
 	));
 	let infoString = Array.isArray(info) ? info.filter((item) => item != null && item != "").join(" • ") : "";
