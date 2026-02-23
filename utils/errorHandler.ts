@@ -13,12 +13,12 @@ class ErrorHandler {
 
     handleError(
         message: string,
-        error: Error,
+        error?: Error,
         code?: string | number,
         throwError: boolean = true,
         ErrorType: typeof Error = Error
     ): void {
-        const errorMessage = message ? message.replace(`[${this.namespace}]: `, "") + error.message ? error.message?.replace(`[${this.namespace}]: `, "") : "": null;
+        const errorMessage = message ? message.replace(`[${this.namespace}]: `, "") + error?.message ? error?.message?.replace(`[${this.namespace}]: `, "") : "": null;
         if (message.includes("ETIMEDOUT") || message.includes("ECONNRESET")) {
 
         }
