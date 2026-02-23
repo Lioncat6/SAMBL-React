@@ -133,6 +133,9 @@ async function getTrackByISRC(isrc: string): Promise<ExtendedTrackObject[] | nul
 			}
 			return [trackObject];
 		} else {
+			if (trackData.message?.header?.status_code === 404) {
+				return null;
+			}
 			if (trackData.message?.header?.status_code === 401) {
 				logger.warn(`Recieved 401 from MusixMatch. Reason: ${trackData.message.header?.hint || "Unknown"}`);
 				throw new Error(`Recieved 401 from MusixMatch. Reason: ${trackData.message.header?.hint || "Unknown"}`);
