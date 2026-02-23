@@ -62,7 +62,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 			while (offset != null) {
 				try {
 					// const data = await fetchSourceAlbums(pid, provider, offset, bypassCache);
-					const rawData = provider.getArtistAlbums(pid, offset, 100, { noCache: true })
+					const rawData = await provider.getArtistAlbums(pid, offset, 100, { noCache: true })
 					let data: RawAlbumData = provider.formatAlbumGetData(rawData);
 					let formattedData: AlbumData = {
 						...data,
