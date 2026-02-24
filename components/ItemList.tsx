@@ -649,15 +649,18 @@ export default function ItemList({ items, type, text, refresh }: { items: any[],
 	function getSavedFilter(): Partial<FilterData> {
 		let filter: Partial<FilterData> = {};
 		if (settings.saveFilter){
-			filter.filters = settings.currentFilter?.filters;
+			filter.filters = settings.currentFilter?.filters || filters.getDefaultOptions().filters;
 		}
 		if (settings.saveSort){
-			filter.sort = settings.currentFilter?.sort
-			filter.ascending = settings.currentFilter?.ascending
+			filter.sort = settings.currentFilter?.sort || filters.getDefaultOptions().sort;
+			filter.ascending = settings.currentFilter?.ascending || filters.getDefaultOptions().ascending;
 		}
 		return filter;
 	}
-	const [filter, setFilter] = useState({ ...filters.getDefaultOptions(), ...getSavedFilter()  });
+	const [filter, setFilter] = useState({... getSavedFilter(), ...filters.getDefaultOptions()});
+	useEffect(() => {
+		setFilter({ ...filters.getDefaultOptions(),... getSavedFilter()}); //Settings isn't always loaded right away
+	}, [settings]);
 	const setAllItems = useExportState()?.setAllItems;
 	if (currentItems?.length > 0 && setAllItems) {
 		setAllItems(currentItems);
