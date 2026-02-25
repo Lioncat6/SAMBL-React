@@ -420,8 +420,8 @@
 
 .albumMB {
   width: 16px;
-  height: 20px;
-  vertical-align: middle;
+  height: 18px;
+  vertical-align: text-top;
 }
 
 .artists {
