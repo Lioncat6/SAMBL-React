@@ -1,10 +1,25 @@
-import { ArtistIncludes, IArtist, IBrowseReleasesResult, ICoversInfo, IRecordingList, IRelease, IReleaseList, IUrl, IUrlLookupResult, RelationsIncludes, ReleaseIncludes, UrlIncludes } from "musicbrainz-api";
+import { ArtistIncludes, IArtist, IBrowseReleasesResult, ICoversInfo, IRecording, IRecordingList, IRelease, IReleaseList, IUrl, IUrlLookupResult, RecordingIncludes, RelationsIncludes, ReleaseIncludes, UrlIncludes } from "musicbrainz-api";
 import { CacheOptions } from "../utils/cache";
 import { AggregatedAlbum } from "./aggregated-types";
 
 export type ProviderNamespace = FullProviderNamespace | "musixmatch"
 
 export type FullProviderNamespace = "spotify" | "tidal" | "deezer" | "musicbrainz" | "soundcloud" | "bandcamp" | "applemusic" 
+
+export type ObjectType = "partialArtist" | "artist" | "album" | "track"
+
+export class GenericObject {
+    provider: ProviderNamespace;
+    id: string;
+    name: string;
+    url: string;
+}
+
+export class ImageObject extends GenericObject {
+    imageUrl: string | null;
+    imageUrlSmall: string | null;
+}
+
 
 export class PartialArtistObject {
     name: string
@@ -171,6 +186,7 @@ export class MusicBrainzProvider extends FullProvider {
     override getAlbumByUPC: (upc: string, options?: CacheOptions) => Promise<ExtendedAlbumObject[] | null>;
     override formatAlbumObject: (album: any) => ExtendedAlbumObject;
     getAlbumByMBID: (id: string, inc: ReleaseIncludes[], options?: CacheOptions) => Promise<IRelease | null>;
+    getTrackByMBID: (id: string, inc: RecordingIncludes[], options?: CacheOptions) => Promise<IRecording | null>;
     getIdBySpotifyId: (spotifyId: string, options?: CacheOptions) => Promise<string | null>;
     getIdsByExternalUrls: (spotifyUrls: string[], options?: CacheOptions) => Promise<UrlMBIDDict>;
     override getArtistAlbums: (id: string, offset?: string | number, limit?: number, options?: CacheOptions) => Promise<IBrowseReleasesResult | null>;
