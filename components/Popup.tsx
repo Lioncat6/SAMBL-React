@@ -4,8 +4,8 @@ import { FaXmark } from "react-icons/fa6";
 import { Dialog, Transition, TransitionChild, DialogPanel } from "@headlessui/react";
 
 
-export default function SAMBLPopup({ children, button }: { children: JSX.Element, button?: JSX.Element }) {
-	const [isOpen, setIsOpen] = useState(false);
+export default function SAMBLPopup({ children, button, open}: { children: JSX.Element, button?: JSX.Element, open?: boolean }) {
+	const [isOpen, setIsOpen] = useState(open || false);
 
 	function closeModal() {
 		setIsOpen(false);

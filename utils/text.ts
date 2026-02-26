@@ -1,3 +1,5 @@
+import { AlbumIssues } from "../lib/issues";
+import { AlbumStatus } from "../types/aggregated-types";
 import toasts from "./toasts";
 
 /**
@@ -128,6 +130,16 @@ function trimUrl(url: string): string {
 	return url.replace(/\/+$/, "");
 }
 
+function getColorEmoji(color:AlbumStatus) {
+	const emojis: Record<AlbumStatus, string> = {
+		"red": "🔴",
+		"blue": "🔵",
+		"orange": "🟠",
+		"green": "🟢"
+	}
+	return emojis[color];
+}
+
 /**
  * Utility object for text formatting.
  *
@@ -144,7 +156,8 @@ const text = {
 	removeLeadingZeros,
 	copy: handleCopy,
 	handleCopy,
-	trimUrl
+	trimUrl,
+	getColorEmoji
 };
 
 export default text;

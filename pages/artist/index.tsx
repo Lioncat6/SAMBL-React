@@ -13,6 +13,7 @@ import ErrorPage from "../../components/ErrorPage";
 import { AggregatedAlbum, AggregatedData } from "../../types/aggregated-types";
 import toasts from "../../utils/toasts";
 import { set } from "nprogress";
+import text from "../../utils/text";
 
 async function fetchArtistData(id: string, provider: ProviderNamespace | string) {
 	const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?provider_id=${id}&provider=${provider}&mbData`);
@@ -32,8 +33,8 @@ async function fetchArtistData(id: string, provider: ProviderNamespace | string)
 
 export async function getServerSideProps(context) {
 	try {
-		let { spid, spids, artist_mbid, mbid, provider_id, provider_ids, provider, pid, pids }:
-			{ spid?: string, spids?: string, artist_mbid?: string, mbid?: string, provider_id?: string, provider_ids?: string, provider?: string, pid?: string, pids?: string } = context.query;
+		let { spid, spids, artist_mbid, mbid, provider_id, provider_ids, provider, pid, pids, viewingAlbum }:
+			{ spid?: string, spids?: string, artist_mbid?: string, mbid?: string, provider_id?: string, provider_ids?: string, provider?: string, pid?: string, pids?: string, viewingAlbum?: string } = context.query;
 		if (spid) provider_id = spid;
 		if (spids) provider_ids = spids;
 		if ((spid || spids) && !provider) provider = "spotify";
@@ -92,6 +93,20 @@ export async function getServerSideProps(context) {
 			};
 		}
 
+		async function getViewedAlbum(): Promise<AggregatedAlbum | null> {
+			if (viewingAlbum) {
+				const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/compareSingleAlbum?provider_id=${viewingAlbum}&provider=${provider}`);
+				if (response.ok) {
+					try {
+						return (await response.json()) as AggregatedAlbum
+					} catch {
+						return null;
+					}
+				}
+			}
+			return null
+		}
+
 		let artist: ArtistPageData;
 		if (provider_ids && provider_ids?.length > 1) {
 			let data: ArtistObject[] = [];
@@ -139,7 +154,9 @@ export async function getServerSideProps(context) {
 				url: mostPopularArtist?.url || "",
 				relevance: mostPopularArtist?.relevance || "",
 				info: mostPopularArtist?.info || "",
-				mbData: mbArtist
+				mbData: mbArtist,
+				viewingAlbum: viewingAlbum || null,
+				viewedAlbum: await getViewedAlbum()
 			};
 		} else {
 			const fetchedData = (await fetchArtistData(provider_id, provider));
@@ -147,6 +164,8 @@ export async function getServerSideProps(context) {
 				...fetchedData.providerData,
 				mbData: fetchedData.mbData,
 				mbid: artist_mbid || null,
+				viewingAlbum: viewingAlbum || null,
+				viewedAlbum: await getViewedAlbum()
 			};
 		}
 		return {
@@ -211,6 +230,20 @@ export default function Artist({ artist, error }: { artist: ArtistPageData, erro
 	const { settings, loading: waitingForMount } = useSettings() as SAMBLSettingsContext;
 	const router = useRouter();
 	const { quickFetch } = router.query;
+	useEffect(() => {
+		if (!router.isReady) return;
+		if (router.query.viewingAlbum) {
+			const { viewingAlbum, ...query } = router.query;
+			router.replace(
+				{
+					pathname: router.pathname,
+					query: { ...query },
+				},
+				undefined,
+				{ shallow: true }
+			);
+		}
+	}, [router.isReady, router.query.viewingAlbum]);
 	const [isQuickFetched, setIsQuickFetched] = useState(false);
 	const [albums, setAlbums] = useState<AggregatedAlbum[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -427,20 +460,29 @@ export default function Artist({ artist, error }: { artist: ArtistPageData, erro
 	}
 	const aiTags = ["ai", "ai-generated", "ai generated"]
 	const isAi = artist?.mbData?.genres?.some((tag) => aiTags.includes(tag));
+	
 	return (
 		<>
 			<Head>
 				<title>{`SAMBL • ${artist.name}`}</title>
-				<meta name="description" content={`View Artist • ${artist.name} • ${artist.followers} Followers`} />
-				{artist.imageUrl && <meta property="og:image" content={artist.imageUrl} />}
-				<meta property="og:title" content={`SAMBL • ${artist.name}`} />
-				<meta property="og:description" content={`View Artist • ${artist.name} • ${artist.followers} Followers`} />
+				{artist.viewedAlbum ?
+					<>
+						<meta name="description" content={`View Artist Album • ${artist.viewedAlbum.name}(${text.getColorEmoji(artist.viewedAlbum.status)}) by ${artist.name}`} />
+						{artist.viewedAlbum.imageUrl && <meta property="og:image" content={artist.viewedAlbum.imageUrl} />}
+						<meta property="og:title" content={`SAMBL • ${artist.viewedAlbum.name} by ${artist.name}`} />
+						<meta property="og:description" content={`View Artist Album • ${artist.viewedAlbum.name}(${text.getColorEmoji(artist.viewedAlbum.status)}) by ${artist.name}`} />
+					</> : <>
+						<meta name="description" content={`View Artist • ${artist.name} • ${artist.relevance}`} />
+						{artist.imageUrl && <meta property="og:image" content={artist.imageUrl} />}
+						<meta property="og:title" content={`SAMBL • ${artist.name}`} />
+						<meta property="og:description" content={`View Artist • ${artist.name} • ${artist.relevance}`} />
+					</>}
 			</Head>
 			{!artist.mbid && <Notice type={"noMBID"} data={artist} />}
 			{isQuickFetched && <Notice type={"quickFetched"} />}
 			{isAi && <Notice type={"aiArtist"} />}
 			<ArtistInfo artist={artist} />
-			<div id="contentContainer">{loading ? <ItemList type={"loadingAlbum"} text={statusText} refresh={refreshAlbums} items={[]} /> : <ItemList type={"album"} items={albums} text={statusText} refresh={refreshAlbums} />}</div>
+			<div id="contentContainer">{loading ? <ItemList type={"loadingAlbum"} text={statusText} refresh={refreshAlbums} items={[]} /> : <ItemList type={"album"} items={albums} text={statusText} refresh={refreshAlbums} viewItem={artist.viewingAlbum} />}</div>
 		</>
 	);
 }

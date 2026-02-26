@@ -8,6 +8,7 @@ export type albumSearchReason = searchReason | "track";
 export class DisplayAlbum extends AggregatedAlbum {
     searchReason?: albumSearchReason
     override aggregatedTracks: DisplayTrack[];
+    viewingAlbum?: boolean
 }
 
 export class DisplayTrack extends AggregatedTrack {
@@ -55,6 +56,8 @@ export class ArtistPageData extends AggregatedArtist {
     urls?: string[] | null;
     names?: string[] | null;
     mbData?: ArtistObject | null;
+    viewingAlbum?: string | null;
+    viewedAlbum?: AggregatedAlbum | null
 }
 
 export type SearchBoxType = "search" | "find";

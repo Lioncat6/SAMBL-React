@@ -352,6 +352,7 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 							}
 							data={item}
 							refresh={refreshData}
+							open={item.viewingAlbum}
 						/>
 						<AlbumIcons item={item} refresh={refreshData} />
 					</div>
@@ -641,11 +642,12 @@ export type listType = "album" | "loadingAlbum" | "artist" | "mixed"
 export function ItemList(props: { items: AggregatedAlbum[], type: "album", text?: string, refresh: () => void }): JSX.Element;
 export function ItemList(props: { items: any[], type: listType, text?: string, refresh?: () => void }): JSX.Element;
 
-export default function ItemList({ items, type, text, refresh }: { items: any[], type: listType, text?: string, refresh?: () => void }) {
+export default function ItemList({ items, type, text, refresh, viewItem }: { items: any[], type: listType, text?: string, refresh?: () => void, viewItem?: string | null }) {
 	const { settings } = useSettings() as SAMBLSettingsContext;
 	const [searchQuery, setSearchQuery] = useState(""); // State for search query
 	const [filteredItems, setFilteredItems] = useState(items || []); // State for filtered items
 	const [currentItems, setCurrentItems] = useState(items || []);
+	const [hasOpenedItem, setHasOpenedItem] = useState(false);
 	function getSavedFilter(): Partial<FilterData> {
 		let filter: Partial<FilterData> = {};
 		if (settings.saveFilter){
@@ -686,6 +688,21 @@ export default function ItemList({ items, type, text, refresh }: { items: any[],
 		}
 	}, [searchQuery, filter, currentItems, type]);
 
+	useEffect(() => {
+		if (type !== "album" || !viewItem || hasOpenedItem) {
+			return;
+		}
+		let updatedItems = currentItems as DisplayAlbum[];
+		updatedItems.forEach((item) => {
+			if (item.id == viewItem){
+				item.viewingAlbum = true;
+				setHasOpenedItem(false)
+				console.log(item.id)
+			}
+		})
+		setFilteredItems(updatedItems)
+	},[viewItem, currentItems])
+	
 	let itemArray: any = [];
 	if (type != "album" && type != "loadingAlbum") {
 		itemArray = Array.isArray(currentItems) ? currentItems : Object.values(currentItems);
