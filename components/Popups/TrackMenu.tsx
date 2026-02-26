@@ -255,9 +255,9 @@ function TrackMenu({ data, refresh, close }: { data: AggregatedAlbum, refresh: (
 	);
 }
 
-export default function TrackMenuPopup({ data, button, refresh }: { data: AggregatedAlbum, button?: JSX.Element, refresh: () => void }) {
+export default function TrackMenuPopup({ data, button, refresh, open }: { data: AggregatedAlbum, button?: JSX.Element, refresh: () => void, open?: boolean }) {
 	return (
-		<Popup button={button}>
+		<Popup button={button} open={open}>
 			<TrackMenu data={data} refresh={refresh} />
 		</Popup>
 	);
