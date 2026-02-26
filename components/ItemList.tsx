@@ -697,7 +697,6 @@ export default function ItemList({ items, type, text, refresh, viewItem }: { ite
 			if (item.id == viewItem){
 				item.viewingAlbum = true;
 				setHasOpenedItem(false)
-				console.log(item.id)
 			}
 		})
 		setFilteredItems(updatedItems)
