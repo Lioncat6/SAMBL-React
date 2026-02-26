@@ -24,6 +24,7 @@ import TrackMenuPopup from "./Popups/TrackMenu";
 import FilterMenuPopup from "./Popups/FilterMenu";
 import toasts from "../utils/toasts";
 import { AlbumObject, ExtendedTrackObject, TrackObject } from "../types/provider-types";
+import { MdAlbum, MdAudiotrack } from "react-icons/md";
 
 function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRCs: boolean) => void }) {
 	const { id, url, releaseDate, mbAlbum, trackCount, status, mbid, albumIssues, provider, artistMBID, aggregatedTracks, albumTracks, albumArtists } = item;
@@ -438,7 +439,7 @@ function LinkButton({ item }: { item: AlbumObject | TrackObject }) {
 
 function GenericItem({ item }: { item: AlbumObject | ExtendedTrackObject }) {
 	const exportState = useExportState()?.exportState;
-	const { provider, imageUrl, imageUrlSmall, name, url } = item;
+	const { provider, imageUrl, imageUrlSmall, name, url, type } = item;
 	const info = [
 		// text.capitalizeFirst(provider),
 		"comment" in item && item.comment,
@@ -472,7 +473,7 @@ function GenericItem({ item }: { item: AlbumObject | ExtendedTrackObject }) {
 			<div className={styles.textContainer}>
 				<div className={styles.artistName}>
 					<a href={url || undefined} target="_blank">
-						{name}
+						{name}  {type == "track" ? <MdAudiotrack title={"Track"} /> : <MdAlbum title={"Album"} />}
 					</a>
 				</div>
 				<div className={styles.artistFollowers}>{artistString}</div>
