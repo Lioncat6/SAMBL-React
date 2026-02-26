@@ -268,6 +268,7 @@ function formatArtistObject(rawObject: SpotifyApi.ArtistObjectSimplified | Spoti
 		popularity: extendedArtist.popularity || null,
 		id: rawObject.id,
 		provider: namespace,
+		type: "artist"
 	};
 }
 
@@ -293,6 +294,7 @@ function formatPartialArtistObject(artist: SpotifyApi.ArtistObjectSimplified): P
 		imageUrlSmall: "",
 		id: artist.id,
 		provider: namespace,
+		type: "partialArtist"
 	};
 }
 
@@ -311,6 +313,7 @@ function formatAlbumObject(album: SpotifyApi.SingleAlbumResponse): AlbumObject {
 		albumType: album.album_type,
 		upc: album.external_ids?.upc || null,
 		albumTracks: getAlbumTracks(album),
+		type: "album"
 	};
 }
 
@@ -357,6 +360,7 @@ function formatTrackObject(track: trackWithAlbumData | SpotifyApi.TrackObjectSim
 		trackNumber: extendedTrack.track_number,
 		releaseDate: extendedTrack.release_date || album?.release_date || null,
 		isrcs: extendedTrack.external_ids?.isrc ? [extendedTrack.external_ids.isrc] : [],
+		type: "track"
 	};
 }
 

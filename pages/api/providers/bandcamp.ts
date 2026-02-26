@@ -212,6 +212,7 @@ function formatArtistObject(rawData): ArtistObject {
 		popularity: null,
 		id: getArtistId(rawData) || "",
 		provider: namespace,
+		type: "artist"
 	};
 }
 
@@ -277,6 +278,7 @@ function formatAlbumObject(album): AlbumObject {
 				imageUrlSmall: null,
 				id: bcId.artist,
 				provider: namespace,
+				type: "partialArtist"
 			},
 		],
 		artistNames: [album.artist],
@@ -287,6 +289,7 @@ function formatAlbumObject(album): AlbumObject {
 		albumType: albumType,
 		upc: album.raw?.current?.upc || null,
 		albumTracks: getAlbumTracks(album) || [],
+		type: "album"
 	};
 }
 
@@ -359,6 +362,7 @@ function formatTrackObject(track): TrackObject {
 		trackNumber: track.track_num,
 		duration: track.duration*1000 || null,
 		isrcs: track.isrc ? [track.isrc] : [],
+		type: "track"
 	};
 }
 
@@ -371,6 +375,7 @@ function formatPartialArtistObject(track): PartialArtistObject {
 		imageUrlSmall: null,
 		id: artistId || "",
 		provider: namespace,
+		type: "partialArtist"
 	};
 }
 

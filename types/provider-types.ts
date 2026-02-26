@@ -10,9 +10,10 @@ export type ObjectType = "partialArtist" | "artist" | "album" | "track"
 
 export class GenericObject {
     provider: ProviderNamespace;
-    id: string;
+    id: string | null;
     name: string;
-    url: string;
+    url: string | null;
+    type: ObjectType
 }
 
 export class ImageObject extends GenericObject {
@@ -21,13 +22,14 @@ export class ImageObject extends GenericObject {
 }
 
 
-export class PartialArtistObject {
+export class PartialArtistObject extends GenericObject {
     name: string
     url: string;
     imageUrl: string | null;
     imageUrlSmall: string | null;
     id: string;
     provider: ProviderNamespace;
+    type: "partialArtist" | "artist";
 };
 
 export class ArtistObject extends PartialArtistObject {
@@ -37,9 +39,10 @@ export class ArtistObject extends PartialArtistObject {
     genres: string[] | null;
     followers: number | null;
     popularity: number | null;
+    type: "artist";
 };
 
-export class AlbumObject {
+export class AlbumObject extends GenericObject {
     provider: ProviderNamespace;
     id: string;
     name: string;
@@ -53,6 +56,7 @@ export class AlbumObject {
     albumType: string | null;
     upc: string | null;
     albumTracks: TrackObject[];
+    type: "album";
 };
 
 export type UrlType = 'album' | 'track' | 'artist';
@@ -79,7 +83,7 @@ export class ExtendedAlbumObject extends AlbumObject {
     override albumTracks: ExtendedTrackObject[];
 };
 
-export class TrackObject {
+export class TrackObject extends GenericObject {
     provider: ProviderNamespace;
     id: string | null;
     name: string;
@@ -93,6 +97,7 @@ export class TrackObject {
     trackNumber: number | null;
     duration: number | null;
     isrcs: string[];
+    type: "track";
 };
 
 export class ExtendedTrackObject extends TrackObject {

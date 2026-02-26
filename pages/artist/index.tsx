@@ -156,7 +156,8 @@ export async function getServerSideProps(context) {
 				info: mostPopularArtist?.info || "",
 				mbData: mbArtist,
 				viewingAlbum: viewingAlbum || null,
-				viewedAlbum: await getViewedAlbum()
+				viewedAlbum: await getViewedAlbum(),
+				type: "artist"
 			};
 		} else {
 			const fetchedData = (await fetchArtistData(provider_id, provider));

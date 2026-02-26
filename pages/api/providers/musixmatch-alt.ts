@@ -122,13 +122,15 @@ async function getTrackByISRC(isrc: string): Promise<ExtendedTrackObject[] | nul
 					id: mxmData.track.artist_id,
 					provider: namespace,
 					imageUrl: null,
-					imageUrlSmall: null
+					imageUrlSmall: null,
+					type: "partialArtist"
 				}],
 				albumName: mxmData.track?.album_name || mxmData.track.album_vanity_id,
 				releaseDate: null,
 				trackNumber: null,
 				duration: null,
-				isrcs: [isrc]
+				isrcs: [isrc],
+				type: "track"
 
 			}
 			return [trackObject];
