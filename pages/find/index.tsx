@@ -6,7 +6,7 @@ import Head from "next/head";
 import SearchBox from "../../components/SearchBox";
 import { FaWindowRestore } from "react-icons/fa6";
 import toasts from "../../utils/toasts";
-import { FindData, ISRCData, UPCData } from "../../types/api-types";
+import { FindData, ISRCData, UPCData, URLLookupData } from "../../types/api-types";
 import normalizeVars from "../../utils/normalizeVars";
 import { AlbumObject, TrackObject } from "../../types/provider-types";
 
@@ -50,8 +50,21 @@ async function getUPCFromURL(url) {
 	}
 }
 
+async function lookupUrl(url) {
+	try {
+		const response = await fetch(`/api/lookupURL?url=${encodeURIComponent(url)}`)
+		if (response.ok) {
+			return await response.json() as URLLookupData;
+		} else {
+			throw new Error((await response.json()).error || response.statusText);
+		}
+	} catch (error) {
+		throw new Error(error)
+	}
+}
+
 export default function Find() {
-	const [results, setResults] = useState([] as AlbumObject[] | TrackObject[]);
+	const [results, setResults] = useState([] as (AlbumObject | TrackObject)[]);
 	const [isLoading, setIsLoading] = useState(false);
 	const router = useRouter();
 	const { query: urlQuery } = normalizeVars(router.query);
@@ -72,6 +85,14 @@ export default function Find() {
 			issues.forEach((issue) => {
 				toasts.error(`Error with provider ${issue.provider}: ${issue.error}`);
 			});
+		}
+	}
+
+	function handleLookup(results: URLLookupData) {
+		if (results.albums.length > 0 || results.tracks.length > 0){
+			setResults([...results.albums, ...results.tracks])
+		} else {
+			toasts.warn("No results found!")
 		}
 	}
 
@@ -119,7 +140,7 @@ export default function Find() {
 						} else if (query.includes("/artist")) {
 							toasts.warn("This finding method isn't supported yet. Try using a barcode or ISRC!");
 						} else {
-							toasts.warn("This URL is currently not supported. Please enter a valid provider track or album URL.");
+							handleLookup(await toasts.dispPromise(lookupUrl(query), "Looking up URL...", "Error looking up URL!"));
 						}
 					} else if (upcPattern.test(query)) {
 						const matchedQuery = query.match(upcPattern)?.[0];
