@@ -12,6 +12,8 @@ function LayoutContent({ children }: { children: JSX.Element}) {
         <>
             <Head>
                 <title>SAMBL</title>
+                <meta property="og:title" content="SAMBL" />
+                <meta property="og:site_name" content="SAMBL" />
                 <meta name="description" content="Streaming Artist MusicBrainz Lookup" />
                 <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg" />
                 <link rel="icon" type="image/png" href="../assets/images/favicon.png" />

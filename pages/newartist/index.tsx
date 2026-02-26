@@ -75,10 +75,10 @@ export default function NewArtist({ artist, error }: { artist?: ArtistPageData, 
         <>
             <Head>
                 <title>{`SAMBL • ${artist.name}`}</title>
-                <meta name="description" content={`View Artist • ${artist.name}  • ${artist.followers} Followers`} />
+                <meta name="description" content={`View Artist • ${artist.name}  • ${artist.relevance}`} />
                 {artist.imageUrl && <meta property="og:image" content={artist.imageUrl} />}
 				<meta property="og:title" content={`SAMBL • ${artist.name}`} />
-				<meta property="og:description" content={`View Artist • ${artist.name}  • ${artist.followers} Followers`} />
+				<meta property="og:description" content={`View Artist • ${artist.name}  • ${artist.relevance}`} />
             </Head>
             <ArtistInfo artist={artist} />
             <div id="contentContainer">
