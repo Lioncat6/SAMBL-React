@@ -1,4 +1,4 @@
-import { MusicBrainzApi, CoverArtArchiveApi, IRelation, RelationsIncludes, IArtist, EntityType, IBrowseReleasesQuery, IRelease, IEntity, IRecording, ICoverInfo, ICoversInfo, IReleaseList, IUrlList, IUrlLookupResult, IUrl, IBrowseReleasesResult, IRecordingList, IArtistList, IArtistMatch, ITrack, IBrowseRecordingsQuery, UrlIncludes, ReleaseIncludes } from "musicbrainz-api";
+import { MusicBrainzApi, CoverArtArchiveApi, IRelation, RelationsIncludes, IArtist, EntityType, IBrowseReleasesQuery, IRelease, IEntity, IRecording, ICoverInfo, ICoversInfo, IReleaseList, IUrlList, IUrlLookupResult, IUrl, IBrowseReleasesResult, IRecordingList, IArtistList, IArtistMatch, ITrack, IBrowseRecordingsQuery, UrlIncludes, ReleaseIncludes, RecordingIncludes } from "musicbrainz-api";
 import { UrlInfo, UrlMBIDDict, UrlData, Provider, TrackObject, ArtistObject, PartialArtistObject, AlbumObject, ExtendedAlbumObject, MusicBrainzProvider, AlbumData, ExtendedAlbumData, ExtendedTrackObject, RegexArtistUrlQuery, IdMBIDDict, Capabilities } from "../../../types/provider-types";
 import logger from "../../../utils/logger";
 import withCache from "../../../utils/cache";
@@ -267,6 +267,15 @@ async function getTrackById(mbid: string): Promise<IRecording | null | undefined
 	}
 }
 
+async function getTrackByMBID(mbid: string, inc: RecordingIncludes[]): Promise<IRecording | null | undefined> {
+	try {
+		const data = await mbApi.lookup("recording", mbid, inc);
+		checkError(data);
+		return data;
+	} catch (error) {
+		err.handleError("Failed to fetch track by ID", error);
+	}
+}
 function getTrackISRCs(track: IRecording): string[] | null {
 	if (!track) return null;
 	let isrcs = track?.isrcs || [];
@@ -322,7 +331,7 @@ function formatAlbumObject(album: IRelease): ExtendedAlbumObject {
 function formatTrackObject(track: IRecording | ITrack): ExtendedTrackObject {
 	let trackNumber: number | null = null;
 	let recording: IRecording = track as IRecording;
-	if (!('isrcs' in track)) {
+	if (!('isrcs' in track) && 'recording' in track) {
 		let releaseTrack: ITrack = track as unknown as ITrack
 		trackNumber = releaseTrack.position || null;
 		recording = releaseTrack.recording;
@@ -419,6 +428,7 @@ const musicbrainz: MusicBrainzProvider = {
 	getArtistFeaturedReleaseCount: withCache(getArtistFeaturedReleaseCount, { ttl: 60 * 60, namespace: namespace }),
 	getArtistReleaseCount: withCache(getArtistReleaseCount, { ttl: 60 * 60, namespace: namespace }),
 	getTrackById: withCache(getTrackById, { ttl: 60 * 15, namespace: namespace }),
+	getTrackByMBID: withCache(getTrackByMBID, { ttl: 60 * 15, namespace: namespace }),
 	getAlbumByMBID: withCache(getAlbumByMBID, { ttl: 60 * 15, namespace: namespace }),
 	getAlbumById: withCache(getAlbumByMBID, { ttl: 60 * 15, namespace: namespace }),
 	getArtistByUrl: withCache(getArtistByUrl, { ttl: 60 * 15, namespace: namespace }),
