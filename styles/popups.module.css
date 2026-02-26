@@ -230,7 +230,7 @@ flex-direction: row;
     flex-shrink: 0;
 }
 
-.copyButton, .lookupButton, .expandButton {
+.copyButton, .lookupButton, .expandButton, .linkButton {
     background: transparent;
     border: none;
     transition: all 0.1s ease-in-out;
@@ -240,15 +240,21 @@ flex-direction: row;
     vertical-align: text-top;
 }
 
+.linkButton {
+    font-size: x-large;
+}
+
 .lookupButton {
     color: var(--foreground-primary);
     padding: 1px 5px 1px 0;
     font-size: small;
 }
 
+
 .copyButton:hover,
 .lookupButton:hover,
-.expandButton:hover {
+.expandButton:hover,
+.linkButton:hover {
     cursor: pointer;
     color: var(--foreground-secondary)
 }

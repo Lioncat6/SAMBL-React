@@ -1,5 +1,5 @@
 import styles from "../../styles/popups.module.css";
-import { FaCopy, FaMagnifyingGlass, FaBarcode } from "react-icons/fa6";
+import { FaCopy, FaMagnifyingGlass, FaBarcode, FaLink, FaL } from "react-icons/fa6";
 import { MdOutlineAlbum, MdPerson, MdOutlineCalendarMonth, MdOutlineWarningAmber } from "react-icons/md";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import text from "../../utils/text";
@@ -25,6 +25,12 @@ function MbUrlIcon({ status, url, styleClass, isAlbum = true }: { status: AlbumS
 			)}
 		</>
 	)
+}
+
+function copyLink(id){
+	if (!id) return
+	const url = `${window.location.href}&viewingAlbum=${id}`
+	text.handleCopy(url);
 }
 
 function AlbumDetails({ data }: { data: DisplayAlbum }) {
@@ -61,6 +67,9 @@ function AlbumDetails({ data }: { data: DisplayAlbum }) {
 						{name}
 					</a>
 					<MbUrlIcon status={status} url={mbAlbum?.url || null} styleClass={styles.albumMB} />
+					<button onClick={() => copyLink(data.id)} title={"Copy SAMBL link to this album"} className={styles.linkButton}>
+						<FaLink />
+					</button>
 				</div>
 				<div className={styles.artists}>
 					<MdPerson />
