@@ -28,6 +28,7 @@ export class ArtistLookupData {
 export class URLLookupData {
     albums: ExtendedAlbumObject[]
     tracks: ExtendedTrackObject[]
+    artists: ArtistObject[]
 }
 
 export type ArtistSearchData = Record<string, AggregatedArtist>

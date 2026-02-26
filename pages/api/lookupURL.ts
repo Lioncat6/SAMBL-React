@@ -2,7 +2,7 @@ import providers from "./providers/providers";
 import musicbrainz from "./providers/musicbrainz";
 import logger from "../../utils/logger";
 import { NextApiRequest, NextApiResponse } from "next";
-import { ExtendedAlbumObject, ExtendedTrackObject, ProviderWithCapabilities } from "../../types/provider-types";
+import { ArtistObject, ExtendedAlbumObject, ExtendedTrackObject, ProviderWithCapabilities } from "../../types/provider-types";
 import normalizeVars from "../../utils/normalizeVars";
 import { ArtistLookupData, URLLookupData } from "../../types/api-types";
 import { SAMBLApiError } from "../../types/api-types";
@@ -14,18 +14,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(500).json(<SAMBLApiError>{error: "Missing required paramter `url`", parameters: ['url'], code: 500})
         }
         const forceRefresh = Object.prototype.hasOwnProperty.call(req.query, "forceRefresh");
-        const data = await musicbrainz.getAlbumsBySourceUrls(url, ["recording-rels", "release-rels", "url-rels"])
+        const data = await musicbrainz.getAlbumsBySourceUrls(url, ["recording-rels", "release-rels", "url-rels", "artist-rels"],  { noCache: forceRefresh })
         let albums: ExtendedAlbumObject[] = []
         let tracks: ExtendedTrackObject[] = []
+        let artists: ArtistObject[] = []
         if (data?.relations){
             data.relations.forEach((relation)=>{
                 if (relation.release){
                     albums.push(musicbrainz.formatAlbumObject(relation.release))
                 }
-                if (relation.recording)
-            })
+                if ("recording" in relation && relation.recording){ // TODO: https://github.com/Borewit/musicbrainz-api/pull/1143
+                    tracks.push(musicbrainz.formatTrackObject(relation.recording))
+                }
+                if (relation.artist){
+                    artists.push(musicbrainz.formatArtistObject(relation.artist))
+                }
+            })  
         }
-        return res.status(200).json({albums, tracks} as URLLookupData);
+        return res.status(200).json({albums, tracks, artists} as URLLookupData);
     } catch (error) {
         logger.error("Error in lookupArtist API", error);
         return res.status(500).json({ error: "Internal Server Error", details: error.message } as SAMBLApiError);
