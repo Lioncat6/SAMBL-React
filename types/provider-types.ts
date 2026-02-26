@@ -22,11 +22,9 @@ export class ImageObject extends GenericObject {
 }
 
 
-export class PartialArtistObject extends GenericObject {
+export class PartialArtistObject extends ImageObject {
     name: string
     url: string;
-    imageUrl: string | null;
-    imageUrlSmall: string | null;
     id: string;
     provider: ProviderNamespace;
     type: "partialArtist" | "artist";
@@ -42,13 +40,11 @@ export class ArtistObject extends PartialArtistObject {
     type: "artist";
 };
 
-export class AlbumObject extends GenericObject {
+export class AlbumObject extends ImageObject {
     provider: ProviderNamespace;
     id: string;
     name: string;
     url: string;
-    imageUrl: string | null;
-    imageUrlSmall: string | null;
     albumArtists: PartialArtistObject[];
     artistNames: string[];
     releaseDate: string | null;
@@ -83,13 +79,11 @@ export class ExtendedAlbumObject extends AlbumObject {
     override albumTracks: ExtendedTrackObject[];
 };
 
-export class TrackObject extends GenericObject {
+export class TrackObject extends ImageObject {
     provider: ProviderNamespace;
     id: string | null;
     name: string;
     url: string | null;
-    imageUrl: string | null;
-    imageUrlSmall: string | null;
     trackArtists: PartialArtistObject[];
     artistNames: string[];
     albumName: string | null;
