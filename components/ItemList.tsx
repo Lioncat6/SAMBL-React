@@ -718,7 +718,7 @@ export default function ItemList({ items, type, text, refresh, viewItem }: { ite
 			{type === "album" && <SearchContainer onSearch={setSearchQuery} currentFilter={filter} setFilter={setFilter} refresh={refresh} />}
 			{type === "loadingAlbum" ? (
 				<LoadingContainer text={text} showRefresh={refresh != undefined} />
-			) : items.length > 75 && settings?.listVirtualization ? ( // If over 200 albums, use the virtualized list. Reason why I don't want to always use it is because it scrolls less smooth
+			) : items.length > 75 && settings?.listVirtualization && !viewItem ? ( // If over 200 albums, use the virtualized list. Reason why I don't want to always use it is because it scrolls less smooth
 				<VirtualizedList items={type === "album" ? filteredItems : itemArray} type={type} text={text} onItemUpdate={handleItemUpdate} />
 			) : (
 				<ListContainer items={type === "album" ? filteredItems : itemArray} type={type} text={text} onItemUpdate={handleItemUpdate} />
