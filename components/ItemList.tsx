@@ -7,7 +7,7 @@ import { useExport as useExportState } from "./ExportState";
 import { List, RowComponentProps } from "react-window";
 import { FaDeezer } from "react-icons/fa";
 import { SiApplemusic, SiTidal } from "react-icons/si";
-import { FaAnglesRight, FaAnglesLeft, FaNotEqual } from "react-icons/fa6";
+import { FaAnglesRight, FaAnglesLeft, FaNotEqual, FaSoundcloud, FaBandcamp } from "react-icons/fa6";
 import { IoMdRefresh } from "react-icons/io";
 import { toast, Flip, ToastOptions } from "react-toastify";
 import text from "../utils/text";
@@ -23,7 +23,7 @@ import ExportMenuPopup from "./Popups/ExportMenu";
 import TrackMenuPopup from "./Popups/TrackMenu";
 import FilterMenuPopup from "./Popups/FilterMenu";
 import toasts from "../utils/toasts";
-import { AlbumObject, ExtendedTrackObject, TrackObject } from "../types/provider-types";
+import { AlbumObject, ExtendedTrackObject, ProviderNamespace, TrackObject } from "../types/provider-types";
 import { MdAlbum, MdAudiotrack } from "react-icons/md";
 
 function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRCs: boolean) => void }) {
@@ -409,7 +409,7 @@ function ArtistItem({ item }) {
 	);
 }
 
-function Icon({ source }) {
+function Icon({ source }: {source: ProviderNamespace}) {
 	return (
 		<>
 			{source === "spotify" && <img className={styles.spotifyIcon} title={"Spotify"} src="../assets/images/Spotify_icon.svg" />}
@@ -418,6 +418,8 @@ function Icon({ source }) {
 			{source === "musixmatch" && <img className={styles.musixMatchIcon} title={"Musixmatch"} src="../assets/images/Musixmatch_logo_icon_only.svg" />}
 			{source === "tidal" && <SiTidal title={"Tidal"} className={styles.tidalIcon} />}
 			{source === "applemusic" && <SiApplemusic title={"Apple Music"} className={styles.applemusicIcon} />}
+			{source === "soundcloud" && <FaSoundcloud title={"Soundcloud"} className={styles.soundcloudIcon} />}
+			{source === "bandcamp" && <FaBandcamp title={"Bandcamp"} className={styles.soundcloudIcon} />}
 		</>
 	);
 }

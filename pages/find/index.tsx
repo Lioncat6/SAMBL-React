@@ -9,6 +9,7 @@ import toasts from "../../utils/toasts";
 import { FindData, ISRCData, UPCData, URLLookupData } from "../../types/api-types";
 import normalizeVars from "../../utils/normalizeVars";
 import { AlbumObject, TrackObject } from "../../types/provider-types";
+import parsers from "../../lib/parsers/parsers";
 
 async function serverFind(query, type) {
 	try {
@@ -117,25 +118,26 @@ export default function Find() {
 					const isrcPattern = /^[A-Z]{2}-?[A-Z0-9]{3}-?[0-9]{2}-?[0-9]{5}$/;
 					const upcPattern = /^\d{12,14}$/;
 					const urlPattern = /^(https?|http):\/\/[^\s/$.?#].[^\s]*$/i;
-					const soundcloudTrackPattern = /^(https?|http):\/\/(www\.)?soundcloud\.com\/[A-Za-z0-9_\-]+\/[A-Za-z0-9_\-]+$/i;
-					const soundcloudSetPattern = /^(https?|http):\/\/(www\.)?soundcloud\.com\/[A-Za-z0-9_\-]+\/sets\/[A-Za-z0-9_\-]+$/i;
 					if (isrcPattern.test(query)) {
 						const matchedQuery = query.match(isrcPattern)?.[0];
 						handleResults(await toasts.dispPromise(serverFind(matchedQuery, "ISRC"), "Finding by ISRC...", "Error finding by ISRC!"));
 					} else if (urlPattern.test(query)) {
-						if (query.includes("/track") || query.includes("/recording") || soundcloudTrackPattern.test(query)) {
+						const data = parsers.getUrlInfo(query);
+						if (data?.type == "track") {
 							let response = await toasts.dispPromise(getISRCFromURL(query), "Looking up ISRC...", "Error looking up ISRC!");
 							if (response.isrcs?.length > 0) {
 								router.push(`find?query=${response.isrcs[0]}`);
 							} else {
 								toasts.warn("No ISRC found for this URL");
+								handleLookup(await toasts.dispPromise(lookupUrl(query), "Looking up URL...", "Error looking up URL!"));
 							}
-						} else if (query.includes("/album") || query.includes("/release/") || query.includes("/releases/") || query.includes("/set/") || soundcloudSetPattern.test(query)) {
+						} else if (data?.type == "album") {
 							let response = await toasts.dispPromise(getUPCFromURL(query), "Looking up Barcode...", "Error looking up Barcode!");
 							if (response.upcs?.length > 0) {
 								router.push(`find?query=${response.upcs[0]}`);
 							} else {
 								toasts.warn("No Barcode found for this URL");
+								handleLookup(await toasts.dispPromise(lookupUrl(query), "Looking up URL...", "Error looking up URL!"));
 							}
 						} else if (query.includes("/artist")) {
 							toasts.warn("This finding method isn't supported yet. Try using a barcode or ISRC!");
