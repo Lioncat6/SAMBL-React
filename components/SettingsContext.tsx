@@ -1,13 +1,16 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import seeders from "../lib/seeders/seeders";
-import { SAMBLSettings } from "../types/component-types";
+import { FilterData, SAMBLSettings } from "../types/component-types";
 
 const defaultSettings: SAMBLSettings = {
     enabledSeeders: seeders.getDefaultSeederNamespaces(),
     showExport: false,
     listVirtualization: true,
     quickFetchThreshold: 500,
-    currentProvider: "spotify"
+    currentProvider: "spotify",
+    saveSort: false,
+    saveFilter: false,
+    currentFilter: null
 };
 
 export interface SAMBLSettingsContext {

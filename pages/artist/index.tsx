@@ -12,6 +12,8 @@ import { ArtistPageData, SAMBLError } from "../../types/component-types";
 import ErrorPage from "../../components/ErrorPage";
 import { AggregatedAlbum, AggregatedData } from "../../types/aggregated-types";
 import toasts from "../../utils/toasts";
+import { set } from "nprogress";
+import text from "../../utils/text";
 
 async function fetchArtistData(id: string, provider: ProviderNamespace | string) {
 	const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?provider_id=${id}&provider=${provider}&mbData`);
@@ -31,75 +33,94 @@ async function fetchArtistData(id: string, provider: ProviderNamespace | string)
 
 export async function getServerSideProps(context) {
 	try {
-	let { spid, spids, artist_mbid, mbid, provider_id, provider_ids, provider, pid, pids }:
-	 {spid?: string, spids?: string, artist_mbid?: string, mbid?: string, provider_id?: string, provider_ids?: string, provider?: string, pid?: string, pids?: string} = context.query;
-	if (spid) provider_id = spid;
-	if (spids) provider_ids = spids;
-	if ((spid || spids) && !provider) provider = "spotify";
-	if (pid) provider_id = pid;
-	if (pids) provider_ids = pids;
-	if (mbid) artist_mbid = mbid;
-	const splitIds = provider_ids?.split(",");
-	if (!provider_id && splitIds && splitIds.length > 0) provider_id = splitIds[0];
+		let { spid, spids, artist_mbid, mbid, provider_id, provider_ids, provider, pid, pids, viewingAlbum }:
+			{ spid?: string, spids?: string, artist_mbid?: string, mbid?: string, provider_id?: string, provider_ids?: string, provider?: string, pid?: string, pids?: string, viewingAlbum?: string } = context.query;
+		if (spid) provider_id = spid;
+		if (spids) provider_ids = spids;
+		if ((spid || spids) && !provider) provider = "spotify";
+		if (pid) provider_id = pid;
+		if (pids) provider_ids = pids;
+		if (mbid) artist_mbid = mbid;
+		const splitIds = provider_ids?.split(",");
+		if (!provider_id && splitIds && splitIds.length > 0) provider_id = splitIds[0];
 
-	if (!provider){
-		const error: SAMBLError = {
-			type: "parameter",
-			parameters: ["provider"]
-		}
-		return {
-			props: { error }
-		}
-	}
-
-	if (!provider_id){
-		const error: SAMBLError = {
-			type: "parameter",
-			parameters: ["provider_id"]
-		}
-		return {
-			props: { error }
-		}
-	}
-
-	if (!artist_mbid && provider_id || (splitIds && splitIds.length > 0)) {
-		let ids = provider_id ? provider_id : (splitIds && splitIds[0]);
-		const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/lookupArtist?provider_id=${ids}&provider=${provider}`);
-		if (response.ok) {
-			const { mbid: fetchedMBid } = await response.json();
-			if (fetchedMBid) {
-				let destination = `/artist?provider_id=${ids}&provider=${provider}&artist_mbid=${fetchedMBid}`;
-				if (!spid && splitIds && splitIds?.length > 1) {
-					destination = `/artist?provider_ids=${provider_ids}&provider=${provider}&artist_mbid=${fetchedMBid}`;
-				}
-				return {
-					redirect: {
-						destination: destination,
-						permanent: false,
-					},
-				};
+		if (!provider) {
+			const error: SAMBLError = {
+				type: "parameter",
+				parameters: ["provider"]
+			}
+			return {
+				props: { error }
 			}
 		}
-	}
-	if (!provider_id && splitIds?.length == 1) {
-		let destination = `/artist?spid=${splitIds[0]}${artist_mbid ? `&artist_mbid=${artist_mbid}` : ""}`;
-		return {
-			redirect: {
-				destination: destination,
-				permanent: false,
-			},
-		};
-	}
-	
-		let data: ArtistObject[];
+
+		if (!provider_id) {
+			const error: SAMBLError = {
+				type: "parameter",
+				parameters: ["provider_id"]
+			}
+			return {
+				props: { error }
+			}
+		}
+
+		if (!artist_mbid && provider_id) {
+			let ids = provider_id ? provider_id : (splitIds && splitIds[0]);
+			const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/lookupArtist?provider_id=${ids}&provider=${provider}`);
+			if (response.ok) {
+				const { mbid: fetchedMBid } = await response.json();
+				if (fetchedMBid) {
+					let destination = `/artist?provider_id=${ids}&provider=${provider}&artist_mbid=${fetchedMBid}`;
+					if (!spid && splitIds && splitIds?.length > 1) {
+						destination = `/artist?provider_ids=${provider_ids}&provider=${provider}&artist_mbid=${fetchedMBid}`;
+					}
+					return {
+						redirect: {
+							destination: destination,
+							permanent: false,
+						},
+					};
+				}
+			}
+		}
+		if (splitIds?.length == 1) {
+			let destination = `/artist?provider_id=${splitIds[0]}${artist_mbid ? `&artist_mbid=${artist_mbid}` : ""}&provider=${provider}`;
+			return {
+				redirect: {
+					destination: destination,
+					permanent: false,
+				},
+			};
+		}
+
+		async function getViewedAlbum(): Promise<AggregatedAlbum | null> {
+			if (viewingAlbum) {
+				const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/compareSingleAlbum?provider_id=${viewingAlbum}&provider=${provider}`);
+				if (response.ok) {
+					try {
+						return (await response.json()) as AggregatedAlbum
+					} catch {
+						return null;
+					}
+				}
+			}
+			return null
+		}
+
 		let artist: ArtistPageData;
-		if (!provider_id && provider_ids) {
-			data = [];
+		if (provider_ids && provider_ids?.length > 1) {
+			let data: ArtistObject[] = [];
+			let providerUrls: string[] = [];
+			let providerIds: string[] = [];
+			let artistMBIDs: string[] = [];
 			let mbArtist: null | ArtistObject = null;
 			let pIDArray = splitIds || [];
 			for (let id of pIDArray) {
 				const artistData = await fetchArtistData(id, provider)
 				data.push(artistData.providerData);
+				providerUrls.push(artistData.providerData.url);
+				providerIds.push(artistData.providerData.id);
+				artistData.mbData?.id && artistMBIDs.push(artistData.mbData?.id);
 				if (!mbArtist && artistData.mbData) mbArtist = artistData.mbData;
 			}
 			const uniqueNames = [...new Set(data.map((artist) => artist.name))];
@@ -124,21 +145,28 @@ export async function getServerSideProps(context) {
 				genres: genres.filter((genre) => genre != null),
 				followers: totalFollowers,
 				popularity: mostPopularArtist?.popularity || null,
-				ids: pIDArray,
-				id: pIDArray[0],
+				ids: providerIds,
+				id: providerIds[0],
+				urls: providerUrls,
+				mbids: [...new Set(artistMBIDs)],
 				provider: provider as ProviderNamespace || "spotify",
 				mbid: artist_mbid || null,
 				url: mostPopularArtist?.url || "",
 				relevance: mostPopularArtist?.relevance || "",
 				info: mostPopularArtist?.info || "",
-				mbData: mbArtist
+				mbData: mbArtist,
+				viewingAlbum: viewingAlbum || null,
+				viewedAlbum: await getViewedAlbum(),
+				type: "artist"
 			};
 		} else {
 			const fetchedData = (await fetchArtistData(provider_id, provider));
 			artist = {
-				... fetchedData.providerData,
+				...fetchedData.providerData,
 				mbData: fetchedData.mbData,
 				mbid: artist_mbid || null,
+				viewingAlbum: viewingAlbum || null,
+				viewedAlbum: await getViewedAlbum()
 			};
 		}
 		return {
@@ -194,15 +222,29 @@ async function fetchArtistReleaseCount(mbid) {
 	}
 }
 
-let loadArtistAlbums: ((bypassCache: boolean) => Promise<void> )| null = null;
+let loadArtistAlbums: ((bypassCache: boolean) => Promise<void>) | null = null;
 
-export default function Artist({ artist, error }: {artist: ArtistPageData, error: SAMBLError} ) {
+export default function Artist({ artist, error }: { artist: ArtistPageData, error: SAMBLError }) {
 	if (error || !artist) {
 		return <ErrorPage error={error} />
 	}
 	const { settings, loading: waitingForMount } = useSettings() as SAMBLSettingsContext;
 	const router = useRouter();
 	const { quickFetch } = router.query;
+	useEffect(() => {
+		if (!router.isReady) return;
+		if (router.query.viewingAlbum) {
+			const { viewingAlbum, ...query } = router.query;
+			router.replace(
+				{
+					pathname: router.pathname,
+					query: { ...query },
+				},
+				undefined,
+				{ shallow: true }
+			);
+		}
+	}, [router.isReady, router.query.viewingAlbum]);
 	const [isQuickFetched, setIsQuickFetched] = useState(false);
 	const [albums, setAlbums] = useState<AggregatedAlbum[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -232,7 +274,7 @@ export default function Artist({ artist, error }: {artist: ArtistPageData, error
 					setStatusText(`Loading albums from musicbrainz... ${Number(mbAlbums.current.length) + Number(mbFeaturedAlbums.current.length)}/${Number(mbAlbumCount) + Number(mbFeaturedAlbumCount)}`);
 				}
 			} else {
-				setStatusText(`Loading albums from ${artist.provider}... ${sourceAlbums.current.length}${sourceAlbumCount ? `/${sourceAlbumCount}`: ""}`);
+				setStatusText(`Loading albums from ${artist.provider}... ${sourceAlbums.current.length}${sourceAlbumCount ? `/${sourceAlbumCount}` : ""}`);
 			}
 		}
 
@@ -401,7 +443,7 @@ export default function Artist({ artist, error }: {artist: ArtistPageData, error
 			if (didQuickFetch) {
 				data = await toasts.dispPromise(quickFetchAlbums(providerIds[0], artist.provider, artist.mbid, bypassCache), "Quick Fetching albums...", "Failed to quick fetch albums!");
 			} else {
-				data = processData(sourceAlbums.current, [ ...mbAlbums.current, ...mbFeaturedAlbums.current], artist.mbid, artist.id, artist.provider);
+				data = processData(sourceAlbums.current, [...mbAlbums.current, ...mbFeaturedAlbums.current], artist.mbid, artist.id, artist.provider);
 			}
 			setStatusText(data.statusText);
 			setAlbums(data.albumData);
@@ -419,20 +461,29 @@ export default function Artist({ artist, error }: {artist: ArtistPageData, error
 	}
 	const aiTags = ["ai", "ai-generated", "ai generated"]
 	const isAi = artist?.mbData?.genres?.some((tag) => aiTags.includes(tag));
+	
 	return (
 		<>
 			<Head>
 				<title>{`SAMBL • ${artist.name}`}</title>
-				<meta name="description" content={`View Artist • ${artist.name} • ${artist.followers} Followers`} />
-				{artist.imageUrl && <meta property="og:image" content={artist.imageUrl} />}
-				<meta property="og:title" content={`SAMBL • ${artist.name}`} />
-				<meta property="og:description" content={`View Artist • ${artist.name} • ${artist.followers} Followers`} />
+				{artist.viewedAlbum ?
+					<>
+						<meta name="description" content={`View Artist Album • ${artist.viewedAlbum.name}(${text.getColorEmoji(artist.viewedAlbum.status)}) by ${artist.name}`} />
+						{artist.viewedAlbum.imageUrl && <meta property="og:image" content={artist.viewedAlbum.imageUrl} />}
+						<meta property="og:title" content={`SAMBL • ${artist.viewedAlbum.name} by ${artist.name}`} />
+						<meta property="og:description" content={`View Artist Album • ${artist.viewedAlbum.name}(${text.getColorEmoji(artist.viewedAlbum.status)}) by ${artist.name}`} />
+					</> : <>
+						<meta name="description" content={`View Artist • ${artist.name} • ${artist.relevance}`} />
+						{artist.imageUrl && <meta property="og:image" content={artist.imageUrl} />}
+						<meta property="og:title" content={`SAMBL • ${artist.name}`} />
+						<meta property="og:description" content={`View Artist • ${artist.name} • ${artist.relevance}`} />
+					</>}
 			</Head>
 			{!artist.mbid && <Notice type={"noMBID"} data={artist} />}
 			{isQuickFetched && <Notice type={"quickFetched"} />}
 			{isAi && <Notice type={"aiArtist"} />}
 			<ArtistInfo artist={artist} />
-			<div id="contentContainer">{loading ? <ItemList type={"loadingAlbum"} text={statusText} refresh={refreshAlbums} items={[]} /> : <ItemList type={"album"} items={albums} text={statusText} refresh={refreshAlbums} />}</div>
+			<div id="contentContainer">{loading ? <ItemList type={"loadingAlbum"} text={statusText} refresh={refreshAlbums} items={[]} /> : <ItemList type={"album"} items={albums} text={statusText} refresh={refreshAlbums} viewItem={artist.viewingAlbum} />}</div>
 		</>
 	);
 }

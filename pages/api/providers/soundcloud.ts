@@ -110,7 +110,8 @@ function formatArtistObject (rawObject: SoundcloudUser): ArtistObject {
     followers: rawObject.followers_count,
     popularity: null,
     id: correctId(rawObject.id),
-    provider: namespace
+    provider: namespace,
+    type: "artist"
   }
 }
 
@@ -181,7 +182,8 @@ function formatAlbumObject (rawAlbum): AlbumObject {
     trackCount: rawAlbum.track_count || 1,
     albumType: rawAlbum.type || 'single',
     upc: getUPCFromAlbum(rawAlbum),
-    albumTracks: getAlbumTracks(rawAlbum)
+    albumTracks: getAlbumTracks(rawAlbum),
+    type: "album"
   }
 }
 
@@ -233,7 +235,8 @@ function formatTrackObject (track): TrackObject {
     releaseDate: getReleaseDate(track),
     isrcs: track.publisher_metadata?.isrc
       ? [track.publisher_metadata?.isrc]
-      : []
+      : [],
+    type: "track"
   }
 }
 
@@ -248,7 +251,8 @@ function formatPartialArtistObject (
       : artist.avatar_url?.replace('large', 't500x500') || '',
     imageUrlSmall: artist.avatar_url || '',
     id: correctId(artist.id),
-    provider: namespace
+    provider: namespace,
+    type: "partialArtist"
   }
 }
 

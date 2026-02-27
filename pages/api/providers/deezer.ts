@@ -159,6 +159,7 @@ function formatArtistObject(artist): ArtistObject {
 		popularity: null,
 		id: artist.id,
 		provider: namespace,
+		type: "artist"
 	};
 }
 
@@ -169,7 +170,8 @@ function formatPartialArtistObject(artist): PartialArtistObject {
 		imageUrl: artist.picture_xl || "",
 		imageUrlSmall: artist.picture_medium || "",
 		id: artist.id,
-		provider: namespace,
+		provider: namespace, 
+		type: "partialArtist"
 	};
 }
 
@@ -231,7 +233,8 @@ function formatAlbumObject(album): AlbumObject {
 		trackCount: album.nb_tracks,
 		albumType: album.record_type,
 		upc: album.upc || null,
-		albumTracks: getAlbumTracks(album)
+		albumTracks: getAlbumTracks(album),
+		type: "album"
 	};
 }
 
@@ -263,6 +266,7 @@ function formatTrackObject(track): TrackObject {
 		trackNumber: track.trackNumber,
 		releaseDate: track.release_date || null,
 		isrcs: track.isrc ? [track.isrc] : [],
+		type: "track"
 	};
 }
 

@@ -122,17 +122,22 @@ async function getTrackByISRC(isrc: string): Promise<ExtendedTrackObject[] | nul
 					id: mxmData.track.artist_id,
 					provider: namespace,
 					imageUrl: null,
-					imageUrlSmall: null
+					imageUrlSmall: null,
+					type: "partialArtist"
 				}],
 				albumName: mxmData.track?.album_name || mxmData.track.album_vanity_id,
 				releaseDate: null,
 				trackNumber: null,
 				duration: null,
-				isrcs: [isrc]
+				isrcs: [isrc],
+				type: "track"
 
 			}
 			return [trackObject];
 		} else {
+			if (trackData.message?.header?.status_code === 404) {
+				return null;
+			}
 			if (trackData.message?.header?.status_code === 401) {
 				logger.warn(`Recieved 401 from MusixMatch. Reason: ${trackData.message.header?.hint || "Unknown"}`);
 				throw new Error(`Recieved 401 from MusixMatch. Reason: ${trackData.message.header?.hint || "Unknown"}`);

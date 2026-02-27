@@ -65,13 +65,15 @@ function formatTrackObject(rawTrack: MatcherTrack["message"]["body"]["track"]): 
             name: rawTrack.artist_name,
             url: createUrl("artist", getArtistFromUrl(rawTrack.track_share_url) || ""),
             imageUrl: null,
-            imageUrlSmall: null
+            imageUrlSmall: null,
+            type: "partialArtist"
         }],
         albumName: rawTrack.album_name,
         releaseDate: null,
         trackNumber: null,
         duration: null,
-        isrcs: []
+        isrcs: [],
+        type: "track"
     }
 }
 

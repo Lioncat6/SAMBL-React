@@ -21,7 +21,7 @@ export default async function handler(req, res) {
             if (!urlInfo) {
                 return res.status(404).json({ error: "Invalid provider URL" } as SAMBLApiError);
             }
-            if (urlInfo.type !== "track") {
+            if (urlInfo.type !== "album") {
                 return res.status(400).json({ error: `Invalid URL type. Expected a track URL.` } as SAMBLApiError);
             }
             parsed_id = urlInfo.id;
@@ -40,6 +40,9 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: `Provider \`${provider}\` does not support this operation` } as SAMBLApiError);
         }
         let results = await sourceProvider.getAlbumById(parsed_id, { noCache: forceRefresh });
+        if (!results){
+            return res.status(404).json({ error: "Album not found!" } as SAMBLApiError);
+        }
         let upcs = sourceProvider.getAlbumUPCs(results);
         if (upcs == null) {
             return res.status(404).json({ error: "Album not found!" } as SAMBLApiError);

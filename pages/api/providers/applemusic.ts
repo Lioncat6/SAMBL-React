@@ -301,7 +301,8 @@ function formatArtistObject(artist: Resource<ArtistAttributes>): ArtistObject {
 		followers: null,
 		popularity: null,
 		id: artist.id,
-		provider: namespace
+		provider: namespace,
+		type: "artist"
 	};
 }
 
@@ -314,7 +315,8 @@ function formatPartialArtistObject(artist: Resource<ArtistAttributes>): PartialA
 		imageUrl: imageUrls.imageUrl,
 		imageUrlSmall: imageUrls.imageUrlSmall,
 		id: artist.id,
-		provider: namespace
+		provider: namespace,
+		type: "partialArtist"
 	};
 }
 
@@ -340,7 +342,8 @@ function formatAlbumObject(album: Resource<AlbumAttributes>): AlbumObject {
 				: "Album",
 		upc: album.attributes.upc || null,
 		albumTracks: album.relationships.tracks?.data.map(formatTrackObject) || [],
-		provider: namespace
+		provider: namespace,
+		type: "album"
 	};
 }
 
@@ -358,7 +361,8 @@ function formatTrackObject(track: Resource<SongAttributes>): TrackObject {
 		releaseDate: track.attributes.releaseDate || null,
 		trackNumber: track.attributes.trackNumber,
 		duration: track.attributes.durationInMillis,
-		isrcs: [ track.attributes.isrc ]
+		isrcs: [ track.attributes.isrc ],
+		type: "track"
 	};
 }
 

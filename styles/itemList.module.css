@@ -1,130 +1,130 @@
 .listContainer,
 .virtualListContainer {
-	border-radius: 10px;
-	height: 100%;
-	border: 1px solid var(--foreground-primary);
-	overflow-y: auto;
-	margin: 0 10px 0 10px;
-	animation: fadeIn 0.2s ease-in;
+  border-radius: 10px;
+  height: 100%;
+  border: 1px solid var(--foreground-primary);
+  overflow-y: auto;
+  margin: 0 10px 0 10px;
+  animation: fadeIn 0.2s ease-in;
 }
 
 .virtualListContainer {
-	overflow: hidden;
+  overflow: hidden;
 }
 
 .listWrapper {
-	display: flex;
-	flex-direction: column;
-	height: calc(100% - 224px);
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 224px);
 }
 
 .artistName {
-	font-size: larger;
-	font-weight: bold !important;
-	align-items: center;
-	width: 100%;
-	overflow: hidden;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-	text-align: left;
+  font-size: larger;
+  font-weight: bold !important;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: left;
 }
 
 .artistName a {
-	font-weight: bold !important;
+  font-weight: bold !important;
 }
 
 .artistFollowers {
-	text-align: left;
-	font-size: small;
-	font-weight: normal;
-	overflow: hidden;
-	white-space: nowrap;
-	text-overflow: ellipsis;
+  text-align: left;
+  font-size: small;
+  font-weight: normal;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .artistGenres {
-	color: var(--foreground-tertiary);
-	text-align: left;
-	font-size: small;
-	font-weight: normal;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
+  color: var(--foreground-tertiary);
+  text-align: left;
+  font-size: small;
+  font-weight: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .listItem {
-	border: 1px solid var(--foreground-tertiary);
-	display: flex;
-	flex-direction: row;
-	border-radius: 10px;
-	height: 64px;
-	margin: 3px 3px;
-	transition: 0.5s all;
+  border: 1px solid var(--foreground-tertiary);
+  display: flex;
+  flex-direction: row;
+  border-radius: 10px;
+  height: 64px;
+  margin: 3px 3px;
+  transition: 0.5s all;
 }
 
 .innerItem {
-	display: flex;
-	flex-direction: row;
-	width: calc(100% - 8px);
+  display: flex;
+  flex-direction: row;
+  width: calc(100% - 8px);
 }
 
 .listItem:hover {
-	border: 1px solid var(--foreground-primary);
+  border: 1px solid var(--foreground-primary);
 }
 
 .artistIcon img {
-	margin: 2px 0 0 0;
-	border-radius: 10px;
-	width: 60px;
-	height: 60px;
-	padding-left: 5px;
-	object-fit: cover;
+  margin: 2px 0 0 0;
+  border-radius: 10px;
+  width: 60px;
+  height: 60px;
+  padding-left: 5px;
+  object-fit: cover;
 }
 
 .artistIcon img:hover {
-	transition: 0.2s all;
-	filter: drop-shadow(0px 0px 5px #000000);
+  transition: 0.2s all;
+  filter: drop-shadow(0px 0px 5px #000000);
 }
 
 .openArtist {
-	flex-grow: 1;
+  flex-grow: 1;
 }
 
 .itemList a {
-	text-align: left;
-	color: var(--foreground-secondary);
-	text-decoration: none;
-	font-weight: normal;
+  text-align: left;
+  color: var(--foreground-secondary);
+  text-decoration: none;
+  font-weight: normal;
 }
 
 .itemList a:hover {
-	text-decoration: underline;
+  text-decoration: underline;
 }
 
 .viewButton {
-	margin-left: auto !important;
-	height: -webkit-fill-available;
-	width: -moz-available;
-	align-content: center;
-	text-align: center !important;
-	width: 150px;
-	margin: 5px;
-	border-radius: 10px;
-	padding: 10px;
-	border: 1px solid var(--foreground-primary);
-	transition: 0.2s all;
-	text-decoration: none !important;
-	white-space: nowrap;
-	font-weight: normal;
-	min-width: 150ox;
+  margin-left: auto !important;
+  height: -webkit-fill-available;
+  width: -moz-available;
+  align-content: center;
+  text-align: center !important;
+  width: 150px;
+  margin: 5px;
+  border-radius: 10px;
+  padding: 10px;
+  border: 1px solid var(--foreground-primary);
+  transition: 0.2s all;
+  text-decoration: none !important;
+  white-space: nowrap;
+  font-weight: normal;
+  min-width: 150ox;
 }
 
 .viewButton div {
-	transform: translateY(1.5px);
+  transform: translateY(1.5px);
 }
 
 .viewButton div img {
-	transform: translateY(-1px);
+  transform: translateY(-1px);
 }
 
 .artistMB,
@@ -133,632 +133,634 @@
 .tidalIcon,
 .musixMatchIcon,
 .applemusicIcon,
+.soundcloudIcon,
+.bandcampIcon,
 .mbIcon {
-	width: 16px;
-	height: 20px;
-	vertical-align: middle;
-	margin-left: 4px;
+  width: 16px;
+  height: 20px;
+  vertical-align: middle;
+  margin-left: 4px;
 }
 
 .applemusicIcon {
-	color: var(--applemusic-red);
+  color: var(--applemusic-red);
 }
 
 .listItem {
-	position: relative;
-	overflow: hidden;
-	background-size: cover;
-	background-position: center;
-	/* Center the image */
+  position: relative;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  /* Center the image */
 }
 
 .listItem::before {
-	content: "";
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background-image: var(--background-image);
-	background-size: cover;
-	background-position: center;
-	/* Center the image */
-	background-repeat: no-repeat;
-	opacity: 0.15;
-	/* Adjust opacity as needed */
-	filter: blur(3px);
-	/* Apply blur effect */
-	z-index: 1;
-	transition: opacity 0.2s linear;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: var(--background-image);
+  background-size: cover;
+  background-position: center;
+  /* Center the image */
+  background-repeat: no-repeat;
+  opacity: 0.15;
+  /* Adjust opacity as needed */
+  filter: blur(3px);
+  /* Apply blur effect */
+  z-index: 1;
+  transition: opacity 0.2s linear;
 }
 
 .listItem:hover::before {
-	opacity: 0.4;
+  opacity: 0.4;
 }
 
 .listItem > * {
-	position: relative;
-	z-index: 2;
+  position: relative;
+  z-index: 2;
 }
 
 .searchContainer {
-	display: flex;
-	flex-direction: row;
+  display: flex;
+  flex-direction: row;
 }
 
 .filterSearch,
 .refreshButton {
-	position: relative;
-	padding: 10px;
-	height: 32px;
-	border: 1px solid var(--foreground-tertiary);
-	border-radius: 10px;
-	transition: 0.2s all;
-	background: transparent;
-	color: var(--foreground-tertiary);
-	align-items: center;
-	display: flex;
+  position: relative;
+  padding: 10px;
+  height: 32px;
+  border: 1px solid var(--foreground-tertiary);
+  border-radius: 10px;
+  transition: 0.2s all;
+  background: transparent;
+  color: var(--foreground-tertiary);
+  align-items: center;
+  display: flex;
 }
 .filterSearch,
 .refreshButton {
-	margin: 10px 5px 2px 0px;
+  margin: 10px 5px 2px 0px;
 }
 
 .searchContainer > :last-child.filterSearch,
 .searchContainer > :last-child.refreshButton {
-	margin-right: 10px;
+  margin-right: 10px;
 }
 
 .filterSearch:hover,
 .exportButton:hover,
 .refreshButton:hover {
-	border: 1px solid var(--foreground-primary);
-	transition: 0.2s all;
-	color: var(--foreground-primary);
-	background: transparent;
+  border: 1px solid var(--foreground-primary);
+  transition: 0.2s all;
+  color: var(--foreground-primary);
+  background: transparent;
 }
 
-
 @keyframes fadeIn {
-	0% {
-		opacity: 0;
-	}
+  0% {
+    opacity: 0;
+  }
 
-	100% {
-		opacity: 1;
-	}
+  100% {
+    opacity: 1;
+  }
 }
 
 .exportText {
-	white-space: nowrap;
-	overflow: hidden;
+  white-space: nowrap;
+  overflow: hidden;
 }
-
 
 .listSearch,
 .listSearchLoading {
-	border-radius: 10px;
-	height: 30px;
-	border: 1px solid var(--foreground-primary);
-	margin: 10px 5px 2px 10px;
-	width: calc(100% - 32px);
-	padding: 0px 5px;
-	background: transparent;
+  border-radius: 10px;
+  height: 30px;
+  border: 1px solid var(--foreground-primary);
+  margin: 10px 5px 2px 10px;
+  width: calc(100% - 32px);
+  padding: 0px 5px;
+  background: transparent;
 }
 
 .listSearchLoading {
-	color: var(--foreground-tertiary);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: small;
-	animation: textColorShimmer 1.5s infinite linear;
+  color: var(--foreground-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: small;
+  animation: textColorShimmer 1.5s infinite linear;
 }
 
 .listItem {
-	border: 1px solid var(--foreground-tertiary);
-	display: flex;
-	flex-direction: row;
-	border-radius: 10px;
-	height: 64px;
-	margin: 3px 3px;
+  border: 1px solid var(--foreground-tertiary);
+  display: flex;
+  flex-direction: row;
+  border-radius: 10px;
+  height: 64px;
+  margin: 3px 3px;
 }
 
 .listItem:hover {
-	border: 1px solid var(--foreground-primary);
-	transition: 0.5s all;
+  border: 1px solid var(--foreground-primary);
+  transition: 0.5s all;
 }
 
 .statusPill {
-	transform: translateY(2px);
-	margin: 2px 2px 0 3px;
-	width: 12px;
-	min-width: 12px;
-	height: 56px;
-	border-radius: 10px;
-	cursor: help;
+  transform: translateY(2px);
+  margin: 2px 2px 0 3px;
+  width: 12px;
+  min-width: 12px;
+  height: 56px;
+  border-radius: 10px;
+  cursor: help;
 }
 
 .actionButtons {
-	display: flex;
-	flex-direction: row;
-	margin-left: auto;
+  display: flex;
+  flex-direction: row;
+  margin-left: auto;
 }
 
 .metButton,
 .atisketButton,
 .harmonyButton,
 .exportButton {
-	position: relative;
-	margin-top: 14px;
-	margin-right: 5px;
-	padding: 10px;
-	height: 15px;
-	border: 1px solid var(--foreground-primary);
-	border-radius: 20px;
-	transition: 0.2s all;
-	text-decoration: none !important;
-	white-space: nowrap;
-	margin-left: auto;
-	font-weight: normal;
-	cursor: pointer;
+  position: relative;
+  margin-top: 14px;
+  margin-right: 5px;
+  padding: 10px;
+  height: 15px;
+  border: 1px solid var(--foreground-primary);
+  border-radius: 20px;
+  transition: 0.2s all;
+  text-decoration: none !important;
+  white-space: nowrap;
+  margin-left: auto;
+  font-weight: normal;
+  cursor: pointer;
 }
 
 .metButton:hover {
-	border: 1px solid #93c5fd;
-	transition: 0.2s all;
-	background-color: #bfdbfe;
-	text-decoration: none;
-	color: #1e40af;
+  border: 1px solid #93c5fd;
+  transition: 0.2s all;
+  background-color: #bfdbfe;
+  text-decoration: none;
+  color: #1e40af;
 }
 
 .atisketButton {
-	margin-left: auto;
+  margin-left: auto;
 }
 
 .atisketButton:hover {
-	border: 1px solid #ffc470;
-	transition: 0.2s all;
-	background-color: #ffeea8;
-	text-decoration: none;
-	color: #704100;
+  border: 1px solid #ffc470;
+  transition: 0.2s all;
+  background-color: #ffeea8;
+  text-decoration: none;
+  color: #704100;
 }
 
 .harmonyButton:hover {
-	border: 1px solid #333440;
-	transition: 0.2s all;
-	background-color: #eabf48;
-	text-decoration: none;
-	color: #333440;
+  border: 1px solid #333440;
+  transition: 0.2s all;
+  background-color: #eabf48;
+  text-decoration: none;
+  color: #333440;
 }
 
 .exportButton:hover {
-	border: 1px solid var(--foreground-secondary);
-	transition: 0.2s all;
-	background-color: #15dd9a8f;
-	text-decoration: none;
-	color: var(--foreground-secondary);
+  border: 1px solid var(--foreground-secondary);
+  transition: 0.2s all;
+  background-color: #15dd9a8f;
+  text-decoration: none;
+  color: var(--foreground-secondary);
 }
 
 .tracks {
-	cursor: help;
+  cursor: help;
 }
 
 .hasTracks {
-	cursor: pointer;
+  cursor: pointer;
 }
-.infoText { 
-	cursor: pointer;
-	transition: all 0.2s ease-in-out;
+.infoText {
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
 }
 
 .infoText:hover {
-	color: var(--foreground-primary)
+  color: var(--foreground-primary);
 }
 
-.trackHighlight, .artistHighlight > a:nth-child(1) {
-	background-color: var(--highlight);
-	color: var(--foreground-primary);
+.trackHighlight,
+.artistHighlight > a:nth-child(1) {
+  background-color: var(--highlight);
+  color: var(--foreground-primary);
 }
 
 .statusPill.red {
-	background-color: var(--status-red);
+  background-color: var(--status-red);
 }
 
 .statusPill.green {
-	background-color: var(--status-green);
+  background-color: var(--status-green);
 }
 
 .statusPill.orange {
-	background-color: var(--status-orange);
+  background-color: var(--status-orange);
 }
 
 .statusPill.blue {
-	background-color: var(--status-blue);
+  background-color: var(--status-blue);
 }
 
 .albumCover img {
-	margin: 2px 0 0 0;
-	border-radius: 10px;
-	width: 60px;
-	height: 60px;
-	transition: 0.2s all;
+  margin: 2px 0 0 0;
+  border-radius: 10px;
+  width: 60px;
+  height: 60px;
+  transition: 0.2s all;
 }
 
 .albumCover img:hover {
-	filter: drop-shadow(0px 0px 5px #000000);
+  filter: drop-shadow(0px 0px 5px #000000);
 }
 
 .textContainer {
-	padding: 8px 0 0 8px;
-	display: flex;
-	flex-direction: column;
-	width: 0;
-	flex-basis: content;
-	margin-right: 10px;
+  padding: 8px 0 0 8px;
+  display: flex;
+  flex-direction: column;
+  width: 0;
+  flex-basis: content;
+  margin-right: 10px;
 }
 
 .albumTitle {
-	font-weight: bold !important;
-	display: flex;
-	align-items: center;
-	width: 100%;
-	overflow: hidden;
+  font-weight: bold !important;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
 }
 
 .albumTitle a:first-child {
-	font-weight: bold !important;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	color: var(--foreground-secondary);
+  font-weight: bold !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--foreground-secondary);
 }
 
 .albumTitle .albumMB {
-	flex-shrink: 0;
-	margin-left: 4px;
+  flex-shrink: 0;
+  margin-left: 4px;
 }
 
 .albumMB {
-	width: 16px;
-	height: 20px;
-	vertical-align: middle;
+  width: 16px;
+  height: 18px;
+  vertical-align: text-top;
 }
 
 .artists {
-	text-align: left;
-	font-size: small;
-	font-weight: normal;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
+  text-align: left;
+  font-size: small;
+  font-weight: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .albumInfo {
-	color: var(--foreground-quaternary);
-	text-align: left;
-	font-size: small;
-	font-weight: normal;
-	display: flex;
-	align-items: center;
-	width: 100%;
-	overflow: hidden;
+  color: var(--foreground-quaternary);
+  text-align: left;
+  font-size: small;
+  font-weight: normal;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
 }
 
 .albumInfo div:first-child {
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @keyframes textColorShimmer {
-	0% {
-		color: #cccccc;
-	}
+  0% {
+    color: #cccccc;
+  }
 
-	50% {
-		color: #f0f0f0;
-	}
+  50% {
+    color: #f0f0f0;
+  }
 
-	100% {
-		color: #cccccc;
-	}
+  100% {
+    color: #cccccc;
+  }
 }
 
 /* Skeleton Animation */
 @keyframes skeletonShimmer {
-	0% {
-		background-position: 100% 0;
-	}
+  0% {
+    background-position: 100% 0;
+  }
 
-	100% {
-		background-position: -100% 0;
-	}
+  100% {
+    background-position: -100% 0;
+  }
 }
 
 .skeletonPill {
-	width: 12px;
-	height: 56px;
-	border-radius: 10px;
-	margin: 2px 2px 0 3px;
+  width: 12px;
+  height: 56px;
+  border-radius: 10px;
+  margin: 2px 2px 0 3px;
 }
 
 .skeletonCover {
-	width: 60px;
-	height: 60px;
-	border-radius: 10px;
-	margin: 2px 0 0 0;
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
+  margin: 2px 0 0 0;
 }
 
 .skeletonTextContainer {
-	padding: 8px 0 0 8px;
-	display: flex;
-	flex-direction: column;
-	flex-basis: content;
-	margin-right: 10px;
-	flex-grow: 1;
+  padding: 8px 0 0 8px;
+  display: flex;
+  flex-direction: column;
+  flex-basis: content;
+  margin-right: 10px;
+  flex-grow: 1;
 }
 
 .textContaskeletonTextContaineriner {
-	padding: 8px 0 0 8px;
-	display: flex;
-	flex-direction: column;
-	width: calc(100% - 260px);
+  padding: 8px 0 0 8px;
+  display: flex;
+  flex-direction: column;
+  width: calc(100% - 260px);
 }
 
 .skeletonText {
-	height: 12px;
-	border-radius: 4px;
-	margin-bottom: 8px;
+  height: 12px;
+  border-radius: 4px;
+  margin-bottom: 8px;
 }
 
 .skeletonTitle {
-	width: 60%;
+  width: 60%;
 }
 
 .skeletonSubtitle {
-	width: 40%;
+  width: 40%;
 }
 
 .skeletonInfo {
-	width: 80%;
+  width: 80%;
 }
 
 .listSkeletonContainer {
-	border-radius: 10px;
-	height: 100%;
-	border: 1px solid var(--foreground-primary);
-	overflow-y: hidden;
-	margin: 0 10px 0 10px;
+  border-radius: 10px;
+  height: 100%;
+  border: 1px solid var(--foreground-primary);
+  overflow-y: hidden;
+  margin: 0 10px 0 10px;
 }
 
 .skeletonButton {
-	position: relative;
-	margin-top: 14px;
-	margin-right: 5px;
-	padding: 10px;
-	height: 15px;
-	border-radius: 20px;
-	transition: 0.2s all;
-	text-decoration: none !important;
-	white-space: nowrap;
-	margin-left: auto;
-	font-weight: normal;
-	width: 70px;
+  position: relative;
+  margin-top: 14px;
+  margin-right: 5px;
+  padding: 10px;
+  height: 15px;
+  border-radius: 20px;
+  transition: 0.2s all;
+  text-decoration: none !important;
+  white-space: nowrap;
+  margin-left: auto;
+  font-weight: normal;
+  width: 70px;
 }
 
 .skeletonCover,
 .skeletonText,
 .skeletonPill,
 .skeletonButton {
-	animation: skeletonShimmer 1.5s infinite linear;
-	background: linear-gradient(90deg, var(--skeleton) 25%, var(--skeleton-highlight) 50%, var(--skeleton) 75%);
-	background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite linear;
+  background: linear-gradient(
+    90deg,
+    var(--skeleton) 25%,
+    var(--skeleton-highlight) 50%,
+    var(--skeleton) 75%
+  );
+  background-size: 200% 100%;
 }
 
 .SAMBLicon {
-	width: 12px;
-	height: 16px;
-	vertical-align: middle;
+  width: 12px;
+  height: 16px;
+  vertical-align: middle;
 }
 
 .artistLink {
-	font-weight: normal;
+  font-weight: normal;
 }
 
 .statusText {
-	color: grey;
-	padding: 5px 0 0 0;
+  color: grey;
+  padding: 5px 0 0 0;
 }
 
 .iconContainer {
-	display: flex;
-	align-items: center;
+  display: flex;
+  align-items: center;
 }
 
-.upcIcon {
-	margin-left: 5px;
-	width: 27px;
-	height: 12px;
-	cursor: help;
-	margin-right: -2px;
+.iconContainer > * {
+  margin-left: 5px;
 }
 
-.isrcIcon {
-	margin-left: 5px;
-	width: 36px;
-	cursor: help;
+.upcIcon,
+.isrcIcon,
+.upcDiff,
+.isrcDiff {
+  cursor: help;
+  margin-right: -2px;
+  font-weight: bold;
+  color: red;
+  font-size: smaller;
 }
 
 .isrcText,
 .isrcTextAvaliable {
-	margin-left: 5px;
-	cursor: help;
-	font-size: smaller;
-	color: red !important;
-	font-weight: bolder !important;
+  cursor: help;
+  font-size: smaller;
+  color: red !important;
+  font-weight: bolder !important;
 }
 
 .isrcText:hover {
-	text-decoration: none;
+  text-decoration: none;
 }
 
 .isrcTextAvaliable:hover {
-	color: #36b100 !important;
-	text-decoration: underline !important;
+  color: #36b100 !important;
+  text-decoration: underline !important;
 }
 
 .coverArtMissing,
 .coverArtMissingAvaliable {
-	color: red !important;
-	margin-left: 5px;
-	font-weight: bold !important;
-	cursor: help;
-	background: url("../public/assets/images/missingCover.svg") no-repeat center;
-	background-size: contain;
-	width: 16px;
-	height: 16px;
-	min-width: 16px;
-	min-height: 16px;
+  color: red !important;
+  font-weight: bold !important;
+  cursor: help;
+  background: url("../public/assets/images/missingCover.svg") no-repeat center;
+  background-size: contain;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
 }
 
 .coverArtMissingAvaliable:hover {
-	background: url("../public/assets/images/addCover.svg") no-repeat center;
-	background-size: contain;
-	width: 16px;
-	height: 16px;
-	min-width: 16px;
-	min-height: 16px;
+  background: url("../public/assets/images/addCover.svg") no-repeat center;
+  background-size: contain;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
 }
 
 .numDiff {
-	color: red;
-	margin-left: 5px;
-	font-weight: bold;
-	cursor: help;
+  color: red;
+  font-weight: bold;
+  cursor: help;
 }
 
 .dateDiff {
-	color: red !important;
-	margin-left: 5px;
-	font-weight: bold !important;
-	cursor: help;
-	background: url("../public/assets/images/dateConflict.svg") no-repeat center;
-	background-size: contain;
-	width: 16px;
-	height: 16px;
-	min-width: 16px;
-	min-height: 16px;
+  color: red !important;
+  font-weight: bold !important;
+  cursor: help;
+  background: url("../public/assets/images/dateConflict.svg") no-repeat center;
+  background-size: contain;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
 }
 
 .dateMissing,
 .dateMissingAvaliable {
-	color: red !important;
-	margin-left: 5px;
-	font-weight: bold !important;
-	cursor: help;
-	background: url("../public/assets/images/missingDate.svg") no-repeat center;
-	background-size: contain;
-	width: 16px;
-	height: 16px;
-	min-width: 16px;
-	min-height: 16px;
+  color: red !important;
+  font-weight: bold !important;
+  cursor: help;
+  background: url("../public/assets/images/missingDate.svg") no-repeat center;
+  background-size: contain;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
 }
 
 .dateMissingAvaliable:hover {
-	background: url("../public/assets/images/addDate.svg") no-repeat center;
-	background-size: contain;
-	width: 16px;
-	height: 16px;
-	min-width: 16px;
-	min-height: 16px;
+  background: url("../public/assets/images/addDate.svg") no-repeat center;
+  background-size: contain;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
 }
 
 .selectingBox {
-	padding: 5px;
-	min-width: 30px;
-	display: flex;
-	align-items: center;
-	flex-direction: row;
-	margin-left: auto;
+  padding: 5px;
+  min-width: 30px;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  margin-left: auto;
 }
 
 @media (max-width: 1100px) {
-	.collapse,
-	.expand {
-		opacity: 100% !important;
-		display: flex !important;
-	}
+  .collapse,
+  .expand {
+    opacity: 100% !important;
+    display: flex !important;
+  }
 
-	.collapsed {
-		max-width: 0 !important;
-	}
+  .collapsed {
+    max-width: 0 !important;
+  }
 }
 
 .collapse,
 .expand {
-	display: none;
-	opacity: 0%;
-	padding: 0 1px;
-	height: 90%;
-	text-align: center;
-	align-items: center;
-	border: 1px solid var(--foreground-tertiary);
-	margin: 3px 4px 3px -2px;
-	transition: 0.2s all;
-	color: var(--foreground-tertiary);
-	border-radius: 9px 4px 4px 9px;
+  display: none;
+  opacity: 0%;
+  padding: 0 1px;
+  height: 90%;
+  text-align: center;
+  align-items: center;
+  border: 1px solid var(--foreground-tertiary);
+  margin: 3px 4px 3px -2px;
+  transition: 0.2s all;
+  color: var(--foreground-tertiary);
+  border-radius: 9px 4px 4px 9px;
 }
 
 .collapse:hover,
 .expand:hover {
-	color: var(--foreground-primary);
-	border-color: var(--foreground-primary);
+  color: var(--foreground-primary);
+  border-color: var(--foreground-primary);
 }
 
 .collapsed,
 .expanded {
-	display: flex;
+  display: flex;
 }
 
 .collapsed,
 .expanded {
-	overflow: hidden;
-	transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-	max-width: 1000px;
+  overflow: hidden;
+  transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  max-width: 1000px;
 }
 
 .refreshIcon {
-	color: transparent;
-	transition: color 0.5s ease-in-out;
-	display: inline-block;
+  color: transparent;
+  transition: color 0.5s ease-in-out;
+  display: inline-block;
 }
 
 .refreshIcon > svg {
-	transform-origin: 8px 9px;
-	display: block;
-	margin: auto;
+  transform-origin: 8px 9px;
+  display: block;
+  margin: auto;
 }
 
 .refreshIcon:hover {
-	color: var(--foreground-primary) !important;
-	cursor: pointer;
+  color: var(--foreground-primary) !important;
+  cursor: pointer;
 }
 
 .refreshIcon.loading > svg {
-	animation: rotate 1s linear infinite;
-	color: var(--foreground-primary);
+  animation: rotate 1s linear infinite;
+  color: var(--foreground-primary);
 }
 
 @keyframes rotate {
-	0% {
-		transform: rotate(0deg);
-	}
-	100% {
-		transform: rotate(360deg);
-	}
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .listItem:hover .refreshIcon {
-	color: var(--foreground-tertiary);
+  color: var(--foreground-tertiary);
 }

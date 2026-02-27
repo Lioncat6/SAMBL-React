@@ -171,7 +171,8 @@ async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> {
                         artistNames: [],
                         albumName: mostRecentAlbum?.attributes?.title || null,
                         trackNumber: null,
-                        isrcs: track.attributes?.isrc ? [track.attributes?.isrc] : []
+                        isrcs: track.attributes?.isrc ? [track.attributes?.isrc] : [],
+                        type: "track"
                     }
                 );
             });
@@ -232,7 +233,8 @@ async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
                             trackCount: album.attributes.numberOfItems,
                             albumType: album.attributes.albumType,
                             upc: album.attributes.barcodeId,
-                            albumTracks: [] //TODO: Implement album track fetching for getting album by UPC
+                            albumTracks: [], //TODO: Implement album track fetching for getting album by UPC
+                            type: "album"
                         }
                     );
                 }
@@ -402,6 +404,7 @@ function formatAlbumObject(album: ExtendedAlbum): AlbumObject {
         albumType: album.attributes?.type || null,
         upc: album.attributes?.barcodeId || null,
         albumTracks: getAlbumTracks(album) || [],
+        type: "album"
     };
 }
 
@@ -448,6 +451,7 @@ function formatTrackObject(track: ExtendedTrack): TrackObject {
         trackNumber: track.trackNumber,
         duration: track.attributes?.duration ? text.formatDurationMS(track.attributes?.duration) : null,
         isrcs: track.attributes?.isrc ? [track.attributes.isrc] : [],
+        type: "track"
     };
 }
 
@@ -459,6 +463,7 @@ function formatPartialArtistObject(artist: TidalArtist): PartialArtistObject {
         url: `https://tidal.com/artist/${artist.id}`,
         imageUrl: null,
         imageUrlSmall: null,
+        type: "partialArtist"
     };
 }
 
@@ -563,6 +568,7 @@ function formatArtistObject(rawObject: ExtendedArtist): ArtistObject {
         popularity: rawObject.attributes?.popularity ? rawObject.attributes?.popularity * 100 : null,
         id: rawObject.id,
         provider: namespace,
+        type: "artist"
     };
 }
 

@@ -1,0 +1,35 @@
+import { ProviderNamespace } from "../types/provider-types"
+import { NextApiRequest, NextApiResponse } from "next";
+import { DeepSearchData, DeepSearchMethod, SAMBLApiError } from "../types/api-types"
+
+class ApiErrorHandler {
+    private request: string;
+    private providerNamespace: ProviderNamespace | undefined;
+
+    constructor(request: string) {
+        this.request = request;
+    }
+
+    setProvider(namespace: ProviderNamespace){
+        this.providerNamespace = namespace
+    }
+
+    handleError(
+        res: NextApiResponse,
+        code: number,
+        error: string,
+        parameters?: string[],
+        details?: string | null,
+    ): void {
+        const ReqError: SAMBLApiError = {
+            code: code,
+            provider: this.providerNamespace,
+            error: error,
+            details: details,
+            parameters: parameters
+        }
+        return res.status(code).json(ReqError)
+    }
+}
+
+export default ApiErrorHandler;

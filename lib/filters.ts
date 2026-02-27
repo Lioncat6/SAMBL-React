@@ -5,7 +5,7 @@ const listFilterOptions: listFilterOption[] = [
     { id: 1, name: 'Green', key: 'showGreen', default: true },
     { id: 2, name: 'Orange', key: 'showOrange', default: true },
     { id: 3, name: 'Red', key: 'showRed', default: true },
-    { id: 4, name: 'Various Artists', key: 'showVarious' },
+    { id: 4, name: 'Various Artists', key: 'showVarious', default: true },
     { id: 5, name: 'Album Issues', key: 'onlyIssues', exclusive: true },
     { id: 6, name: 'Featured Albums', key: 'featuredAlbums',exclusive: true}
 ]

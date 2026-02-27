@@ -1,5 +1,5 @@
 import styles from "../../styles/popups.module.css";
-import { FaCopy, FaMagnifyingGlass, FaBarcode } from "react-icons/fa6";
+import { FaCopy, FaMagnifyingGlass, FaBarcode, FaLink, FaL } from "react-icons/fa6";
 import { MdOutlineAlbum, MdPerson, MdOutlineCalendarMonth, MdOutlineWarningAmber } from "react-icons/md";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import text from "../../utils/text";
@@ -25,6 +25,12 @@ function MbUrlIcon({ status, url, styleClass, isAlbum = true }: { status: AlbumS
 			)}
 		</>
 	)
+}
+
+function copyLink(id){
+	if (!id) return
+	const url = `${window.location.href}&viewingAlbum=${id}`
+	text.handleCopy(url);
 }
 
 function AlbumDetails({ data }: { data: DisplayAlbum }) {
@@ -61,6 +67,9 @@ function AlbumDetails({ data }: { data: DisplayAlbum }) {
 						{name}
 					</a>
 					<MbUrlIcon status={status} url={mbAlbum?.url || null} styleClass={styles.albumMB} />
+					<button onClick={() => copyLink(data.id)} title={"Copy SAMBL link to this album"} className={styles.linkButton}>
+						<FaLink />
+					</button>
 				</div>
 				<div className={styles.artists}>
 					<MdPerson />
@@ -78,7 +87,7 @@ function AlbumDetails({ data }: { data: DisplayAlbum }) {
 				</div>
 				<span className={styles.releaseDate}><MdOutlineCalendarMonth /> {releaseDate}</span>
 				{albumType && <span className={styles.albumType}><MdOutlineAlbum /> {text.capitalizeFirst(albumType)}</span>}
-				{barcode && <span className={styles.barcode} title={barcode && "This barcode is sourced from MusicBrainz."}><FaBarcode /> <span className={`${mbBarcode && styles.mbUnderline}`}>{barcode}</span> <a
+				{barcode && <span className={styles.barcode} title={mbBarcode ? "This barcode is sourced from MusicBrainz" : undefined}><FaBarcode /> <span className={`${mbBarcode && styles.mbUnderline}`}>{barcode}</span> <a
 					className={styles.lookupButton}
 					href={`/find?query=${encodeURIComponent(barcode)}`}
 					target="_blank"
@@ -255,9 +264,9 @@ function TrackMenu({ data, refresh, close }: { data: AggregatedAlbum, refresh: (
 	);
 }
 
-export default function TrackMenuPopup({ data, button, refresh }: { data: AggregatedAlbum, button?: JSX.Element, refresh: () => void }) {
+export default function TrackMenuPopup({ data, button, refresh, open }: { data: AggregatedAlbum, button?: JSX.Element, refresh: () => void, open?: boolean }) {
 	return (
-		<Popup button={button}>
+		<Popup button={button} open={open}>
 			<TrackMenu data={data} refresh={refresh} />
 		</Popup>
 	);

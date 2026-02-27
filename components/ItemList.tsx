@@ -7,7 +7,7 @@ import { useExport as useExportState } from "./ExportState";
 import { List, RowComponentProps } from "react-window";
 import { FaDeezer } from "react-icons/fa";
 import { SiApplemusic, SiTidal } from "react-icons/si";
-import { FaAnglesRight, FaAnglesLeft } from "react-icons/fa6";
+import { FaAnglesRight, FaAnglesLeft, FaNotEqual, FaSoundcloud, FaBandcamp } from "react-icons/fa6";
 import { IoMdRefresh } from "react-icons/io";
 import { toast, Flip, ToastOptions } from "react-toastify";
 import text from "../utils/text";
@@ -15,7 +15,7 @@ import { PiPlaylistBold } from "react-icons/pi";
 import { TbPlaylistOff } from "react-icons/tb";
 import editNoteBuilder from "../utils/editNoteBuilder";
 import { IoFilter } from "react-icons/io5";
-import { DisplayAlbum } from "../types/component-types";
+import { DisplayAlbum, FilterData } from "../types/component-types";
 import seeders from "../lib/seeders/seeders";
 import { AggregatedAlbum } from "../types/aggregated-types";
 import filters from "../lib/filters";
@@ -23,7 +23,8 @@ import ExportMenuPopup from "./Popups/ExportMenu";
 import TrackMenuPopup from "./Popups/TrackMenu";
 import FilterMenuPopup from "./Popups/FilterMenu";
 import toasts from "../utils/toasts";
-import { AlbumObject, ExtendedTrackObject, TrackObject } from "../types/provider-types";
+import { AlbumObject, ExtendedTrackObject, ProviderNamespace, TrackObject } from "../types/provider-types";
+import { MdAlbum, MdAudiotrack } from "react-icons/md";
 
 function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRCs: boolean) => void }) {
 	const { id, url, releaseDate, mbAlbum, trackCount, status, mbid, albumIssues, provider, artistMBID, aggregatedTracks, albumTracks, albumArtists } = item;
@@ -64,7 +65,8 @@ function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRC
 
 	return (
 		<div className={styles.iconContainer}>
-			{albumIssues.includes("noUPC") && <img className={styles.upcIcon} src="../assets/images/noUPC.svg" title="This release is missing a UPC/Barcode!" alt="Missing UPC" />}
+			{albumIssues.includes("noUPC") && <span className={styles.upcIcon}title="This release is missing a UPC/Barcode!">UPC</span>}
+			{albumIssues.includes("UPCDiff") && <span className={styles.upcDiff}title="This release has the wrong barcode for this album!">UPC<FaNotEqual /></span>}
 			{albumIssues.includes("missingISRCs") && (
 				<a
 					className={status === "green" ? styles.isrcTextAvaliable : styles.isrcText}
@@ -74,6 +76,7 @@ function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRC
 					ISRC
 				</a>
 			)}
+			{albumIssues.includes("ISRCDiff") && <span className={styles.upcDiff}title="This release has the wrong ISRCs for this album!">ISRC<FaNotEqual /></span>}
 			{albumIssues.includes("noCover") && (
 				<a
 					className={status === "green" ? styles.coverArtMissingAvaliable : styles.coverArtMissing}
@@ -350,6 +353,7 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 							}
 							data={item}
 							refresh={refreshData}
+							open={item.viewingAlbum}
 						/>
 						<AlbumIcons item={item} refresh={refreshData} />
 					</div>
@@ -405,7 +409,7 @@ function ArtistItem({ item }) {
 	);
 }
 
-function Icon({ source }) {
+function Icon({ source }: {source: ProviderNamespace}) {
 	return (
 		<>
 			{source === "spotify" && <img className={styles.spotifyIcon} title={"Spotify"} src="../assets/images/Spotify_icon.svg" />}
@@ -414,6 +418,8 @@ function Icon({ source }) {
 			{source === "musixmatch" && <img className={styles.musixMatchIcon} title={"Musixmatch"} src="../assets/images/Musixmatch_logo_icon_only.svg" />}
 			{source === "tidal" && <SiTidal title={"Tidal"} className={styles.tidalIcon} />}
 			{source === "applemusic" && <SiApplemusic title={"Apple Music"} className={styles.applemusicIcon} />}
+			{source === "soundcloud" && <FaSoundcloud title={"Soundcloud"} className={styles.soundcloudIcon} />}
+			{source === "bandcamp" && <FaBandcamp title={"Bandcamp"} className={styles.soundcloudIcon} />}
 		</>
 	);
 }
@@ -435,7 +441,7 @@ function LinkButton({ item }: { item: AlbumObject | TrackObject }) {
 
 function GenericItem({ item }: { item: AlbumObject | ExtendedTrackObject }) {
 	const exportState = useExportState()?.exportState;
-	const { provider, imageUrl, imageUrlSmall, name, url } = item;
+	const { provider, imageUrl, imageUrlSmall, name, url, type } = item;
 	const info = [
 		// text.capitalizeFirst(provider),
 		"comment" in item && item.comment,
@@ -450,6 +456,9 @@ function GenericItem({ item }: { item: AlbumObject | ExtendedTrackObject }) {
 			{index > 0 && ", "}
 			<a href={artist.url} target="_blank" rel="noopener noreferrer" className={styles.artists}>
 				{artist.name}
+			</a>
+			<a href={`../newartist?provider_id=${artist.id}&provider=${artist.provider}`} target="_blank" rel="noopener noreferrer">
+				<img className={styles.SAMBLicon} src="../assets/images/favicon.svg" alt="SAMBL" />
 			</a>
 		</>
 	));
@@ -466,7 +475,7 @@ function GenericItem({ item }: { item: AlbumObject | ExtendedTrackObject }) {
 			<div className={styles.textContainer}>
 				<div className={styles.artistName}>
 					<a href={url || undefined} target="_blank">
-						{name}
+						{name}  {type == "track" ? <MdAudiotrack title={"Track"} /> : <MdAlbum title={"Album"} />}
 					</a>
 				</div>
 				<div className={styles.artistFollowers}>{artistString}</div>
@@ -636,12 +645,27 @@ export type listType = "album" | "loadingAlbum" | "artist" | "mixed"
 export function ItemList(props: { items: AggregatedAlbum[], type: "album", text?: string, refresh: () => void }): JSX.Element;
 export function ItemList(props: { items: any[], type: listType, text?: string, refresh?: () => void }): JSX.Element;
 
-export default function ItemList({ items, type, text, refresh }: { items: any[], type: listType, text?: string, refresh?: () => void }) {
+export default function ItemList({ items, type, text, refresh, viewItem }: { items: any[], type: listType, text?: string, refresh?: () => void, viewItem?: string | null }) {
 	const { settings } = useSettings() as SAMBLSettingsContext;
 	const [searchQuery, setSearchQuery] = useState(""); // State for search query
 	const [filteredItems, setFilteredItems] = useState(items || []); // State for filtered items
 	const [currentItems, setCurrentItems] = useState(items || []);
-	const [filter, setFilter] = useState(filters.getDefaultOptions());
+	const [hasOpenedItem, setHasOpenedItem] = useState(false);
+	function getSavedFilter(): Partial<FilterData> {
+		let filter: Partial<FilterData> = {};
+		if (settings.saveFilter){
+			filter.filters = settings.currentFilter?.filters || filters.getDefaultOptions().filters;
+		}
+		if (settings.saveSort){
+			filter.sort = settings.currentFilter?.sort || filters.getDefaultOptions().sort;
+			filter.ascending = settings.currentFilter?.ascending || filters.getDefaultOptions().ascending;
+		}
+		return filter;
+	}
+	const [filter, setFilter] = useState({... getSavedFilter(), ...filters.getDefaultOptions()});
+	useEffect(() => {
+		setFilter({ ...filters.getDefaultOptions(),... getSavedFilter()}); //Settings isn't always loaded right away
+	}, [settings]);
 	const setAllItems = useExportState()?.setAllItems;
 	if (currentItems?.length > 0 && setAllItems) {
 		setAllItems(currentItems);
@@ -667,6 +691,20 @@ export default function ItemList({ items, type, text, refresh }: { items: any[],
 		}
 	}, [searchQuery, filter, currentItems, type]);
 
+	useEffect(() => {
+		if (type !== "album" || !viewItem || hasOpenedItem) {
+			return;
+		}
+		let updatedItems = currentItems as DisplayAlbum[];
+		updatedItems.forEach((item) => {
+			if (item.id == viewItem){
+				item.viewingAlbum = true;
+				setHasOpenedItem(false)
+			}
+		})
+		setFilteredItems(updatedItems)
+	},[viewItem, currentItems])
+	
 	let itemArray: any = [];
 	if (type != "album" && type != "loadingAlbum") {
 		itemArray = Array.isArray(currentItems) ? currentItems : Object.values(currentItems);
