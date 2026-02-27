@@ -121,7 +121,7 @@ function UrlIcons({ artist }: { artist: ArtistPageData}) {
 }
 
 function ImageContainer({ artist }: { artist: ArtistPageData}) {
-	const { mbid, imageUrl } = artist;
+	const { mbid, imageUrl, name } = artist;
 	if (!imageUrl) return null;
 	let editNote = editNoteBuilder.buildEditNote('Artist image', artist.provider, imageUrl, artist.url);
 	let importUrl = `https://musicbrainz.org/artist/${mbid}/edit?edit-artist.url.0.text=https://web.archive.org/web/0/${imageUrl}&edit-artist.url.0.link_type_id=173&edit-artist.edit_note=${editNote}`
@@ -129,7 +129,7 @@ function ImageContainer({ artist }: { artist: ArtistPageData}) {
 		<div id="artistImageContainer" className={styles.artistImageContainer}>
 			<div className={styles.imageWrapper}>
 				<a href={imageUrl} target="_blank" className={styles.imageLink}>
-					<img id="artistImage" className={styles.artistImage} src={imageUrl} />
+					<img id="artistImage" alt={`Artist image for ${name}`} className={styles.artistImage} src={imageUrl} />
 				</a>
 
 				{mbid &&<div className={styles.imageOverlay}>
