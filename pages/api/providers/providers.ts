@@ -9,6 +9,7 @@ import soundcloud from "./soundcloud"
 import applemusic from "./applemusic";
 import { FullProvider, PartialProvider, Provider, ProviderCapability, ProviderNamespace, ProviderWithCapabilities, UrlInfo } from "../../../types/provider-types";
 import clientProviders from "../../../utils/clientProviders";
+import parsers from "../../../lib/parsers/parsers";
 const { isDisabled } = clientProviders;
 
 const providerList = [
@@ -75,34 +76,9 @@ function getAllProviders<T extends ProviderCapability[]>(
     return allProviders;
 }
 
-/**
- * Extracts provider information from a given URL.
- *
- * @param {string} url - The URL to parse for provider information.
- * @returns {object|null} An object containing the provider, id, and type if matched, otherwise null.
- */
-function getUrlInfo(url: string): UrlInfo | null {
-    let urlInfo: UrlInfo | null = null;
-
-    providerList.forEach(p => {
-        if (p.parseUrl) {
-            let match = p.parseUrl(url);
-            if (match) {
-                urlInfo = {
-                    provider: p.namespace,
-                    id: match.id,
-                    type: match.type
-                };
-            }
-        }
-    });
-
-    return urlInfo;
-}
-
 const providers = {
     parseProvider,
-    getUrlInfo,
+    getUrlInfo: parsers.getUrlInfo,
     getDefaultProvider,
     getAllProviders
 };
