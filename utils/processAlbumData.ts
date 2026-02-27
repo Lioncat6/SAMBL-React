@@ -295,7 +295,8 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 				artistMBID: currentArtistMBID,
 				artistID: currentArtistID,
 				albumIssues,
-				aggregatedTracks: aggregatedTracks
+				aggregatedTracks: aggregatedTracks,
+				type: "album"
 			});
 		}
 	});
