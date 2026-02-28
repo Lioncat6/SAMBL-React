@@ -72,6 +72,11 @@
     color: var(--applemusic-red);
 }
 
+.naver {
+    color: var(--naver-green)
+}
+
+
 /* Makes it where you only have to define the color with the provider namespace */
 .provider:not(.selected):not(:hover) {
     color: var(--foreground-primary) !important;

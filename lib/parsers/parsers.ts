@@ -5,6 +5,7 @@ import bandcamp from "./bandcamp";
 import deezer from "./deezer"
 import musicbrainz from "./musicbrainz";
 import musixmatch from "./musixmatch";
+import naver from "./naver";
 import soundcloud from "./soundcloud";
 import spotify from "./spotify";
 import tidal from "./tidal";
@@ -17,7 +18,8 @@ const parserList: Record<ProviderNamespace, UrlParser> ={
     "soundcloud" : soundcloud,
     "tidal": tidal,
     "spotify": spotify,
-    "musixmatch": musixmatch
+    "musixmatch": musixmatch,
+    "naver": naver
 }
 
 function getParser(provider: ProviderNamespace): UrlParser {

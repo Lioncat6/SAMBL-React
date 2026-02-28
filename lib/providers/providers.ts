@@ -9,6 +9,7 @@ import applemusic from "./applemusic";
 import { PartialProvider, Provider, ProviderCapability, ProviderNamespace, ProviderWithCapabilities } from "../../types/provider-types";
 import clientProviders from "../../utils/clientProviders";
 import parsers from "../parsers/parsers";
+import naver from "./naver";
 const { isDisabled } = clientProviders;
 
 const providerList = [
@@ -19,7 +20,8 @@ const providerList = [
     tidal,
     bandcamp,
     soundcloud,
-    applemusic
+    applemusic,
+    naver
 ];
 
 function getDefaultProvider(): Provider {

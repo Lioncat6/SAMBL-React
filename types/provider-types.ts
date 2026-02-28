@@ -4,7 +4,7 @@ import { AggregatedAlbum } from "./aggregated-types";
 
 export type ProviderNamespace = FullProviderNamespace | "musixmatch"
 
-export type FullProviderNamespace = "spotify" | "tidal" | "deezer" | "musicbrainz" | "soundcloud" | "bandcamp" | "applemusic" 
+export type FullProviderNamespace = "spotify" | "tidal" | "deezer" | "musicbrainz" | "soundcloud" | "bandcamp" | "applemusic" | "naver"
 
 export type ObjectType = "partialArtist" | "artist" | "album" | "track"
 
@@ -89,6 +89,9 @@ export class TrackObject extends ImageObject {
     albumName: string | null;
     releaseDate: string | null;
     trackNumber: number | null;
+    /**
+     * Track duration in ms
+     */
     duration: number | null;
     isrcs: string[];
     type: "track";

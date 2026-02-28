@@ -24,6 +24,7 @@
 .bandcampURLContainer,
 .urlContainer,
 .soundcloudUrlContainer,
+.spURLContainer,
 .applemusicURLContainer {
 	display: flex;
 	flex-direction: row;
@@ -49,8 +50,13 @@
 .deezerURLContainer a,
 .tidalURLContainer a,
 .bandcampURLContainer a,
+.naverUrlContainer a,
 .urlContainer a {
 	padding: 0 3px 0 0;
+}
+
+.naverUrlContainer img {
+	margin-bottom: -14px;
 }
 
 .mbURLContainer {
