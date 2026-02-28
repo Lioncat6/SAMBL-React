@@ -1,4 +1,3 @@
-import spotify from "./providers/spotify";
 import musicbrainz from "./providers/musicbrainz";
 import processData from "../../utils/processAlbumData";
 import logger from "../../utils/logger";
@@ -8,7 +7,6 @@ import { IUrl } from "musicbrainz-api";
 import normalizeVars from "../../utils/normalizeVars";
 import { SAMBLApiError } from "../../types/api-types";
 import providers from "./providers/providers";
-import { error } from "node:console";
 
 // spotifyId - Spotify artist ID
 // mbid - MusicBrainz artist ID. Only neccesary if you want to check if the associated albums are linked to that artist

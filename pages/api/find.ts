@@ -1,14 +1,6 @@
-import spotify from "./providers/spotify";
-import * as spotifyModule from "./providers/spotify";
-import musicbrainz from "./providers/musicbrainz";
-import musixmatch from "./providers/musixmatch";
-import deezer from "./providers/deezer";
-import tidal from "./providers/tidal";
 import logger from "../../utils/logger";
-import text from "../../utils/text";
-import applemusic from "./providers/applemusic";
 import { FindData, SAMBLApiError } from "../../types/api-types";
-import { AlbumObject, RawAlbumData, TrackObject } from "../../types/provider-types";
+import { AlbumObject, TrackObject } from "../../types/provider-types";
 import { NextApiRequest, NextApiResponse } from "next";
 import providers from "./providers/providers";
 import normalizeVars from "../../utils/normalizeVars";

@@ -1,4 +1,3 @@
-import spotify from "./providers/spotify";
 import musicbrainz from "./providers/musicbrainz";
 import logger from "../../utils/logger";
 import { NextApiRequest, NextApiResponse } from "next";
