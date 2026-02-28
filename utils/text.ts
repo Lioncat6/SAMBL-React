@@ -130,14 +130,25 @@ function trimUrl(url: string): string {
 	return url.replace(/\/+$/, "");
 }
 
-function getColorEmoji(color:AlbumStatus) {
+function getColorEmoji(color:AlbumStatus, circle=false) {
 	const emojis: Record<AlbumStatus, string> = {
 		"red": "🔴",
 		"blue": "🔵",
 		"orange": "🟠",
 		"green": "🟢"
 	}
-	return emojis[color];
+	const squareEmojis: Record<AlbumStatus, string> = {
+		"red": "🟥",
+		"blue": "🟦",
+		"orange": "🟧",
+		"green": "🟩"
+	}
+	return circle ? emojis[color]: squareEmojis[color];
+}
+
+function infoToString(info: (string|null)[]){
+	const string = info.filter((s) => s!=null && s!=undefined && s.length > 0).join(" • ");
+	return string.length > 0 ? string : null;
 }
 
 /**
@@ -157,7 +168,8 @@ const text = {
 	copy: handleCopy,
 	handleCopy,
 	trimUrl,
-	getColorEmoji
+	getColorEmoji,
+	infoToString
 };
 
 export default text;
