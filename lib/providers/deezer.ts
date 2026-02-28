@@ -1,10 +1,10 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities } from "../../../types/provider-types";
-import logger from "../../../utils/logger";
-import text from "../../../utils/text";
-import withCache from "../../../utils/cache";
-import ErrorHandler from "../../../utils/errorHandler";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities } from "../../types/provider-types";
+import logger from "../../utils/logger";
+import text from "../../utils/text";
+import withCache from "../../utils/cache";
+import ErrorHandler from "../../utils/errorHandler";
 import DeezerPublicApi from "deezer-public-api";
-import parsers from "../../../lib/parsers/parsers";
+import parsers from "../parsers/parsers";
 
 const namespace = "deezer";
 

@@ -1,4 +1,4 @@
-import providers from "./providers/providers";
+import providers from "../../lib/providers/providers";
 import logger from "../../utils/logger";
 import normalizeVars from "../../utils/normalizeVars";
 import { ProviderWithCapabilities } from "../../types/provider-types";

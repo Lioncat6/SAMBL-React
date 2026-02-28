@@ -1,9 +1,9 @@
-import { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities } from "../../../types/provider-types";
-import logger from "../../../utils/logger";
-import withCache from "../../../utils/cache";
-import ErrorHandler from "../../../utils/errorHandler";
+import { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities } from "../../types/provider-types";
+import logger from "../../utils/logger";
+import withCache from "../../utils/cache";
+import ErrorHandler from "../../utils/errorHandler";
 import SpotifyWebApi from "spotify-web-api-node";
-import parsers from "../../../lib/parsers/parsers";
+import parsers from "../parsers/parsers";
 
 const namespace = "spotify";
 

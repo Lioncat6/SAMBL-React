@@ -1,5 +1,5 @@
-import providers from "./providers/providers";
-import musicbrainz from "./providers/musicbrainz";
+import providers from "../../lib/providers/providers";
+import musicbrainz from "../../lib/providers/musicbrainz";
 import logger from "../../utils/logger"
 import { IArtist } from "musicbrainz-api";
 import { ArtistData } from "../../types/api-types";

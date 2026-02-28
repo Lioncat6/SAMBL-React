@@ -2,7 +2,7 @@ import logger from "../../utils/logger";
 import { FindData, SAMBLApiError } from "../../types/api-types";
 import { AlbumObject, TrackObject } from "../../types/provider-types";
 import { NextApiRequest, NextApiResponse } from "next";
-import providers from "./providers/providers";
+import providers from "../../lib/providers/providers";
 import normalizeVars from "../../utils/normalizeVars";
 function createDataObject(source, imageUrl, title, artists, info, link, extraInfo = null) {
 	return {

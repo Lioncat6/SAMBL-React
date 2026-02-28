@@ -1,10 +1,9 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, FullProvider, PartialArtistObject, RawAlbumData, Capabilities } from "../../../types/provider-types";
-import logger from "../../../utils/logger";
-import withCache from "../../../utils/cache";
-import ErrorHandler from "../../../utils/errorHandler";
-import text from "../../../utils/text";
+import type { ArtistObject, AlbumObject, TrackObject, FullProvider, PartialArtistObject, RawAlbumData, Capabilities } from "../../types/provider-types";
+import withCache from "../../utils/cache";
+import ErrorHandler from "../../utils/errorHandler";
+import text from "../../utils/text";
 import bcApi from "bandcamp-scraper";
-import parsers from "../../../lib/parsers/parsers";
+import parsers from "../parsers/parsers";
 
 const namespace = "bandcamp";
 

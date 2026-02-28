@@ -1,10 +1,10 @@
 import MusixMatchAPI from "./lib/musixmatch-alt";
-import logger from "../../../utils/logger";
-import withCache from "../../../utils/cache";
-import ErrorHandler from "../../../utils/errorHandler";
-import { ExtendedTrackObject, PartialProvider, TrackObject } from "../../../types/provider-types";
+import logger from "../../utils/logger";
+import withCache from "../../utils/cache";
+import ErrorHandler from "../../utils/errorHandler";
+import { ExtendedTrackObject, PartialProvider } from "../../types/provider-types";
 import { AxiosBasicCredentials, AxiosProxyConfig } from "axios";
-import parsers from "../../../lib/parsers/parsers";
+import parsers from "../../lib/parsers/parsers";
 const namespace = "musixmatch";
 
 const err = new ErrorHandler(namespace);

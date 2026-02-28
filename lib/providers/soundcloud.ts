@@ -2,25 +2,20 @@ import type {
   ArtistObject,
   AlbumObject,
   TrackObject,
-  AlbumData,
   PartialArtistObject,
-  UrlData,
   FullProvider,
   RawAlbumData,
   Capabilities
-} from '../../../types/provider-types'
-import logger from '../../../utils/logger'
-import withCache from '../../../utils/cache'
-import ErrorHandler from '../../../utils/errorHandler'
+} from '../../types/provider-types'
+import withCache from '../../utils/cache'
+import ErrorHandler from '../../utils/errorHandler'
 import Soundcloud, {
   SoundcloudUser,
   SoundcloudUserSearch,
   SoundcloudTrack,
   SoundcloudPlaylist
 } from 'soundcloud.ts'
-import { getRawAsset } from 'node:sea'
-import { backup } from 'node:sqlite'
-import parsers from '../../../lib/parsers/parsers'
+import parsers from '../parsers/parsers'
 
 const namespace = 'soundcloud'
 

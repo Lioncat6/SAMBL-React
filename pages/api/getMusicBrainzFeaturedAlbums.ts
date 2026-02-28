@@ -1,4 +1,4 @@
-import musicbrainz from "./providers/musicbrainz";
+import musicbrainz from "../../lib/providers/musicbrainz";
 import logger from "../../utils/logger";
 import normalizeVars from "../../utils/normalizeVars";
 import { SAMBLApiError } from "../../types/api-types";

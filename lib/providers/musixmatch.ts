@@ -1,8 +1,8 @@
 import { MatcherTrack, Musixmatch } from 'node-musixmatch-api';
-import logger from "../../../utils/logger";
+import logger from "../../utils/logger";
 import musixmatchAlternate from "./musixmatch-alt"
-import withCache from "../../../utils/cache";
-import { PartialArtistObject, PartialProvider, TrackObject, UrlType } from "../../../types/provider-types";
+import withCache from "../../utils/cache";
+import { PartialProvider, TrackObject, UrlType } from "../../types/provider-types";
 
 const namespace = "musixmatch";
 

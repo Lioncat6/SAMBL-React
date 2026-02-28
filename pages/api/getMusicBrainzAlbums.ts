@@ -1,4 +1,4 @@
-import musicbrainz from "./providers/musicbrainz";
+import musicbrainz from "../../lib/providers/musicbrainz";
 import logger from "../../utils/logger";
 import { NextApiRequest, NextApiResponse } from "next";
 import normalizeVars from "../../utils/normalizeVars";

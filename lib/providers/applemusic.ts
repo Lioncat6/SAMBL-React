@@ -1,8 +1,8 @@
-import withCache from "../../../utils/cache";
-import ErrorHandler from "../../../utils/errorHandler";
-import { AlbumData, AlbumObject, ArtistObject, FullProvider, PartialArtistObject, ProviderConfig, RawAlbumData, RegexArtistUrlQuery, TrackObject, UrlData, UrlType } from "../../../types/provider-types";
+import withCache from "../../utils/cache";
+import ErrorHandler from "../../utils/errorHandler";
+import { AlbumObject, ArtistObject, FullProvider, PartialArtistObject, RawAlbumData, RegexArtistUrlQuery, TrackObject, UrlType } from "../../types/provider-types";
 import { URL } from "url";
-import parsers from "../../../lib/parsers/parsers";
+import parsers from "../../lib/parsers/parsers";
 
 interface Artwork {
 	url: string;

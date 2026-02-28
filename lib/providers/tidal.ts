@@ -1,11 +1,10 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData } from "../../../types/provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, PartialArtistObject, FullProvider, RawAlbumData } from "../../types/provider-types";
 import { credentialsProvider, init as initAuth } from '@tidal-music/auth';
 import { createAPIClient } from '@tidal-music/api';
-import logger from "../../../utils/logger";
-import withCache from "../../../utils/cache";
-import ErrorHandler from "../../../utils/errorHandler";
-import text from "../../../utils/text"
-import parsers from "../../../lib/parsers/parsers";
+import withCache from "../../utils/cache";
+import ErrorHandler from "../../utils/errorHandler";
+import text from "../../utils/text"
+import parsers from "../parsers/parsers";
 
 const namespace = "tidal";
 

@@ -1,5 +1,5 @@
-import musicbrainz from "./providers/musicbrainz";
-import providers from "./providers/providers";
+import musicbrainz from "../../lib/providers/musicbrainz";
+import providers from "../../lib/providers/providers";
 import logger from "../../utils/logger";
 import { AlbumObject, ExtendedAlbumObject, PartialArtistObject, ProviderWithCapabilities } from "../../types/provider-types";
 import { DeepSearchData, DeepSearchMethod, SAMBLApiError } from "../../types/api-types"
