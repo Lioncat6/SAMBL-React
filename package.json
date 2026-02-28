@@ -1,6 +1,6 @@
 {
 	"name": "sambl-client",
-	"version": "2.3.5",
+	"version": "2.3.6",
 	"main": "/src/index.js",
 	"scripts": {
 		"build": "next build",
@@ -31,7 +31,7 @@
 		"react-toastify": "^11.0.5",
 		"react-window": "^2.2.5",
 		"sass": "^1.97.3",
-		"soundcloud.ts": "^0.7.1",
+		"soundcloud.ts": "^0.7.2",
 		"spotify-web-api-node": "^5.0.0",
 		"string-similarity": "^4.0.4"
 	},
@@ -52,7 +52,7 @@
 		]
 	},
 	"devDependencies": {
-		"@types/node": "^25.0.8",
+		"@types/node": "^25.3.2",
 		"typescript": "5.9.2"
 	}
 }
