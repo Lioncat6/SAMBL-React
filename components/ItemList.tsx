@@ -226,7 +226,7 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 		}
 	}
 
-	const sourceTrackString = trackCount && trackCount > 1 ? `${trackCount} Tracks` : "1 Track";
+	const sourceTrackString = trackCount && trackCount > 1 ? `${trackCount} Tracks` : trackCount == 1 ? "1 Track": "? Tracks";
 
 	const mbTrackString = mbAlbum?.albumTracks.map((track) => track.name).join(",");
 	const mbISRCString = mbAlbum?.albumTracks.map((track) => track.isrcs.join(",")).join(",");
@@ -337,7 +337,11 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 					<div className={styles.albumInfo}>
 						<TrackMenuPopup
 							button={<div className={styles.infoText} title={"Click for album info"}>
-								{releaseDate} • {text.capitalizeFirst(albumType || "")} •{" "}
+								{text.infoToString([
+									releaseDate,
+									albumType && text.capitalizeFirst(albumType),
+								])}
+								{} •{" "}
 								{albumTracks.length > 0 || mbAlbum?.albumTracks && mbAlbum?.albumTracks?.length > 0
 									?
 									<span className={`${styles.hasTracks} ${searchReason == "track" ? styles.trackHighlight : ""}`} title={"Click to view tracks"}>
