@@ -237,13 +237,19 @@ const apiUrl = "https://apis.naver.com/vibeWeb/musicapiweb"
  * `&start=1&display=100&sort=RELEVANCE&cact=ogn`
  * - start: offset, starting at 1 instead of 0
  * - display: limit, seemingly has no limit
- * - sort: supports at least RELEVANCE
+ * - sort: supports at least `RELEVANCE` and `popular`
  * - cact: unknown
  */
 const v4Url = apiUrl + "/v4"
 /**
  * Only needed for /artist endpoint,
  * otherwise is just an alias of the base apiUrl
+ * Artist track fetching: 
+ * supports `type`
+ * can be at least:
+ * - `PARTICIPATION`
+ * - `RELEASE`
+ * - `COMPOSE_WRITE`
  */
 const v1Url = apiUrl + "/vibe/v1"
 
@@ -381,8 +387,7 @@ async function getArtistAlbums(id: string, offset: number = 1, limit: number = 9
                 albumsIdMap.set(album.albumId, album);
             });
             const trackResponse = await fetch(v1Url + `/artist/${id}/tracks.json?display=9999&start=1`)
-            if (response.ok){
-                let tracks = (await trackResponse.json() as NaverResponse<NaverArtistTracksResult>).response.result.tracks
+            function mapTracks(tracks: NaverTrack[]){
                 tracks.forEach(track => {
                     const mappedAlbum = albumsIdMap.get(track.album.albumId)
                     if (mappedAlbum){
@@ -392,6 +397,15 @@ async function getArtistAlbums(id: string, offset: number = 1, limit: number = 9
                         mappedAlbum.trackTotalCount = mappedAlbum.tracks.length;
                     }
                 });
+            }
+            if (trackResponse.ok){
+                let tracks = (await trackResponse.json() as NaverResponse<NaverArtistTracksResult>).response.result.tracks
+                mapTracks(tracks);
+            }
+            const featuredTrackResponse = await fetch(v1Url + `/artist/${id}/tracks.json?display=9999&start=1&type=PARTICIPATION`)
+            if (featuredTrackResponse.ok){
+                let tracks = (await featuredTrackResponse.json() as NaverResponse<NaverArtistTracksResult>).response.result.tracks
+                mapTracks(tracks);
             }
             albums = Array.from(albumsIdMap.values());
             return {
