@@ -3,7 +3,7 @@ import logger from "../../utils/logger";
 import normalizeVars
  from "../../utils/normalizeVars";
 import { NextApiRequest, NextApiResponse } from "next";
-import { SAMBLApiError } from "../../types/api-types";
+import { ReleaseCountData, SAMBLApiError } from "../../types/api-types";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
@@ -28,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             releaseCount += featuredCount;
         }
 
-        return res.status(200).json({ releaseCount, ownCount, featuredCount });
+        return res.status(200).json(<ReleaseCountData>{ releaseCount, ownCount, featuredCount });
     } catch (error) {
         logger.error("Error in getArtistReleaseCount API", error);
         return res.status(500).json({ error: "Internal Server Error", details: error.message } as SAMBLApiError);
