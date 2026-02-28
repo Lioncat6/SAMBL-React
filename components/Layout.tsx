@@ -12,11 +12,13 @@ function LayoutContent({ children }: { children: JSX.Element}) {
         <>
             <Head>
                 <title>SAMBL</title>
-                <meta property="og:title" content="SAMBL" />
-                <meta property="og:site_name" content="SAMBL" />
-                <meta name="description" content="Streaming Artist MusicBrainz Lookup" />
-                <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg" />
-                <link rel="icon" type="image/png" href="../assets/images/favicon.png" />
+                <meta property="og:title" content="SAMBL" key="title"/>
+                <meta property="og:image" content="/assets/images/favicon.png" key="image"/>
+                <meta property="og:site_name" content="SAMBL" key="siteName" />
+                <meta name="description" content="Streaming Artist MusicBrainz Lookup" key="description"/>
+                <meta name="og:description" content="Streaming Artist MusicBrainz Lookup" key="ogDescription"/>
+                <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg" key="svgIcon" />
+                <link rel="icon" type="image/png" href="../assets/images/favicon.png" key="pngIcon" />
             </Head>
             <Header />
             <div id="main">{children}</div>

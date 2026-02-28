@@ -5,6 +5,8 @@ import { ProviderNamespace } from "../../types/provider-types";
 import { ArtistPageData, SAMBLError } from "../../types/component-types";
 import ErrorPage from "../../components/ErrorPage";
 import { SAMBLApiError, ArtistData } from "../../types/api-types";
+import SAMBLHead from "../../components/SAMBLHead";
+import text from "../../utils/text";
 
 async function fetchArtistData(id: string, provider: ProviderNamespace) {
     const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?provider_id=${id}&provider=${provider}&mbData`);
@@ -25,7 +27,7 @@ async function fetchArtistData(id: string, provider: ProviderNamespace) {
 export async function getServerSideProps(context) {
     try {
         let { spid, provider, provider_id, pid } = context.query;
-        if (spid) { 
+        if (spid) {
             provider_id = spid;
             provider = "spotify";
         }
@@ -73,13 +75,16 @@ export default function NewArtist({ artist, error }: { artist?: ArtistPageData, 
     }
     return (
         <>
-            <Head>
-                <title>{`SAMBL • ${artist.name}`}</title>
-                <meta name="description" content={`View Artist • ${artist.name}  • ${artist.relevance}`} />
-                {artist.imageUrl && <meta property="og:image" content={artist.imageUrl} />}
-				<meta property="og:title" content={`SAMBL • ${artist.name}`} />
-				<meta property="og:description" content={`View Artist • ${artist.name}  • ${artist.relevance}`} />
-            </Head>
+            <SAMBLHead
+                title={`SAMBL • ${artist.name}`}
+                fullTitle={`New Artist • ${artist.name}`}
+                image={artist.imageUrl}
+                description={text.infoToString([
+                    text.capitalizeFirst(artist.provider),
+                    artist.info,
+                    artist.relevance,
+                ])}
+            />
             <ArtistInfo artist={artist} />
             <div id="contentContainer">
                 <AddButtons artist={artist} />

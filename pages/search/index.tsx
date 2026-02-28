@@ -5,6 +5,9 @@ import SearchBox from '../../components/SearchBox';
 import { ArtistSearchData } from "../../types/api-types";
 import { SAMBLError } from "../../types/component-types";
 import ErrorPage from "../../components/ErrorPage";
+import SAMBLHead from "../../components/SAMBLHead";
+import text from "../../utils/text";
+import { ProviderNamespace } from "../../types/provider-types";
 
 async function getItems(query, provider) {
     const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/searchArtists?query=${query}&provider=${provider}`);
@@ -24,7 +27,7 @@ export async function getServerSideProps(context) {
         }
         const items = await getItems(query, provider);
         return {
-            props: { items },
+            props: { items, provider },
         };
     } catch (error) {
         const samblError: SAMBLError = {
@@ -37,20 +40,24 @@ export async function getServerSideProps(context) {
     }
 }
 
-export default function search({ items, error }) {
+export default function search({ items, error, provider }: {items?: [], error?:SAMBLError, provider?: ProviderNamespace}) {
     if (error || !items) {
         return (
-            <ErrorPage error={error} />
+            <ErrorPage error={error || null} />
         )
     }
     const router = useRouter();
     const { query } = router.query;
     return (
         <>
-            <Head>
-                <title>{`SAMBL • Results for  "${query}"`}</title>
-                <meta name="description" content={`SAMBL • Search results for "${query}"`} />
-            </Head>
+            <SAMBLHead
+                title = {`SAMBL • Results for "${query}"`}
+                fullTitle={`Search results for "${query}"`}
+                description={text.infoToString([
+                    provider && text.capitalizeFirst(provider),
+                    `${items.length} results for "${query}"`
+                ])}
+            />
             <div id="err" />
             <div className="titleContainer">
                 <h1 id="searchFor">Search Results for "{query}"</h1>

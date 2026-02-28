@@ -3,6 +3,8 @@ import { ProviderNamespace } from "../types/provider-types";
 import { errorType, SAMBLError } from "../types/component-types";
 import Head from "next/head";
 import styles from "../styles/ErrorPage.module.css";
+import SAMBLHead from "./SAMBLHead";
+import text from "../utils/text";
 
 const messages: Record<errorType, string> = {
     "provider": "A provider returned an error while generating this page",
@@ -89,12 +91,10 @@ function Description({ error }: { error: SAMBLError | null }) {
 export default function ErrorPage({error = null}: {error: SAMBLError | null}) {
     return (
         <>
-        <Head>
-				<title>{`SAMBL • Error`}</title>
-				<meta name="description" content={`An error occurred while generating this page`} />
-				<meta property="og:title" content={`SAMBL • Error`} />
-				<meta property="og:description" content={`An error occurred while generating this page`} />
-        </Head>
+        <SAMBLHead 
+            title={`SAMBL • Error`}
+            description={`An error occurred while generating this page`}
+        />
         <div>
             <h1>{error ? messages[error.type] : "An error occurred while generating this page"}</h1>
             <div><Description error={error} /></div>

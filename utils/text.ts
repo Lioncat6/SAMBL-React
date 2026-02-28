@@ -146,7 +146,7 @@ function getColorEmoji(color:AlbumStatus, circle=false) {
 	return circle ? emojis[color]: squareEmojis[color];
 }
 
-function infoToString(info: (string|null)[]){
+function infoToString(info: (string|null|undefined)[]){
 	const string = info.filter((s) => s!=null && s!=undefined && s.length > 0).join(" • ");
 	return string.length > 0 ? string : null;
 }

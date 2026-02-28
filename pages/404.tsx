@@ -1,12 +1,12 @@
 import Link from "next/link";
-import Head from "next/head";
+import SAMBLHead from "../components/SAMBLHead"
 
 export default function Custom404() {
 	return (<>
-		<Head>
-			<title>SAMBL • Page Not Found</title>
-			<meta name="description" content={"SAMBL • The requested page could not be found"} />
-		</Head>
+		<SAMBLHead 
+			title="SAMBL • Page Not Found"
+			description="404 • The requested page could not be found"
+		/>
 		<h1>404 Page Not Found</h1>
 		<Link href="/">
 			<b> Return Home </b>
