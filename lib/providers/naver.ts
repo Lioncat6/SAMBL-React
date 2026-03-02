@@ -308,7 +308,7 @@ function formatArtistObject(artist: NaverArtist): ArtistObject {
         bannerUrl: null,
         imageUrl: artist.imageUrl ? getFullImageUrl(artist.imageUrl) : null,
         imageUrlSmall: artist.imageUrl || null,
-        genres: [artist.genreNames],
+        genres: artist.genreNames.split(","),
         followers: null,
         popularity: null,
         info: "",
@@ -448,7 +448,10 @@ function formatAlbumObject(album: NaverAlbumWithTracks): AlbumObject {
         upc: null,
         albumTracks: album.tracks?.map(formatTrackObject) || [],
         imageUrl: album.imageUrl ? getFullImageUrl(album.imageUrl) : null,
-        imageUrlSmall: album.imageUrl || null
+        imageUrlSmall: album.imageUrl || null,
+        genres: album.albumGenreList,
+        labels: [album.agencyName, album.productionName].filter((label) => label != undefined && label!=null),
+        copyrights: null,
     }
 }
 

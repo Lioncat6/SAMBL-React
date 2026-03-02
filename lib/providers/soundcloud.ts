@@ -120,7 +120,12 @@ async function getArtistAlbums (artistId: string | number, offset: string | numb
   }
 }
 
-function formatAlbumGetData (rawData): RawAlbumData {
+class albumGetData {
+  artistTracks: SoundcloudTrack[]
+  artistPlaylists: SoundcloudPlaylist[]
+}
+
+function formatAlbumGetData (rawData: albumGetData): RawAlbumData {
   let artistAlbums: any[] = []
   let playlists = rawData.artistPlaylists
   let tracks = rawData.artistTracks
@@ -145,9 +150,9 @@ function formatAlbumGetData (rawData): RawAlbumData {
   }
 }
 
-function getUPCFromAlbum (album): string | null {
+function getUPCFromAlbum (album: SoundcloudPlaylist | SoundcloudTrack): string | null {
   let upc: string | null = null
-  if (album.tracks) {
+  if ('tracks' in album && album.tracks) {
     for (let track of album.tracks) {
       if (track.publisher_metadata?.upc_or_ean) {
         if (!upc) {
@@ -157,13 +162,46 @@ function getUPCFromAlbum (album): string | null {
         }
       }
     }
-  } else if (album.publisher_metadata?.upc_or_ean) {
+  } else if ('publisher_metadata' in album && album.publisher_metadata?.upc_or_ean) {
     upc = album.publisher_metadata.upc_or_ean
   }
   return upc
 }
 
-function formatAlbumObject (rawAlbum): AlbumObject {
+function getGenresFromAlbum(album: SoundcloudPlaylist | SoundcloudTrack): string[] {
+  let genres: string[] = [];
+  if (album.genre) genres.push(album.genre);
+  if ('tracks' in album){
+    album.tracks?.forEach(track => {
+        if (track.genre) genres.push(track.genre);
+    });
+  }
+  
+  return [ ...new Set(genres)];
+}
+
+function getLabelsFromAlbum(album: SoundcloudPlaylist | SoundcloudTrack){
+  let labels: string[] = [];
+  if ('tracks' in album){
+    album.tracks?.forEach(track => {
+      if (track.publisher_metadata?.publisher) labels.push(track.publisher_metadata.publisher);
+    });
+  }
+  return labels;
+}
+
+function getCopyrightsFromAlbum(album: SoundcloudPlaylist | SoundcloudTrack){
+  let copyrights: string[] = [];
+  if ('tracks' in album){
+    album.tracks?.forEach(track => {
+      if (track.publisher_metadata?.p_line_for_display) copyrights.push(track.publisher_metadata.p_line_for_display);
+      if (track.publisher_metadata?.c_line_for_display) copyrights.push(track.publisher_metadata.c_line_for_display);
+    });
+  }
+  return copyrights;
+}
+
+function formatAlbumObject (rawAlbum: SoundcloudPlaylist | SoundcloudTrack): AlbumObject {
   return {
     provider: namespace,
     id: rawAlbum.urn || `soundcloud:${rawAlbum.kind}:${rawAlbum.id}`,
@@ -174,12 +212,20 @@ function formatAlbumObject (rawAlbum): AlbumObject {
     albumArtists: [formatPartialArtistObject(rawAlbum.user)],
     artistNames: [rawAlbum.user.username],
     releaseDate: getReleaseDate(rawAlbum),
-    trackCount: rawAlbum.track_count || 1,
-    albumType: rawAlbum.type || 'single',
+    trackCount: 'track_count' in rawAlbum && rawAlbum.track_count || 1,
+    albumType: 'set_type' in rawAlbum && rawAlbum.set_type || 'single',
     upc: getUPCFromAlbum(rawAlbum),
     albumTracks: getAlbumTracks(rawAlbum),
+    genres: getGenresFromAlbum(rawAlbum),
+    copyrights: getCopyrightsFromAlbum(rawAlbum),
+    labels: getLabelsFromAlbum(rawAlbum),
     type: "album"
   }
+}
+
+interface SoundcloudTrackWithAlbumInfo extends SoundcloudTrack {
+  albumName?: string;
+  track_number?: number;
 }
 
 function getAlbumTracks (album) {
@@ -214,7 +260,7 @@ function getAlbumUPCs (album) {
   return upc ? [upc] : []
 }
 
-function formatTrackObject (track): TrackObject {
+function formatTrackObject (track: SoundcloudTrackWithAlbumInfo): TrackObject {
   return {
     provider: namespace,
     id: track.urn || `soundcloud:track:${track.id}`,
@@ -222,7 +268,7 @@ function formatTrackObject (track): TrackObject {
     url: track.permalink_url?.split('?')[0],
     imageUrl: track.artwork_url?.replace('large', 't500x500') || '',
     imageUrlSmall: track.artwork_url || '',
-    albumName: track.albumName,
+    albumName: track.albumName || track.publisher_metadata.album_title || track.publisher_metadata.release_title || null,
     trackArtists: track.user ? [formatPartialArtistObject(track.user)] : [],
     artistNames: [track.user?.username],
     duration: track.duration,

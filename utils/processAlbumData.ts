@@ -70,6 +70,9 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 		let providerAlbumType = album.albumType;
 		let providerBarcode = album.upc || null;
 		let providerTracks = album.albumTracks || [];
+		let providerGenres = album.genres;
+		let providerCopyrights = album.copyrights;
+		let providerLabels = album.labels;
 
 		let mbTrackCount: number | null = 0;
 		let mbReleaseDate: string | null = "";
@@ -296,6 +299,9 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 				artistID: currentArtistID,
 				albumIssues,
 				aggregatedTracks: aggregatedTracks,
+				labels: providerLabels,
+				copyrights: providerCopyrights,
+				genres: providerGenres,
 				type: "album"
 			});
 		}

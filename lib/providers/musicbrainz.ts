@@ -147,7 +147,7 @@ async function getAlbumsBySourceUrls(sourceUrls: string | string[], inc: UrlIncl
 	}
 }
 
-async function getArtistAlbums(mbid: string, offset = 0, limit = 100, inc: ReleaseIncludes[] = ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"]): Promise<IBrowseReleasesResult | null | undefined> {
+async function getArtistAlbums(mbid: string, offset = 0, limit = 100, inc: ReleaseIncludes[] = ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits", "label-rels", "artist-rels"]): Promise<IBrowseReleasesResult | null | undefined> {
 	try {
 		// const data = await mbApi.browse('release', {artist: mbid, limit: limit, offset: offset});
 		const data = await mbApi.browse("release" as "release", { artist: mbid, limit: limit, offset: offset }, inc);
@@ -171,7 +171,7 @@ async function getArtistFeaturedAlbums(mbid: string, offset = 0, limit = 100, in
 
 async function getAlbumByUPC(upc: string): Promise<ExtendedAlbumObject[] | null | undefined> {
 	try {
-		const data = await mbApi.search("release", { query: `barcode:${upc}`, inc: ["artist-rels"], limit: 20 });
+		const data = await mbApi.search("release", { query: `barcode:${upc}`, inc: ["artist-credits"], limit: 20 });
 		checkError(data);
 		return data.releases.map(formatAlbumObject);
 	} catch (error) {
@@ -208,7 +208,7 @@ async function searchForAlbumByArtistAndTitle(mbid: string, title: string): Prom
 	}
 }
 
-async function getAlbumByMBID(mbid: string, inc: ReleaseIncludes[] = ["artist-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"]): Promise<IRelease | null | undefined> {
+async function getAlbumByMBID(mbid: string, inc: ReleaseIncludes[] = ["artist-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits", "label-rels", "artist-rels"]): Promise<IRelease | null | undefined> {
 	try {
 		const data = await mbApi.lookup("release" as "release", mbid, inc);
 		checkError(data);
@@ -220,7 +220,7 @@ async function getAlbumByMBID(mbid: string, inc: ReleaseIncludes[] = ["artist-re
 
 async function getAlbumById(mbid: string): Promise<IRelease | null | undefined> {
 	try {
-		const data = await mbApi.lookup("release", mbid, ["artist-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"] as ReleaseIncludes[]);
+		const data = await mbApi.lookup("release", mbid, ["artist-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits", "label-rels", "artist-rels"] as ReleaseIncludes[]);
 		checkError(data);
 		return data;
 	} catch (error) {
@@ -294,6 +294,23 @@ function formatAlbumGetData(rawData: IReleaseList): ExtendedAlbumData {
 	}
 }
 
+function formatCopyright(album: IRelease): string[] {
+	let copyrigths: string[] = [];
+	const relations = album.relations;
+	console.log(album.relations)
+	relations?.forEach((rel) => {
+		if (rel.artist || rel.label){
+			const name = rel.artist?.name || rel.label?.name;
+			if (rel["type-id"] == "2ed5a497-4f85-4b3f-831e-d341ad28c544"){ //Copyright ©
+				copyrigths.push(`© ${name}`);
+			} else if (rel["type-id"] == "287361d2-1dce-4d39-9f82-222b786e2b30"){ //Phonographic Copyright ℗
+				copyrigths.push(`℗ ${name}`);
+			}
+		}
+	})
+	return copyrigths;
+}
+
 function formatAlbumObject(album: IRelease): ExtendedAlbumObject {
 	let trackCount: number | null = null;
 	if (album.media?.length > 0) {
@@ -321,6 +338,9 @@ function formatAlbumObject(album: IRelease): ExtendedAlbumObject {
 		albumTracks: ( album.media && album.media.length > 0 ) ? album.media.flatMap(medium => medium.tracks?.map(track => formatTrackObject(track))).filter((track) => track != null) : [],
 		externalUrls: album.relations ? album.relations.filter(rel => rel.url && rel.url?.resource)?.map(rel => rel.url?.resource).filter(url => typeof url == 'string') : [],
 		hasImage: album["cover-art-archive"]?.artwork,
+		genres: null, //TODO: https://github.com/Borewit/musicbrainz-api/pull/1145
+		labels: null, //TODO: https://github.com/Borewit/musicbrainz-api/pull/1145
+		copyrights: formatCopyright(album),
 		type: "album"
 	}
 }

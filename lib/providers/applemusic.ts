@@ -83,7 +83,7 @@ const HEADERS = {
 
 const namespace = "applemusic";
 
-const {createUrl, parseUrl} = parsers.getParser(namespace);
+const { createUrl, parseUrl } = parsers.getParser(namespace);
 
 const err = new ErrorHandler(namespace);
 
@@ -165,7 +165,7 @@ function getArtistImageUrls(artist: Resource<ArtistAttributes>): { imageUrl: str
 	const alternateUrl = artist.attributes.hero?.[0]?.content[0]?.artwork?.url;
 	return {
 		imageUrl: !noImage ? getOriginalImageUrl(imageUrl) : getResizedImageUrl(alternateUrl, 4000, 4000),
-		imageUrlSmall: !noImage ? getResizedImageUrl(imageUrl, 250, 250) : getResizedImageUrl(alternateUrl, 250, 250) 
+		imageUrlSmall: !noImage ? getResizedImageUrl(imageUrl, 250, 250) : getResizedImageUrl(alternateUrl, 250, 250)
 	};
 }
 
@@ -343,6 +343,9 @@ function formatAlbumObject(album: Resource<AlbumAttributes>): AlbumObject {
 		upc: album.attributes.upc || null,
 		albumTracks: album.relationships.tracks?.data.map(formatTrackObject) || [],
 		provider: namespace,
+		genres: album.attributes.genreNames,
+		labels: album.attributes.recordLabel ? [album.attributes.recordLabel] : null,
+		copyrights: album.attributes.copyright ? [album.attributes.copyright] : null,
 		type: "album"
 	};
 }
@@ -361,7 +364,7 @@ function formatTrackObject(track: Resource<SongAttributes>): TrackObject {
 		releaseDate: track.attributes.releaseDate || null,
 		trackNumber: track.attributes.trackNumber,
 		duration: track.attributes.durationInMillis,
-		isrcs: [ track.attributes.isrc ],
+		isrcs: [track.attributes.isrc],
 		type: "track"
 	};
 }
@@ -373,11 +376,11 @@ function getArtistUrl(artist: Resource<ArtistAttributes>): string | null {
 }
 
 function getTrackISRCs(track: Resource<SongAttributes>): string[] | null {
-	return [ track.attributes.isrc ];
+	return [track.attributes.isrc];
 }
 
 function getAlbumUPCs(album: Resource<AlbumAttributes>): string[] | null {
-	return album.attributes.upc ? [ album.attributes.upc ] : [];
+	return album.attributes.upc ? [album.attributes.upc] : [];
 }
 
 
@@ -391,7 +394,7 @@ function buildUrlSearchQuery(type: UrlType, ids: string[]): RegexArtistUrlQuery 
 	let idQueryMap: { [key: string]: RegExp["source"] } = {};
 	ids.forEach((id) => {
 		const regex: RegExp | null = new RegExp(`https:\/\/music\\\.apple\\\.com\/[a-zA-Z]{2}\/${appleType[type]}\/${id}`);
-		idQueryMap[id]= regex.source
+		idQueryMap[id] = regex.source
 	})
 	const query: RegexArtistUrlQuery = {
 		fullQuery: regex.source,
@@ -404,7 +407,7 @@ const applemusic: FullProvider = {
 	namespace,
 	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 30, namespace }),
 	getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 30, namespace }),
-	searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30,  namespace }),
+	searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30, namespace }),
 	getAlbumById: withCache(getAlbumById, { ttl: 60 * 30, namespace }),
 	getTrackById: withCache(getTrackById, { ttl: 60 * 30, namespace }),
 	getArtistById: withCache(getArtistById, { ttl: 60 * 30, namespace }),

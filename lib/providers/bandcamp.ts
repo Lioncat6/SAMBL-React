@@ -249,6 +249,10 @@ function formatAlbumGetData(rawData): RawAlbumData {
 	};
 }
 
+function getLabels(album): string[] | null {
+	return album.pageData?.albumRelease?.[0]?.recordLabel?.name ? [album.pageData?.albumRelease?.[0]?.recordLabel?.name]: null;
+}
+
 function formatAlbumObject(album): AlbumObject {
 	const bcId: bandcampId = parseId(parseUrl(album.url)?.id || null)
 	let albumType = "album";
@@ -288,6 +292,9 @@ function formatAlbumObject(album): AlbumObject {
 		albumType: albumType,
 		upc: album.raw?.current?.upc || null,
 		albumTracks: getAlbumTracks(album) || [],
+		labels: getLabels(album),
+		copyrights: null,
+		genres: album.tags,
 		type: "album"
 	};
 }
