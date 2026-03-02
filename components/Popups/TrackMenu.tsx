@@ -188,7 +188,7 @@ function TrackItem({ index, track, album, isrcSource, highlight }: { index: stri
 				{showArtistCredit() && (
 					<div className={styles.trackArtists}>
 						{track.trackArtists.map((artist, index) => (
-							<span key={artist.id}>
+							<span key={index}>
 								{index > 0 && ", "}
 								<a href={artist.url} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
 									{artist.name}
@@ -241,9 +241,10 @@ function TrackMenu({ data, refresh, close }: { data: AggregatedAlbum, refresh: (
 				</div>
 			)}
 			<div className={styles.content}>
-				{Object.entries(trackData).map(([key, value]) => {
+				{Object.entries(trackData).map(([key, value], index) => {
 					return (
 						<TrackItem 
+							key={index} //This isn't confusing and hard to read at all
 							index={key} 
 							track={value} 
 							album={data} 

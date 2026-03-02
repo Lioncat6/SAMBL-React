@@ -127,10 +127,10 @@ function ActionButtons({ item }: { item: DisplayAlbum }) {
 				}
 				<div className={`${collapsed ? styles.collapsed : styles.expanded}`}>
 					{settings?.showExport && <SelectionButtons item={item} />}
-					{seeders.getAllSeeders().map((seeder) => {
+					{seeders.getAllSeeders().map((seeder, index) => {
 						if (settings?.enabledSeeders.includes(seeder.namespace) && seeder.providers.includes(provider)) {
 							return (
-								<a className={styles[`${seeder.namespace}Button`]} href={seeder.buildUrl(url, upc)} target="_blank" rel="noopener noreferrer">
+								<a key={index} className={styles[`${seeder.namespace}Button`]} href={seeder.buildUrl(url, upc)} target="_blank" rel="noopener noreferrer">
 									<div>{seeder.displayName}</div>
 								</a>
 							)
@@ -457,7 +457,7 @@ function GenericItem({ item }: { item: AlbumObject | ExtendedTrackObject }) {
 	]
 	const artists = "albumArtists" in item ? item.albumArtists : item.trackArtists;
 	let artistString = artists?.map((artist, index) => (
-		<>
+		<span key={index}>
 			{index > 0 && ", "}
 			<a href={artist.url} target="_blank" rel="noopener noreferrer" className={styles.artists}>
 				{artist.name}
@@ -465,11 +465,11 @@ function GenericItem({ item }: { item: AlbumObject | ExtendedTrackObject }) {
 			<a href={`../newartist?provider_id=${artist.id}&provider=${artist.provider}`} target="_blank" rel="noopener noreferrer">
 				<img className={styles.SAMBLicon} src="../assets/images/favicon.svg" alt="SAMBL" />
 			</a>
-		</>
+		</span>
 	));
 	let infoString = Array.isArray(info) ? info.filter((item) => item != null && item != "").join(" • ") : "";
 	return (
-		<div className={styles.listItem} style={{ "--background-image": `url('${imageUrl}')` } as React.CSSProperties}>
+		<div className={styles.listItem} style={(imageUrl && { "--background-image": `url('${imageUrl}')` }) as React.CSSProperties}>
 			{imageUrl && (
 				<div className={styles.artistIcon}>
 					<a href={imageUrl} target="_blank">
@@ -672,9 +672,7 @@ export default function ItemList({ items, type, text, refresh, viewItem }: { ite
 		setFilter({ ...filters.getDefaultOptions(),... getSavedFilter()}); //Settings isn't always loaded right away
 	}, [settings]);
 	const setAllItems = useExportState()?.setAllItems;
-	if (currentItems?.length > 0 && setAllItems) {
-		setAllItems(currentItems);
-	}
+	
 
 	useEffect(() => {
 		setCurrentItems(items || []);
@@ -694,6 +692,11 @@ export default function ItemList({ items, type, text, refresh, viewItem }: { ite
 		if (updatedItems != filteredItems) {
 			setFilteredItems(updatedItems);
 		}
+
+		if (currentItems?.length > 0 && setAllItems) {
+			setAllItems(currentItems);
+		}
+
 	}, [searchQuery, filter, currentItems, type]);
 
 	useEffect(() => {
