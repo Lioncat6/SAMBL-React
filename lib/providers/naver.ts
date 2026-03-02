@@ -496,6 +496,18 @@ function getTrackISRCs() {
 
 const naver: FullProvider = {
     namespace: "naver",
+    config: {
+        capabilities: {
+            isrcs: {
+                availability: "never",
+                presence: "never"
+            },
+            upcs: {
+                availability: "never",
+                presence: "never"
+            }
+        }
+    },
     searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30, namespace: namespace }),
     getAlbumById: withCache(getAlbumById, { ttl: 60 * 30, namespace: namespace }),
     getTrackById: withCache(getTrackById, { ttl: 60 * 30, namespace: namespace }),
