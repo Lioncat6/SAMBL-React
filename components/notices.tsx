@@ -2,15 +2,36 @@ import styles from "../styles/notices.module.css";
 import text from "../utils/text";
 import editNoteBuilder from "../utils/editNoteBuilder";
 import { ArtistPageData } from "../types/component-types";
-import { JSX } from "react";
+import { JSX, useState } from "react";
+import { FaXmark } from "react-icons/fa6";
+import { Transition } from "@headlessui/react";
 
 function NoticeBox({ color, text, button}: {color: string, text: string, button?: JSX.Element | null}) {
+	const [visible, setVisible] = useState(true);
+	function dismiss(){
+		setVisible(false);
+	}
 	return (
-		<div className={styles.noticeBox}>
-			<div className={`${styles.boxBorder} ${styles[color]}`}></div>
-			<div className={styles.topNoticeText}>{text}</div>
-			{button}
-		</div>
+		<>
+			<Transition 
+				show={visible}
+				// as={Fragment}
+				leave={styles.noticeLeave}
+				leaveFrom={styles.noticeLeaveFrom}
+				leaveTo={styles.noticeLeaveTo}
+			>
+				<div className={styles.noticeBox}>
+					<div className={`${styles.boxBorder} ${styles[color]}`}></div>
+					<div className={styles.noticeContent}>
+						<div className={styles.topNoticeText}>{text}</div>
+						{button}
+					</div>
+					<button title={"Dismiss"} className={styles.dismiss} onClick={dismiss}>
+						<FaXmark />
+					</button>
+				</div>
+			</Transition>
+		</>
 	);
 }
 

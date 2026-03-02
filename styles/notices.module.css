@@ -12,6 +12,13 @@
     z-index: 1;
 }
 
+.noticeContent {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    flex-grow: 1;
+}
+
 .noticeBox:hover {
     opacity: 100%;
 }
@@ -55,4 +62,35 @@
 
 .boxBorder.orange {
     border-color: rgba(255, 115, 0, 0.7);
+}
+
+.dismiss {
+    /* position: absolute; */
+    right: 10px;
+    vertical-align: middle;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 1;
+    color: var(--foreground-primary);
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+}
+
+.dismiss:hover {
+    color: var(--foreground-secondary)
+}
+
+.noticeLeave {
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.noticeLeaveFrom {
+    opacity: 1;
+    transform: scale(1);
+}
+.noticeLeaveTo {
+    opacity: 0 !important;
+    transform: scale(0.95);
 }
