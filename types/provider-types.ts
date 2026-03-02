@@ -6,7 +6,7 @@ export type ProviderNamespace = FullProviderNamespace | "musixmatch"
 
 export type FullProviderNamespace = "spotify" | "tidal" | "deezer" | "musicbrainz" | "soundcloud" | "bandcamp" | "applemusic" | "naver"
 
-export type ObjectType = "partialArtist" | "artist" | "album" | "track"
+export type ObjectType = "partialArtist" | "artist" | "album" | "track" | "label"
 
 export class GenericObject {
     provider: ProviderNamespace;
@@ -52,6 +52,9 @@ export class AlbumObject extends ImageObject {
     albumType: string | null;
     upc: string | null;
     albumTracks: TrackObject[];
+    labels: string[] | null;
+    copyrights: string[] | null;
+    genres: string[] | null;
     type: "album";
 };
 
