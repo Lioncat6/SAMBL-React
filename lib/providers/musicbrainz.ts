@@ -297,7 +297,6 @@ function formatAlbumGetData(rawData: IReleaseList): ExtendedAlbumData {
 function formatCopyright(album: IRelease): string[] {
 	let copyrigths: string[] = [];
 	const relations = album.relations;
-	console.log(album.relations)
 	relations?.forEach((rel) => {
 		if (rel.artist || rel.label){
 			const name = rel.artist?.name || rel.label?.name;
