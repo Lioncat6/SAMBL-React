@@ -405,6 +405,18 @@ function buildUrlSearchQuery(type: UrlType, ids: string[]): RegexArtistUrlQuery 
 
 const applemusic: FullProvider = {
 	namespace,
+	config: {
+		capabilities: {
+			isrcs: {
+				availability: "always",
+				presence: "always"
+			},
+			upcs: {
+				availability: "always",
+				presence: "always"
+			}
+		}
+	},
 	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 30, namespace }),
 	getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 30, namespace }),
 	searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30, namespace }),
