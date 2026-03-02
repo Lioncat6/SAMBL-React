@@ -35,10 +35,6 @@ function NoticeBox({ color, text, button}: {color: string, text: string, button?
 	);
 }
 
-function noQuickfetch() {
-	window.location.assign(window.location.href + "&quickFetch=false");
-}
-
 function NoMBIDNotice({data}: {data?: ArtistPageData | null}) {
 	if (!data) {
 		return (
@@ -67,6 +63,9 @@ function NoMBIDNotice({data}: {data?: ArtistPageData | null}) {
 }
 
 function QuickFetchedNotice() {
+	function noQuickfetch() {
+		window.location.assign(window.location.href + "&quickFetch=false");
+	}
 	return (
 		<>
 			<NoticeBox
