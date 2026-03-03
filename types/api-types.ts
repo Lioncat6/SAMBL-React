@@ -56,3 +56,9 @@ export class ISRCData {
 export class UPCData {
     upcs: string[]
 }
+
+export class ReleaseCountData { 
+    releaseCount: number
+    ownCount: number
+    featuredCount?: number | null
+}

@@ -1,5 +1,4 @@
-import spotify from "./providers/spotify";
-import musicbrainz from "./providers/musicbrainz";
+import musicbrainz from "../../lib/providers/musicbrainz";
 import processData from "../../utils/processAlbumData";
 import logger from "../../utils/logger";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -7,8 +6,7 @@ import { AlbumData, AlbumObject, ExtendedAlbumObject, ProviderWithCapabilities, 
 import { IUrl } from "musicbrainz-api";
 import normalizeVars from "../../utils/normalizeVars";
 import { SAMBLApiError } from "../../types/api-types";
-import providers from "./providers/providers";
-import { error } from "node:console";
+import providers from "../../lib/providers/providers";
 
 // spotifyId - Spotify artist ID
 // mbid - MusicBrainz artist ID. Only neccesary if you want to check if the associated albums are linked to that artist
@@ -25,11 +23,11 @@ async function fetchSourceAlbums(providerId, provider, offset = 0, bypassCache =
 }
 
 async function fetchMbArtistAlbums(mbid, offset = 0, full = false) {
-	return await musicbrainz.getMBArtistAlbums(mbid, offset, 100, full ? ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"] : ["url-rels"]);
+	return await musicbrainz.getMBArtistAlbums(mbid, offset, 100, full ? ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits", "label-rels", "artist-rels"] : ["url-rels"]);
 }
 
 async function fetchMbArtistFeaturedAlbums(mbid, offset = 0, full = false) {
-	return await musicbrainz.getArtistFeaturedAlbums(mbid, offset, 100, full ? ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"] : ["url-rels"]);
+	return await musicbrainz.getArtistFeaturedAlbums(mbid, offset, 100, full ? ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits", "label-rels", "artist-rels"] : ["url-rels"]);
 }
 
 async function getBySourceAlbumLink(links: string[]) {

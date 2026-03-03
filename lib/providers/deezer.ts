@@ -1,16 +1,16 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities } from "../../../types/provider-types";
-import logger from "../../../utils/logger";
-import text from "../../../utils/text";
-import withCache from "../../../utils/cache";
-import ErrorHandler from "../../../utils/errorHandler";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities } from "../../types/provider-types";
+import logger from "../../utils/logger";
+import text from "../../utils/text";
+import withCache from "../../utils/cache";
+import ErrorHandler from "../../utils/errorHandler";
 import DeezerPublicApi from "deezer-public-api";
-import parsers from "../../../lib/parsers/parsers";
-
+import parsers from "../parsers/parsers";
+import getDeezerGenre from "./lib/deezer-genres";
 const namespace = "deezer";
 
 const err = new ErrorHandler(namespace);
 
-const {parseUrl, createUrl}  = parsers.getParser(namespace); 
+const { parseUrl, createUrl } = parsers.getParser(namespace);
 
 let deezerApi = new DeezerPublicApi();
 let lastRefreshed = Date.now();
@@ -36,7 +36,7 @@ async function getTrackByISRC(isrc: number): Promise<TrackObject[] | null> {
 	} catch (error) {
 		err.handleError("Error fetching track by ISRC:", error);
 		return null;
-		
+
 	}
 }
 
@@ -52,7 +52,7 @@ async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
 	} catch (error) {
 		err.handleError("Error fetching album by UPC:", error);
 		return null;
-		
+
 	}
 }
 
@@ -62,13 +62,13 @@ async function searchByArtistName(query) {
 	try {
 		const data = await deezerApi.search.artist(query);
 		if (data.data) {
-            return data;
-        } else {
-            return null;
-        }
+			return data;
+		} else {
+			return null;
+		}
 	} catch (error) {
 		err.handleError("Error searching for artist:", error);
-		
+
 	}
 }
 
@@ -83,7 +83,7 @@ async function getAlbumById(deezerId) {
 		}
 	} catch (error) {
 		err.handleError("Error fetching album by ID:", error);
-		
+
 	}
 }
 
@@ -98,7 +98,7 @@ async function getTrackById(deezerId) {
 		}
 	} catch (error) {
 		err.handleError("Error fetching track by ID:", error);
-		
+
 	}
 }
 
@@ -113,7 +113,7 @@ async function getArtistById(deezerId) {
 		}
 	} catch (error) {
 		err.handleError("Error fetching artist by ID:", error);
-		
+
 	}
 }
 
@@ -170,7 +170,7 @@ function formatPartialArtistObject(artist): PartialArtistObject {
 		imageUrl: artist.picture_xl || "",
 		imageUrlSmall: artist.picture_medium || "",
 		id: artist.id,
-		provider: namespace, 
+		provider: namespace,
 		type: "partialArtist"
 	};
 }
@@ -219,6 +219,7 @@ function formatAlbumGetData(rawData): RawAlbumData {
 	};
 }
 
+
 function formatAlbumObject(album): AlbumObject {
 	return {
 		provider: namespace,
@@ -234,13 +235,16 @@ function formatAlbumObject(album): AlbumObject {
 		albumType: album.record_type,
 		upc: album.upc || null,
 		albumTracks: getAlbumTracks(album),
-		type: "album"
+		type: "album",
+		labels: album.label ? [album.label] : null,
+		copyrights: null,
+		genres: album.genres?.data ? album.genres.data.map((genre) => genre.name) : getDeezerGenre(album.genre_id) ? [getDeezerGenre(album.genre_id)]: null
 	};
 }
 
 function getAlbumTracks(album) {
 	let tracks = album.tracks?.data;
-	if (tracks){
+	if (tracks) {
 		for (let track in tracks) {
 			tracks[track].trackNumber = parseInt(track) + 1;
 		}
@@ -260,9 +264,9 @@ function formatTrackObject(track): TrackObject {
 		imageUrl: track.album.cover_xl || "",
 		imageUrlSmall: track.album.cover_medium || "",
 		albumName: track.album.title,
-		trackArtists: track.artist? [formatPartialArtistObject(track.artist)]: [],
+		trackArtists: track.artist ? [formatPartialArtistObject(track.artist)] : [],
 		artistNames: track.artist ? [track.artist.name] : [],
-		duration: track.duration*1000,
+		duration: track.duration * 1000,
 		trackNumber: track.trackNumber,
 		releaseDate: track.release_date || null,
 		isrcs: track.isrc ? [track.isrc] : [],
@@ -275,29 +279,29 @@ function getArtistUrl(artist) {
 }
 
 const capabilities: Capabilities = {
-  isrcs: {
-	availability: "always",
-	presence: "onTrackRefresh"
-  },
-  upcs: {
-	availability: "always",
-	presence: "onAlbumRefresh"
-  }
+	isrcs: {
+		availability: "always",
+		presence: "onTrackRefresh"
+	},
+	upcs: {
+		availability: "always",
+		presence: "onAlbumRefresh"
+	}
 }
 
 const deezer: FullProvider = {
 	namespace,
-	config: {capabilities},
+	config: { capabilities },
 	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 30, namespace: namespace }),
 	getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 30, namespace: namespace }),
-    searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30,  namespace: namespace }),
+	searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30, namespace: namespace }),
 	getAlbumById: withCache(getAlbumById, { ttl: 60 * 30, namespace: namespace }),
 	getTrackById: withCache(getTrackById, { ttl: 60 * 30, namespace: namespace }),
 	getArtistById: withCache(getArtistById, { ttl: 60 * 30, namespace: namespace }),
 	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 30, namespace: namespace }),
 	formatArtistSearchData,
 	formatArtistLookupData,
-    formatArtistObject,
+	formatArtistObject,
 	formatPartialArtistObject,
 	formatAlbumGetData,
 	formatAlbumObject,

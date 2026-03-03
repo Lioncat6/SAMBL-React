@@ -4,12 +4,12 @@ import musixmatch from "./musixmatch";
 import deezer from "./deezer";
 import tidal from "./tidal"
 import bandcamp from "./bandcamp"
-import logger from "../../../utils/logger"
 import soundcloud from "./soundcloud"
 import applemusic from "./applemusic";
-import { FullProvider, PartialProvider, Provider, ProviderCapability, ProviderNamespace, ProviderWithCapabilities, UrlInfo } from "../../../types/provider-types";
-import clientProviders from "../../../utils/clientProviders";
-import parsers from "../../../lib/parsers/parsers";
+import { PartialProvider, Provider, ProviderCapability, ProviderNamespace, ProviderWithCapabilities } from "../../types/provider-types";
+import clientProviders from "../../utils/clientProviders";
+import parsers from "../parsers/parsers";
+import naver from "./naver";
 const { isDisabled } = clientProviders;
 
 const providerList = [
@@ -20,7 +20,8 @@ const providerList = [
     tidal,
     bandcamp,
     soundcloud,
-    applemusic
+    applemusic,
+    naver
 ];
 
 function getDefaultProvider(): Provider {

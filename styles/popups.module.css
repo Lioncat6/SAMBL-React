@@ -445,7 +445,7 @@ flex-direction: row;
     flex-shrink: 0;
 }
 
-.artists, .releaseDate, .barcode, .alb {
+.artists, .releaseDate, .barcode, .alb, .genres {
 	text-align: left;
 	font-weight: normal;
 	white-space: nowrap;
@@ -455,6 +455,23 @@ flex-direction: row;
 
 .barcode {
     color: var(--foreground-primary)
+}
+
+.genres {
+    font-size: smaller;
+    color: var(--foreground-tertiary)
+}
+
+.copyrights {
+    display: flex;
+    flex-direction: column;
+    font-size: small;
+    color: var(--foreground-tertiary);
+}
+
+.albumFooter {
+    align-items: center;
+    text-align: center;
 }
 
 .mbUnderline {

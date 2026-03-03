@@ -39,7 +39,9 @@ function FilterMenu({ close, data, apply }: { close?: () => void, data: FilterDa
 			newSettings.currentFilter.sort = newFilter.sort;
 			newSettings.currentFilter.ascending = newFilter.ascending;
 		}
-		updateSettings(newSettings);
+		if (settings.saveSort || settings.saveFilter) {
+			updateSettings(newSettings);
+		}
 		apply(newFilter);
 		if (close) close();
 	}

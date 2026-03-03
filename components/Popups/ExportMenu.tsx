@@ -19,6 +19,50 @@ function CopyButton({ value }) {
 	);
 }
 
+function ExpandableRow({ childKey, value }) {
+	const [expanded, setExpanded] = useState(false);
+	return (
+		<div key={childKey} className={`${styles.propertyRow} ${expanded ? styles.expanded : ""}`}>
+			<div className={styles.property}>
+				<CopyButton value={value} />
+				{childKey}
+				<button className={styles.expandButton} onClick={() => setExpanded(!expanded)} title={expanded ? "Collapse" : "Expand"}>
+					{expanded ? <FaChevronRight /> : <FaChevronDown />}
+				</button>
+			</div>
+
+			{expanded ? (
+				<div className={styles.propertyData}>
+					{value.map((subObj, subIndex) => (
+						<div key={subIndex} className={styles.subPropertyRow}>
+							{value.length > 1 && (
+								<div className={styles.subKey}>
+									<CopyButton value={JSON.stringify(subObj)} />
+									{String(subIndex)}
+								</div>
+							)}
+							<div className={styles.subPropertyDataColumn}>
+								{Object.entries(subObj).map(([subKey, subValue]) => (
+									<div key={subKey} className={styles.subPropertyData}>
+										<div className={styles.subPropertyDataKey}>
+											<CopyButton value={typeof subValue == "object" && !Array.isArray(subValue) && subValue !== null ? JSON.stringify(subValue) : Array.isArray(subValue) && typeof subValue[0] == "object" ? JSON.stringify(subValue) : subValue != null ? String(subValue) : ""} />
+
+											{subKey}
+										</div>
+										<div className={styles.subPropertyDataValue}>{typeof subValue == "object" && !Array.isArray(subValue) && subValue !== null ? JSON.stringify(subValue) : Array.isArray(subValue) && typeof subValue[0] == "object" ? JSON.stringify(subValue) : subValue != null ? String(subValue) : ""}</div>
+									</div>
+								))}
+							</div>
+						</div>
+					))}
+				</div>
+			) : (
+				<div className={styles.propertyData}>{!value ? "" : Array.isArray(value) && typeof value[0] === "object" ? JSON.stringify(value, null, 2) : String(value)}</div>
+			)}
+		</div>
+	);
+}
+
 function ExportMenu({ data, close }: { data: JSON, close?: () => void }) {
 
 	return (
@@ -35,47 +79,7 @@ function ExportMenu({ data, close }: { data: JSON, close?: () => void }) {
 					}
 					// If value is an array of objects, display subkeys and values
 					if (Array.isArray(value) && value.length > 0 && typeof value[0] === "object" && !Array.isArray(value[0])) {
-						const [expanded, setExpanded] = useState(false);
-						return (
-							<div key={key} className={`${styles.propertyRow} ${expanded ? styles.expanded : ""}`}>
-								<div className={styles.property}>
-									<CopyButton value={value} />
-									{key}
-									<button className={styles.expandButton} onClick={() => setExpanded(!expanded)} title={expanded ? "Collapse" : "Expand"}>
-										{expanded ? <FaChevronRight /> : <FaChevronDown />}
-									</button>
-								</div>
-
-								{expanded ? (
-									<div className={styles.propertyData}>
-										{value.map((subObj, subIndex) => (
-											<div key={subIndex} className={styles.subPropertyRow}>
-												{value.length > 1 && (
-													<div className={styles.subKey}>
-														<CopyButton value={JSON.stringify(subObj)} />
-														{String(subIndex)}
-													</div>
-												)}
-												<div className={styles.subPropertyDataColumn}>
-													{Object.entries(subObj).map(([subKey, subValue]) => (
-														<div key={subKey} className={styles.subPropertyData}>
-															<div className={styles.subPropertyDataKey}>
-																<CopyButton value={typeof subValue == "object" && !Array.isArray(subValue) && subValue !== null ? JSON.stringify(subValue) : Array.isArray(subValue) && typeof subValue[0] == "object" ? JSON.stringify(subValue) : subValue != null ? String(subValue) : ""} />
-
-																{subKey}
-															</div>
-															<div className={styles.subPropertyDataValue}>{typeof subValue == "object" && !Array.isArray(subValue) && subValue !== null ? JSON.stringify(subValue) : Array.isArray(subValue) && typeof subValue[0] == "object" ? JSON.stringify(subValue) : subValue != null ? String(subValue) : ""}</div>
-														</div>
-													))}
-												</div>
-											</div>
-										))}
-									</div>
-								) : (
-									<div className={styles.propertyData}>{!value ? "" : Array.isArray(value) && typeof value[0] === "object" ? JSON.stringify(value, null, 2) : String(value)}</div>
-								)}
-							</div>
-						);
+						return <ExpandableRow key={key} childKey={key} value={value}/>
 					} else {
 						return (
 							<div key={key} className={styles.propertyRow}>

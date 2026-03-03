@@ -10,6 +10,7 @@ import { FindData, ISRCData, UPCData, URLLookupData } from "../../types/api-type
 import normalizeVars from "../../utils/normalizeVars";
 import { AlbumObject, TrackObject } from "../../types/provider-types";
 import parsers from "../../lib/parsers/parsers";
+import SAMBLHead from "../../components/SAMBLHead";
 
 async function serverFind(query, type) {
 	try {
@@ -192,11 +193,12 @@ export default function Find() {
 	}, [router.query.query]);
 
 	return (
-		<>
-			<Head>
-				<title>{"SAMBL • Find"}</title>
-				<meta name="description" content={`SAMBL - Find by ISRC, MBID, Barcode...`} />
-			</Head>
+		<>	
+			<SAMBLHead 
+				title={"SAMBL • Find"}
+				fullTitle={router.query.query ? `Results for ${router.query.query}` : null}
+				description={`SAMBL • Find by ISRC, Barcode, or URL`}
+			/>
 			<SearchBox type="find" />
 			<div id="contentContainer">
 				<div id="loadingMsg" />

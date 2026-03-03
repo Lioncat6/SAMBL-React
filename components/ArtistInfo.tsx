@@ -73,6 +73,16 @@ function AppleMusicUrlContainer({ url }) {
 	);
 }
 
+function NaverUrlContainer({ id, url }) {
+	return (
+		<div className={styles.naverUrlContainer}>
+			<a id="spURL" target="_blank" href={url || "https://vibe.naver.com/artist/" + id}>
+				<img alt="Naver Icon" className={styles.spIcon} src="../assets/images/Naver_icon.svg" />
+			</a>
+		</div>
+	);
+}
+
 function UrlContainer({ id, provider, url }: { id?: string | number; provider: string; url?: string }) {
 	id = id?.toString();
 	switch (provider) {
@@ -90,6 +100,8 @@ function UrlContainer({ id, provider, url }: { id?: string | number; provider: s
 			return <SoundcloudUrlContainer url={url} />;
 		case "applemusic":
 			return <AppleMusicUrlContainer url={url} />;
+		case "naver":
+			return <NaverUrlContainer url={url} id={id} />;
 		default:
 			return null;
 	}

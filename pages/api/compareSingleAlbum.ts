@@ -1,6 +1,6 @@
 import logger from "../../utils/logger";
-import providers from "./providers/providers"
-import musicbrainz from "./providers/musicbrainz";
+import providers from "../../lib/providers/providers"
+import musicbrainz from "../../lib/providers/musicbrainz";
 import processData from "../../utils/processAlbumData";
 import { NextApiRequest, NextApiResponse } from "next";
 import normalizeVars from "../../utils/normalizeVars";
@@ -60,11 +60,11 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
         let urlResults = (await musicbrainz.getAlbumsBySourceUrls([sourceAlbum.url], ["release-rels"], { noCache: true }))?.urls[0];
         let barcodeResults = sourceAlbum.upc ? (await musicbrainz.getAlbumByUPC(sourceAlbum.upc, {noCache: true})) : [];
         if (urlResults?.relations?.[0]?.release?.id || barcodeResults?.[0]?.id) {
-            mbAlbum = await musicbrainz.getAlbumByMBID((urlResults?.relations?.[0]?.release?.id || barcodeResults?.[0]?.id)!, ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"], { noCache: true });
+            mbAlbum = await musicbrainz.getAlbumByMBID((urlResults?.relations?.[0]?.release?.id || barcodeResults?.[0]?.id)!, ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits", "label-rels", "artist-rels"], { noCache: true });
         } else if (mbid && musicbrainz.validateMBID(mbid)){
             let mbSearch = await musicbrainz.searchForAlbumByArtistAndTitle(mbid, sourceAlbum.name, { noCache: true })
             if (mbSearch && mbSearch?.releases?.length > 0) {
-                mbAlbum = await musicbrainz.getAlbumByMBID(mbSearch.releases[0].id, ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"], { noCache: true });
+                mbAlbum = await musicbrainz.getAlbumByMBID(mbSearch.releases[0].id, ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits", "label-rels", "artist-rels"], { noCache: true });
             }
         }
         const formattedMBAlbum = mbAlbum ? musicbrainz.formatAlbumObject(mbAlbum) : null;

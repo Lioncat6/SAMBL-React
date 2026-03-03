@@ -70,6 +70,9 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 		let providerAlbumType = album.albumType;
 		let providerBarcode = album.upc || null;
 		let providerTracks = album.albumTracks || [];
+		let providerGenres = album.genres;
+		let providerCopyrights = album.copyrights;
+		let providerLabels = album.labels;
 
 		let mbTrackCount: number | null = 0;
 		let mbReleaseDate: string | null = "";
@@ -123,20 +126,25 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 			const normalized = text.normalizeText(providerAlbumName || "");
 			tryMap(mbNameAlbumMap, normalized, "orange")
 		}
+		
+		// TODO: Figure out a way to do this client side
+		// const allProviders = providers.getAllProviders(["config"]);
+		// const alwaysBarcodeProviders: ProviderNamespace[] = allProviders.filter((provider) => provider.config.capabilities.upcs?.availability == "always").map((provider) => provider.namespace)
+		// const alwaysISRCProviders: ProviderNamespace[] = allProviders.filter((provider) => provider.config.capabilities.isrcs?.availability == "always").map((provider) => provider.namespace)
 
 		const alwaysBarcodeProviders: ProviderNamespace[] = ["spotify", "deezer", "tidal", "applemusic"]
 		const alwaysISRCProviders: ProviderNamespace[] = ["spotify", "deezer", "tidal", "applemusic"]
 
 		let mbTrackNames: string[] = [];
 		let mbTrackISRCs: BasicTrack[] = [];
-		let mbAlignedISRCs: (string | null)[] = [];
+		let mbAlignedISRCs: (string[] | null)[] = [];
 		let mbISRCs: string[] = [];
 		let tracksWithoutISRCs: string[] = [];
 		for (let track in finalTracks) {
 			if (!finalTracks[track]) continue;
 			let titleString = finalTracks[track].name;
 			let ISRCs = finalTracks[track].isrcs;
-			mbAlignedISRCs.push(ISRCs[0] || null)
+			mbAlignedISRCs.push(ISRCs || null)
 			if (ISRCs.length < 1) {
 				tracksWithoutISRCs.push(track);
 			} else {
@@ -156,7 +164,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 					providerHasISRCs = true;
 				}
 				albumTrackISRCs.push(currentTrack.isrcs[0] || null);
-				if (providerHasISRCs && (currentTrack.isrcs[0] || null) != mbAlignedISRCs[track]) {
+				if (providerHasISRCs && !mbAlignedISRCs[track]?.includes(currentTrack.isrcs[0])) {
 					hasMatchingISRCs = false;
 				}
 			} else {
@@ -174,7 +182,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 			}
 			if (tracksWithoutISRCs.length > 0 && (providerHasISRCs || alwaysISRCProviders.includes(provider))) {
 				albumIssues.push("missingISRCs");
-			} else if (!hasMatchingISRCs) {
+			} else if (!hasMatchingISRCs && aggregateTracks) {
 				albumIssues.push("ISRCDiff")
 			}
 			if (mbTrackCount != providerTrackCount && !quick && full) {
@@ -296,6 +304,9 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 				artistID: currentArtistID,
 				albumIssues,
 				aggregatedTracks: aggregatedTracks,
+				labels: providerLabels,
+				copyrights: providerCopyrights,
+				genres: providerGenres,
 				type: "album"
 			});
 		}

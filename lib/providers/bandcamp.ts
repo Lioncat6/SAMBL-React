@@ -1,10 +1,9 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, FullProvider, PartialArtistObject, RawAlbumData, Capabilities } from "../../../types/provider-types";
-import logger from "../../../utils/logger";
-import withCache from "../../../utils/cache";
-import ErrorHandler from "../../../utils/errorHandler";
-import text from "../../../utils/text";
+import type { ArtistObject, AlbumObject, TrackObject, FullProvider, PartialArtistObject, RawAlbumData, Capabilities } from "../../types/provider-types";
+import withCache from "../../utils/cache";
+import ErrorHandler from "../../utils/errorHandler";
+import text from "../../utils/text";
 import bcApi from "bandcamp-scraper";
-import parsers from "../../../lib/parsers/parsers";
+import parsers from "../parsers/parsers";
 
 const namespace = "bandcamp";
 
@@ -250,6 +249,10 @@ function formatAlbumGetData(rawData): RawAlbumData {
 	};
 }
 
+function getLabels(album): string[] | null {
+	return album.pageData?.albumRelease?.[0]?.recordLabel?.name ? [album.pageData?.albumRelease?.[0]?.recordLabel?.name]: null;
+}
+
 function formatAlbumObject(album): AlbumObject {
 	const bcId: bandcampId = parseId(parseUrl(album.url)?.id || null)
 	let albumType = "album";
@@ -289,6 +292,9 @@ function formatAlbumObject(album): AlbumObject {
 		albumType: albumType,
 		upc: album.raw?.current?.upc || null,
 		albumTracks: getAlbumTracks(album) || [],
+		labels: getLabels(album),
+		copyrights: null,
+		genres: album.tags,
 		type: "album"
 	};
 }

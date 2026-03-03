@@ -7,13 +7,14 @@ import { useRouter } from "next/router";
 import { SAMBLSettingsContext, useSettings } from "../../components/SettingsContext";
 import processData from "../../utils/processAlbumData";
 import { AlbumData, AlbumObject, ArtistObject, ExtendedAlbumData, ExtendedAlbumObject, ProviderNamespace } from "../../types/provider-types";
-import { SAMBLApiError, ArtistData } from "../../types/api-types"
+import { SAMBLApiError, ArtistData, ReleaseCountData } from "../../types/api-types"
 import { ArtistPageData, SAMBLError } from "../../types/component-types";
 import ErrorPage from "../../components/ErrorPage";
 import { AggregatedAlbum, AggregatedData } from "../../types/aggregated-types";
 import toasts from "../../utils/toasts";
 import { set } from "nprogress";
 import text from "../../utils/text";
+import SAMBLHead from "../../components/SAMBLHead";
 
 async function fetchArtistData(id: string, provider: ProviderNamespace | string) {
 	const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?provider_id=${id}&provider=${provider}&mbData`);
@@ -216,7 +217,7 @@ async function fetchMbArtistFeaturedAlbums(mbid, offset = 0, bypassCache = false
 async function fetchArtistReleaseCount(mbid) {
 	const response = await fetch(`/api/getArtistReleaseCount?mbid=${mbid}&featured`);
 	if (response.ok) {
-		return await response.json();
+		return await response.json() as ReleaseCountData;
 	} else {
 		return response.status;
 	}
@@ -405,7 +406,7 @@ export default function Artist({ artist, error }: { artist: ArtistPageData, erro
 			if (artist.mbid && settings?.quickFetchThreshold > 0) {
 				try {
 					const releaseCount = await fetchArtistReleaseCount(artist.mbid);
-					if (releaseCount.releaseCount > settings?.quickFetchThreshold) {
+					if (typeof releaseCount != "number" && releaseCount.releaseCount > settings?.quickFetchThreshold) {
 						setIsQuickFetched(true);
 						return true;
 					} else if (typeof releaseCount == "number") {
@@ -461,24 +462,37 @@ export default function Artist({ artist, error }: { artist: ArtistPageData, erro
 	}
 	const aiTags = ["ai", "ai-generated", "ai generated"]
 	const isAi = artist?.mbData?.genres?.some((tag) => aiTags.includes(tag));
-	
+
 	return (
 		<>
-			<Head>
-				<title>{`SAMBL • ${artist.name}`}</title>
-				{artist.viewedAlbum ?
-					<>
-						<meta name="description" content={`View Artist Album • ${artist.viewedAlbum.name}(${text.getColorEmoji(artist.viewedAlbum.status)}) by ${artist.name}`} />
-						{artist.viewedAlbum.imageUrl && <meta property="og:image" content={artist.viewedAlbum.imageUrl} />}
-						<meta property="og:title" content={`SAMBL • ${artist.viewedAlbum.name} by ${artist.name}`} />
-						<meta property="og:description" content={`View Artist Album • ${artist.viewedAlbum.name}(${text.getColorEmoji(artist.viewedAlbum.status)}) by ${artist.name}`} />
-					</> : <>
-						<meta name="description" content={`View Artist • ${artist.name} • ${artist.relevance}`} />
-						{artist.imageUrl && <meta property="og:image" content={artist.imageUrl} />}
-						<meta property="og:title" content={`SAMBL • ${artist.name}`} />
-						<meta property="og:description" content={`View Artist • ${artist.name} • ${artist.relevance}`} />
-					</>}
-			</Head>
+			{artist.viewedAlbum ?
+				<>
+					<SAMBLHead
+						title={`SAMBL • ${artist.name}`}
+						fullTitle={`View Artist Album • ${artist.viewedAlbum.name} by ${artist.name}`}
+						image={artist.viewedAlbum.imageUrl}
+						description={text.infoToString([
+							`${text.getColorEmoji(artist.viewedAlbum.status)}|${artist.viewedAlbum.name}`,
+							`${artist.viewedAlbum.albumType ? `${text.capitalizeFirst(artist.viewedAlbum.albumType)} - `: ""}${text.capitalizeFirst(artist.viewedAlbum.provider)}`,
+							artist.viewedAlbum.upc ? `Barcode: ${artist.viewedAlbum.upc}`: null,
+							artist.viewedAlbum.trackCount ? `${artist.viewedAlbum.trackCount} tracks`: null,
+							artist.viewedAlbum.releaseDate	
+						])}
+
+					/>
+
+				</> : <>
+					<SAMBLHead
+						title={`SAMBL • ${artist.name}`}
+						fullTitle={`View Artist • ${artist.name}`}
+						image={artist.imageUrl}
+						description={text.infoToString([
+							text.capitalizeFirst(artist.provider),
+							artist.info,
+							artist.relevance,
+						])}
+					/>
+				</>}
 			{!artist.mbid && <Notice type={"noMBID"} data={artist} />}
 			{isQuickFetched && <Notice type={"quickFetched"} />}
 			{isAi && <Notice type={"aiArtist"} />}

@@ -1,4 +1,4 @@
-import providers from "./providers/providers";
+import providers from "../../lib/providers/providers";
 import logger from "../../utils/logger";
 import { NextApiRequest, NextApiResponse } from "next";
 import { AlbumData, RawAlbumData } from "../../types/provider-types";

@@ -1,9 +1,9 @@
-import { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities } from "../../../types/provider-types";
-import logger from "../../../utils/logger";
-import withCache from "../../../utils/cache";
-import ErrorHandler from "../../../utils/errorHandler";
+import { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities } from "../../types/provider-types";
+import logger from "../../utils/logger";
+import withCache from "../../utils/cache";
+import ErrorHandler from "../../utils/errorHandler";
 import SpotifyWebApi from "spotify-web-api-node";
-import parsers from "../../../lib/parsers/parsers";
+import parsers from "../parsers/parsers";
 
 const namespace = "spotify";
 
@@ -298,6 +298,23 @@ function formatPartialArtistObject(artist: SpotifyApi.ArtistObjectSimplified): P
 	};
 }
 
+function formatCopyright(album: SpotifyApi.SingleAlbumResponse): string[] | null{
+	const copyright = album.copyrights;
+	if (!copyright || copyright.length == 0) return null;
+	let copyrights: string[] = []
+	copyright.forEach((copyright) => {
+		let symbol = "℗";
+		if (copyright.type =="C") symbol = "©"
+		if (copyright.text.includes(symbol)){
+			copyrights.push(copyright.text)
+		} else {
+			copyrights.push(`${symbol} ${copyright.text}`)
+		}
+		
+	})
+	return copyrights;
+}
+
 function formatAlbumObject(album: SpotifyApi.SingleAlbumResponse): AlbumObject {
 	return {
 		provider: namespace,
@@ -313,6 +330,9 @@ function formatAlbumObject(album: SpotifyApi.SingleAlbumResponse): AlbumObject {
 		albumType: album.album_type,
 		upc: album.external_ids?.upc || null,
 		albumTracks: getAlbumTracks(album),
+		copyrights: formatCopyright(album),
+		labels: album.label ? [album.label]: null,
+		genres: album.genres,
 		type: "album"
 	};
 }

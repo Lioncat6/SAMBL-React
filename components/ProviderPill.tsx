@@ -1,12 +1,12 @@
 import { FaSpotify, FaDeezer, FaSoundcloud } from "react-icons/fa6";
-import { SiTidal, SiBandcamp, SiApplemusic } from "react-icons/si";
+import { SiTidal, SiBandcamp, SiApplemusic, SiNaver } from "react-icons/si";
 import { useState, useEffect } from "react";
 import { SAMBLSettingsContext, useSettings } from "./SettingsContext";
 import styles from "../styles/ProviderPill.module.css";
 import { ProviderDisplay } from "../types/component-types";
 import { ProviderNamespace } from "../types/provider-types";
 import clientProviders from "../utils/clientProviders";
-
+import { GenIcon } from "react-icons";
 
 let providerArray: ProviderDisplay[] = [
     { name: "Spotify", namespace: "spotify", icon: <FaSpotify /> },
@@ -15,6 +15,7 @@ let providerArray: ProviderDisplay[] = [
     { name: "Tidal", namespace: "tidal", icon: <SiTidal /> },
     { name: "Bandcamp", namespace: "bandcamp", icon: <SiBandcamp /> },
     { name: "SoundCloud", namespace: "soundcloud", icon: <FaSoundcloud /> },
+    { name: "Naver", namespace: "naver", icon: <SiNaver />}
 ];
 
 //Remove disabled providers

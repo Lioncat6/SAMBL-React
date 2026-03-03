@@ -1,5 +1,5 @@
 import styles from "../../styles/popups.module.css";
-import { FaCopy, FaMagnifyingGlass, FaBarcode, FaLink, FaL } from "react-icons/fa6";
+import { FaCopy, FaMagnifyingGlass, FaBarcode, FaLink, FaL, FaMusic } from "react-icons/fa6";
 import { MdOutlineAlbum, MdPerson, MdOutlineCalendarMonth, MdOutlineWarningAmber } from "react-icons/md";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import text from "../../utils/text";
@@ -27,7 +27,7 @@ function MbUrlIcon({ status, url, styleClass, isAlbum = true }: { status: AlbumS
 	)
 }
 
-function copyLink(id){
+function copyLink(id) {
 	if (!id) return
 	const url = `${window.location.href}&viewingAlbum=${id}`
 	text.handleCopy(url);
@@ -48,6 +48,8 @@ function AlbumDetails({ data }: { data: DisplayAlbum }) {
 		status,
 		mbAlbum,
 		upc,
+		genres,
+		copyrights
 	} = data;
 
 	const barcode = upc || mbAlbum?.upc || null;
@@ -72,7 +74,7 @@ function AlbumDetails({ data }: { data: DisplayAlbum }) {
 					</button>
 				</div>
 				<div className={styles.artists}>
-					<MdPerson />
+					<MdPerson />{" "}
 					{albumArtists.map((artist, index) => (
 						<span key={artist.id}>
 							{index > 0 && ", "}
@@ -96,9 +98,31 @@ function AlbumDetails({ data }: { data: DisplayAlbum }) {
 				>
 					<FaMagnifyingGlass />
 				</a></span>}
+				{(genres && genres.length > 0) &&
+					<div className={styles.genres}>
+						<FaMusic />{" "}
+						{genres.map((genre, index) => (
+							<span key={index}>{`${index > 0 ? ', ': ''}${genre}`}</span>
+						))}
+					</div>
+				}
 			</div>
 		</div>
 	);
+}
+
+function AlbumFooter({ data }: { data: DisplayAlbum }) {
+	const {copyrights} = data;
+	return (
+		<div className={styles.albumFooter}>
+		{(copyrights && copyrights.length > 0) &&
+			<div className={styles.copyrights}>
+				{copyrights.map((genre, index) => (
+					<span key={index}>{`${genre}`}</span>
+				))}
+			</div>
+		}</div>
+	)
 }
 
 function TrackItem({ index, track, album, isrcSource, highlight }: { index: string, track: TrackObject | AggregatedTrack, album: AggregatedAlbum, isrcSource: ProviderNamespace | null, highlight: boolean }) {
@@ -188,7 +212,7 @@ function TrackItem({ index, track, album, isrcSource, highlight }: { index: stri
 				{showArtistCredit() && (
 					<div className={styles.trackArtists}>
 						{track.trackArtists.map((artist, index) => (
-							<span key={artist.id}>
+							<span key={index}>
 								{index > 0 && ", "}
 								<a href={artist.url} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
 									{artist.name}
@@ -241,18 +265,20 @@ function TrackMenu({ data, refresh, close }: { data: AggregatedAlbum, refresh: (
 				</div>
 			)}
 			<div className={styles.content}>
-				{Object.entries(trackData).map(([key, value]) => {
+				{Object.entries(trackData).map(([key, value], index) => {
 					return (
-						<TrackItem 
-							index={key} 
-							track={value} 
-							album={data} 
-							isrcSource={data.albumTracks[(value.trackNumber || 1) - 1]?.isrcs.length > 0 ? data.provider : "musicbrainz"} 
-							highlight={false} 
+						<TrackItem
+							key={index} //This isn't confusing and hard to read at all
+							index={key}
+							track={value}
+							album={data}
+							isrcSource={data.albumTracks[(value.trackNumber || 1) - 1]?.isrcs.length > 0 ? data.provider : "musicbrainz"}
+							highlight={false}
 						/>
 					)
 
 				})}
+				<AlbumFooter data={data} />
 			</div>
 			<div className={styles.actions}>
 				<button className={styles.button} onClick={close}>
