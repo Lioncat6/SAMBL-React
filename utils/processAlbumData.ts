@@ -269,7 +269,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 					mbTrack: mbTrack,
 					trackIssues: trackIssues,
 					isrcs: providerTrack.isrcs.length > 0 ? providerTrack.isrcs : mbTrack.isrcs.length > 0 ? mbTrack.isrcs : [],
-					trackNumber: providerTrack.trackNumber || mbTrack.trackNumber || Number(i)
+					trackNumber: providerTrack.trackNumber || mbTrack.trackNumber || Number(i)+1
 				});
 			}
 		}
