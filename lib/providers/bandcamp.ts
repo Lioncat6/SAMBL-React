@@ -193,6 +193,19 @@ function formatArtistLookupData(rawData) {
 	return rawData;
 }
 
+function getTags(rawData){
+	let tags: (string | null | undefined)[] = [];
+	rawData.tags?.forEach(tag => {
+		console.log(tag)
+		if (tag.name){
+			tags.push(tag.name);
+		} else {
+			tags.push(tag);
+		}
+	});
+	return tags.filter(tag => tag!= null && tag!=undefined);
+}
+
 function formatArtistObject(rawData): ArtistObject {
 	return {
 		name: rawData.name,
@@ -206,7 +219,7 @@ function formatArtistObject(rawData): ArtistObject {
 				: rawData.bannerImage ? rawData.bannerImage : "",
 		relevance: rawData.location,
 		info: rawData.tags.join(", "),
-		genres: rawData.tags,
+		genres: getTags(rawData),
 		followers: null,
 		popularity: null,
 		id: getArtistId(rawData) || "",
@@ -294,7 +307,7 @@ function formatAlbumObject(album): AlbumObject {
 		albumTracks: getAlbumTracks(album) || [],
 		labels: getLabels(album),
 		copyrights: null,
-		genres: album.tags,
+		genres: getTags(album),
 		type: "album"
 	};
 }
