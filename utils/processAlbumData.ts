@@ -104,7 +104,9 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 					finalAlbum = mbAlbum;
 					mbBarcode = MBReleaseUPC;
 					// prefer the first exact URL match
-					break;
+					if (mbAlbum.trackCount == providerTrackCount && (providerBarcode ? (MBReleaseUPC == providerBarcode): true)){
+						break; //Break if match is good enough, keep looping if not
+					}
 				}
 			}
 		}
@@ -185,7 +187,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 			} else if (!hasMatchingISRCs && aggregateTracks) {
 				albumIssues.push("ISRCDiff")
 			}
-			if (mbTrackCount != providerTrackCount && !quick && full) {
+			if (mbTrackCount && (mbTrackCount != providerTrackCount)) {
 				aggregateTracks = false;
 				albumIssues.push("trackDiff");
 			}
