@@ -196,7 +196,6 @@ function formatArtistLookupData(rawData) {
 function getTags(rawData){
 	let tags: (string | null | undefined)[] = [];
 	rawData.tags?.forEach(tag => {
-		console.log(tag)
 		if (tag.name){
 			tags.push(tag.name);
 		} else {
