@@ -1,19 +1,28 @@
 import styles from '../styles/footer.module.css'
 
+const links: { name: string, href: string }[] = [
+	{ name: "Github", href: "https://github.com/Lioncat6/SAMBL-React" },
+	{ name: "MetaBrainz", href: "https://community.metabrainz.org/t/sambl-streaming-artist-musicbrainz-lookup/716550" },
+	{ name: "Donate", href: "https://ko-fi.com/lioncat6"}
+]
+
 export default function footer() {
 	return (
 		<>
 			<footer className={styles.footer}>
 				<div>
-					<div className={styles.footerText}>Please report any bugs or suggestions here{" "}</div>
-					<a rel="noopener" href="https://github.com/Lioncat6/SAMBL-React" target="_blank">
-						Github
-					</a>{" "}
-					|{" "}
-					<a rel="noopener" href="https://community.metabrainz.org/t/sambl-spotify-artist-musicbrainz-lookup/716550" target="_blank">
-						MetaBrainz
-					</a>
-					
+					{/* <div className={styles.footerText}>Please report any bugs or suggestions here{" "}</div> */}
+					{links.map((link, index) => (
+						<>
+							{index > 0 && (
+								<>{" "}|{" "}</>
+							)}
+							<a rel="noopener" href={link.href} target="_blank" key={index}>
+								{link.name}
+							</a>	
+						</>
+					))}
+
 					{/* <div>
 						<div id="commitId" />
 						<div id="serverStatus" className={styles.serverStatus}>
