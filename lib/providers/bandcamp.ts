@@ -320,8 +320,9 @@ function getAlbumTracks(album): TrackObject[] {
 		album.tracks = album.tracks.filter((track) => track.url && track.duration);
 		for (let trackNumber in album.tracks) {
 			let trackinfo = album.raw.trackinfo[trackNumber];
-			const urlInfo = parseUrl(trackinfo.url)
 			let currentTrack = album.tracks[trackNumber];
+			const url = trackinfo.url || currentTrack.url
+			const urlInfo = parseUrl(url)
 			trackinfo.url = (urlInfo?.type && urlInfo.id) ? createUrl(urlInfo?.type, urlInfo.id): null;
 			trackinfo.id = urlInfo?.id
 			if (!trackinfo.artist) {
