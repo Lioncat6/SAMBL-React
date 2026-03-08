@@ -438,9 +438,7 @@ const bandcamp: FullProvider = {
 	formatAlbumObject,
 	formatAlbumGetData,
 	getArtistById,
-	parseUrl,
-	getTrackISRCs,
-	getAlbumUPCs,
+	parseUrl
 };
 
 export default bandcamp;

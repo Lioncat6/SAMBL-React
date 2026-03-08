@@ -367,8 +367,6 @@ const soundcloud: FullProvider = {
   formatPartialArtistObject,
   formatAlbumGetData,
   formatArtistLookupData,
-  getAlbumUPCs,
-  getTrackISRCs,
   createUrl,
   parseUrl
 }

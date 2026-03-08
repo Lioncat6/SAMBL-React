@@ -412,8 +412,6 @@ const spotify: FullProvider = {
 	formatArtistObject,
 	formatAlbumGetData,
 	formatAlbumObject,
-	getTrackISRCs,
-	getAlbumUPCs,
 	parseUrl,
 	createUrl
 };

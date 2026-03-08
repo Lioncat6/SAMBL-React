@@ -464,9 +464,7 @@ const musicbrainz: MusicBrainzProvider = {
 	formatAlbumGetData,
 	parseUrl,
 	createUrl,
-	validateMBID,
-	getTrackISRCs,
-	getAlbumUPCs
+	validateMBID
 };
 
 export default musicbrainz;

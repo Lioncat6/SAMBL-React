@@ -595,8 +595,6 @@ let tidal: FullProvider = {
     formatPartialArtistObject,
     formatAlbumObject,
     formatTrackObject,
-    getTrackISRCs,
-    getAlbumUPCs,
     parseUrl,
     createUrl
 };

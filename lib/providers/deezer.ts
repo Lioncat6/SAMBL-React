@@ -306,8 +306,6 @@ const deezer: FullProvider = {
 	formatAlbumGetData,
 	formatAlbumObject,
 	formatTrackObject,
-	getTrackISRCs,
-	getAlbumUPCs,
 	parseUrl,
 	createUrl
 };

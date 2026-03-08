@@ -521,9 +521,7 @@ const naver: FullProvider = {
     formatArtistSearchData,
     formatArtistObject,
     parseUrl,
-    createUrl,
-    getAlbumUPCs,
-    getTrackISRCs
+    createUrl
 }
 
 export default naver;
