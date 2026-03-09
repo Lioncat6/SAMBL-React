@@ -490,6 +490,10 @@ function formatArtistSearchData(rawData: TidalSearchResultsData | TidalArtistDat
     const artworks = included.filter(obj => obj.type === "artworks");
     const artworkMap = Object.fromEntries(artworks.map(a => [a.id, a]));
 
+    if (rawData.data?.type == "artists"){
+        artists.push(rawData.data as ExtendedArtist);
+    }
+
     for (let artist of artists) {
         let coverArtUrl: string | null = null;
         let topAlbumPopularity = -1;
@@ -542,6 +546,7 @@ function formatArtistSearchData(rawData: TidalSearchResultsData | TidalArtistDat
 
 function formatArtistLookupData(rawData: TidalArtistData) {
     let queryArtist = rawData?.links?.self.match(/\/artists\/(\d+)/)?.[1];
+    console.log(queryArtist)
     return formatArtistSearchData(rawData).filter(artist => artist.id === queryArtist)[0];
 }
 
