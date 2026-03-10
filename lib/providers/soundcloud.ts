@@ -64,7 +64,7 @@ async function searchByArtistName (artistName: string) {
   }
 }
 
-async function getArtistById(id: number) {
+async function getArtistById(id: string) {
   try {
     const data = scApi.users.get(correctId(id))
     return data
