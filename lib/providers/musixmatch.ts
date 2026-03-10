@@ -22,7 +22,7 @@ if (!process.env.MUSIXMATCH_API_KEY) {
     }
 }
 
-async function getTrackByISRC(isrc: string): Promise<MatcherTrack["message"]["body"]["track"][] | null> {
+async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> {
     if (!mxm) {
         logger.warn("Musixmatch API client is not initialized. Cannot fetch track by ISRC.");
         return null;
@@ -31,7 +31,7 @@ async function getTrackByISRC(isrc: string): Promise<MatcherTrack["message"]["bo
         const data = await mxm.matcherTrackGet(isrc);
         if (data.message.body.track) {
             const track = data.message.body.track;
-            return [track];
+            return [formatTrackObject(track)];
         } else {
             return null;
         }
