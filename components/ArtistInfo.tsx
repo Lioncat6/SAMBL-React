@@ -83,6 +83,16 @@ function NaverUrlContainer({ id, url }) {
 	);
 }
 
+function QobuzUrlContainer({ id, url }) {
+	return (
+		<div className={styles.qobuzUrlContainer}>
+			<a id="spURL" target="_blank" href={url || "https://play.qobuz.com/artist/" + id}>
+				<img alt="Qobuz Icon" className={styles.spIcon} src="../assets/images/Qobuz_icon.svg" />
+			</a>
+		</div>
+	);
+}
+
 function UrlContainer({ id, provider, url }: { id?: string | number; provider: string; url?: string }) {
 	id = id?.toString();
 	switch (provider) {
@@ -102,6 +112,8 @@ function UrlContainer({ id, provider, url }: { id?: string | number; provider: s
 			return <AppleMusicUrlContainer url={url} />;
 		case "naver":
 			return <NaverUrlContainer url={url} id={id} />;
+		case "qobuz":
+			return <QobuzUrlContainer url={url} id={id} />;
 		default:
 			return null;
 	}

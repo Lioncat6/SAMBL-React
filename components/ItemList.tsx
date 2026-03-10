@@ -425,6 +425,7 @@ function Icon({ source }: {source: ProviderNamespace}) {
 			{source === "soundcloud" && <FaSoundcloud title={"Soundcloud"} className={styles.soundcloudIcon} />}
 			{source === "bandcamp" && <FaBandcamp title={"Bandcamp"} className={styles.soundcloudIcon} />}
 			{source === "naver" && <img className={styles.naverIcon} title={"Naver"} src="../assets/images/Naver_icon.svg" />}
+			{source === "qobuz" && <img className={styles.qobuzIcon} title={"Qobuz"} src="../assets/images/Qobuz_icon.svg" />}
 		</>
 	);
 }

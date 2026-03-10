@@ -28,6 +28,7 @@
 	--musicbrainz-orange: #eb743b;
 	--musicbrainz-purple: #ba478f;
 	--naver-green: #03c75a;
+	--qobuz-black: #000000;
 	/* Status Colors */
 	--status-red: red;
 	--status-green: #34eb80;
@@ -53,6 +54,7 @@
 	--exclusive: #c15b08;
 	/* Provider Colors */
 	--tidal-black: #ffffff;
+	--qobuz-black: #ffffff
 }
 
 #main {

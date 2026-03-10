@@ -4,7 +4,7 @@ import { AggregatedAlbum } from "./aggregated-types";
 
 export type ProviderNamespace = FullProviderNamespace | "musixmatch"
 
-export type FullProviderNamespace = "spotify" | "tidal" | "deezer" | "musicbrainz" | "soundcloud" | "bandcamp" | "applemusic" | "naver"
+export type FullProviderNamespace = "spotify" | "tidal" | "deezer" | "musicbrainz" | "soundcloud" | "bandcamp" | "applemusic" | "naver" | "qobuz"
 
 export type ObjectType = "partialArtist" | "artist" | "album" | "track" | "label"
 
