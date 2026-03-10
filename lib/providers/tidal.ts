@@ -546,7 +546,6 @@ function formatArtistSearchData(rawData: TidalSearchResultsData | TidalArtistDat
 
 function formatArtistLookupData(rawData: TidalArtistData) {
     let queryArtist = rawData?.links?.self.match(/\/artists\/(\d+)/)?.[1];
-    console.log(queryArtist)
     return formatArtistSearchData(rawData).filter(artist => artist.id === queryArtist)[0];
 }
 
