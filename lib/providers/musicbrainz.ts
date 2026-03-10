@@ -27,7 +27,7 @@ function validateMBID(mbid) {
 	return mbidPattern.test(mbid);
 }
 
-async function getIdBySpotifyId(spotifyId: string): Promise<string | null | undefined> {
+async function getIdBySpotifyId(spotifyId: string): Promise<string | null> {
 	try {
 		const data = await mbApi.lookupUrl(`https://open.spotify.com/artist/${spotifyId}`, ["artist-rels"]);
 		if (!data.relations || data.relations?.length == 0) {
@@ -37,22 +37,24 @@ async function getIdBySpotifyId(spotifyId: string): Promise<string | null | unde
 	} catch (error) {
 		err.handleError("Failed to fetch artist data", error);
 	}
+	return null;
 }
 
-async function searchByArtistName(name: string): Promise<IArtistList | null | undefined> {
+async function searchByArtistName(name: string): Promise<IArtistList | null> {
 	try {
 		const data = await mbApi.search("artist", { query: name, inc: ["url-rels"] });
 		return data;
 	} catch (error) {
 		err.handleError("Failed to search by artist name", error);
 	}
+	return null;
 }
 
 function formatArtistSearchData(rawData: IArtistList): IArtistMatch[] {
 	return rawData.artists;
 }
 
-async function getArtistById(mbid: string): Promise<IArtist | null | undefined> {
+async function getArtistById(mbid: string): Promise<IArtist | null> {
 	try {
 		const data = await mbApi.lookup('artist', mbid, ["url-rels", "tags", "aliases", "genres", "ratings"])
 		if (!data.name) {
@@ -62,9 +64,10 @@ async function getArtistById(mbid: string): Promise<IArtist | null | undefined> 
 	} catch (error) {
 		err.handleError("Failed to fetch artist data", error);
 	}
+	return null;
 }
 
-async function getArtistByUrl(url: string, inc: UrlIncludes[] = ["artist-rels"]): Promise<IArtist | null | undefined> {
+async function getArtistByUrl(url: string, inc: UrlIncludes[] = ["artist-rels"]): Promise<IArtist | null> {
 	try {
 		if (parseUrl(url)?.type == "artist" && validateMBID(parseUrl(url)?.id)) {
 			return await musicbrainz.getArtistById(parseUrl(url)?.id || "")
@@ -73,13 +76,14 @@ async function getArtistByUrl(url: string, inc: UrlIncludes[] = ["artist-rels"])
 		if (!data.relations || data.relations?.length == 0) {
 			return null; // No artist found
 		}
-		return data.relations[0].artist;
+		return data.relations[0].artist || null;
 	} catch (error) {
 		err.handleError("Failed to fetch artist data", error);
 	}
+	return null;
 }
 
-async function getIdsBySpotifyUrls(spotifyUrls: string[]): Promise<UrlMBIDDict | null | undefined> {
+async function getIdsBySpotifyUrls(spotifyUrls: string[]): Promise<UrlMBIDDict | null> {
 	try {
 		const data = await mbApi.lookupUrl(spotifyUrls, ["artist-rels"]);
 		if (data["url-count"] === 0) {
@@ -97,9 +101,10 @@ async function getIdsBySpotifyUrls(spotifyUrls: string[]): Promise<UrlMBIDDict |
 	} catch (error) {
 		err.handleError("Failed to get ids", error);
 	}
+	return null;
 }
 
-async function getIdsByUrlQuery(query: RegexArtistUrlQuery): Promise<UrlMBIDDict | null | undefined> {
+async function getIdsByUrlQuery(query: RegexArtistUrlQuery): Promise<UrlMBIDDict | null> {
 	try {
 		const data = await mbApi.search("url", {query: `url:${(new RegExp(query.fullQuery)).toString()}`, inc: ["artist-rels", "url-rels"], limit: 100})
 		if (data["url-count"] === 0) {
@@ -107,7 +112,7 @@ async function getIdsByUrlQuery(query: RegexArtistUrlQuery): Promise<UrlMBIDDict
 		}
 		let mbids: IdMBIDDict = {}
 		for (let url of data.urls) {
-			const relations = (url["relation-list"]?.[0]?.relations || undefined) as IRelation[] | undefined //TODO replace this when https://github.com/metabrainz/mb-solr/pull/69 gets merged
+			const relations = (url["relation-list"]?.[0]?.relations || undefined) as IRelation[] //TODO replace this when https://github.com/metabrainz/mb-solr/pull/69 gets merged
 			if (url && relations) {
 				if (relations?.length > 0) {
 					for (const id in query.idQueries) {
@@ -123,11 +128,12 @@ async function getIdsByUrlQuery(query: RegexArtistUrlQuery): Promise<UrlMBIDDict
 	} catch (error) {
 		err.handleError("Failed to get artist ids by url regex query", error)
 	}
+	return null;
 }
 
-async function getAlbumsBySourceUrls(sourceUrls: string[], inc?: UrlIncludes[]): Promise<IUrlLookupResult | null | undefined>;
-async function getAlbumsBySourceUrls(sourceUrls: string, inc?: UrlIncludes[]): Promise<IUrl | null | undefined>;
-async function getAlbumsBySourceUrls(sourceUrls: string | string[], inc: UrlIncludes[] = ["release-rels"]): Promise<IUrlLookupResult | IUrl | null | undefined> {
+async function getAlbumsBySourceUrls(sourceUrls: string[], inc?: UrlIncludes[]): Promise<IUrlLookupResult | null>;
+async function getAlbumsBySourceUrls(sourceUrls: string, inc?: UrlIncludes[]): Promise<IUrl | null>;
+async function getAlbumsBySourceUrls(sourceUrls: string | string[], inc: UrlIncludes[] = ["release-rels"]): Promise<IUrlLookupResult | IUrl | null> {
 	try {
 		if (Array.isArray(sourceUrls)) {
 			const data = await mbApi.lookupUrl(sourceUrls as string[], inc as UrlIncludes[]);
@@ -145,9 +151,10 @@ async function getAlbumsBySourceUrls(sourceUrls: string | string[], inc: UrlIncl
 	} catch (error) {
 		err.handleError("Failed to fetch albums by Source URL(s)", error);
 	}
+	return null;
 }
 
-async function getArtistAlbums(mbid: string, offset = 0, limit = 100, inc: ReleaseIncludes[] = ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits", "label-rels", "artist-rels"]): Promise<IBrowseReleasesResult | null | undefined> {
+async function getMBArtistAlbums(mbid: string, offset = 0, limit = 100, inc: ReleaseIncludes[] = ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits", "label-rels", "artist-rels"]): Promise<IBrowseReleasesResult | null> {
 	try {
 		// const data = await mbApi.browse('release', {artist: mbid, limit: limit, offset: offset});
 		const data = await mbApi.browse("release" as "release", { artist: mbid, limit: limit, offset: offset }, inc);
@@ -156,9 +163,14 @@ async function getArtistAlbums(mbid: string, offset = 0, limit = 100, inc: Relea
 	} catch (error) {
 		err.handleError("Failed to fetch artist albums", error);
 	}
+	return null;
 }
 
-async function getArtistFeaturedAlbums(mbid: string, offset = 0, limit = 100, inc: ReleaseIncludes[] = ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"]): Promise<IBrowseReleasesResult | null | undefined> {
+async function getArtistAlbums(mbid: string, offset = 0, limit = 100): Promise<IBrowseReleasesResult | null> {
+	return await getMBArtistAlbums(mbid, offset, limit, ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits", "label-rels", "artist-rels"]);
+}
+
+async function getArtistFeaturedAlbums(mbid: string, offset = 0, limit = 100, inc: ReleaseIncludes[] = ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"]): Promise<IBrowseReleasesResult | null> {
 	try {
 		// const data = await mbApi.browse('release', {track_artist: mbid, limit: limit, offset: offset});
 		const data = await mbApi.browse('release' as 'release', { track_artist: mbid, limit: limit, offset: offset } as IBrowseReleasesQuery, inc);
@@ -167,9 +179,10 @@ async function getArtistFeaturedAlbums(mbid: string, offset = 0, limit = 100, in
 	} catch (error) {
 		err.handleError("Failed to fetch artist featured albums", error);
 	}
+	return null;
 }
 
-async function getAlbumByUPC(upc: string): Promise<ExtendedAlbumObject[] | null | undefined> {
+async function getAlbumByUPC(upc: string): Promise<ExtendedAlbumObject[] | null> {
 	try {
 		const data = await mbApi.search("release", { query: `barcode:${upc}`, inc: ["artist-credits"], limit: 20 });
 		checkError(data);
@@ -177,9 +190,10 @@ async function getAlbumByUPC(upc: string): Promise<ExtendedAlbumObject[] | null 
 	} catch (error) {
 		err.handleError("Failed to fetch album", error);
 	}
+	return null;
 }
 
-async function getTrackByISRC(isrc: string): Promise<ExtendedTrackObject[] | null | undefined> {
+async function getTrackByISRC(isrc: string): Promise<ExtendedTrackObject[] | null> {
 	try {
 		const data = await mbApi.search("recording", { query: `isrc:${isrc}`, inc: ["artist-rels"], limit: 20 });
 		checkError(data);
@@ -187,18 +201,20 @@ async function getTrackByISRC(isrc: string): Promise<ExtendedTrackObject[] | nul
 	} catch (error) {
 		err.handleError("Failed to fetch album", error);
 	}
+	return null;
 }
 
-async function getCoverByMBID(mbid: string): Promise<ICoversInfo | undefined> {
+async function getCoverByMBID(mbid: string): Promise<ICoversInfo | null> {
 	try {
 		const coverInfo = await coverArtArchiveApiClient.getReleaseCovers(mbid);
 		return coverInfo;
 	} catch (error) {
 		err.handleError("Failed to fetch cover", error);
 	}
+	return null;
 }
 
-async function searchForAlbumByArtistAndTitle(mbid: string, title: string): Promise<IReleaseList | null | undefined> {
+async function searchForAlbumByArtistAndTitle(mbid: string, title: string): Promise<IReleaseList | null> {
 	try {
 		const data = await mbApi.search("release", { query: `arid:${mbid} AND release:${title}`, inc: ["artist-rels"], limit: 20 });
 		checkError(data);
@@ -206,9 +222,10 @@ async function searchForAlbumByArtistAndTitle(mbid: string, title: string): Prom
 	} catch (error) {
 		err.handleError("Failed to search for album by artist and title", error);
 	}
+	return null;
 }
 
-async function getAlbumByMBID(mbid: string, inc: ReleaseIncludes[] = ["artist-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits", "label-rels", "artist-rels"]): Promise<IRelease | null | undefined> {
+async function getAlbumByMBID(mbid: string, inc: ReleaseIncludes[] = ["artist-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits", "label-rels", "artist-rels"]): Promise<IRelease | null> {
 	try {
 		const data = await mbApi.lookup("release" as "release", mbid, inc);
 		checkError(data);
@@ -216,19 +233,14 @@ async function getAlbumByMBID(mbid: string, inc: ReleaseIncludes[] = ["artist-re
 	} catch (error) {
 		err.handleError("Failed to fetch album by MBID", error);
 	}
+	return null;
 }
 
-async function getAlbumById(mbid: string): Promise<IRelease | null | undefined> {
-	try {
-		const data = await mbApi.lookup("release", mbid, ["artist-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits", "label-rels", "artist-rels"] as ReleaseIncludes[]);
-		checkError(data);
-		return data;
-	} catch (error) {
-		err.handleError("Failed to fetch album by MBID", error);
-	}
+async function getAlbumById(mbid: string): Promise<IRelease | null> {
+	return await getAlbumByMBID(mbid);
 }
 
-async function getArtistFeaturedReleaseCount(mbid: string): Promise<number | null | undefined> {
+async function getArtistFeaturedReleaseCount(mbid: string): Promise<number | null> {
 	try {
 		const data = await mbApi.browse("release" as "release", { track_artist: mbid, limit: 1 } as IBrowseReleasesQuery);
 		checkError(data);
@@ -239,9 +251,10 @@ async function getArtistFeaturedReleaseCount(mbid: string): Promise<number | nul
 	} catch (error) {
 		err.handleError("Failed to fetch artist featured release count", error);
 	}
+	return null;
 }
 
-async function getArtistReleaseCount(mbid: string): Promise<number | null | undefined> {
+async function getArtistReleaseCount(mbid: string): Promise<number | null> {
 	try {
 		const data = await mbApi.browse("release" as "release", { artist: mbid, limit: 1 } as IBrowseReleasesQuery);
 		checkError(data);
@@ -252,9 +265,10 @@ async function getArtistReleaseCount(mbid: string): Promise<number | null | unde
 	} catch (error) {
 		err.handleError("Failed to fetch artist release count", error);
 	}
+	return null;
 }
 
-async function getTrackById(mbid: string): Promise<IRecording | null | undefined> {
+async function getTrackById(mbid: string): Promise<IRecording | null> {
 	try {
 		const data = await mbApi.lookup("recording", mbid, ["artist-rels", "isrcs", "url-rels"]);
 		checkError(data);
@@ -262,9 +276,10 @@ async function getTrackById(mbid: string): Promise<IRecording | null | undefined
 	} catch (error) {
 		err.handleError("Failed to fetch track by ID", error);
 	}
+	return null;
 }
 
-async function getTrackByMBID(mbid: string, inc: RecordingIncludes[]): Promise<IRecording | null | undefined> {
+async function getTrackByMBID(mbid: string, inc: RecordingIncludes[]): Promise<IRecording | null> {
 	try {
 		const data = await mbApi.lookup("recording", mbid, inc);
 		checkError(data);
@@ -272,6 +287,7 @@ async function getTrackByMBID(mbid: string, inc: RecordingIncludes[]): Promise<I
 	} catch (error) {
 		err.handleError("Failed to fetch track by ID", error);
 	}
+	return null;
 }
 function getTrackISRCs(track: IRecording): string[] | null {
 	if (!track) return null;
@@ -438,7 +454,7 @@ const musicbrainz: MusicBrainzProvider = {
 	getIdBySpotifyId: withCache(getIdBySpotifyId, { ttl: 60 * 15, namespace: namespace }),
 	getIdsByExternalUrls: withCache(getIdsBySpotifyUrls, { ttl: 60 * 15, namespace: namespace }),
 	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 15, namespace: namespace }),
-	getMBArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 15, namespace: namespace }),
+	getMBArtistAlbums: withCache(getMBArtistAlbums, { ttl: 60 * 15, namespace: namespace }),
 	getArtistFeaturedAlbums: withCache(getArtistFeaturedAlbums, { ttl: 60 * 15, namespace: namespace }),
 	getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 15, namespace: namespace }),
 	getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 15, namespace: namespace }),
@@ -450,7 +466,7 @@ const musicbrainz: MusicBrainzProvider = {
 	getTrackById: withCache(getTrackById, { ttl: 60 * 15, namespace: namespace }),
 	getTrackByMBID: withCache(getTrackByMBID, { ttl: 60 * 15, namespace: namespace }),
 	getAlbumByMBID: withCache(getAlbumByMBID, { ttl: 60 * 15, namespace: namespace }),
-	getAlbumById: withCache(getAlbumByMBID, { ttl: 60 * 15, namespace: namespace }),
+	getAlbumById: withCache(getAlbumById, { ttl: 60 * 15, namespace: namespace }),
 	getArtistByUrl: withCache(getArtistByUrl, { ttl: 60 * 15, namespace: namespace }),
 	getArtistById: withCache(getArtistById, { ttl: 60 * 15, namespace: namespace }),
 	searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 15, namespace: namespace }),
