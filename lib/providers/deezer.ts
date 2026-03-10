@@ -24,7 +24,7 @@ async function refreshApi() {
 	}
 }
 
-async function getTrackByISRC(isrc: number): Promise<TrackObject[] | null> {
+async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> {
 	await refreshApi();
 	try {
 		const data = await deezerApi.track(`isrc:${isrc}`);
