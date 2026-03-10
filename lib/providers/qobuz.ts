@@ -434,7 +434,7 @@ function formatArtistLookupData(artist: QobuzArtist): QobuzArtist {
 
 function buildUrlSearchQuery(type: UrlType, ids: string[]): RegexArtistUrlQuery {
   const qobuzTypes: Record<UrlType, string> = {
-    "artist": "(?:artist|interpreter|label)",
+    "artist": "(artist|interpreter|label)",
     "album": "album",
     "track": "track"
   }
