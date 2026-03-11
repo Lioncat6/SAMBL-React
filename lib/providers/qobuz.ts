@@ -395,7 +395,7 @@ async function getAlbumById(id: string): Promise<QobuzAlbum | null> {
 
 async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
   try {
-    const response = await qobuzFetch(`/album/search?query=${upc}`);
+    const response = await qobuzFetch(`/album/search?query=${text.padBarcode(upc)}`);
     if (response.ok) {
       const data = await response.json() as QobuzSearchResponse;
       return data.albums?.items.filter((album) => text.removeLeadingZeros(album.upc) == text.removeLeadingZeros(upc)).map(formatAlbumObject) || [];
