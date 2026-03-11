@@ -17,13 +17,13 @@ import editNoteBuilder from "../utils/editNoteBuilder";
 import { IoFilter } from "react-icons/io5";
 import { DisplayAlbum, FilterData } from "../types/component-types";
 import seeders from "../lib/seeders/seeders";
-import { AggregatedAlbum } from "../types/aggregated-types";
+import { AggregatedAlbum, AggregatedArtist } from "../types/aggregated-types";
 import filters from "../lib/filters";
 import ExportMenuPopup from "./Popups/ExportMenu";
 import TrackMenuPopup from "./Popups/TrackMenu";
 import FilterMenuPopup from "./Popups/FilterMenu";
 import toasts from "../utils/toasts";
-import { AlbumObject, ExtendedTrackObject, ProviderNamespace, TrackObject } from "../types/provider-types";
+import { AlbumObject, ArtistObject, ExtendedTrackObject, ProviderNamespace, TrackObject } from "../types/provider-types";
 import { MdAlbum, MdAudiotrack } from "react-icons/md";
 
 function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRCs: boolean) => void }) {
@@ -388,19 +388,19 @@ function ViewButton({ item }) {
 	);
 }
 
-function ArtistItem({ item }) {
+function ArtistItem({ item }: { item: AggregatedArtist}) {
 	return (
 		<div className={styles.listItem} style={{ '--background-image': `url('${item.bannerUrl || item.imageUrl || ""}')` } as React.CSSProperties}>
 			{item.imageUrl && (
 				<div className={styles.artistIcon}>
 					<a href={item.imageUrl} target="_blank">
-						<img title={item.name} src={item.imageUrlSmall} />
+						<img title={item.name} src={item.imageUrlSmall || item.imageUrl} />
 					</a>
 				</div>
 			)}
 			<div className={styles.textContainer}>
 				<div className={styles.artistName}>
-					<a href={item.url} target="_blank">
+					<a href={item.url.url} target="_blank">
 						{item.name}
 					</a>
 				</div>
