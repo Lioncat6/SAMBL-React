@@ -290,7 +290,8 @@
 .metButton,
 .atisketButton,
 .harmonyButton,
-.exportButton {
+.exportButton,
+.yambsButton {
   position: relative;
   margin-top: 14px;
   margin-right: 5px;
