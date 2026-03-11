@@ -46,15 +46,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (!artist) {
             return res.status(404).json({ error: "Artist not found" } as SAMBLApiError);
         }
-        let providerData = sourceProvider.formatArtistLookupData(artist)
-        providerData = sourceProvider.formatArtistObject(providerData);
         const providerUrl = sourceProvider.createUrl("artist", parsed_id)
         if (!providerUrl) {
             return res.status(400).json({ error: "Provider id invalid or missing" } as SAMBLApiError);
         }
+        let regexProvider = provider ? providers.parseProvider(sourceProvider.namespace, ["buildUrlSearchQuery"]) : false;
+        if (regexProvider) {
+            let urlQuery = regexProvider.buildUrlSearchQuery("artist", [parsed_id]);
+            const urlResults = await musicbrainz.getIdsByUrlQuery(urlQuery);
+            const lookupData: ArtistLookupData = { mbid: urlResults?.[parsed_id] || null, provider: sourceProvider.namespace, provider_id: parsed_id }
+            if (lookupData.mbid) {
+                return res.status(200).json(lookupData);
+            };
+        }
         let mbData = await musicbrainz.getArtistByUrl(providerUrl.url, ["artist-rels", "url-rels"], { noCache: forceRefresh });
         let mbid = mbData?.id || null;
-        return res.status(200).json({ mbid, provider: sourceProvider.namespace, provider_id: parsed_id } as ArtistLookupData);
+        const lookupData: ArtistLookupData = { mbid, provider: sourceProvider.namespace, provider_id: parsed_id }
+        return res.status(200).json(lookupData);
     } catch (error) {
         logger.error("Error in lookupArtist API", error);
         return res.status(500).json({ error: "Internal Server Error", details: error.message } as SAMBLApiError);
