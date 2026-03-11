@@ -150,7 +150,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             mostCommonMbid: mostCommonMbid, 
             artists: artists,
             albums: formattedAlbumData.albumData,
-            artist: artistInfo
+            artist: formattedArtistInfo
         };
 
         res.status(200).json(dsData);
