@@ -4,6 +4,7 @@ import withCache from "../../utils/cache";
 import ErrorHandler from "../../utils/errorHandler";
 import SpotifyWebApi from "spotify-web-api-node";
 import parsers from "../parsers/parsers";
+import text from "../../utils/text";
 
 const namespace = "spotify";
 
@@ -168,7 +169,7 @@ async function getArtistAlbums(spotifyId: string, offset = 0, limit = 50) {
 
 async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
 	try {
-		const data = await withRefresh(() => spotifyApi.searchAlbums(`upc:${upc}`, { limit: 20 }));
+		const data = await withRefresh(() => spotifyApi.searchAlbums(`upc:${text.removeLeadingZeros(upc)}`, { limit: 20 }));
 		return data.body.albums?.items.map(formatAlbumObject) || [];
 	} catch (error) {
 		err.handleError("Error fetching album data:", error);
