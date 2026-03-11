@@ -488,17 +488,22 @@ function formatPartialArtistObject(role: QobuzArtistRole | QobuzPartialArtist | 
 
 function getAlbumArtists(album: QobuzExtendedAlbum) {
   let artists: PartialArtistObject[] = [];
+  let artistIds: number[] = [];
   artists.push(formatArtistObject(album.artist));
+  artistIds.push(album.artist.id);
   album.artists.forEach((artist) => {
-    artists.push({
-      provider: namespace,
-      id: String(artist.id),
-      name: artist.name,
-      url: createUrl("artist", String(artist.id)),
-      type: "partialArtist",
-      imageUrl: null,
-      imageUrlSmall: null
-    })
+    if (!artistIds.includes(artist.id)){
+      artists.push({
+        provider: namespace,
+        id: String(artist.id),
+        name: artist.name,
+        url: createUrl("artist", String(artist.id)),
+        type: "partialArtist",
+        imageUrl: null,
+        imageUrlSmall: null
+      })
+      artistIds.push(artist.id);
+    }
   })
   return artists;
 }
