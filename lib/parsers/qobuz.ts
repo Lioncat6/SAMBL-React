@@ -1,5 +1,6 @@
 import { UrlParser } from "../../types/component-types";
-import { UrlData } from "../../types/provider-types";
+import { ExternalUrlData, ProviderNamespace, UrlData, UrlType } from "../../types/provider-types";
+const namespace: ProviderNamespace = "qobuz";
 
 function parseUrl(url): UrlData | null { //https://tickets.metabrainz.org/browse/MBS-13611
     const regex = /play\.qobuz\.com\/(track|album|artist)\/(\d+)/;
@@ -18,10 +19,22 @@ function parseUrl(url): UrlData | null { //https://tickets.metabrainz.org/browse
     return null;
 }
 
-function createUrl(type, id) {
-    return `https://open.qobuz.com/${type}/${id}`;
+function createUrl(type: UrlType, id: string, mbTypes?: number[]): ExternalUrlData {
+    const mbUrlTypes: Record<UrlType, number[]> = {
+        "artist": [176, 978],
+        "album": [980, 74],
+        "track": [254, 979]
+    }
+    return {
+        url: `https://open.qobuz.com/${type}/${id}`,
+        urlInfo: {
+            type,
+            provider: namespace,
+            id
+        },
+        mbTypes: mbTypes || mbUrlTypes[type] 
+    };
 }
-
 
 const qobuz: UrlParser = {
     parseUrl,

@@ -112,7 +112,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 		}
 
 		// Try URL map
-		const sourceUrl = providerUrl?.trim();
+		const sourceUrl = providerUrl.url?.trim();
 		tryMap(mbIdAlbumMap, parser.parseUrl(sourceUrl)?.id || providerId, "green")
 
 		// Try UPC map
@@ -232,7 +232,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 					status = "blue";
 				}
 
-				if (mbTrack.externalUrls?.includes(providerTrack.url || "")) {
+				if (mbTrack.externalUrls?.includes(providerTrack.url?.url || "")) {
 					status = "green";
 				}
 

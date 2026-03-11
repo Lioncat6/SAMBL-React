@@ -85,7 +85,7 @@ function formatArtistObject (rawObject: SoundcloudUser): ArtistObject {
   const countries = new Intl.DisplayNames(['en'], { type: 'region' })
   return {
     name: rawObject.username,
-    url: `https://soundcloud.com/${rawObject.permalink}`,
+    url: createUrl("artist", `https://soundcloud.com/${rawObject.permalink}`),
     imageUrl: rawObject.avatar_url?.includes('default_avatar')
       ? rawObject.avatar_url
       : rawObject.avatar_url?.replace('large', 't500x500') || '',
@@ -206,7 +206,7 @@ function formatAlbumObject (rawAlbum: SoundcloudPlaylist | SoundcloudTrack): Alb
     provider: namespace,
     id: rawAlbum.urn || `soundcloud:${rawAlbum.kind}:${rawAlbum.id}`,
     name: rawAlbum.title,
-    url: rawAlbum.permalink_url?.split('?')[0],
+    url: createUrl("album", rawAlbum.permalink_url?.split('?')[0]),
     imageUrl: rawAlbum.artwork_url?.replace('large', 't500x500') || '',
     imageUrlSmall: rawAlbum.artwork_url || '',
     albumArtists: [formatPartialArtistObject(rawAlbum.user)],
@@ -265,7 +265,7 @@ function formatTrackObject (track: SoundcloudTrackWithAlbumInfo): TrackObject {
     provider: namespace,
     id: track.urn || `soundcloud:track:${track.id}`,
     name: track.title,
-    url: track.permalink_url?.split('?')[0],
+    url: createUrl("track", track.permalink_url?.split('?')[0]),
     imageUrl: track.artwork_url?.replace('large', 't500x500') || '',
     imageUrlSmall: track.artwork_url || '',
     albumName: track.albumName || track.publisher_metadata.album_title || track.publisher_metadata.release_title || null,
@@ -286,7 +286,7 @@ function formatPartialArtistObject (
 ): PartialArtistObject {
   return {
     name: artist.username,
-    url: artist.permalink_url?.split('?')[0],
+    url: createUrl("artist", artist.permalink_url?.split('?')[0]),
     imageUrl: artist.avatar_url?.includes('default_avatar')
       ? artist.avatar_url
       : artist.avatar_url?.replace('large', 't500x500') || '',

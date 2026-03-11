@@ -1,13 +1,26 @@
 import { UrlParser } from "../../types/component-types";
-import { UrlData, UrlType } from "../../types/provider-types";
-
-function createUrl(type: UrlType, id: string): string {
+import { ExternalUrlData, ProviderNamespace, UrlData, UrlType } from "../../types/provider-types";
+const namespace: ProviderNamespace = "bandcamp";
+function createUrl(type: UrlType, id: string, mbTypes?: number[]): ExternalUrlData {
+    const mbUrlTypes: Record<UrlType, number[]> = {
+        "artist": [718],
+        "album": [85, 74],
+        "track": [254, 268]
+    }
     const baseUrl = "bandcamp.com";
     const idArray = id.split("/");
+    let url = `https://${idArray[0]}.bandcamp.com/${idArray[1]}/${idArray[2]}`
     if (type == "artist"){
-        return `https://${id}.bandcamp.com/`
-    } else {
-        return `https://${idArray[0]}.bandcamp.com/${idArray[1]}/${idArray[2]}`
+        url = `https://${id}.bandcamp.com/`
+    }
+    return {
+        url,
+        urlInfo: {
+            provider: namespace,
+            type,
+            id
+        },
+        mbTypes: mbTypes || mbUrlTypes[type]
     }
 }
 

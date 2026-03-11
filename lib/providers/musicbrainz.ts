@@ -1,5 +1,5 @@
 import { MusicBrainzApi, CoverArtArchiveApi, IRelation, IArtist, IBrowseReleasesQuery, IRelease, IRecording, ICoversInfo, IReleaseList, IUrlLookupResult, IUrl, IBrowseReleasesResult, IArtistList, IArtistMatch, ITrack, UrlIncludes, ReleaseIncludes, RecordingIncludes } from "musicbrainz-api";
-import { UrlMBIDDict, ArtistObject, PartialArtistObject, ExtendedAlbumObject, MusicBrainzProvider, ExtendedAlbumData, ExtendedTrackObject, RegexArtistUrlQuery, IdMBIDDict, Capabilities } from "../../types/provider-types";
+import { UrlMBIDDict, ArtistObject, PartialArtistObject, ExtendedAlbumObject, MusicBrainzProvider, ExtendedAlbumData, ExtendedTrackObject, RegexArtistUrlQuery, IdMBIDDict, Capabilities, ExternalUrlData } from "../../types/provider-types";
 import withCache from "../../utils/cache";
 import ErrorHandler from "../../utils/errorHandler";
 import parsers from "../parsers/parsers";
@@ -341,7 +341,7 @@ function formatAlbumObject(album: IRelease): ExtendedAlbumObject {
 		id: album.id,
 		name: album.title,
 		comment: album.disambiguation || null,
-		url: createUrl('album', album.id) || "",
+		url: createUrl('album', album.id),
 		imageUrl: `https://coverartarchive.org/release/${album.id}/front`,
 		imageUrlSmall: `https://coverartarchive.org/release/${album.id}/front-250`,
 		albumArtists: album["artist-credit"] ? album["artist-credit"].map(ac => formatArtistObject(ac.artist)) : [],
@@ -407,7 +407,7 @@ function formatArtistObject(artist: IArtist): ArtistObject {
 		provider: namespace,
 		id: artist.id,
 		name: artist.name,
-		url: createUrl('artist', artist.id)|| "",
+		url: createUrl('artist', artist.id),
 		imageUrl: getArtistImage(artist),
 		imageUrlSmall: getArtistImage(artist),
 		bannerUrl: null,
@@ -425,14 +425,14 @@ function formatPartialArtistObject(artist: IArtist): PartialArtistObject {
 		provider: namespace,
 		id: artist.id,
 		name: artist.name,
-		url: createUrl('artist', artist.id) || "",
+		url: createUrl('artist', artist.id),
 		imageUrl: null,
 		imageUrlSmall: null,
 		type: "partialArtist"
 	}
 }
 
-function getArtistUrl(artist: IArtist): string | null {
+function getArtistUrl(artist: IArtist): ExternalUrlData {
 	return createUrl('artist', artist.id);
 }
 

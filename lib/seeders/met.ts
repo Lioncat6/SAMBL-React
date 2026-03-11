@@ -7,7 +7,7 @@ function buildUrl(url: string, upc?: string | null): string {
 const met: Seeder = {
     namespace: "met",
     displayName: "MET",
-    providers: ["spotify", "applemusic", "deezer", "tidal", "musicbrainz"],
+    providers: ["spotify", "applemusic", "deezer", "tidal", "musicbrainz", "qobuz"],
     isDefault: true,
     buildUrl: buildUrl,
 };

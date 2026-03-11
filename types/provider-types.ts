@@ -12,7 +12,7 @@ export class GenericObject {
     provider: ProviderNamespace;
     id: string | null;
     name: string;
-    url: string | null;
+    url: ExternalUrlData | null;
     type: ObjectType
 }
 
@@ -24,7 +24,7 @@ export class ImageObject extends GenericObject {
 
 export class PartialArtistObject extends ImageObject {
     name: string
-    url: string;
+    url: ExternalUrlData;
     id: string;
     provider: ProviderNamespace;
     type: "partialArtist" | "artist";
@@ -44,7 +44,7 @@ export class AlbumObject extends ImageObject {
     provider: ProviderNamespace;
     id: string;
     name: string;
-    url: string;
+    url: ExternalUrlData;
     albumArtists: PartialArtistObject[];
     artistNames: string[];
     releaseDate: string | null;
@@ -73,6 +73,7 @@ export class UrlInfo extends UrlData {
 export class ExternalUrlData {
     url: string;
     urlInfo: UrlInfo | null;
+    mbTypes: number[]
 }
 
 export class ExtendedAlbumObject extends AlbumObject {
@@ -86,7 +87,7 @@ export class TrackObject extends ImageObject {
     provider: ProviderNamespace;
     id: string | null;
     name: string;
-    url: string | null;
+    url: ExternalUrlData | null;
     trackArtists: PartialArtistObject[];
     artistNames: string[];
     albumName: string | null;
@@ -174,7 +175,7 @@ export class FullProvider extends Provider {
     formatAlbumObject: (album: any) => AlbumObject;
     formatTrackObject: (track: any) => TrackObject;
     parseUrl: (url: string) => UrlData | null;
-    createUrl: (urlType: UrlType, providerId: string) => string | null;
+    createUrl: (urlType: UrlType, providerId: string, mbTypes?: number[]) => ExternalUrlData;
     buildUrlSearchQuery?: (type: UrlType, ids: string[]) => RegexArtistUrlQuery;
 }
 

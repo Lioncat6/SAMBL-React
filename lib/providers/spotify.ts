@@ -257,7 +257,7 @@ function formatArtistObject(rawObject: SpotifyApi.ArtistObjectSimplified | Spoti
 	const extendedArtist = rawObject as extendedArtist;
 	return {
 		name: extendedArtist.name,
-		url: getArtistUrl(extendedArtist),
+		url: createUrl("artist", extendedArtist.id),
 		imageUrl: extendedArtist.images?.[0]?.url || "",
 		imageUrlSmall: extendedArtist.images?.[1]?.url || extendedArtist.images?.[0]?.url || "",
 		bannerUrl: null,
@@ -289,7 +289,7 @@ function formatAlbumGetData(rawData: SpotifyApi.ArtistsAlbumsResponse): RawAlbum
 function formatPartialArtistObject(artist: SpotifyApi.ArtistObjectSimplified): PartialArtistObject {
 	return {
 		name: artist.name,
-		url: getArtistUrl(artist),
+		url: createUrl("artist", artist.id),
 		imageUrl: "",
 		imageUrlSmall: "",
 		id: artist.id,
@@ -320,7 +320,7 @@ function formatAlbumObject(album: SpotifyApi.SingleAlbumResponse): AlbumObject {
 		provider: namespace,
 		id: album.id,
 		name: album.name,
-		url: album.external_urls.spotify,
+		url: createUrl("album", album.id),
 		imageUrl: getFullAlbumImageUrl(album.images[0]?.url),
 		imageUrlSmall: album.images[1]?.url || album.images[0]?.url || "",
 		albumArtists: album.artists.map(formatPartialArtistObject),
@@ -370,7 +370,7 @@ function formatTrackObject(track: trackWithAlbumData | SpotifyApi.TrackObjectSim
 		provider: namespace,
 		id: extendedTrack.id,
 		name: extendedTrack.name,
-		url: extendedTrack.external_urls.spotify,
+		url: createUrl("track", extendedTrack.id),
 		imageUrl: imageUrl ? getFullAlbumImageUrl(imageUrl) : null,
 		imageUrlSmall: imageUrlSmall || null,
 		albumName: extendedTrack.albumName || album?.name || null,

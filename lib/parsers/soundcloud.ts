@@ -1,11 +1,21 @@
-import { UrlData, UrlType } from "../../types/provider-types";
-
-function createUrl (type: UrlType, id:string):string|null {
-  if (type == "artist"){
-    return id;
+import { ExternalUrlData, ProviderNamespace, UrlData, UrlType } from "../../types/provider-types";
+const namespace: ProviderNamespace = "soundcloud"
+function createUrl (type: UrlType, id:string, mbTypes): ExternalUrlData {
+  const mbUrlTypes: Record<UrlType, number[]> = {
+        "artist": [291],
+        "album": [85],
+        "track": [268]
+    }
+  return {
+    url: id,
+    urlInfo: {
+      provider: namespace,
+      id,
+      type
+    },
+    mbTypes: mbTypes || mbUrlTypes[type]
   }
   //TODO: Improve soundcloud's ids
-  return null
 }
 
 function parseUrl (url:string): UrlData | null {

@@ -53,7 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const providerUrl = sourceProvider.createUrl("artist", parsed_id)
         let mbData: IArtist | null = null;
         if (incMBData && providerUrl) {
-            mbData = await musicbrainz.getArtistByUrl(providerUrl, ["url-rels", "artist-rels"], { noCache: forceRefresh });
+            mbData = await musicbrainz.getArtistByUrl(providerUrl.url, ["url-rels", "artist-rels"], { noCache: forceRefresh });
             const fullArtist = mbData ? await musicbrainz.getArtistById(mbData.id, { noCache: forceRefresh }): null;
             const formattedMbData = fullArtist ? musicbrainz.formatArtistObject(fullArtist) : null;
             return res.status(200).json({ providerData: formattedData, mbData: formattedMbData } as ArtistData);

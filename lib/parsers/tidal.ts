@@ -1,5 +1,6 @@
 import { UrlParser } from "../../types/component-types";
-import { UrlData, UrlType } from "../../types/provider-types";
+import { ExternalUrlData, ProviderNamespace, UrlData, UrlType } from "../../types/provider-types";
+const namespace: ProviderNamespace ="tidal";
 
 function parseUrl(url: string): UrlData | null {
     const regex = /(?:www\.)?tidal\.com\/(artist|track|album)\/(\d+)/;
@@ -13,8 +14,21 @@ function parseUrl(url: string): UrlData | null {
     return null;
 }
 
-function createUrl(type: UrlType, id: string) {
-    return `https://tidal.com/${type}/${id}`;
+function createUrl(type: UrlType, id: string, mbTypes?: number[]): ExternalUrlData {
+    const mbUrlTypes: Record<UrlType, number[]> = {
+        "artist": [978],
+        "album": [980],
+        "track": [979]
+    }
+    return {
+        url: `https://tidal.com/${type}/${id}`,
+        urlInfo: {
+            type,
+            provider: namespace,
+            id
+        },
+        mbTypes: mbTypes || mbUrlTypes[type] 
+    };
 }
 
 const tidal: UrlParser = {

@@ -221,14 +221,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 		}
 
 		const sourceProvider = providers.parseProvider(provider, ["getArtistAlbums", "formatAlbumGetData", "formatAlbumObject"])
-		 
+
 		if (!sourceProvider) {
-			return res.status(400).json({error: `Provider ${provider} doesn't support this operation!`})
+			return res.status(400).json({ error: `Provider ${provider} doesn't support this operation!` })
 		}
 
 		if (quick) {
 			await fetchProviderAlbums([provider_id], sourceProvider);
-			await fetchMusicBrainzAlbumsBySourceUrls(getSourceAlbumUrls());
+			await fetchMusicBrainzAlbumsBySourceUrls(getSourceAlbumUrls().map((url) => url.url));
 		} else {
 			if (!mbid) {
 				return res.status(400).json({ error: "Parameter `mbid` is required when not using `quick`" } as SAMBLApiError);

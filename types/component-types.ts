@@ -1,4 +1,4 @@
-import { ArtistObject, ProviderNamespace, UrlData, UrlType } from "./provider-types";
+import { ArtistObject, ExternalUrlData, ProviderNamespace, UrlData, UrlType } from "./provider-types";
 import { AggregatedAlbum, AggregatedArtist, AggregatedTrack } from "./aggregated-types";
 import { JSX } from "react";
 import { SeederNamespace } from "./seeder-types";
@@ -80,5 +80,5 @@ export interface SAMBLSettings {
 
 export class UrlParser {
     parseUrl: (url: string) => UrlData | null;
-    createUrl: (urlType: UrlType, providerId: string, country?: string)=> string | null
+    createUrl: (urlType: UrlType, providerId: string, mbTypes?: number[], country?: string)=> ExternalUrlData
 }

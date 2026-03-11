@@ -52,7 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (!providerUrl) {
             return res.status(400).json({ error: "Provider id invalid or missing" } as SAMBLApiError);
         }
-        let mbData = await musicbrainz.getArtistByUrl(providerUrl, ["artist-rels", "url-rels"], { noCache: forceRefresh });
+        let mbData = await musicbrainz.getArtistByUrl(providerUrl.url, ["artist-rels", "url-rels"], { noCache: forceRefresh });
         let mbid = mbData?.id || null;
         return res.status(200).json({ mbid, provider: sourceProvider.namespace, provider_id: parsed_id } as ArtistLookupData);
     } catch (error) {

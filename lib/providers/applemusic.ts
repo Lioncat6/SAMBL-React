@@ -369,10 +369,10 @@ function formatTrackObject(track: Resource<SongAttributes>): TrackObject {
 	};
 }
 
-function getArtistUrl(artist: Resource<ArtistAttributes>): string | null {
+function getArtistUrl(artist: Resource<ArtistAttributes>) {
 	// Most used Apple Music storefronts links on MusicBrainz.
 	//TODO https://tickets.metabrainz.org/browse/MBS-14227
-	return createUrl("artist", artist.id, "us");
+	return createUrl("artist", artist.id, undefined, "us");
 }
 
 function getTrackISRCs(track: Resource<SongAttributes>): string[] | null {

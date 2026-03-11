@@ -67,7 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             albumData.length = 0;
             for (let i = 0; i < albums.length && i < albumCount; i++) {
                 let album = albums[i]
-                const rawAlbum = await sourceProvider.getAlbumById((album.provider == "bandcamp" ? album.url : album.id));
+                const rawAlbum = await sourceProvider.getAlbumById(album.id);
                 const fullAlbum = sourceProvider.formatAlbumObject(rawAlbum);
                 albumData.push(fullAlbum);
             }
@@ -149,7 +149,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             method: method, 
             mostCommonMbid: mostCommonMbid, 
             artists: artists,
-            albums: formattedAlbumData.albumData 
+            albums: formattedAlbumData.albumData,
+            artist: artistInfo
         };
 
         res.status(200).json(dsData);

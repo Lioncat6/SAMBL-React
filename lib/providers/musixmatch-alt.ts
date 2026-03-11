@@ -7,6 +7,10 @@ import { AxiosBasicCredentials, AxiosProxyConfig } from "axios";
 import parsers from "../../lib/parsers/parsers";
 const namespace = "musixmatch";
 
+const { parseUrl, createUrl } = parsers.getParser(namespace);
+const appleMusicParser = parsers.getParser("applemusic")
+const spotifyParser = parsers.getParser("spotify")
+
 const err = new ErrorHandler(namespace);
 
 let proxy: AxiosProxyConfig | null = null;
@@ -71,17 +75,15 @@ async function getTrackByISRC(isrc: string): Promise<ExtendedTrackObject[] | nul
 	try {
 		await refreshApi();
 		const trackData = await withRetry(() => mxmAPI.get_track(null, isrc));
-		if (trackData.message.body?.track) {
+		if (trackData.message?.body?.track) {
 			const lyricsData = await withRetry(() => mxmAPI.get_track_lyrics(null, isrc));
 			if (lyricsData.message.body) {
 				trackData.message.body.lyrics = lyricsData.message.body.lyrics;
 			}
-			const appleMusicParser = parsers.getParser("applemusic")
-			const spotifyParser = parsers.getParser("spotify")
 			const mxmData = trackData.message.body;
 			let externalUrls: (string | null)[] = []
-			if (mxmData.track?.commontrack_spotify_ids) mxmData.track.commontrack_spotify_ids.forEach((id) => externalUrls.push(spotifyParser.createUrl("track", id)))
-			if (mxmData.track?.commontrack_itunes_ids) mxmData.track.commontrack_itunes_ids.forEach((id) => externalUrls.push(appleMusicParser.createUrl("track", id)))
+			if (mxmData.track?.commontrack_spotify_ids) mxmData.track.commontrack_spotify_ids.forEach((id) => externalUrls.push(spotifyParser.createUrl("track", id).url))
+			if (mxmData.track?.commontrack_itunes_ids) mxmData.track.commontrack_itunes_ids.forEach((id) => externalUrls.push(appleMusicParser.createUrl("track", id).url))
 			const filteredUrls = externalUrls.filter((url) => url != null);
 			const extraInfo = {
 				lyrics_id: mxmData.lyrics?.lyrics_id,
@@ -109,7 +111,7 @@ async function getTrackByISRC(isrc: string): Promise<ExtendedTrackObject[] | nul
 					!extraInfo.hasLyrics ? "Missing Lyrics" : null,
 					!extraInfo.instrumental ? "Instrumental" : null
 				].filter((infoStr) => infoStr).join(" • "),
-				url: `https://www.musixmatch.com/lyrics/${mxmData.track.commontrack_vanity_id}`,
+				url: createUrl("track", `https://www.musixmatch.com/lyrics/${mxmData.track.commontrack_vanity_id}`),
 				externalUrls: filteredUrls,
 				provider: namespace,
 				name: mxmData.track.track_name,
@@ -118,7 +120,7 @@ async function getTrackByISRC(isrc: string): Promise<ExtendedTrackObject[] | nul
 				artistNames: [mxmData.track.artist_name],
 				trackArtists: [{
 					name: mxmData.track.artist_name,
-					url: `https://www.musixmatch.com/artist/${mxmData.track.artist_id}`,
+					url: createUrl("artist", `https://www.musixmatch.com/artist/${mxmData.track.artist_id}`),
 					id: mxmData.track.artist_id,
 					provider: namespace,
 					imageUrl: null,

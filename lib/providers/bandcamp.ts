@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, FullProvider, PartialArtistObject, RawAlbumData, Capabilities } from "../../types/provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, FullProvider, PartialArtistObject, RawAlbumData, Capabilities, ExternalUrlData } from "../../types/provider-types";
 import withCache from "../../utils/cache";
 import ErrorHandler from "../../utils/errorHandler";
 import text from "../../utils/text";
@@ -389,10 +389,11 @@ function formatTrackObject(track): TrackObject {
 	};
 }
 
+
 function formatPartialArtistObject(track): PartialArtistObject {
 	const artistInfo = parseId(parseUrl(track.url)?.id || null)
 	return {
-		url: (artistInfo?.artist ? createUrl('artist', artistInfo.artist) : "") || "",
+		url: artistInfo?.artist ? createUrl('artist', artistInfo.artist) : createUrl('artist', ""),
 		name: track.artist || artistInfo?.artist,
 		imageUrl: null,
 		imageUrlSmall: null,

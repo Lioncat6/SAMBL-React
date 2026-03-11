@@ -137,7 +137,7 @@ function UrlIcons({ artist }: { artist: ArtistPageData}) {
 					<UrlContainer url={url} provider={artist.provider} />
 				) 
 				:
-				<UrlContainer url={artist.url} provider={artist.provider} />
+				<UrlContainer url={artist.url.url} provider={artist.provider} />
 			}
 			{artist.mbid && <MusicBrainzUrlContainer id={artist.mbid} />}
 		</>
@@ -147,7 +147,7 @@ function UrlIcons({ artist }: { artist: ArtistPageData}) {
 function ImageContainer({ artist }: { artist: ArtistPageData}) {
 	const { mbid, imageUrl, name } = artist;
 	if (!imageUrl) return null;
-	let editNote = editNoteBuilder.buildEditNote('Artist image', artist.provider, imageUrl, artist.url);
+	let editNote = editNoteBuilder.buildEditNote('Artist image', artist.provider, imageUrl, artist.url.url);
 	let importUrl = `https://musicbrainz.org/artist/${mbid}/edit?edit-artist.url.0.text=https://web.archive.org/web/0/${imageUrl}&edit-artist.url.0.link_type_id=173&edit-artist.edit_note=${editNote}`
 	return (
 		<div id="artistImageContainer" className={styles.artistImageContainer}>

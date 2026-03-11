@@ -163,7 +163,7 @@ async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> {
                         imageUrlSmall: mostRecentAlbum?.relationships?.coverArt?.data?.[0] ? getArtworkSmallUrl(mostRecentAlbum?.relationships?.coverArt?.data[0]?.id) : null,
                         name: track.attributes?.title || "",
                         trackArtists: track.relationships?.artists?.data?.map((artist) => artist.id) ? getArtists(track.relationships?.artists?.data.map((artist) => artist.id)) : [],
-                        url: `https://tidal.com/track/${track.id}`,
+                        url: createUrl("track", track.id),
                         releaseDate: mostRecentAlbum?.attributes?.releaseDate || null,
                         duration: track?.attributes?.duration ? text.formatDurationMS(track?.attributes?.duration) : null,
                         id: track.id,
@@ -382,7 +382,7 @@ function formatAlbumObject(album: ExtendedAlbum): AlbumObject {
         provider: namespace,
         id: album.id,
         name: album.attributes?.title || "",
-        url: `https://tidal.com/album/${album.id}`,
+        url: createUrl("album", album.id),
         imageUrl: album.coverArt?.attributes?.files[0]?.href || "",
         imageUrlSmall: album.coverArt?.attributes?.files[5]?.href || "",
         albumArtists: album.artists.map(formatPartialArtistObject),
@@ -432,7 +432,7 @@ function formatTrackObject(track: ExtendedTrack): TrackObject {
         provider: namespace,
         id: track.id,
         name: `${track.attributes?.title}${track.attributes?.version ? ` (${track.attributes.version})` : ""}`,
-        url: `https://tidal.com/track/${track.id}`,
+        url: createUrl("track", track.id),
         imageUrl: track.imageUrl,
         imageUrlSmall: track.imageUrlSmall,
         trackArtists: track.artists.map(formatPartialArtistObject),
@@ -451,7 +451,7 @@ function formatPartialArtistObject(artist: TidalArtist): PartialArtistObject {
         provider: namespace,
         id: artist.id,
         name: artist.attributes?.name || "",
-        url: `https://tidal.com/artist/${artist.id}`,
+        url: createUrl("artist", artist.id),
         imageUrl: null,
         imageUrlSmall: null,
         type: "partialArtist"
@@ -552,7 +552,7 @@ function formatArtistLookupData(rawData: TidalArtistData) {
 function formatArtistObject(rawObject: ExtendedArtist): ArtistObject {
     return {
         name: rawObject.attributes?.name || "",
-        url: getArtistUrl(rawObject),
+        url: createUrl("artist", rawObject.id),
         imageUrl: rawObject.imageUrl || '',
         imageUrlSmall: rawObject.imageUrlSmall || '',
         bannerUrl: null,
@@ -565,10 +565,6 @@ function formatArtistObject(rawObject: ExtendedArtist): ArtistObject {
         provider: namespace,
         type: "artist"
     };
-}
-
-function getArtistUrl(artist) {
-    return `https://tidal.com/artist/${artist.id}`;
 }
 
 let tidal: FullProvider = {

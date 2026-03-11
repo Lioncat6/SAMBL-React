@@ -1,6 +1,6 @@
 import { UrlParser } from "../../types/component-types";
-import { UrlData, UrlType } from "../../types/provider-types";
-
+import { ExternalUrlData, ProviderNamespace, UrlData, UrlType } from "../../types/provider-types";
+const namespace: ProviderNamespace = "applemusic";
 function parseUrl(url: string): UrlData | null {
     const match = url.match(/music\.apple\.com\/.+?\/(?<type>artist|album|song)(\/(.+?))?\/(?<id>\d+)/);
     if (!match?.groups) return null;
@@ -24,17 +24,22 @@ function parseUrl(url: string): UrlData | null {
     };
 }
 
-function createUrl(urlType: UrlType, providerId: string, country: string = "us"): string | null {
-    switch (urlType) {
-        case "artist":
-            return `https://music.apple.com/${country}/artist/${providerId}`;
-        case "album":
-            return `https://music.apple.com/${country}/album/${providerId}`;
-        case "track":
-            return `https://music.apple.com/${country}/song/${providerId}`;
-        default:
-            return null;
+function createUrl(type: UrlType, id: string, mbTypes?: number[], country: string = "us"): ExternalUrlData {
+    const typeDict: Record<UrlType, string> = { 'album': 'album', 'track': 'song', 'artist': 'artist' };
+    const mbUrlTypes: Record<UrlType, number[]> = {
+        "artist": [176, 978],
+        "album": [980, 74],
+        "track": [254, 979]
     }
+    return {
+        url: `https://music.apple.com/${country}/${typeDict[type]}/${id}`,
+        urlInfo: {
+            type,
+            provider: namespace,
+            id
+        },
+        mbTypes: mbTypes || mbUrlTypes[type] 
+    };
 }
 
 const applemusic: UrlParser = {
