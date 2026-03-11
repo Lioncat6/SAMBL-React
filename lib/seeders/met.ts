@@ -1,7 +1,13 @@
 import { Seeder } from "../../types/seeder-types";
+import parsers from "../parsers/parsers";
+
+function generateFakeUrl(url){
+    const id = parsers.getUrlInfo(url)?.id || "";
+    return `https://www.qobuz.com/us-en/album/placeholder/${id}`
+}
 
 function buildUrl(url: string, upc?: string | null): string {
-    return `https://seed.musichoarders.xyz/?identifier=${url}`
+    return `https://seed.musichoarders.xyz/?identifier=${generateFakeUrl(url)}`
 }
 
 const met: Seeder = {
