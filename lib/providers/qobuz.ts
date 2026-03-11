@@ -154,6 +154,7 @@ export interface QobuzArtist extends QobuzPartialArtist {
   tracks?: QobuzPagingResult<QobuzPartialTrack>
   tracks_appears_on?: QobuzPagingResult<QobuzPartialTrack>
   albums?: QobuzPagingResult<QobuzPartialAlbum>
+  albums_without_last_release?: QobuzPagingResult<QobuzPartialAlbum>
 }
 
 export interface QobuzBiography {
@@ -250,6 +251,9 @@ export interface QobuzAlbumsSameArtist {
   items: any[]
 }
 
+// /artist/page types https://gist.github.com/Lioncat6/7f0f438211204fbd165dea44645eb0e3
+
+
 //Extended Types
 export interface QobuzExtendedArtist extends QobuzPartialArtist, Partial<Omit<QobuzArtist, keyof QobuzPartialArtist>> { }
 export interface QobuzExtendedArtistRole extends QobuzArtistRole, Partial<Omit<QobuzExtendedArtist, keyof QobuzArtistRole>> { }
@@ -272,7 +276,7 @@ async function qobuzFetch(query) {
 
 async function searchByArtistName(query): Promise<QobuzSearchResponse | null> {
   try {
-    const response = await qobuzFetch(`/artist/search?query=${query}`)
+    const response = await qobuzFetch(`/catalog/search?query=${query}`)
     if (response.ok) {
       return await response.json() as QobuzSearchResponse
     } else if (response.status == 404) {
@@ -287,8 +291,20 @@ async function searchByArtistName(query): Promise<QobuzSearchResponse | null> {
 }
 
 function formatArtistSearchData(rawData: QobuzSearchResponse): QobuzPartialArtist[] {
-  return rawData.artists?.items || []
+  let albumArtistMap = Object.fromEntries((rawData.albums?.items || []).map((album) => [album.artist.id, album]));
+  let trackArtistMap = Object.fromEntries((rawData.tracks?.items || []).map((track) => [(track.performer).id, track])); //track.performer
+  let artists = rawData.artists?.items
+  artists?.forEach((artist) => {
+    artist.image = trackArtistMap[artist.id]?.album?.image || albumArtistMap[artist.id]?.image || null
+  })
+  return artists || []
 }
+
+function getMaxArtistImage(artist: QobuzExtendedArtist){
+  const image = artist.image?.mega || artist.image?.extralarge || artist.image?.large || artist.image?.small || "";
+  return image ? getMaxImage(image) : null;
+}
+
 
 function formatArtistObject(artist: QobuzPartialArtist | QobuzArtist): ArtistObject {
   let extendedArtist = artist as QobuzExtendedArtist;
@@ -300,7 +316,7 @@ function formatArtistObject(artist: QobuzPartialArtist | QobuzArtist): ArtistObj
     id: String(artist.id),
     bannerUrl: null,
     imageUrlSmall: artist.image?.small || "",
-    imageUrl: artist.image?.mega || artist.image?.extralarge || artist.image?.large || artist.image?.small || "",
+    imageUrl: getMaxArtistImage(extendedArtist),
     relevance: `${artist.albums_count} albums`,
     followers: null,
     info: extendedArtist.biography?.summary || "",
@@ -347,7 +363,7 @@ function formatAlbumGetData(rawData: QobuzArtist): RawAlbumData {
 
 async function getArtistById(id: string): Promise<QobuzArtist | null> {
   try {
-    const response = await qobuzFetch(`/artist/get?artist_id=${id}`);
+    const response = await qobuzFetch(`/artist/get?artist_id=${id}&extra=albums,albums_with_last_release&limit=1`);
     if (response.ok) {
       return await response.json() as QobuzArtist;
     } else if (response.status == 404) {
@@ -429,6 +445,10 @@ async function getTrackById(id: string): Promise<QobuzTrack | null> {
 }
 
 function formatArtistLookupData(artist: QobuzArtist): QobuzArtist {
+  const albums = artist.albums_without_last_release?.items || artist.albums?.items
+  if (!artist.image && albums && albums.length > 0) {
+    artist.image = albums[albums.length-1].image
+  }
   return artist;
 }
 
