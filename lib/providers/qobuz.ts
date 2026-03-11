@@ -572,9 +572,20 @@ function formatTrackObject(rawTrack: QobuzTrack | QobuzPartialTrack): TrackObjec
     imageUrlSmall: album ? album.image.small : null,
   }
 }
+const capabilities: Capabilities = {
+	isrcs: {
+		availability: "always",
+		presence: "onAlbumRefresh"
+	},
+	upcs: {
+		availability: "always",
+		presence: "always"
+	}
+}
 
 const qobuz: FullProvider = {
   namespace,
+  config: { capabilities},
   parseUrl,
   createUrl,
   searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30, namespace: namespace }),
