@@ -111,8 +111,20 @@ function removeLeadingZeros(code: number|string): number {
  */
 function handleCopy(text: string, all: boolean = false): void {
 	if (!navigator.clipboard?.writeText) {
-		console.error("Clipboard API not supported. Try using https or a different browser.");
-		toasts.error("Unable to copy to clipboard!");
+		try {
+			const tempInput = document.createElement("input");
+			tempInput.value = text;
+			document.body.appendChild(tempInput);
+			tempInput.select();
+			tempInput.setSelectionRange(0, tempInput.value.length-1);
+			document.execCommand('copy');
+			tempInput.remove();
+			toasts.info(`Copied ${all ? "All Properties" : "Property"} to Clipboard`);
+		} catch (err) {
+			console.error("Clipboard API not supported. Try using https or a different browser.");
+			toasts.error("Unable to copy to clipboard!");
+		}
+		
 		return;
 	}
 	if (text.length > 0) {
