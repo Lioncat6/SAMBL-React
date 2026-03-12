@@ -8,7 +8,7 @@ function buildAddArtistEditUrl(artist: PartialArtistObject): string{
     artist.url.mbTypes.forEach((type, index)=> {
         urls = urls + `&edit-artist.url.${index}.text=${artist.url.url}&edit-artist.url.${index}.link_type_id=${type}`
     })
-    return `https://musicbrainz.org/artist/create?edit-artist.name=${artist.name}&edit-artist.sort_name=${artist.name}${urls}&edit-artist.edit_note=${editNote}`
+    return `https://musicbrainz.org/artist/create?edit-artist.name=${encodeURIComponent(artist.name)}&edit-artist.sort_name=${encodeURIComponent(artist.name)}${urls}&edit-artist.edit_note=${editNote}`
 }
 
 function buildDeepSearchEditUrl(data: DeepSearchData){
