@@ -19,7 +19,7 @@ function buildEditNote(edit: string, provider: string, sourceUrl: string, artist
         `'''Artist:''' ${artistUrl}%0A` +
         (pageUrl ? `'''SAMBL URL:''' ${pageUrl}%0A` : '') +
         `%0A` +
-        `'''SAMBL ${process.env.NEXT_PUBLIC_VERSION}''': https://sambl.lioncat6.com | https://github.com/lioncat6/SAMBL-React`
+        `'''SAMBL ${process.env.NEXT_PUBLIC_VERSION}''': ${process.env.NEXT_PUBLIC_URL || "https://sambl.lioncat6.com"} | https://github.com/lioncat6/SAMBL-React`
     );
 }
 
@@ -33,7 +33,7 @@ function buildDeepSearchEditNote(data: DeepSearchData): string {
         `'''Most Common MBID:''' ${data.mostCommonMbid}%0A` +
         `'''Name Similarity:''' ${Math.round(data.nameSimilarity * 100)}%%0A` +
         `${data.method == "most_common" ? `'''Method:''' Most Common MBID (${data.mostCommonMbid})%0A` : `'''Method:''' Name Similarity (''${Math.round(data.nameSimilarity * 100)}%'')%0A• ''Provider Name: ${data.sourceName}''%0A• ''Name in Musicbrainz: ${data.mbName}''`}` +
-        `%0A%0A'''SAMBL ${process.env.NEXT_PUBLIC_VERSION}''': https://sambl.lioncat6.com | https://github.com/lioncat6/SAMBL-React`
+        `%0A%0A'''SAMBL ${process.env.NEXT_PUBLIC_VERSION}''': ${process.env.NEXT_PUBLIC_URL || "https://sambl.lioncat6.com"} | https://github.com/lioncat6/SAMBL-React`
     );
 }
 
