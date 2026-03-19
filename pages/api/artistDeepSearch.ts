@@ -136,7 +136,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             mostCommonArtist = mostCommonArtists[0]; // single artist
         }
 
-        nameSimilarity = stringSimilarity.compareTwoStrings(artistName, bestArtist.name);
+        nameSimilarity = stringSimilarity.compareTwoStrings(artistName.toLocaleLowerCase(), bestArtist.name.toLocaleLowerCase());
 
         const formattedAlbumData = processAlbumData(albumData, mbAlbums, undefined, undefined, sourceProvider.namespace);
 
