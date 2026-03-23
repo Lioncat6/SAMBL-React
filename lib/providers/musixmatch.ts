@@ -3,8 +3,10 @@ import logger from "../../utils/logger";
 import musixmatchAlternate from "./musixmatch-alt"
 import withCache from "../../utils/cache";
 import { PartialProvider, TrackObject, UrlType } from "../../types/provider-types";
+import parsers from '../parsers/parsers';
 
 const namespace = "musixmatch";
+const { parseUrl, createUrl } = parsers.getParser(namespace);
 
 let mxm: null | Musixmatch  = null;
 
@@ -22,7 +24,7 @@ if (!process.env.MUSIXMATCH_API_KEY) {
     }
 }
 
-async function getTrackByISRC(isrc: string): Promise<MatcherTrack["message"]["body"]["track"][] | null> {
+async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> {
     if (!mxm) {
         logger.warn("Musixmatch API client is not initialized. Cannot fetch track by ISRC.");
         return null;
@@ -31,7 +33,7 @@ async function getTrackByISRC(isrc: string): Promise<MatcherTrack["message"]["bo
         const data = await mxm.matcherTrackGet(isrc);
         if (data.message.body.track) {
             const track = data.message.body.track;
-            return [track];
+            return [formatTrackObject(track)];
         } else {
             return null;
         }
@@ -42,20 +44,17 @@ async function getTrackByISRC(isrc: string): Promise<MatcherTrack["message"]["bo
 }
 
 function getArtistFromUrl(url: string): string | null{
-    const urlRegex = /https:\/\/www\.musixmatch\.com\/(lyrics|album)\/(YonKaGor-2)\/[^\/]*/
+    const urlRegex = /https:\/\/www\.musixmatch\.com\/(lyrics|album)\/([^\/]*)\/[^\/]*/
     return url.match(urlRegex)?.[2] || null
 }
 
-function createUrl(type: UrlType, id: string): string {
-    return `https://musixmatch.com/artist${id}`
-}
 
 function formatTrackObject(rawTrack: MatcherTrack["message"]["body"]["track"]): TrackObject {
     return {
         provider: namespace,
         id: String(rawTrack.track_id),
         name: rawTrack.track_name,
-        url: rawTrack.track_share_url,
+        url: createUrl("track", rawTrack.track_share_url),
         imageUrl: null,
         imageUrlSmall: null,
         artistNames: [rawTrack.artist_name],
@@ -63,7 +62,7 @@ function formatTrackObject(rawTrack: MatcherTrack["message"]["body"]["track"]): 
             provider: namespace,
             id: String(rawTrack.artist_id),
             name: rawTrack.artist_name,
-            url: createUrl("artist", getArtistFromUrl(rawTrack.track_share_url) || ""),
+            url: createUrl("artist", `https://www.musixmatch.com/artist/${getArtistFromUrl(rawTrack.track_share_url) || ""}`),
             imageUrl: null,
             imageUrlSmall: null,
             type: "partialArtist"

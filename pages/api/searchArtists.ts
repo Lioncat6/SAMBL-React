@@ -89,7 +89,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         for (let artist of sourceProvider.formatArtistSearchData(results)) {
             const formattedArtist = sourceProvider.formatArtistObject(artist);
             artists.push(formattedArtist);
-            artistData[formattedArtist.url] = formattedArtist;
+            artistData[formattedArtist.url.url] = formattedArtist;
         }
         if (artists.length == 0) {
             return res.status(200).json({})
@@ -100,15 +100,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const urlResults = await musicbrainz.getIdsByUrlQuery(urlQuery);
             if (urlResults){
                 for (let artist of artists) {
-                    artistData[artist.url].mbid = urlResults[artist.id] || null;
+                    artistData[artist.url.url].mbid = urlResults[artist.id] || null;
                 }
             }
             res.status(200).json(artistData);
         }
-        let mbids = await musicbrainz.getIdsByExternalUrls(artists.map((artist) => artist.url));
+        let mbids = await musicbrainz.getIdsByExternalUrls(artists.map((artist) => artist.url.url));
         if (mbids) {
             for (let artist of artists) {
-                artistData[artist.url].mbid = mbids[artist.url] || mbids[artist.url + "/"] || null
+                artistData[artist.url.url].mbid = mbids[artist.url.url] || mbids[artist.url + "/"] || null
             }
         }
         return res.status(200).json(artistData);

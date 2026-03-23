@@ -5,6 +5,7 @@ import { ArtistPageData } from "../types/component-types";
 import { JSX, useState } from "react";
 import { FaXmark } from "react-icons/fa6";
 import { Transition } from "@headlessui/react";
+import editUrlBuilder from "../utils/editUrlBuilder";
 
 function NoticeBox({ color, text, button}: {color: string, text: string, button?: JSX.Element | null}) {
 	const [visible, setVisible] = useState(true);
@@ -43,7 +44,6 @@ function NoMBIDNotice({data}: {data?: ArtistPageData | null}) {
 		)
 	}
 	const url = data.url || "";
-	let editNote = editNoteBuilder.buildEditNote('Artist', data.provider, url, url);
 	return (
 		<NoticeBox
 			color="red"
@@ -51,7 +51,7 @@ function NoMBIDNotice({data}: {data?: ArtistPageData | null}) {
 			button={
 				<a
 					className={styles.addToMBButton}
-					href={`https://musicbrainz.org/artist/create?edit-artist.name=${data.name}&edit-artist.sort_name=${data.name}&edit-artist.url.0.text=${data.url}&edit-artist.url.0.link_type_id=194&edit-artist.edit_note=${editNote}`}
+					href={editUrlBuilder.buildAddArtistEditUrl(data)}
 					target="_blank"
 					rel="noopener noreferrer"
 				>

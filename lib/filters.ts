@@ -3,11 +3,12 @@ import { AlbumStatus } from "../types/aggregated-types";
 
 const listFilterOptions: listFilterOption[] = [
     { id: 1, name: 'Green', key: 'showGreen', default: true },
-    { id: 2, name: 'Orange', key: 'showOrange', default: true },
-    { id: 3, name: 'Red', key: 'showRed', default: true },
-    { id: 4, name: 'Various Artists', key: 'showVarious', default: true },
-    { id: 5, name: 'Album Issues', key: 'onlyIssues', exclusive: true },
-    { id: 6, name: 'Featured Albums', key: 'featuredAlbums',exclusive: true}
+    { id: 2, name: 'Blue', key: 'showBlue', default: true},
+    { id: 3, name: 'Orange', key: 'showOrange', default: true },
+    { id: 4, name: 'Red', key: 'showRed', default: true },
+    { id: 5, name: 'Various Artists', key: 'showVarious', default: true },
+    { id: 6, name: 'Album Issues', key: 'onlyIssues', exclusive: true },
+    { id: 7, name: 'Featured Albums', key: 'featuredAlbums',exclusive: true}
 ]
 
 const listSortOptions: listSortOption[] = [
@@ -23,6 +24,9 @@ const FilterFunctions: Record<listFilter, (items: DisplayAlbum[]) => DisplayAlbu
     // These functions are only called when the filter is not selected, with the exception of exclusive filters
     'showGreen': (items) => {
         return items.filter((item) => item.status != "green")
+    },
+    'showBlue': (items) => {
+        return items.filter((item) => item.status != "blue")
     },
     'showOrange': (items) => {
         return items.filter((item) => item.status != "orange")

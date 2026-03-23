@@ -10,6 +10,7 @@ import { PartialProvider, Provider, ProviderCapability, ProviderNamespace, Provi
 import clientProviders from "../../utils/clientProviders";
 import parsers from "../parsers/parsers";
 import naver from "./naver";
+import qobuz from "./qobuz";
 const { isDisabled } = clientProviders;
 
 const providerList = [
@@ -21,7 +22,8 @@ const providerList = [
     bandcamp,
     soundcloud,
     applemusic,
-    naver
+    naver,
+    qobuz
 ];
 
 function getDefaultProvider(): Provider {

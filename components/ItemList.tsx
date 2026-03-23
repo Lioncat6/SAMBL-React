@@ -17,13 +17,13 @@ import editNoteBuilder from "../utils/editNoteBuilder";
 import { IoFilter } from "react-icons/io5";
 import { DisplayAlbum, FilterData } from "../types/component-types";
 import seeders from "../lib/seeders/seeders";
-import { AggregatedAlbum } from "../types/aggregated-types";
+import { AggregatedAlbum, AggregatedArtist } from "../types/aggregated-types";
 import filters from "../lib/filters";
 import ExportMenuPopup from "./Popups/ExportMenu";
 import TrackMenuPopup from "./Popups/TrackMenu";
 import FilterMenuPopup from "./Popups/FilterMenu";
 import toasts from "../utils/toasts";
-import { AlbumObject, ExtendedTrackObject, ProviderNamespace, TrackObject } from "../types/provider-types";
+import { AlbumObject, ArtistObject, ExtendedTrackObject, ProviderNamespace, TrackObject } from "../types/provider-types";
 import { MdAlbum, MdAudiotrack } from "react-icons/md";
 
 function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRCs: boolean) => void }) {
@@ -39,7 +39,7 @@ function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRC
 			} else {
 				setIsSubmitting(false);
 				if (albumTracks.some((track) => track.isrcs.length >= 1)) {
-					const edit_note = editNoteBuilder.buildEditNote("ISRCs", provider, url, albumArtists[0]?.url);
+					const edit_note = editNoteBuilder.buildEditNote("ISRCs", provider, url.url, albumArtists[0]?.url.url);
 					let params = "?"
 					albumTracks.forEach((track) => {
 						if (track.isrcs.length >= 1) {
@@ -97,7 +97,7 @@ function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRC
 					href={
 						status === "green"
 							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${releaseDate?.split("-")[0]}&events.0.date.month=${releaseDate?.split("-")[1]}&events.0.date.day=${releaseDate?.split("-")[2]
-							}&edit_note=${encodeURIComponent(editNoteBuilder.buildEditNote(`Release Date`, provider, url, `https://musicbrainz.org/artist/${artistMBID}`))}`
+							}&edit_note=${encodeURIComponent(editNoteBuilder.buildEditNote(`Release Date`, provider, url.url, `https://musicbrainz.org/artist/${artistMBID}`))}`
 							: undefined
 					}
 					title={status === "green" ? "This release is missing a release date!\n[Click to Fix]" : "This release is missing a release date!"}
@@ -130,7 +130,7 @@ function ActionButtons({ item }: { item: DisplayAlbum }) {
 					{seeders.getAllSeeders().map((seeder, index) => {
 						if (settings?.enabledSeeders.includes(seeder.namespace) && seeder.providers.includes(provider)) {
 							return (
-								<a key={index} className={styles[`${seeder.namespace}Button`]} href={seeder.buildUrl(url, upc)} target="_blank" rel="noopener noreferrer">
+								<a key={index} className={styles[`${seeder.namespace}Button`]} href={seeder.buildUrl(url.url, upc)} target="_blank" rel="noopener noreferrer">
 									<div>{seeder.displayName}</div>
 								</a>
 							)
@@ -216,7 +216,7 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 
 	async function refreshData(fetchISRCs = false) {
 		setIsLoading(true);
-		const response = await dispPromise(fetch(`/api/compareSingleAlbum?url=${url}&mbid=${artistMBID}&artist_id=${artistID}${fetchISRCs ? '&fetchISRCs' : ""}`), "Refreshing album...");
+		const response = await dispPromise(fetch(`/api/compareSingleAlbum?url=${url.url}&mbid=${artistMBID}&artist_id=${artistID}${fetchISRCs ? '&fetchISRCs' : ""}`), "Refreshing album...");
 		setIsLoading(false);
 		if (response.ok) {
 			const updatedItem = await response.json();
@@ -300,11 +300,11 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 				<div className={styles.textContainer}>
 					{/* Album Title */}
 					<div className={styles.albumTitle}>
-						<a href={url} target="_blank" rel="noopener noreferrer">
+						<a href={url.url} target="_blank" rel="noopener noreferrer">
 							{name}
 						</a>
 						{mbAlbum?.url && (
-							<a href={mbAlbum.url} target="_blank" rel="noopener noreferrer">
+							<a href={mbAlbum.url.url} target="_blank" rel="noopener noreferrer">
 								<img
 									className={styles.albumMB}
 									src={status === "green" ? "../assets/images/MusicBrainz_logo_icon.svg" : "../assets/images/MB_Error.svg"}
@@ -323,7 +323,7 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 						{albumArtists.map((artist, index) => (
 							<span key={artist.id} className={`${searchReason == "artist" ? styles.artistHighlight : ""}`}>
 								{index > 0 && ", "}
-								<a href={artist.url} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
+								<a href={artist.url.url} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
 									{artist.name}
 								</a>
 								<a href={`../newartist?provider_id=${artist.id}&provider=${artist.provider}`} target="_blank" rel="noopener noreferrer">
@@ -388,19 +388,19 @@ function ViewButton({ item }) {
 	);
 }
 
-function ArtistItem({ item }) {
+function ArtistItem({ item }: { item: AggregatedArtist}) {
 	return (
 		<div className={styles.listItem} style={{ '--background-image': `url('${item.bannerUrl || item.imageUrl || ""}')` } as React.CSSProperties}>
 			{item.imageUrl && (
 				<div className={styles.artistIcon}>
 					<a href={item.imageUrl} target="_blank">
-						<img title={item.name} src={item.imageUrlSmall} />
+						<img title={item.name} src={item.imageUrlSmall || item.imageUrl} />
 					</a>
 				</div>
 			)}
 			<div className={styles.textContainer}>
 				<div className={styles.artistName}>
-					<a href={item.url} target="_blank">
+					<a href={item.url.url} target="_blank">
 						{item.name}
 					</a>
 				</div>
@@ -425,6 +425,7 @@ function Icon({ source }: {source: ProviderNamespace}) {
 			{source === "soundcloud" && <FaSoundcloud title={"Soundcloud"} className={styles.soundcloudIcon} />}
 			{source === "bandcamp" && <FaBandcamp title={"Bandcamp"} className={styles.soundcloudIcon} />}
 			{source === "naver" && <img className={styles.naverIcon} title={"Naver"} src="../assets/images/Naver_icon.svg" />}
+			{source === "qobuz" && <img className={styles.qobuzIcon} title={"Qobuz"} src="../assets/images/Qobuz_icon.svg" />}
 		</>
 	);
 }
@@ -435,7 +436,7 @@ function LinkButton({ item }: { item: AlbumObject | TrackObject }) {
 	return (
 		<div className={styles.actionButtons}>
 			{settings?.showExport && <SelectionButtons item={item} />}
-			<a href={item.url || undefined} target="_blank" className={styles.viewButton} title={`View on ${text.capitalizeFirst(item.provider)}`}>
+			<a href={item.url?.url || undefined} target="_blank" className={styles.viewButton} title={`View on ${text.capitalizeFirst(item.provider)}`}>
 				<div>
 					View <Icon source={item.provider} />
 				</div>
@@ -459,7 +460,7 @@ function GenericItem({ item }: { item: AlbumObject | ExtendedTrackObject }) {
 	let artistString = artists?.map((artist, index) => (
 		<span key={index}>
 			{index > 0 && ", "}
-			<a href={artist.url} target="_blank" rel="noopener noreferrer" className={styles.artists}>
+			<a href={artist.url.url} target="_blank" rel="noopener noreferrer" className={styles.artists}>
 				{artist.name}
 			</a>
 			<a href={`../newartist?provider_id=${artist.id}&provider=${artist.provider}`} target="_blank" rel="noopener noreferrer">
@@ -479,7 +480,7 @@ function GenericItem({ item }: { item: AlbumObject | ExtendedTrackObject }) {
 			)}
 			<div className={styles.textContainer}>
 				<div className={styles.artistName}>
-					<a href={url || undefined} target="_blank">
+					<a href={url?.url || undefined} target="_blank">
 						{name}  {type == "track" ? <MdAudiotrack title={"Track"} /> : <MdAlbum title={"Album"} />}
 					</a>
 				</div>

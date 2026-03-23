@@ -14,7 +14,7 @@ export default async function handler(req, res) {
         if (!provider_id && !url) {
             return res.status(400).json({ error: "Either `provider_id` or `url` must be provided" } as SAMBLApiError);
         }
-        let sourceProvider: ProviderWithCapabilities<["getAlbumById", "getAlbumUPCs"]> | false | null = null;
+        let sourceProvider: ProviderWithCapabilities<["getAlbumById", "formatAlbumObject"]> | false | null = null;
         let parsed_id: string | null;
         if (url) {
             let urlInfo = providers.getUrlInfo(url);
@@ -29,9 +29,9 @@ export default async function handler(req, res) {
                 return res.status(500).json({ error: "Failed to extract provider id from URL" } as SAMBLApiError);
             }
             provider = urlInfo.provider;
-            sourceProvider = providers.parseProvider(urlInfo.provider, ["getAlbumById", "getAlbumUPCs"]);
+            sourceProvider = providers.parseProvider(urlInfo.provider, ["getAlbumById", "formatAlbumObject"]);
         } else if (provider_id && provider) {
-            sourceProvider = providers.parseProvider(provider, ["getAlbumById", "getAlbumUPCs"]);
+            sourceProvider = providers.parseProvider(provider, ["getAlbumById", "formatAlbumObject"]);
             parsed_id = provider_id
         } else {
             return res.status(400).json({ error: "Parameters `provider_id` and `provider` are required when not using `url`" } as SAMBLApiError);
@@ -43,7 +43,8 @@ export default async function handler(req, res) {
         if (!results){
             return res.status(404).json({ error: "Album not found!" } as SAMBLApiError);
         }
-        let upcs = sourceProvider.getAlbumUPCs(results);
+        let formattedAlbum = sourceProvider.formatAlbumObject(results)
+        let upcs = formattedAlbum.upc ? [formattedAlbum.upc]: null;
         if (upcs == null) {
             return res.status(404).json({ error: "Album not found!" } as SAMBLApiError);
         }
@@ -52,7 +53,7 @@ export default async function handler(req, res) {
         // }
         res.status(200).json({ upcs } as UPCData);
     } catch (error) {
-        logger.error("Error in getAlbumUPCs API:", error);
+        logger.error("Error in formatAlbumObject API:", error);
         res.status(500).json({ error: "Internal Server Error", details: error.message } as SAMBLApiError);
     }
 }

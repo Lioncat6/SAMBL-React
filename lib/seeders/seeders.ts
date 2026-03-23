@@ -3,11 +3,13 @@ import harmony from "./harmony";
 import atisket from "./atisket";
 import { Seeder, SeederNamespace } from "../../types/seeder-types";
 import { ProviderNamespace } from "../../types/provider-types";
+import yambs from "./yambs";
 
 export const seederList: Seeder[] = [
     met,
     harmony,
     atisket,
+    yambs
 ];
 
 function getSeeder(namespace: SeederNamespace, providers?: ProviderNamespace[]): Seeder | null {

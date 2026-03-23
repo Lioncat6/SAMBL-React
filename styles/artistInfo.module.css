@@ -25,7 +25,8 @@
 .urlContainer,
 .soundcloudUrlContainer,
 .spURLContainer,
-.applemusicURLContainer {
+.applemusicURLContainer,
+.qobuzUrlContainer {
 	display: flex;
 	flex-direction: row;
 	padding: 1.2vh 2px 0 0;
@@ -51,6 +52,7 @@
 .tidalURLContainer a,
 .bandcampURLContainer a,
 .naverUrlContainer a,
+.qobuzUrlContainer a,
 .urlContainer a {
 	padding: 0 3px 0 0;
 }

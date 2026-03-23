@@ -24,7 +24,7 @@ async function refreshApi() {
 	}
 }
 
-async function getTrackByISRC(isrc: number): Promise<TrackObject[] | null> {
+async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> {
 	await refreshApi();
 	try {
 		const data = await deezerApi.track(`isrc:${isrc}`);
@@ -148,7 +148,7 @@ function formatArtistObject(artist): ArtistObject {
 	}
 	return {
 		name: artist.name,
-		url: getArtistUrl(artist),
+		url: createUrl("artist", artist.id),
 		imageUrl: imageUrl || "",
 		imageUrlSmall: imageUrlSmall || "",
 		bannerUrl: null,
@@ -166,7 +166,7 @@ function formatArtistObject(artist): ArtistObject {
 function formatPartialArtistObject(artist): PartialArtistObject {
 	return {
 		name: artist.name,
-		url: artist.link,
+		url: createUrl("artist", artist.id),
 		imageUrl: artist.picture_xl || "",
 		imageUrlSmall: artist.picture_medium || "",
 		id: artist.id,
@@ -225,7 +225,7 @@ function formatAlbumObject(album): AlbumObject {
 		provider: namespace,
 		id: album.id,
 		name: album.title,
-		url: album.link,
+		url: createUrl("track", album.id),
 		imageUrl: album.cover_xl || "",
 		imageUrlSmall: album.cover_medium || "",
 		albumArtists: album.contributors && album.contributors.length > 0 ? album.contributors.map(formatPartialArtistObject) : album.artist ? [formatPartialArtistObject(album.artist)] : [],
@@ -260,7 +260,7 @@ function formatTrackObject(track): TrackObject {
 		provider: namespace,
 		id: track.id,
 		name: track.title,
-		url: track.link,
+		url: createUrl("track", track.id),
 		imageUrl: track.album.cover_xl || "",
 		imageUrlSmall: track.album.cover_medium || "",
 		albumName: track.album.title,
@@ -272,10 +272,6 @@ function formatTrackObject(track): TrackObject {
 		isrcs: track.isrc ? [track.isrc] : [],
 		type: "track"
 	};
-}
-
-function getArtistUrl(artist) {
-	return artist.link || `https://www.deezer.com/artist/${artist.id}`;
 }
 
 const capabilities: Capabilities = {
@@ -306,8 +302,6 @@ const deezer: FullProvider = {
 	formatAlbumGetData,
 	formatAlbumObject,
 	formatTrackObject,
-	getTrackISRCs,
-	getAlbumUPCs,
 	parseUrl,
 	createUrl
 };

@@ -19,7 +19,7 @@ function buildEditNote(edit: string, provider: string, sourceUrl: string, artist
         `'''Artist:''' ${artistUrl}%0A` +
         (pageUrl ? `'''SAMBL URL:''' ${pageUrl}%0A` : '') +
         `%0A` +
-        `'''SAMBL ${process.env.NEXT_PUBLIC_VERSION}''': https://sambl.lioncat6.com | https://github.com/lioncat6/SAMBL-React`
+        `'''SAMBL ${process.env.NEXT_PUBLIC_VERSION}''': ${process.env.NEXT_PUBLIC_URL || "https://sambl.lioncat6.com"} | https://github.com/lioncat6/SAMBL-React`
     );
 }
 
@@ -28,11 +28,12 @@ function buildDeepSearchEditNote(data: DeepSearchData): string {
         `Artist found with ''SAMBL Deep Search''%0A` +
         `'''Provider:''' ${data.provider}%0A` +
         `'''Albums:'''%0A` +
-        `${data.albums.map((album) => ` • '''${album.name}''' ''Barcode: ${album.upc}'' ${album.url}%0A''Artists:'' ${album.mbAlbum?.albumArtists?.map((artist) => `${artist.name}(${artist.id})`).join(", ") || "none"}`).join("%0A ")}%0A%0A` +
+        `${data.albums.map((album) => ` • '''${album.name}''' ''Barcode: ${album.upc}'' ${album.url.url}%0A''Artists:'' ${album.mbAlbum?.albumArtists?.map((artist) => `${artist.name} ''(${artist.url.url})''`).join(", ") || "none"}`).join("%0A ")}%0A%0A` +
+        `'''Selected Artist:''' ${data.artist.name} | ${data.artist.url.url}%0A` +
         `'''Most Common MBID:''' ${data.mostCommonMbid}%0A` +
         `'''Name Similarity:''' ${Math.round(data.nameSimilarity * 100)}%%0A` +
         `${data.method == "most_common" ? `'''Method:''' Most Common MBID (${data.mostCommonMbid})%0A` : `'''Method:''' Name Similarity (''${Math.round(data.nameSimilarity * 100)}%'')%0A• ''Provider Name: ${data.sourceName}''%0A• ''Name in Musicbrainz: ${data.mbName}''`}` +
-        `%0A%0A'''SAMBL ${process.env.NEXT_PUBLIC_VERSION}''': https://sambl.lioncat6.com | https://github.com/lioncat6/SAMBL-React`
+        `%0A%0A'''SAMBL ${process.env.NEXT_PUBLIC_VERSION}''': ${process.env.NEXT_PUBLIC_URL || "https://sambl.lioncat6.com"} | https://github.com/lioncat6/SAMBL-React`
     );
 }
 

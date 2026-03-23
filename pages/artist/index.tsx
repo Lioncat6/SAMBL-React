@@ -15,6 +15,7 @@ import toasts from "../../utils/toasts";
 import { set } from "nprogress";
 import text from "../../utils/text";
 import SAMBLHead from "../../components/SAMBLHead";
+import parsers from "../../lib/parsers/parsers";
 
 async function fetchArtistData(id: string, provider: ProviderNamespace | string) {
 	const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?provider_id=${id}&provider=${provider}&mbData`);
@@ -107,7 +108,7 @@ export async function getServerSideProps(context) {
 			}
 			return null
 		}
-
+		const { createUrl, parseUrl } = parsers.getParser(provider as ProviderNamespace)
 		let artist: ArtistPageData;
 		if (provider_ids && provider_ids?.length > 1) {
 			let data: ArtistObject[] = [];
@@ -119,7 +120,7 @@ export async function getServerSideProps(context) {
 			for (let id of pIDArray) {
 				const artistData = await fetchArtistData(id, provider)
 				data.push(artistData.providerData);
-				providerUrls.push(artistData.providerData.url);
+				providerUrls.push(artistData.providerData.url.url);
 				providerIds.push(artistData.providerData.id);
 				artistData.mbData?.id && artistMBIDs.push(artistData.mbData?.id);
 				if (!mbArtist && artistData.mbData) mbArtist = artistData.mbData;
@@ -152,7 +153,7 @@ export async function getServerSideProps(context) {
 				mbids: [...new Set(artistMBIDs)],
 				provider: provider as ProviderNamespace || "spotify",
 				mbid: artist_mbid || null,
-				url: mostPopularArtist?.url || "",
+				url: createUrl( "artist", mostPopularArtist?.id || ""),
 				relevance: mostPopularArtist?.relevance || "",
 				info: mostPopularArtist?.info || "",
 				mbData: mbArtist,

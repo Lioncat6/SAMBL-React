@@ -57,7 +57,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
         }
         const sourceAlbum = providerObj.formatAlbumObject(rawAlbum);
         let mbAlbum: IRelease | null = null;
-        let urlResults = (await musicbrainz.getAlbumsBySourceUrls([sourceAlbum.url], ["release-rels"], { noCache: true }))?.urls[0];
+        let urlResults = (await musicbrainz.getAlbumsBySourceUrls([sourceAlbum.url.url], ["release-rels"], { noCache: true }))?.urls[0];
         let barcodeResults = sourceAlbum.upc ? (await musicbrainz.getAlbumByUPC(sourceAlbum.upc, {noCache: true})) : [];
         if (urlResults?.relations?.[0]?.release?.id || barcodeResults?.[0]?.id) {
             mbAlbum = await musicbrainz.getAlbumByMBID((urlResults?.relations?.[0]?.release?.id || barcodeResults?.[0]?.id)!, ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits", "label-rels", "artist-rels"], { noCache: true });

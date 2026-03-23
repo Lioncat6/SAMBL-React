@@ -11,7 +11,8 @@ export class DeepSearchData {
     method: DeepSearchMethod
     mostCommonMbid: string
     artists: PartialArtistObject[]
-    albums: AggregatedAlbum[] 
+    albums: AggregatedAlbum[]
+    artist: ArtistObject
 }
 
 export class ArtistData {

@@ -104,13 +104,15 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 					finalAlbum = mbAlbum;
 					mbBarcode = MBReleaseUPC;
 					// prefer the first exact URL match
-					break;
+					if (mbAlbum.trackCount == providerTrackCount && (providerBarcode ? (MBReleaseUPC == providerBarcode): true)){
+						break; //Break if match is good enough, keep looping if not
+					}
 				}
 			}
 		}
 
 		// Try URL map
-		const sourceUrl = providerUrl?.trim();
+		const sourceUrl = providerUrl.url?.trim();
 		tryMap(mbIdAlbumMap, parser.parseUrl(sourceUrl)?.id || providerId, "green")
 
 		// Try UPC map
@@ -185,7 +187,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 			} else if (!hasMatchingISRCs && aggregateTracks) {
 				albumIssues.push("ISRCDiff")
 			}
-			if (mbTrackCount != providerTrackCount && !quick && full) {
+			if (mbTrackCount && (mbTrackCount != providerTrackCount)) {
 				aggregateTracks = false;
 				albumIssues.push("trackDiff");
 			}
@@ -230,7 +232,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 					status = "blue";
 				}
 
-				if (mbTrack.externalUrls?.includes(providerTrack.url || "")) {
+				if (mbTrack.externalUrls?.includes(providerTrack.url?.url || "")) {
 					status = "green";
 				}
 
@@ -267,7 +269,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 					mbTrack: mbTrack,
 					trackIssues: trackIssues,
 					isrcs: providerTrack.isrcs.length > 0 ? providerTrack.isrcs : mbTrack.isrcs.length > 0 ? mbTrack.isrcs : [],
-					trackNumber: providerTrack.trackNumber || mbTrack.trackNumber || Number(i)
+					trackNumber: providerTrack.trackNumber || mbTrack.trackNumber || Number(i)+1
 				});
 			}
 		}

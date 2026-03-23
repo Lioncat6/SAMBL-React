@@ -136,6 +136,7 @@
 .soundcloudIcon,
 .bandcampIcon,
 .naverIcon,
+.qobuzIcon,
 .mbIcon {
   width: 16px;
   height: 20px;
@@ -289,7 +290,8 @@
 .metButton,
 .atisketButton,
 .harmonyButton,
-.exportButton {
+.exportButton,
+.yambsButton {
   position: relative;
   margin-top: 14px;
   margin-right: 5px;

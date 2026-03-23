@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, FullProvider, PartialArtistObject, RawAlbumData, Capabilities } from "../../types/provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, FullProvider, PartialArtistObject, RawAlbumData, Capabilities, ExternalUrlData } from "../../types/provider-types";
 import withCache from "../../utils/cache";
 import ErrorHandler from "../../utils/errorHandler";
 import text from "../../utils/text";
@@ -31,7 +31,7 @@ function parseId(id: string | null): bandcampId {
 	const bcId = {
 		artist: idArray[0],
 		type: idArray[1] as "album" | "track",
-		id: idArray[2]
+		id: idArray[2].split("#")[0]
 	}
 	return bcId;
 }
@@ -193,6 +193,18 @@ function formatArtistLookupData(rawData) {
 	return rawData;
 }
 
+function getTags(rawData){
+	let tags: (string | null | undefined)[] = [];
+	rawData.tags?.forEach(tag => {
+		if (tag.name){
+			tags.push(tag.name);
+		} else {
+			tags.push(tag);
+		}
+	});
+	return tags.filter(tag => tag!= null && tag!=undefined);
+}
+
 function formatArtistObject(rawData): ArtistObject {
 	return {
 		name: rawData.name,
@@ -206,7 +218,7 @@ function formatArtistObject(rawData): ArtistObject {
 				: rawData.bannerImage ? rawData.bannerImage : "",
 		relevance: rawData.location,
 		info: rawData.tags.join(", "),
-		genres: rawData.tags,
+		genres: getTags(rawData),
 		followers: null,
 		popularity: null,
 		id: getArtistId(rawData) || "",
@@ -256,8 +268,11 @@ function getLabels(album): string[] | null {
 function formatAlbumObject(album): AlbumObject {
 	const bcId: bandcampId = parseId(parseUrl(album.url)?.id || null)
 	let albumType = "album";
+	const isTrack = album.type == "track" || album.raw?.current?.type == "track";
 	if (!album.artist) {
 		album.artist = bcId.artist;
+	}
+	if (isTrack){
 		albumType = "single";
 	}
 	let imageUrl =
@@ -288,26 +303,28 @@ function formatAlbumObject(album): AlbumObject {
 		releaseDate: text.formatDate(
 			album.releaseDate || album.raw?.current?.release_date
 		),
-		trackCount: album.numTracks || album.tracks?.length,
+		trackCount: album.numTracks ? album.numTracks:  album.tracks?.length ? album.tracks?.length : isTrack ? 1: null,
 		albumType: albumType,
 		upc: album.raw?.current?.upc || null,
 		albumTracks: getAlbumTracks(album) || [],
 		labels: getLabels(album),
 		copyrights: null,
-		genres: album.tags,
+		genres: getTags(album),
 		type: "album"
 	};
 }
 
 function getAlbumTracks(album): TrackObject[] {
 	let tracks: TrackObject[] = [];
-	if (album && album.tracks) {
+	if (album && album.tracks?.length > 0 && album.raw?.current?.type != "track") {
 		album.tracks = album.tracks.filter((track) => track.url && track.duration);
 		for (let trackNumber in album.tracks) {
 			let trackinfo = album.raw.trackinfo[trackNumber];
 			let currentTrack = album.tracks[trackNumber];
-			trackinfo.url = currentTrack.url;
-			trackinfo.id = parseUrl(trackinfo.url)?.id
+			const url = trackinfo.url || currentTrack.url
+			const urlInfo = parseUrl(url)
+			trackinfo.url = (urlInfo?.type && urlInfo.id) ? createUrl(urlInfo?.type, urlInfo.id): null;
+			trackinfo.id = urlInfo?.id
 			if (!trackinfo.artist) {
 				trackinfo.artist = album.artist;
 			}
@@ -372,14 +389,15 @@ function formatTrackObject(track): TrackObject {
 	};
 }
 
+
 function formatPartialArtistObject(track): PartialArtistObject {
-	const artistId = parseUrl(track.url)?.id
+	const artistInfo = parseId(parseUrl(track.url)?.id || null)
 	return {
-		url: (artistId ? createUrl('artist', artistId) : "") || "",
-		name: track.artist,
+		url: artistInfo?.artist ? createUrl('artist', artistInfo.artist) : createUrl('artist', ""),
+		name: track.artist || artistInfo?.artist,
 		imageUrl: null,
 		imageUrlSmall: null,
-		id: artistId || "",
+		id: artistInfo?.artist || "",
 		provider: namespace,
 		type: "partialArtist"
 	};
@@ -422,9 +440,7 @@ const bandcamp: FullProvider = {
 	formatAlbumObject,
 	formatAlbumGetData,
 	getArtistById,
-	parseUrl,
-	getTrackISRCs,
-	getAlbumUPCs,
+	parseUrl
 };
 
 export default bandcamp;

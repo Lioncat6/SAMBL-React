@@ -111,8 +111,20 @@ function removeLeadingZeros(code: number|string): number {
  */
 function handleCopy(text: string, all: boolean = false): void {
 	if (!navigator.clipboard?.writeText) {
-		console.error("Clipboard API not supported. Try using https or a different browser.");
-		toasts.error("Unable to copy to clipboard!");
+		try {
+			const tempInput = document.createElement("input");
+			tempInput.value = text;
+			document.body.appendChild(tempInput);
+			tempInput.select();
+			tempInput.setSelectionRange(0, tempInput.value.length-1);
+			document.execCommand('copy');
+			tempInput.remove();
+			toasts.info(`Copied ${all ? "All Properties" : "Property"} to Clipboard`);
+		} catch (err) {
+			console.error("Clipboard API not supported. Try using https or a different browser.");
+			toasts.error("Unable to copy to clipboard!");
+		}
+		
 		return;
 	}
 	if (text.length > 0) {
@@ -146,9 +158,23 @@ function getColorEmoji(color:AlbumStatus, circle=false) {
 	return circle ? emojis[color]: squareEmojis[color];
 }
 
+/**
+ * Formats arrays of data into strings seperated by ' • '; Automatically removes null data
+ * @param info Info array
+ * @returns Formatted info string
+ */
 function infoToString(info: (string|null|undefined)[]){
 	const string = info.filter((s) => s!=null && s!=undefined && s.length > 0).join(" • ");
 	return string.length > 0 ? string : null;
+}
+
+/**
+ * Pads barcodes to 13 digits with leading zeros
+ * @param barcode Narcode to pad
+ * @returns Padded barcode
+ */
+function padBarcode(barcode: string): string {
+	return barcode.padStart(13, "0")
 }
 
 /**
@@ -169,7 +195,8 @@ const text = {
 	handleCopy,
 	trimUrl,
 	getColorEmoji,
-	infoToString
+	infoToString,
+	padBarcode
 };
 
 export default text;

@@ -1,12 +1,18 @@
 import { UrlParser } from "../../types/component-types";
 import { ExternalUrlData, ProviderNamespace, UrlData, UrlType } from "../../types/provider-types";
-const namespace: ProviderNamespace = "naver";
-function parseUrl(url): UrlData | null {
-    const regex = /vibe\.naver\.com\/(track|album|artist)\/(\d+)/;
-    const match = url.match(regex);
+const namespace: ProviderNamespace = "qobuz";
+
+function parseUrl(url): UrlData | null { //https://tickets.metabrainz.org/browse/MBS-13611
+    const regex = /play\.qobuz\.com\/(track|album|artist)\/(\d+)/;
+    const oldRegex = /(?:www\.)?qobuz\.com\/(?:\w{2}-\w{2}\/)?(track|album|artist|label|interpreter)\/(?:[^\/]+\/)?(?:[^\/]+\/)?([A-Za-z0-9]+)/
+    const match = url.match(regex) || url.match(oldRegex);
     if (match) {
+        let type = match[1];
+        if (type == "interpreter" || type == "label") {
+            type == "artist";
+        }
         return {
-            type: match[1],
+            type: type,
             id: match[2],
         };
     }
@@ -20,7 +26,7 @@ function createUrl(type: UrlType, id: string, mbTypes?: number[]): ExternalUrlDa
         "track": [254, 979]
     }
     return {
-        url: `https://vibe.naver.com/${type}/${id}`,
+        url: `https://open.qobuz.com/${type}/${id}`,
         urlInfo: {
             type,
             provider: namespace,
@@ -30,9 +36,9 @@ function createUrl(type: UrlType, id: string, mbTypes?: number[]): ExternalUrlDa
     };
 }
 
-const naver: UrlParser = {
+const qobuz: UrlParser = {
     parseUrl,
     createUrl
 }
 
-export default naver;
+export default qobuz;

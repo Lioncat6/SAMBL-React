@@ -4,15 +4,17 @@ import text from "../utils/text";
 import editNoteBuilder from "../utils/editNoteBuilder";
 import { Button } from "@headlessui/react";
 import toasts from "../utils/toasts";
+import editUrlBuilder from "../utils/editUrlBuilder";
+import { DeepSearchData } from "../types/api-types";
+import { ArtistObject } from "../types/provider-types";
 
-async function deepSearch(url) {
+async function deepSearch(url: string) {
 	toasts.warn("Please double check deep searches before submitting edits!")
 	try {
 		const response = await toasts.dispPromise(fetch(`/api/artistDeepSearch?url=${encodeURIComponent(url)}`), "Running Deep Search...", "Deep Search failed!");
 		if (response.ok) {
-			let data = await response.json();
-			let editNote = editNoteBuilder.buildDeepSearchEditNote(data);
-			let editUrl = `https://musicbrainz.org/artist/${data.mbid}/edit?edit-artist.url.0.text=${url}&edit-artist.url.0.link_type_id=194&edit-artist.edit_note=${editNote}`;
+			let data = await response.json() as DeepSearchData;
+			let editUrl = editUrlBuilder.buildDeepSearchEditUrl(data);
 			if (data.nameSimilarity < 0.30) {
 				toasts.error(`Artist name too different for match! (${Math.round(data.nameSimilarity * 100)}% - ${data.mbName})`)
 				return;
@@ -27,9 +29,8 @@ async function deepSearch(url) {
 	}
 }
 
-export default function AddButtons({ artist }) {
-	let editNote = editNoteBuilder.buildEditNote('Artist', artist.provider, artist.url, artist.url);
-	let addUrl = `https://musicbrainz.org/artist/create?edit-artist.name=${artist.name}&edit-artist.sort_name=${artist.name}&edit-artist.url.0.text=${artist.url}&edit-artist.url.0.link_type_id=194&edit-artist.edit_note=${editNote}`
+export default function AddButtons({ artist }: {artist: ArtistObject}) {
+	let addUrl = editUrlBuilder.buildAddArtistEditUrl(artist);
 	return (
 		<>
 			<a
@@ -42,7 +43,7 @@ export default function AddButtons({ artist }) {
 			<Link className={styles.addToMBButton} href={`../artist/?provider_id=${artist.id}&provider=${artist.provider}`}>
 				<div>View Artist Anyway</div>
 			</Link>
-			<Button onClick={() => deepSearch(artist.url)} className={styles.addToMBButton}>Deep Search</Button>
+			<Button onClick={() => deepSearch(artist.url.url)} className={styles.addToMBButton}>Deep Search</Button>
 		</>
 	);
 }

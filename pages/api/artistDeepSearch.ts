@@ -21,7 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
         const albumCount = count && Number.parseInt(count) || 5;
         let parsed_id: string | null;
-        let sourceProvider: ProviderWithCapabilities<["getAlbumById", "getAlbumUPCs", "getArtistAlbums", "getArtistById", "formatAlbumGetData", "formatAlbumObject", "formatArtistObject", "formatArtistLookupData"]> | false | null = null;
+        let sourceProvider: ProviderWithCapabilities<["getAlbumById", "formatAlbumObject", "getArtistAlbums", "getArtistById", "formatAlbumGetData", "formatAlbumObject", "formatArtistObject", "formatArtistLookupData"]> | false | null = null;
         if (url) {
             let urlInfo = providers.getUrlInfo(url);
             if (!urlInfo) {
@@ -35,9 +35,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return res.status(500).json({ error: "Failed to extract provider id from URL" } as SAMBLApiError);
             }
             provider = urlInfo.provider;
-            sourceProvider = providers.parseProvider(urlInfo.provider, ["getAlbumById", "getAlbumUPCs", "getArtistAlbums", "getArtistById", "formatAlbumGetData", "formatAlbumObject", "formatArtistObject", "formatArtistLookupData"]);
+            sourceProvider = providers.parseProvider(urlInfo.provider, ["getAlbumById", "formatAlbumObject", "getArtistAlbums", "getArtistById", "formatAlbumGetData", "formatAlbumObject", "formatArtistObject", "formatArtistLookupData"]);
         } else if (provider_id && provider) {
-            sourceProvider = providers.parseProvider(provider, ["getAlbumById", "getAlbumUPCs", "getArtistAlbums", "getArtistById", "formatAlbumGetData", "formatAlbumObject", "formatArtistObject", "formatArtistLookupData"]);
+            sourceProvider = providers.parseProvider(provider, ["getAlbumById", "formatAlbumObject", "getArtistAlbums", "getArtistById", "formatAlbumGetData", "formatAlbumObject", "formatArtistObject", "formatArtistLookupData"]);
             parsed_id = provider_id
         } else {
             return res.status(400).json({ error: "Parameters `provider_id` and `provider` are required when not using `url`" } as SAMBLApiError);
@@ -67,7 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             albumData.length = 0;
             for (let i = 0; i < albums.length && i < albumCount; i++) {
                 let album = albums[i]
-                const rawAlbum = await sourceProvider.getAlbumById((album.provider == "bandcamp" ? album.url : album.id));
+                const rawAlbum = await sourceProvider.getAlbumById(album.id);
                 const fullAlbum = sourceProvider.formatAlbumObject(rawAlbum);
                 albumData.push(fullAlbum);
             }
@@ -136,7 +136,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             mostCommonArtist = mostCommonArtists[0]; // single artist
         }
 
-        nameSimilarity = stringSimilarity.compareTwoStrings(artistName, bestArtist.name);
+        nameSimilarity = stringSimilarity.compareTwoStrings(artistName.toLocaleLowerCase(), bestArtist.name.toLocaleLowerCase());
 
         const formattedAlbumData = processAlbumData(albumData, mbAlbums, undefined, undefined, sourceProvider.namespace);
 
@@ -149,7 +149,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             method: method, 
             mostCommonMbid: mostCommonMbid, 
             artists: artists,
-            albums: formattedAlbumData.albumData 
+            albums: formattedAlbumData.albumData,
+            artist: formattedArtistInfo
         };
 
         res.status(200).json(dsData);

@@ -304,7 +304,7 @@ function formatArtistObject(artist: NaverArtist): ArtistObject {
         type: "artist",
         id: String(artist.artistId),
         name: artist.artistName,
-        url: createUrl("artist", String(artist.artistId)) || "",
+        url: createUrl("artist", String(artist.artistId)),
         bannerUrl: null,
         imageUrl: artist.imageUrl ? getFullImageUrl(artist.imageUrl) : null,
         imageUrlSmall: artist.imageUrl || null,
@@ -439,7 +439,7 @@ function formatAlbumObject(album: NaverAlbumWithTracks): AlbumObject {
         type: "album",
         id: String(album.albumId),
         name: album.albumTitle,
-        url: createUrl("album", String(album.albumId)) || "",
+        url: createUrl("album", String(album.albumId)),
         albumArtists: album.artists.map(formatPartialArtistObject),
         artistNames: album.artists.map(artist => artist.artistName),
         releaseDate: formatNaverDate(album.releaseDate),
@@ -461,7 +461,7 @@ function formatPartialArtistObject(artist: NaverPartialArtist): PartialArtistObj
         type: "artist",
         id: String(artist.artistId),
         name: artist.artistName,
-        url: createUrl("artist", String(artist.artistId)) || "",
+        url: createUrl("artist", String(artist.artistId)),
         imageUrl: artist.imageUrl ? getFullImageUrl(artist.imageUrl) : null,
         imageUrlSmall: artist.imageUrl || null
     }
@@ -473,7 +473,7 @@ function formatTrackObject(track: NaverTrack): TrackObject {
         type: "track",
         id: String(track.trackId),
         name: track.trackTitle,
-        url: createUrl("track", String(track.trackId)) || "",
+        url: createUrl("track", String(track.trackId)),
         trackArtists: track.artists.map(formatPartialArtistObject),
         artistNames: track.artists.map(artist => artist.artistName),
         albumName: track.album.albumTitle,
@@ -521,9 +521,7 @@ const naver: FullProvider = {
     formatArtistSearchData,
     formatArtistObject,
     parseUrl,
-    createUrl,
-    getAlbumUPCs,
-    getTrackISRCs
+    createUrl
 }
 
 export default naver;
