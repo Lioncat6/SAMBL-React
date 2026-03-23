@@ -66,7 +66,7 @@ function getArtistByIdAsync(id: string) {
 	});
 }
 
-async function getAlbumUrlsAsync(artistUrl) {
+async function getAlbumUrlsAsync(artistUrl: string) {
 	return new Promise((resolve, reject) => {
 		try {
 			bcApi.getAlbumUrls(artistUrl, (error, albumData) => {
@@ -79,7 +79,7 @@ async function getAlbumUrlsAsync(artistUrl) {
 	});
 }
 
-async function getAlbumInfoAsync(albumUrl) {
+async function getAlbumInfoAsync(albumUrl: string) {
 	return new Promise((resolve, reject) => {
 		try {
 			bcApi.getAlbumInfo(albumUrl, (error, albumData) => {
@@ -92,7 +92,7 @@ async function getAlbumInfoAsync(albumUrl) {
 	});
 }
 
-async function getTrackInfoAsync(trackUrl) {
+async function getTrackInfoAsync(trackUrl: string) {
 	return new Promise((resolve, reject) => {
 		try {
 			bcApi.getTrackInfo(trackUrl, (error, trackData) => {
@@ -119,9 +119,9 @@ async function getAlbumById(id: string) {
 	try {
 		let albumData: any = null;
 		if (bcId.type = "album") {
-			albumData = await getAlbumInfoAsync(createUrl('album', id));
+			albumData = await getAlbumInfoAsync(createUrl('album', id).url);
 		} else {
-			albumData = await getTrackInfoAsync(createUrl('track', id));
+			albumData = await getTrackInfoAsync(createUrl('track', id).url);
 		}
 		return albumData;
 	} catch (error) {
@@ -140,7 +140,7 @@ async function getTrackById(id: string) {
 	const bcId = parseId(id)
 	id = createId(bcId)
 	try {
-		let trackData = await getTrackInfoAsync(createUrl('track', id));
+		let trackData = await getTrackInfoAsync(createUrl('track', id).url);
 		return trackData;
 	} catch (error) {
 		err.handleError("Error fetching track by ID:", error);
@@ -176,7 +176,7 @@ async function getArtistById(artistId: string) {
 		const data = await bandcamp.searchByArtistName(artistId);
 		if (data) {
 			let idData = await getArtistByIdAsync(artistId);
-			const url = (idData as any)?.raw?.url || createUrl("artist", artistId);;
+			const url = (idData as any)?.raw?.url || createUrl("artist", artistId).url;
 			let artistData = data.find((a) => text.trimUrl(a.url) == text.trimUrl(url)) || null;
 			if (!artistData) return null
 			artistData.raw = (idData as any).raw;
@@ -206,9 +206,10 @@ function getTags(rawData){
 }
 
 function formatArtistObject(rawData): ArtistObject {
+	const id = parseUrl(rawData.url)?.id || "";
 	return {
 		name: rawData.name,
-		url: rawData.url,
+		url: createUrl("artist", id),
 		imageUrl: rawData.imageUrl?.replace(/_\d+\.jpg$/, "_0.jpg"),
 		imageUrlSmall: rawData.imageUrl?.replace(/_\d+\.jpg$/, "_3.jpg"),
 		bannerUrl: rawData.raw?.design?.bg_image_id
@@ -240,7 +241,7 @@ async function getArtistAlbums(
 		let albumItems = searchResults.filter(
 			(a) =>
 				(a.type == "album" || (a.type == "track" && a.artist == "")) &&
-				a.url.includes(createUrl('artist', artistId))
+				a.url.includes(createUrl('artist', artistId).url)
 		); // Yes, this filters out tracks that have an album because of a coding error in the bandcamp library :3
 		return {
 			current: offset,
@@ -285,7 +286,7 @@ function formatAlbumObject(album): AlbumObject {
 		provider: namespace,
 		id: createId(bcId),
 		name: album.name || album.title,
-		url: album.url,
+		url: createUrl("album", createId(bcId)),
 		imageUrl: imageUrl,
 		imageUrlSmall: imageUrlSmall,
 		albumArtists: [
@@ -323,7 +324,7 @@ function getAlbumTracks(album): TrackObject[] {
 			let currentTrack = album.tracks[trackNumber];
 			const url = trackinfo.url || currentTrack.url
 			const urlInfo = parseUrl(url)
-			trackinfo.url = (urlInfo?.type && urlInfo.id) ? createUrl(urlInfo?.type, urlInfo.id): null;
+			trackinfo.url = (urlInfo?.type && urlInfo.id) ? createUrl(urlInfo?.type, urlInfo.id).url: null;
 			trackinfo.id = urlInfo?.id
 			if (!trackinfo.artist) {
 				trackinfo.artist = album.artist;
@@ -369,22 +370,27 @@ function getAlbumTracks(album): TrackObject[] {
 	return tracks;
 }
 
+function createImageUrl(artId, size = 0){
+	return artId ? `https://f4.bcbits.com/img/a${artId}_${size}.png`: null
+}
+
 function formatTrackObject(track): TrackObject {
 	const artistId = track.url.match(/^https?:\/\/([^.]+)\.bandcamp\.com/)[1];
+	const rawTrack = track.raw;
 	return {
 		provider: namespace,
-		id: track.id || null,
+		id: parseUrl(track.url)?.id || null,
 		name: track.title,
 		url: track.url || null,
-		imageUrl: track.imageUrl || null,
-		imageUrlSmall: track.imageUrlSmall || null,
+		imageUrl: track.imageUrl || createImageUrl(track.raw.art_id) || null,
+		imageUrlSmall: track.imageUrlSmall || createImageUrl(track.raw.art_id, 3)|| null,
 		trackArtists: [formatPartialArtistObject(track)],
-		artistNames: track.artist ? [track.artist] : [],
+		artistNames: track.artist ? [track.artist] : rawTrack.artist ? [rawTrack.artist] : [],
 		albumName: track.albumName || null,
-		releaseDate: track.releaseDate || null,
+		releaseDate: track.releaseDate || rawTrack?.album_release_date ? text.formatDate(rawTrack?.album_release_date) : rawTrack?.current.publish_date ? text.formatDate(rawTrack.current.publish_date): null,
 		trackNumber: track.track_num,
-		duration: track.duration*1000 || null,
-		isrcs: track.isrc ? [track.isrc] : [],
+		duration: track.duration*1000  || rawTrack?.trackinfo[0]?.duration*1000 || null,
+		isrcs: track.isrc ? [track.isrc] : rawTrack?.current.isrc ? [rawTrack.current.isrc] : [],
 		type: "track"
 	};
 }
