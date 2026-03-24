@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, FullProvider, PartialArtistObject, RawAlbumData, Capabilities, ExternalUrlData } from "../../types/provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, FullProvider, PartialArtistObject, RawAlbumData, Capabilities, ExternalUrlData, ExtendedTrackObject } from "../../types/provider-types";
 import withCache from "../../utils/cache";
 import ErrorHandler from "../../utils/errorHandler";
 import text from "../../utils/text";
@@ -374,24 +374,36 @@ function createImageUrl(artId, size = 0){
 	return artId ? `https://f4.bcbits.com/img/a${artId}_${size}.png`: null
 }
 
-function formatTrackObject(track): TrackObject {
+function formatTrackObject(track): ExtendedTrackObject {
 	const artistId = track.url.match(/^https?:\/\/([^.]+)\.bandcamp\.com/)[1];
+	const id = parseUrl(track.url)?.id;
 	const rawTrack = track.raw;
+	const trackInfo = rawTrack?.trackinfo?.[0]
 	return {
 		provider: namespace,
-		id: parseUrl(track.url)?.id || null,
+		id: id || null,
 		name: track.title,
-		url: track.url || null,
-		imageUrl: track.imageUrl || createImageUrl(track.raw.art_id) || null,
-		imageUrlSmall: track.imageUrlSmall || createImageUrl(track.raw.art_id, 3)|| null,
+		url: createUrl("track", id || ""),
+		imageUrl: track.imageUrl || createImageUrl(rawTrack?.art_id) || null,
+		imageUrlSmall: track.imageUrlSmall || createImageUrl(rawTrack?.art_id, 3)|| null,
 		trackArtists: [formatPartialArtistObject(track)],
-		artistNames: track.artist ? [track.artist] : rawTrack.artist ? [rawTrack.artist] : [],
+		artistNames: track.artist ? [track.artist] : rawTrack?.artist ? [rawTrack.artist] : [],
 		albumName: track.albumName || null,
 		releaseDate: track.releaseDate || rawTrack?.album_release_date ? text.formatDate(rawTrack?.album_release_date) : rawTrack?.current.publish_date ? text.formatDate(rawTrack.current.publish_date): null,
-		trackNumber: track.track_num,
-		duration: track.duration*1000  || rawTrack?.trackinfo[0]?.duration*1000 || null,
+		trackNumber: track.track_num || rawTrack?.current.track_number || null,
+		duration: track.duration*1000  || trackInfo?.duration*1000 || null,
 		isrcs: track.isrc ? [track.isrc] : rawTrack?.current.isrc ? [rawTrack.current.isrc] : [],
-		type: "track"
+		type: "track",
+		extraInfo: {
+			trackId: track.trackId || null,
+			albumId: rawTrack?.current?.album_id || null,
+			bandId: rawTrack?.current?.band_id || null,
+			encodingsId: rawTrack?.current.encodings_id || null,
+			sellingBandId: rawTrack?.current?.selling_band_id || null,
+			minimumPrice: rawTrack?.current.minimum_price || null,
+			lyrics: rawTrack?.current.lyrics || null,
+			isPaid: !(trackInfo?.has_free_download || trackInfo?.free_album_download) && rawTrack?.current.minimum_price > 0
+ 		}
 	};
 }
 
