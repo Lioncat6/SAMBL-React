@@ -65,10 +65,10 @@ function AlbumDetails({ data }: { data: DisplayAlbum }) {
 			)}
 			<div className={styles.albumInfo}>
 				<div className={styles.albumTitle}>
-					<a href={url} target="_blank" rel="noopener noreferrer">
+					<a href={url.url} target="_blank" rel="noopener noreferrer">
 						{name}
 					</a>
-					<MbUrlIcon status={status} url={mbAlbum?.url || null} styleClass={styles.albumMB} />
+					<MbUrlIcon status={status} url={mbAlbum?.url.url || null} styleClass={styles.albumMB} />
 					<button onClick={() => copyLink(data.id)} title={"Copy SAMBL link to this album"} className={styles.linkButton}>
 						<FaLink />
 					</button>
@@ -78,7 +78,7 @@ function AlbumDetails({ data }: { data: DisplayAlbum }) {
 					{albumArtists.map((artist, index) => (
 						<span key={artist.id}>
 							{index > 0 && ", "}
-							<a href={artist.url} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
+							<a href={artist.url.url} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
 								{artist.name}
 							</a>
 							<a href={`../newartist?provider_id=${artist.id}&provider=${artist.provider}`} target="_blank" rel="noopener noreferrer">
@@ -133,7 +133,7 @@ function TrackItem({ index, track, album, isrcSource, highlight }: { index: stri
 
 	if ((track as AggregatedTrack).mbid !== undefined) {
 		mbid = (track as AggregatedTrack).mbid;
-		mbUrl = (track as AggregatedTrack).mbTrack?.url || null;
+		mbUrl = (track as AggregatedTrack).mbTrack?.url?.url || null;
 		status = (track as AggregatedTrack).status;
 		trackIssues = (track as AggregatedTrack).trackIssues;
 	}
@@ -206,7 +206,7 @@ function TrackItem({ index, track, album, isrcSource, highlight }: { index: stri
 			</div>
 			<div className={styles.trackInfo}>
 				<div className={styles.trackTopRow}>
-					<a className={styles.trackTitle} href={track.url || ""} > {track.name}</a> <MbUrlIcon status={status} url={mbUrl || ""} styleClass={styles.trackMB} isAlbum={false} />
+					<a className={styles.trackTitle} href={track.url?.url || ""} > {track.name}</a> <MbUrlIcon status={status} url={mbUrl || ""} styleClass={styles.trackMB} isAlbum={false} />
 					<div className={`${styles.trackISRCs} ${isrcSource == "musicbrainz" && styles.mbUnderline}`} title={isrcSource == "musicbrainz" ? "This ISRC is sourced from MusicBrainz" : undefined}>{Array.isArray(track) && typeof track[0] === "object" ? JSON.stringify(track, null, 2) : String(track.isrcs)}</div>
 				</div>
 				{showArtistCredit() && (
@@ -214,7 +214,7 @@ function TrackItem({ index, track, album, isrcSource, highlight }: { index: stri
 						{track.trackArtists.map((artist, index) => (
 							<span key={index}>
 								{index > 0 && ", "}
-								<a href={artist.url} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
+								<a href={artist.url.url} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
 									{artist.name}
 								</a>
 								{artist.provider != "musicbrainz" &&

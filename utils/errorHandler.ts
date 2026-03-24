@@ -18,7 +18,7 @@ class ErrorHandler {
         throwError: boolean = true,
         ErrorType: typeof Error = Error
     ): void {
-        const errorMessage = (error?.message ? `${message} / ${error.message}` : message || null)?.replace(/\[\w+]:/, "");
+        const errorMessage = (error?.message ? `${message} | ${error.message}` : message || null)?.replace(/\[\w+]:/, "");
         if (message.includes("ETIMEDOUT") || message.includes("ECONNRESET")) {
 
         }

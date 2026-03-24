@@ -2,7 +2,7 @@ import { useRouter } from "next/router";
 import ItemList from "../../components/ItemList";
 import Head from 'next/head';
 import SearchBox from '../../components/SearchBox';
-import { ArtistSearchData } from "../../types/api-types";
+import { ArtistSearchData, SAMBLApiError } from "../../types/api-types";
 import { SAMBLError } from "../../types/component-types";
 import ErrorPage from "../../components/ErrorPage";
 import SAMBLHead from "../../components/SAMBLHead";
@@ -15,7 +15,11 @@ async function getItems(query, provider) {
         const data = await response.json() as ArtistSearchData;
         return data;
     } else {
-        throw new Error("Error fetching artist data: " + response.statusText);
+        let errorData: null | SAMBLApiError = null
+        try {
+            errorData = await response.json() as SAMBLApiError
+        } catch {}
+        throw new Error("Error fetching artist data: " + errorData?.details || response.statusText);
     }
 }
 
