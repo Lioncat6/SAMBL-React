@@ -378,6 +378,8 @@ function formatTrackObject(track): ExtendedTrackObject {
 	const artistId = track.url.match(/^https?:\/\/([^.]+)\.bandcamp\.com/)[1];
 	const id = parseUrl(track.url)?.id;
 	const rawTrack = track.raw;
+	const artistName = track.artist || rawTrack?.artist || null;
+	track.artistName = artistName;
 	const trackInfo = rawTrack?.trackinfo?.[0]
 	return {
 		provider: namespace,
@@ -387,7 +389,7 @@ function formatTrackObject(track): ExtendedTrackObject {
 		imageUrl: track.imageUrl || createImageUrl(rawTrack?.art_id) || null,
 		imageUrlSmall: track.imageUrlSmall || createImageUrl(rawTrack?.art_id, 3)|| null,
 		trackArtists: [formatPartialArtistObject(track)],
-		artistNames: track.artist ? [track.artist] : rawTrack?.artist ? [rawTrack.artist] : [],
+		artistNames: artistName ? [artistName]: [],
 		albumName: track.albumName || null,
 		releaseDate: track.releaseDate || rawTrack?.album_release_date ? text.formatDate(rawTrack?.album_release_date) : rawTrack?.current.publish_date ? text.formatDate(rawTrack.current.publish_date): null,
 		trackNumber: track.track_num || rawTrack?.current.track_number || null,
@@ -412,7 +414,7 @@ function formatPartialArtistObject(track): PartialArtistObject {
 	const artistInfo = parseId(parseUrl(track.url)?.id || null)
 	return {
 		url: artistInfo?.artist ? createUrl('artist', artistInfo.artist) : createUrl('artist', ""),
-		name: track.artist || artistInfo?.artist,
+		name: track.artist || track.artistName || artistInfo?.artist,
 		imageUrl: null,
 		imageUrlSmall: null,
 		id: artistInfo?.artist || "",
