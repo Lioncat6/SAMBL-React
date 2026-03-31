@@ -1,18 +1,20 @@
 import musicbrainz from "../../lib/providers/musicbrainz";
 import providers from "../../lib/providers/providers";
 import logger from "../../utils/logger";
-import { AlbumObject, ExtendedAlbumObject, PartialArtistObject, ProviderWithCapabilities } from "../../types/provider-types";
-import { DeepSearchData, DeepSearchMethod, SAMBLApiError } from "../../types/api-types"
+import { AlbumObject, ArtistObject, ExtendedAlbumObject, PartialArtistObject, ProviderWithCapabilities } from "../../types/provider-types";
+import { DeepSearchArtist, DeepSearchData, DeepSearchMethod, SAMBLApiError } from "../../types/api-types"
 import { IArtist } from "musicbrainz-api";
 import { NextApiRequest, NextApiResponse } from "next";
 import stringSimilarity  from 'string-similarity';
 import normalizeVars from "../../utils/normalizeVars";
 import processAlbumData from "../../utils/processAlbumData";
+import text from "../../utils/text";
 
 //TODO: Implement URL based deep search as a preliminary check before checking UPCs
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {;
     try {
-        let { provider_id, provider, url, count } = normalizeVars(req.query);
+        let { provider_id, provider, url, count, searchURLs, searchUPCs, trackArtists } = normalizeVars(req.query);
+
         if (!provider_id && !url) {
             return res.status(400).json({ error: "Parameter `id` or `url` is required" } as SAMBLApiError);
         }
@@ -50,6 +52,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(404).json({ error: "Artist not found!" } as SAMBLApiError);
         }
 
+        let useUPCs = true;
+        if (searchUPCs == "false") {
+            useUPCs = false;
+        }
+        let useURLs = false;
+        if (searchURLs == "true") {
+            useURLs = true;
+        }
+        let useTrackArtists = false;
+        if (trackArtists == "true"){
+            useTrackArtists = true;
+        }
+
         let formattedArtistInfo = sourceProvider.formatArtistObject(sourceProvider.formatArtistLookupData(artistInfo));
         let artistName = formattedArtistInfo.name;
         let results = await sourceProvider.getArtistAlbums(parsed_id);
@@ -74,9 +89,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             upcs = albumData.map(album => album.upc);
         }
         upcs = albumData.map(album => album.upc).filter(upc => upc);
-        if (upcs.length === 0) {
-            return res.status(404).json({ error: "No UPCs found!" } as SAMBLApiError);
-        }
         let mbAlbums: ExtendedAlbumObject[] = [];
         let artists: PartialArtistObject[] = []
         let upcArtistArray: Map<string, PartialArtistObject[]> = new Map();
@@ -93,17 +105,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 }
                 const artistArray = upcArtistArray.get(upc)!;
                 for (const release of mbMatch) {
-                    mbAlbums.push(release);
-                    if (release.albumArtists.length == 0) continue;
-                    for (const artist of release.albumArtists) {
+                    let formattedAlbum = release;
+                    if (useTrackArtists){
+                        const fullAlbum = await musicbrainz.getAlbumByMBID(release.id, ['artist-credits', 'recordings']);
+                        formattedAlbum = musicbrainz.formatAlbumObject(fullAlbum);
+                    }
+                    mbAlbums.push(formattedAlbum);
+                    formattedAlbum.albumArtists.forEach((artist) => {
                         artistArray.push(artist);
                         artists.push(artist);
-                    }
+                    })  
+                    formattedAlbum.albumTracks.forEach((track) => track.trackArtists.forEach((artist) => {
+                        artistArray.push(artist);
+                        artists.push(artist);
+                    }))
                 }
             }
-        }
-        if (artists.length === 0) {
-            return res.status(404).json({ error: "No artists found!" } as SAMBLApiError);
         }
         const mbidCounts = artists.reduce((acc: {[mbid: string]: {count: number, artist: IArtist}}, artist) => {
             acc[artist.id] = acc[artist.id] || { count: 0, artist };
@@ -115,42 +132,56 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const mostCommonArtists = Object.values(mbidCounts)
             .filter(obj => obj.count === maxCount)
             .map(obj => obj.artist);
+        const mostCommonIds = mostCommonArtists.map(artist => artist.id)
+        // let mostCommonArtist: IArtist;
+        // let mostCommonMbid: string | null = null;
+        // let bestArtist: IArtist | null = null;
+        // let method: DeepSearchMethod | null = null;
+        // let nameSimilarity: number | null = null;
+        // if (mostCommonArtists.length > 1) {
+        //     method = "name_similarity";
+        //     mostCommonMbid = "tie";
+        //     const candidateNames = mostCommonArtists.map(a => a.name.toLowerCase());
+        //     const matches = stringSimilarity.findBestMatch(artistName.toLowerCase(), candidateNames);
+        //     const bestMatchIndex: number = matches.bestMatchIndex;
+        //     mostCommonArtist = mostCommonArtists[bestMatchIndex];
+        //     bestArtist = mostCommonArtist;
+        // } else {
+        //     method = "most_common";
+        //     mostCommonMbid = mostCommonArtists[0].id;
+        //     bestArtist = mostCommonArtists[0];
+        //     mostCommonArtist = mostCommonArtists[0]; // single artist
+        // }
 
-        let mostCommonArtist: IArtist;
-        let mostCommonMbid: string | null = null;
-        let bestArtist: IArtist | null = null;
-        let method: DeepSearchMethod | null = null;
-        let nameSimilarity: number | null = null;
-        if (mostCommonArtists.length > 1) {
-            method = "name_similarity";
-            mostCommonMbid = "tie";
-            const candidateNames = mostCommonArtists.map(a => a.name.toLowerCase());
-            const matches = stringSimilarity.findBestMatch(artistName.toLowerCase(), candidateNames);
-            const bestMatchIndex: number = matches.bestMatchIndex;
-            mostCommonArtist = mostCommonArtists[bestMatchIndex];
-            bestArtist = mostCommonArtist;
-        } else {
-            method = "most_common";
-            mostCommonMbid = mostCommonArtists[0].id;
-            bestArtist = mostCommonArtists[0];
-            mostCommonArtist = mostCommonArtists[0]; // single artist
+        function getSimilarity(name: string){
+            return stringSimilarity.compareTwoStrings(text.normalizeText(artistName), text.normalizeText(name));
         }
-
-        nameSimilarity = stringSimilarity.compareTwoStrings(artistName.toLocaleLowerCase(), bestArtist.name.toLocaleLowerCase());
 
         const formattedAlbumData = processAlbumData(albumData, mbAlbums, undefined, undefined, sourceProvider.namespace);
 
+        let finalArtists: DeepSearchArtist[] = []
+
+        artists.forEach((artist) => {
+            if (finalArtists.some((fa) => fa.id == artist.id)) return;
+            finalArtists.push({
+                ...artist,
+                nameSimilarity: getSimilarity(artist.name),
+                occurrences: mbidCounts[artist.id].count || null,
+                mostCommonMBID: mostCommonIds.includes(artist.id)
+            })
+        })
+
+        finalArtists = finalArtists.sort((a, b) => {
+            const aIsCommon = mostCommonIds.includes(a.id) ? 0 : 1;
+            const bIsCommon = mostCommonIds.includes(b.id) ? 0 : 1;
+            return aIsCommon !== bIsCommon ? aIsCommon - bIsCommon : b.nameSimilarity - a.nameSimilarity;
+        })
+
         const dsData: DeepSearchData = { 
             provider: sourceProvider.namespace, 
-            mbid: bestArtist.id, 
-            nameSimilarity: nameSimilarity, 
-            sourceName: artistName, 
-            mbName: bestArtist.name, 
-            method: method, 
-            mostCommonMbid: mostCommonMbid, 
-            artists: artists,
+            mbArtists: finalArtists,
             albums: formattedAlbumData.albumData,
-            artist: formattedArtistInfo
+            sourceArtist: formattedArtistInfo
         };
 
         res.status(200).json(dsData);

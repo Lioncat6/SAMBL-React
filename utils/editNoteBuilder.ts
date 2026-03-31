@@ -1,4 +1,8 @@
+import { AggregatedAlbum, AggregatedArtist } from "../types/aggregated-types";
 import { DeepSearchData } from "../types/api-types";
+import { DeepSearchSelection } from "../types/component-types";
+import { PartialArtistObject } from "../types/provider-types";
+import text from "./text";
 
 const encode = str => encodeURIComponent(str).replace(/%250A/g, '%0A');
 
@@ -23,16 +27,50 @@ function buildEditNote(edit: string, provider: string, sourceUrl: string, artist
     );
 }
 
-function buildDeepSearchEditNote(data: DeepSearchData): string {
+function buildDeepSearchEditNote(data: DeepSearchSelection): string {
+    const artist = data.data.mbArtists.find(artist => artist.id == data.mbid) || data.data.mbArtists[0];
+    const sourceArtist = data.data.sourceArtist;
+
+    function getTrackArtists(album: AggregatedAlbum): PartialArtistObject[] {
+        const tracks = album.mbAlbum?.albumTracks || [];
+        const albumArtists = album.mbAlbum?.albumArtists || [];
+        const rawArtists = tracks?.flatMap(track => track.trackArtists) || [];
+        const deDupedArtists = Array.from(new Set(rawArtists.map(artist => artist.id))).map(id => rawArtists.find(artist => artist.id === id)).filter(artist => artist).filter(artist => artist != undefined); 
+        if (deDupedArtists.every(artist => albumArtists.some(albumArtist => albumArtist.id === artist.id))) {
+            return [];
+        }
+        return deDupedArtists;
+    }
+
+    function isMostCommon(): boolean {
+        return artist.mostCommonMBID && data.data.mbArtists.filter(artist => artist.mostCommonMBID).length == 1;
+    }
+
+    function getMethod(): string {
+        if (data.userSelected) {
+            return 'Editor Selected'
+        }
+        if (artist.mostCommonMBID && data.data.mbArtists.filter(artist => artist.mostCommonMBID).length == 1) {
+            return 'Most Common MBID';
+        }
+        return 'Name Similarity';
+    }
+
     return encode(
-        `Artist found with ''SAMBL Deep Search''%0A` +
-        `'''Provider:''' ${data.provider}%0A` +
+        `Artist matched with ''SAMBL Deep Search''%0A` +
+        `'''Provider:''' ${data.data.provider}%0A` +
         `'''Albums:'''%0A` +
-        `${data.albums.map((album) => ` • '''${album.name}''' ''Barcode: ${album.upc}'' ${album.url.url}%0A''Artists:'' ${album.mbAlbum?.albumArtists?.map((artist) => `${artist.name} ''(${artist.url.url})''`).join(", ") || "none"}`).join("%0A ")}%0A%0A` +
-        `'''Selected Artist:''' ${data.artist.name} | ${data.artist.url.url}%0A` +
-        `'''Most Common MBID:''' ${data.mostCommonMbid}%0A` +
-        `'''Name Similarity:''' ${Math.round(data.nameSimilarity * 100)}%%0A` +
-        `${data.method == "most_common" ? `'''Method:''' Most Common MBID (${data.mostCommonMbid})%0A` : `'''Method:''' Name Similarity (''${Math.round(data.nameSimilarity * 100)}%'')%0A• ''Provider Name: ${data.sourceName}''%0A• ''Name in Musicbrainz: ${data.mbName}''`}` +
+        `${data.data.albums.map((album) => 
+            ` • '''${album.name}''' ''Barcode: ${album.upc}'' ${album.url.url}%0A`+
+            `''Artists:'' ${album.mbAlbum?.albumArtists?.map((artist) => `'''${artist.name}''' ''(${artist.url.url})''`).join(", ") || "none"}`+
+            `${data.trackArtists ? `%0A''Track Artists:'' ${getTrackArtists(album).map((artist) => `'''${artist.name}''' ''(${artist.url.url})''`).join(", ") || "none"}`: ""}`)
+        .join("%0A ")}%0A%0A` +
+        `'''Selected Artist:''' ${sourceArtist.name} | ${sourceArtist.url.url}%0A` +
+        `'''Name Similarity:''' ${text.truncateToTwo(artist.nameSimilarity * 100)}%%0A` +
+        ` • ''${text.capitalizeFirst(sourceArtist.provider)}'': ${sourceArtist.name}%0A`+
+        ` • ''MusicBrainz'': ${artist.name}%0A`+
+        `'''Method:''' ${getMethod()}%0A` +
+        `${artist.mostCommonMBID ? `'''Most Common MBID:''' ${isMostCommon() ? "Yes" : "Tie"} | ''${artist.occurrences} Occurrences''%0A` : ""}` +
         `%0A%0A'''SAMBL ${process.env.NEXT_PUBLIC_VERSION}''': ${process.env.NEXT_PUBLIC_URL || "https://sambl.lioncat6.com"} | https://github.com/lioncat6/SAMBL-React`
     );
 }

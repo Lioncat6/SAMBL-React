@@ -80,6 +80,7 @@ export class ExtendedAlbumObject extends AlbumObject {
     comment: string | null;
     externalUrls: string[] | null;
     hasImage: boolean;
+    albumArtists: ArtistObject[];
     override albumTracks: ExtendedTrackObject[];
 };
 

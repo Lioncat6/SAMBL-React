@@ -5,7 +5,7 @@ import { FaCaretDown, FaGear, FaXmark } from "react-icons/fa6";
 import seeders from "../../lib/seeders/seeders";
 import Popup from "../Popup";
 import { SAMBLSettings } from "../../types/component-types";
-import { Transition, Listbox, ListboxButton, ListboxOption, ListboxOptions, Label, Button } from "@headlessui/react";
+import { Transition, Listbox, ListboxButton, ListboxOption, ListboxOptions, Label, Button, Input, Field, Fieldset, Checkbox } from "@headlessui/react";
 import { Seeder } from "../../types/seeder-types";
 
 function SelectedItem({ item, onRemove }: { item: Seeder, onRemove: (() => void) | false, exclusive?: boolean }) {
@@ -34,7 +34,7 @@ function ConfigureMenu({ close }: { close?: () => void }) {
                 <FaGear /> Configure SAMBL <p className={styles.version}>{process.env.NEXT_PUBLIC_VERSION}</p>
             </div>
             <div className={styles.content}>
-                <div className={styles.configureMenu}>
+                <Fieldset className={styles.configureMenu}>
                     <Listbox value={enabledSeeders} onChange={setEnabledSeeders} multiple>
                         {({ open }) => (
                             <>
@@ -76,31 +76,39 @@ function ConfigureMenu({ close }: { close?: () => void }) {
                         )}
                     </Listbox>
                     <hr/>
-                    <div className="checkbox-wrapper">
-                        <input type="checkbox" id="showExport" checked={showExport} onChange={(e) => setShowExport(e.target.checked)} className="substituted" />
-                        <label htmlFor="showExport">Always show export Button</label>
-                    </div>
-                    <div className="checkbox-wrapper">
-                        <input type="checkbox" id="listVirtualization" checked={listVirtualization} onChange={(e) => setListVirtualization(e.target.checked)} className="substituted" />
-                        <label htmlFor="listVirtualization" title="Enable list virtualization for artists over a certain amount of albums to speed up filtering. Disable for userscript compatibility." className={styles.info}>
+                    <Field className={styles.checkboxField}>
+                        <Checkbox className={styles.checkboxWrapper} checked={showExport} onChange={setShowExport}>
+                            <span className={styles.checkbox}></span>
+                        </Checkbox>
+                        <Label>Always show export Button</Label>
+                    </Field>
+                    <Field className={styles.checkboxField}>
+                        <Checkbox className={styles.checkboxWrapper} checked={listVirtualization} onChange={setListVirtualization}>
+                            <span className={styles.checkbox}></span>
+                        </Checkbox>
+                        <Label title="Enable list virtualization for artists over a certain amount of albums to speed up filtering. Disable for userscript compatibility." className={styles.info}>
                             Enable List virtualization
-                        </label>
-                    </div>
+                        </Label>
+                    </Field>
                     <hr/>
-                    <div className={styles.settingsInputWrapper}>
-                        <input className={styles.settingsInput} type="number" id="quickFetchThreshold" value={quickFetchThreshold} onChange={(e) => setQuickFetchThreshold(Number(e.target.value))} />
-                        <label htmlFor="quickFetchThreshold">Quick Fetch Threshold (Albums)</label>
-                    </div>
+                    <Field className={styles.settingsInputWrapper}>
+                        <Input className={styles.settingsInput} type="number" id="quickFetchThreshold" value={quickFetchThreshold} onChange={(e) => setQuickFetchThreshold(Number(e.target.value))} />
+                        <Label>Quick Fetch Threshold (Albums)</Label>
+                    </Field>
                     <hr/>
-                    <div className="checkbox-wrapper">
-                        <input type="checkbox" id="saveFilter" checked={saveFilter} onChange={(e) => setSaveFilter(e.target.checked)} className="substituted" />
-                        <label htmlFor="saveFilter">Save selected filter</label>
-                    </div>
-                    <div className="checkbox-wrapper">
-                        <input type="checkbox" id="saveSort" checked={saveSort} onChange={(e) => setSaveSort(e.target.checked)} className="substituted" />
-                        <label htmlFor="saveSort">Save selected sort option</label>
-                    </div>
-                </div>
+                    <Field className={styles.checkboxField}>
+                        <Checkbox className={styles.checkboxWrapper} checked={saveFilter} onChange={setSaveFilter}>
+                            <span className={styles.checkbox}></span>
+                        </Checkbox>
+                        <Label>Save selected filter</Label>
+                    </Field>
+                    <Field className={styles.checkboxField}>
+                        <Checkbox className={styles.checkboxWrapper} checked={saveSort} onChange={setSaveSort}>
+                            <span className={styles.checkbox}></span>
+                        </Checkbox>
+                        <Label>Save selected sort option</Label>
+                    </Field>
+                </Fieldset>
             </div>
             <div className={styles.actions}>
                 <button
