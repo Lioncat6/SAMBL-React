@@ -225,7 +225,7 @@ function formatAlbumObject(album): AlbumObject {
 		provider: namespace,
 		id: album.id,
 		name: album.title,
-		url: createUrl("track", album.id),
+		url: createUrl("album", album.id),
 		imageUrl: album.cover_xl || "",
 		imageUrlSmall: album.cover_medium || "",
 		albumArtists: album.contributors && album.contributors.length > 0 ? album.contributors.map(formatPartialArtistObject) : album.artist ? [formatPartialArtistObject(album.artist)] : [],
