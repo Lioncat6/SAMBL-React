@@ -171,11 +171,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             })
         })
 
-        finalArtists = finalArtists.sort((a, b) => {
-            const aIsCommon = mostCommonIds.includes(a.id) ? 0 : 1;
-            const bIsCommon = mostCommonIds.includes(b.id) ? 0 : 1;
-            return aIsCommon !== bIsCommon ? aIsCommon - bIsCommon : b.nameSimilarity - a.nameSimilarity;
-        })
+
+        let topArtists = finalArtists.filter(artist => artist.mostCommonMBID);
+
+        topArtists = topArtists.sort((a, b) => b.nameSimilarity - a.nameSimilarity);
+
+        let remainingArtists = finalArtists.filter(artist => !artist.mostCommonMBID);
+
+        remainingArtists = remainingArtists.sort((a, b) => b.nameSimilarity - a.nameSimilarity);
+
+        finalArtists = [...topArtists, ...remainingArtists];
 
         const dsData: DeepSearchData = { 
             provider: sourceProvider.namespace, 
