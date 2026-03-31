@@ -60,7 +60,7 @@ async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
 async function searchByArtistName(query) {
 	await refreshApi();
 	try {
-		const data = await deezerApi.search.artist(query);
+		const data = await deezerApi.search.artist(encodeURIComponent(query));
 		if (data.data) {
 			return data;
 		} else {
@@ -183,7 +183,7 @@ async function getArtistAlbums(artistId, offset, limit) {
 		let next: any = 0;
 		let searchAlbums: any[] = [];
 		while (next != null) {
-			let searchAlbumData = await deezerApi.search.album(`artist:"${artistData.name}"`, null, 9999, next);
+			let searchAlbumData = await deezerApi.search.album(`artist:"${encodeURIComponent(artistData.name)}"`, null, 9999, next);
 			if (searchAlbumData && searchAlbumData.data) {
 				searchAlbums.push(...searchAlbumData.data);
 				next = searchAlbumData.next ? searchAlbumData.next.match(nextIntRegex)[1] : null;
