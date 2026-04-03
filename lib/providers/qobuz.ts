@@ -559,7 +559,7 @@ function formatTrackObject(rawTrack: QobuzTrack | QobuzPartialTrack): TrackObjec
     provider: namespace,
     type: "track",
     id: String(track.id),
-    name: track.title,
+    name: `${track.title}${track.version ? ` (${track.version})` : ""}`,
     url: createUrl("track", String(track.id)),
     trackArtists: track.album ? getAlbumArtists(track.album) : [],
     artistNames: track.album ? getAlbumArtists(track.album).map((artist) => artist.name) : [],
