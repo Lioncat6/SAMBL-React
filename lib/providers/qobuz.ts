@@ -264,12 +264,13 @@ export interface QobuzExtendedTrack extends QobuzPartialTrack, Partial<Omit<Qobu
 const baseUrl = "https://www.qobuz.com/api.json/0.2"
 
 async function qobuzFetch(query) {
-  if (!process.env.QOBUZ_APP_ID) {
-    err.handleError("Missing required environment variable QOBUZ_APP_ID")
+  if (!process.env.QOBUZ_APP_ID || !process.env.QOBUZ_AUTH_TOKEN) {
+    err.handleError("Missing required environment variable QOBUZ_APP_ID or QOBUZ_AUTH_TOKEN")
   }
   return await fetch(baseUrl + query, {
     headers: {
-      "X-App-Id": process.env.QOBUZ_APP_ID || ""
+      "X-App-Id": process.env.QOBUZ_APP_ID || "",
+      "X-User-Auth-Token": process.env.QOBUZ_AUTH_TOKEN || ""
     }
   })
 }
