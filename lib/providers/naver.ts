@@ -151,7 +151,7 @@ export interface NaverTrackCredits {
     artistIds: string
     artistNames: string
     releaseDate: string
-    participantGroupList: NaverParticipantGroup
+    participantGroupList: NaverParticipantGroup[]
 }
 
 export interface NaverParticipantGroup {
