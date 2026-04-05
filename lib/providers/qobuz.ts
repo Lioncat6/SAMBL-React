@@ -542,7 +542,7 @@ function formatAlbumObject(rawAlbum: QobuzAlbum | QobuzPartialAlbum): AlbumObjec
     artistNames: getAlbumArtists(rawAlbum).map((artist) => artist.name),
     releaseDate: album.release_date_stream,
     trackCount: album.tracks_count,
-    albumType: album.release_type || album.tracks_count > 1 ? "album" : "single",
+    albumType: album.release_type || (album.tracks_count > 1 ? "album" : "single"),
     upc: album.upc,
     labels: [album.label.name],
     copyrights: album.copyright ? [album.copyright] : null,
