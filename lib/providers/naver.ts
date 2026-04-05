@@ -140,6 +140,32 @@ export interface NaverTrackInformation {
     lyricUpdateUserId: number | null
 }
 
+// Track Credits (/track/{id}/credits.json)
+export interface NaverTrackCreditsResult {
+    trackCredits: NaverTrackCredits
+}
+
+export interface NaverTrackCredits {
+    trackId: number
+    trackName: string
+    artistIds: string
+    artistNames: string
+    releaseDate: string
+    participantGroupList: NaverParticipantGroup
+}
+
+export interface NaverParticipantGroup {
+    roleName: string
+    participantList: NaverParticipant[]
+}
+
+export interface NaverParticipant {
+    id: number
+    name: string
+    likeCount: number
+    imageUrl: string | null
+}
+
 // Track Detail (/track/{id}.json)
 export interface NaverTrack {
     trackId: number
