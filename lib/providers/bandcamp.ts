@@ -436,7 +436,7 @@ init();
 const capabilities: Capabilities = {
   isrcs: {
 	availability: "sometimes",
-	presence: "onAlbumRefresh"
+	presence: "onTrackRefresh"
   },
   upcs: {
 	availability: "sometimes",
