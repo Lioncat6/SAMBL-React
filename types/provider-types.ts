@@ -1,4 +1,4 @@
-import { ArtistIncludes, IArtist, IBrowseReleasesResult, ICoversInfo, IRecording, IRecordingList, IRelease, IReleaseList, IUrl, IUrlLookupResult, RecordingIncludes, RelationsIncludes, ReleaseIncludes, UrlIncludes } from "musicbrainz-api";
+import { ArtistIncludes, IArtist, IBrowseReleasesResult, ICoversInfo, IRecording, IRecordingList, IRelation, IRelease, IReleaseList, IUrl, IUrlLookupResult, RecordingIncludes, RelationsIncludes, ReleaseIncludes, UrlIncludes } from "musicbrainz-api";
 import { CacheOptions } from "../utils/cache";
 import { AggregatedAlbum } from "./aggregated-types";
 
@@ -186,6 +186,12 @@ export type ProviderCapability = (keyof PartialProvider);
 
 export type ProviderWithCapabilities<T extends ProviderCapability[]> = Omit<PartialProvider, T[number]> & Required<Pick<PartialProvider, T[number]>>;
 
+type KeysWithKey<T, K extends PropertyKey> = {
+  [P in keyof T]: K extends keyof NonNullable<T[P]> ? P : never
+}[keyof T];
+
+export type IRelationType = KeysWithKey<IRelation, "id">
+
 export class MusicBrainzProvider extends FullProvider {
     override getTrackByISRC: (isrc: string, options?: CacheOptions) => Promise<ExtendedTrackObject[] | null>;
     override getAlbumByUPC: (upc: string, options?: CacheOptions) => Promise<ExtendedAlbumObject[] | null>;
@@ -208,5 +214,5 @@ export class MusicBrainzProvider extends FullProvider {
     getArtistReleaseCount: (artistId: string, options?: CacheOptions) => Promise<number | null>;
     getArtistByUrl: (url: string, inc?: UrlIncludes[], options?: CacheOptions) => Promise<IArtist | null>;
     validateMBID: (mbid: string) => boolean;
-    getIdsByUrlQuery: (query: RegexArtistUrlQuery, options?:CacheOptions) => Promise<IdMBIDDict | null>;
+    getIdsByUrlQuery: (query: RegexArtistUrlQuery, type?: IRelationType, options?:CacheOptions) => Promise<IdMBIDDict | null>;
 }
