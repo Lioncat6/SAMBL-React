@@ -1,5 +1,5 @@
-import { MusicBrainzApi, CoverArtArchiveApi, IRelation, IArtist, IBrowseReleasesQuery, IRelease, IRecording, ICoversInfo, IReleaseList, IUrlLookupResult, IUrl, IBrowseReleasesResult, IArtistList, IArtistMatch, ITrack, UrlIncludes, ReleaseIncludes, RecordingIncludes } from "musicbrainz-api";
-import { UrlMBIDDict, ArtistObject, PartialArtistObject, ExtendedAlbumObject, MusicBrainzProvider, ExtendedAlbumData, ExtendedTrackObject, RegexArtistUrlQuery, IdMBIDDict, Capabilities, ExternalUrlData } from "../../types/provider-types";
+import { MusicBrainzApi, CoverArtArchiveApi, IRelation, IArtist, IBrowseReleasesQuery, IRelease, IRecording, ICoversInfo, IReleaseList, IUrlLookupResult, IUrl, IBrowseReleasesResult, IArtistList, IArtistMatch, ITrack, UrlIncludes, ReleaseIncludes, RecordingIncludes, IEntity, ITypedEntity } from "musicbrainz-api";
+import { UrlMBIDDict, ArtistObject, PartialArtistObject, ExtendedAlbumObject, MusicBrainzProvider, ExtendedAlbumData, ExtendedTrackObject, RegexArtistUrlQuery, IdMBIDDict, Capabilities, ExternalUrlData, IRelationType } from "../../types/provider-types";
 import withCache from "../../utils/cache";
 import ErrorHandler from "../../utils/errorHandler";
 import parsers from "../parsers/parsers";
@@ -104,7 +104,8 @@ async function getIdsBySpotifyUrls(spotifyUrls: string[]): Promise<UrlMBIDDict |
 	return null;
 }
 
-async function getIdsByUrlQuery(query: RegexArtistUrlQuery): Promise<UrlMBIDDict | null> {
+async function getIdsByUrlQuery(query: RegexArtistUrlQuery, type: IRelationType = 'artist'): Promise<UrlMBIDDict | null> {
+	const entityType = type;
 	try {
 		const data = await mbApi.search("url", {query: `url:${(new RegExp(query.fullQuery)).toString()}`, inc: ["artist-rels", "url-rels"], limit: 100})
 		if (data["url-count"] === 0) {
@@ -118,7 +119,7 @@ async function getIdsByUrlQuery(query: RegexArtistUrlQuery): Promise<UrlMBIDDict
 					for (const id in query.idQueries) {
 						const rgx = query.idQueries[id];
 						if ((new RegExp(rgx)).test(url.resource) && relations){
-							mbids[id] = relations[0]?.artist?.id;
+							mbids[id] = relations[0]?.[entityType]?.id;
 						}
 					}
 				}
