@@ -9,6 +9,7 @@ import stringSimilarity  from 'string-similarity';
 import normalizeVars from "../../utils/normalizeVars";
 import processAlbumData from "../../utils/processAlbumData";
 import text from "../../utils/text";
+import parsers from "../../lib/parsers/parsers";
 
 //TODO: Implement URL based deep search as a preliminary check before checking UPCs
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {;
@@ -52,18 +53,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(404).json({ error: "Artist not found!" } as SAMBLApiError);
         }
 
-        let useUPCs = true;
-        if (searchUPCs == "false") {
-            useUPCs = false;
-        }
-        let useURLs = false;
-        if (searchURLs == "true") {
-            useURLs = true;
-        }
-        let useTrackArtists = false;
-        if (trackArtists == "true"){
-            useTrackArtists = true;
-        }
+        let useUPCs = !(searchUPCs == "false");
+        let useURLs = (searchURLs == "true");
+        let useTrackArtists = (trackArtists == "true");
 
         let formattedArtistInfo = sourceProvider.formatArtistObject(sourceProvider.formatArtistLookupData(artistInfo));
         let artistName = formattedArtistInfo.name;
@@ -96,30 +88,48 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             albumData.length = albumCount;
         }
         for (const album of albumData) {
-            const upc = album.upc;
-            if (!upc) continue;
-            const mbMatch = await musicbrainz.getAlbumByUPC(upc);
-            if (mbMatch && mbMatch.length > 0){
-                if (!upcArtistArray.has(upc)) {
-                    upcArtistArray.set(upc, []);
-                }
-                const artistArray = upcArtistArray.get(upc)!;
-                for (const release of mbMatch) {
-                    let formattedAlbum = release;
-                    if (useTrackArtists){
-                        const fullAlbum = await musicbrainz.getAlbumByMBID(release.id, ['artist-credits', 'recordings']);
-                        formattedAlbum = musicbrainz.formatAlbumObject(fullAlbum);
+            if (useUPCs && album.upc) {
+                const upc = album.upc;
+                const mbMatch = await musicbrainz.getAlbumByUPC(upc);
+                if (mbMatch && mbMatch.length > 0){
+                    if (!upcArtistArray.has(upc)) {
+                        upcArtistArray.set(upc, []);
                     }
-                    mbAlbums.push(formattedAlbum);
-                    formattedAlbum.albumArtists.forEach((artist) => {
-                        artistArray.push(artist);
-                        artists.push(artist);
-                    })  
-                    formattedAlbum.albumTracks.forEach((track) => track.trackArtists.forEach((artist) => {
-                        artistArray.push(artist);
-                        artists.push(artist);
-                    }))
+                    const artistArray = upcArtistArray.get(upc)!;
+                    for (const release of mbMatch) {
+                        let formattedAlbum = release;
+                        if (useTrackArtists){
+                            const fullAlbum = await musicbrainz.getAlbumByMBID(release.id, ['artist-credits', 'recordings']);
+                            formattedAlbum = musicbrainz.formatAlbumObject(fullAlbum);
+                        }
+                        mbAlbums.push(formattedAlbum);
+                        formattedAlbum.albumArtists.forEach((artist) => {
+                            artistArray.push(artist);
+                            artists.push(artist);
+                        })  
+                        formattedAlbum.albumTracks.forEach((track) => track.trackArtists.forEach((artist) => {
+                            artistArray.push(artist);
+                            artists.push(artist);
+                        }))
+                    }
                 }
+            }
+        }
+        if (useURLs) {
+            const regexProvider = providers.parseProvider(sourceProvider, ['buildUrlSearchQuery'])
+            const parser = parsers.getParser(sourceProvider.namespace);
+            if (regexProvider) {
+                let albumIDMap: Map<string, AlbumObject[]> = new Map();
+                albumData.forEach((album) => {
+                    const id = album.id;
+                    if (!id) return
+                    if (!albumIDMap.has(id)) albumIDMap.set(id, []);
+                    albumIDMap.get(id)?.push(album);
+                });
+                let regexQuery = regexProvider.buildUrlSearchQuery('album', Array.from(albumIDMap.keys()))
+                const urlResults = await musicbrainz.getIdsByUrlQuery(regexQuery, 'release');
+            } else {
+
             }
         }
         const mbidCounts = artists.reduce((acc: {[mbid: string]: {count: number, artist: IArtist}}, artist) => {
