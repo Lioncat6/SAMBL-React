@@ -127,7 +127,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     albumIDMap.get(id)?.push(album);
                 });
                 let regexQuery = regexProvider.buildUrlSearchQuery('album', Array.from(albumIDMap.keys()))
-                const urlResults = await musicbrainz.getIdsByUrlQuery(regexQuery, 'release');
+                if (regexQuery){
+                    const urlResults = await musicbrainz.getIdsByUrlQuery(regexQuery, 'release');
+                }
             } else {
 
             }

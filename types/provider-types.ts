@@ -52,13 +52,17 @@ export class AlbumObject extends ImageObject {
     albumType: string | null;
     upc: string | null;
     albumTracks: TrackObject[];
-    labels: string[] | null;
+    labels: LabelObject[] | null;
     copyrights: string[] | null;
     genres: string[] | null;
     type: "album";
 };
 
-export type UrlType = 'album' | 'track' | 'artist';
+export class LabelObject extends GenericObject {
+
+}
+
+export type UrlType = 'album' | 'track' | 'artist' | 'label';
 
 export class UrlData {
     type: UrlType | null;
@@ -177,7 +181,7 @@ export class FullProvider extends Provider {
     formatTrackObject: (track: any) => TrackObject;
     parseUrl: (url: string) => UrlData | null;
     createUrl: (urlType: UrlType, providerId: string, mbTypes?: number[]) => ExternalUrlData;
-    buildUrlSearchQuery?: (type: UrlType, ids: string[]) => RegexArtistUrlQuery;
+    buildUrlSearchQuery?: (type: UrlType, ids: string[]) => RegexArtistUrlQuery | null;
 }
 
 export type PartialProvider = Partial<FullProvider> & Provider;

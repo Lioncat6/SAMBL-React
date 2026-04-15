@@ -1,6 +1,6 @@
 import withCache from "../../utils/cache";
 import ErrorHandler from "../../utils/errorHandler";
-import { AlbumObject, ArtistObject, FullProvider, PartialArtistObject, RawAlbumData, RegexArtistUrlQuery, TrackObject, UrlType } from "../../types/provider-types";
+import { AlbumObject, ArtistObject, FullProvider, LabelObject, PartialArtistObject, RawAlbumData, RegexArtistUrlQuery, TrackObject, UrlType } from "../../types/provider-types";
 import { URL } from "url";
 import parsers from "../../lib/parsers/parsers";
 
@@ -344,10 +344,21 @@ function formatAlbumObject(album: Resource<AlbumAttributes>): AlbumObject {
 		albumTracks: album.relationships.tracks?.data.map(formatTrackObject) || [],
 		provider: namespace,
 		genres: album.attributes.genreNames,
-		labels: album.attributes.recordLabel ? [album.attributes.recordLabel] : null,
+		labels: createLabels(album.attributes.recordLabel),
 		copyrights: album.attributes.copyright ? [album.attributes.copyright] : null,
 		type: "album"
 	};
+}
+
+function createLabels(label: string | null | undefined): [LabelObject] | null {
+	if (!label) return null
+	return [{
+		provider: namespace,
+		name: label,
+		url: null,
+		id: null,
+		type: 'label'
+	}]
 }
 
 function formatTrackObject(track: Resource<SongAttributes>): TrackObject {
@@ -384,11 +395,15 @@ function getAlbumUPCs(album: Resource<AlbumAttributes>): string[] | null {
 }
 
 
-function buildUrlSearchQuery(type: UrlType, ids: string[]): RegexArtistUrlQuery {
-	const appleType: Record<UrlType, string> = {
+function buildUrlSearchQuery(type: UrlType, ids: string[]): RegexArtistUrlQuery | null {
+	const appleType: Record<UrlType, string | null> = {
 		"artist": "artist",
 		"album": "album",
-		"track": "song"
+		"track": "song",
+		"label": null
+	}
+	if (!appleType[type]) {
+		return null
 	}
 	const regex: RegExp | null = new RegExp(`https:\/\/music\\\.apple\\\.com\/[a-zA-Z]{2}\/${appleType[type]}\/(${ids.join("|")})`);
 	let idQueryMap: { [key: string]: RegExp["source"] } = {};

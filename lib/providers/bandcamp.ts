@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, FullProvider, PartialArtistObject, RawAlbumData, Capabilities, ExternalUrlData, ExtendedTrackObject } from "../../types/provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, FullProvider, PartialArtistObject, RawAlbumData, Capabilities, ExternalUrlData, ExtendedTrackObject, LabelObject } from "../../types/provider-types";
 import withCache from "../../utils/cache";
 import ErrorHandler from "../../utils/errorHandler";
 import text from "../../utils/text";
@@ -262,8 +262,15 @@ function formatAlbumGetData(rawData): RawAlbumData {
 	};
 }
 
-function getLabels(album): string[] | null {
-	return album.pageData?.albumRelease?.[0]?.recordLabel?.name ? [album.pageData?.albumRelease?.[0]?.recordLabel?.name]: null;
+function getLabels(album): LabelObject[] | null {
+	if (!album.pageData?.albumRelease?.[0]?.recordLabel?.name) return null
+	return [{
+		provider: namespace,
+		name: album.pageData?.albumRelease?.[0]?.recordLabel?.name,
+		url: null,
+		id: null,	
+		type: 'label'
+	}]
 }
 
 function formatAlbumObject(album): AlbumObject {

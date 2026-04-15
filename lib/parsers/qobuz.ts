@@ -23,10 +23,11 @@ function createUrl(type: UrlType, id: string, mbTypes?: number[]): ExternalUrlDa
     const mbUrlTypes: Record<UrlType, number[]> = {
         "artist": [176, 978],
         "album": [980, 74],
-        "track": [254, 979]
+        "track": [254, 979],
+        "label": [176, 978],
     }
     return {
-        url: `https://open.qobuz.com/${type}/${id}`,
+        url: `https://${type == 'label' ? 'play': 'open'}.qobuz.com/${type}/${id}`,
         urlInfo: {
             type,
             provider: namespace,

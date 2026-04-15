@@ -1,4 +1,4 @@
-import { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities, PartialProvider, ProviderNamespace, UrlType, RegexArtistUrlQuery } from "../../types/provider-types";
+import { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities, PartialProvider, ProviderNamespace, UrlType, RegexArtistUrlQuery, LabelObject } from "../../types/provider-types";
 import logger from "../../utils/logger";
 import withCache from "../../utils/cache";
 import parsers from "../parsers/parsers";
@@ -457,8 +457,10 @@ function buildUrlSearchQuery(type: UrlType, ids: string[]): RegexArtistUrlQuery 
   const qobuzTypes: Record<UrlType, string> = {
     "artist": "(artist|interpreter|label)",
     "album": "album",
-    "track": "track"
+    "track": "track",
+    "label": "label"
   }
+  
   const rawRegex = String.raw`https:\/\/(play|www|open)?\.?qobuz\.com\/(\w{2}-\w{2}\/)?${qobuzTypes[type]}\/([^\/]+\/)?([^\/]+\/)?(${ids.join("|")})`
   const regex: RegExp | null = new RegExp(rawRegex);
   let idQueryMap: { [key: string]: RegExp["source"] } = {};
@@ -544,13 +546,24 @@ function formatAlbumObject(rawAlbum: QobuzAlbum | QobuzPartialAlbum): AlbumObjec
     trackCount: album.tracks_count,
     albumType: album.release_type || (album.tracks_count > 1 ? "album" : "single"),
     upc: album.upc,
-    labels: [album.label.name],
+    labels: createLabels(album.label),
     copyrights: album.copyright ? [album.copyright] : null,
     genres: getAlbumGenres(rawAlbum),
     imageUrl: getMaxImage(album.image?.small),
     imageUrlSmall: album.image.small,
     albumTracks: getAlbumTracks(album)
   }
+}
+
+function createLabels(label: QobuzLabel): LabelObject[] | null {
+	if (!label) return null
+	return [{
+		provider: namespace,
+		name: label.name,
+		url: createUrl('label', String(label.id)),
+		id: null,
+		type: 'label'
+	}]
 }
 
 function formatTrackObject(rawTrack: QobuzTrack | QobuzPartialTrack): TrackObject {

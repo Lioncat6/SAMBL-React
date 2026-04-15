@@ -16,7 +16,7 @@ function parseUrl(url: string): UrlData | null {
 }
 
 function createUrl(type: UrlType, id: string, mbTypes?: number[]): ExternalUrlData {
-    const typeDict: Record<UrlType, string> = { 'album': 'release', 'track': 'recording', 'artist': 'artist' };
+    const typeDict: Record<UrlType, string> = { 'album': 'release', 'track': 'recording', 'artist': 'artist', 'label': 'label' };
     return {
         url: `https://musicbrainz.org/${typeDict[type]}/${id}`,
         urlInfo: {

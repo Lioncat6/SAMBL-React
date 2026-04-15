@@ -4,7 +4,8 @@ function createUrl (type: UrlType, id:string, mbTypes): ExternalUrlData {
   const mbUrlTypes: Record<UrlType, number[]> = {
         "artist": [291],
         "album": [85],
-        "track": [268]
+        "track": [268],
+        label: []
     }
   return {
     url: id,

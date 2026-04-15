@@ -5,7 +5,8 @@ import type {
   PartialArtistObject,
   FullProvider,
   RawAlbumData,
-  Capabilities
+  Capabilities,
+  LabelObject
 } from '../../types/provider-types'
 import withCache from '../../utils/cache'
 import ErrorHandler from '../../utils/errorHandler'
@@ -180,11 +181,19 @@ function getGenresFromAlbum(album: SoundcloudPlaylist | SoundcloudTrack): string
   return [ ...new Set(genres)];
 }
 
-function getLabelsFromAlbum(album: SoundcloudPlaylist | SoundcloudTrack){
-  let labels: string[] = [];
+function getLabelsFromAlbum(album: SoundcloudPlaylist | SoundcloudTrack): LabelObject[]{
+  let labels: LabelObject[] = [];
   if ('tracks' in album){
     album.tracks?.forEach(track => {
-      if (track.publisher_metadata?.publisher) labels.push(track.publisher_metadata.publisher);
+      if (track.publisher_metadata?.publisher){
+        labels.push({
+          provider: namespace,
+          name: track.publisher_metadata.publisher,
+          url: null,
+          id: null,
+          type: 'label'
+        });
+      }
     });
   }
   return labels;
