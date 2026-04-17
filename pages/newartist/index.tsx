@@ -32,18 +32,18 @@ export async function getServerSideProps(context) {
             provider = "spotify";
         }
         if (pid) provider_id = pid;
-        const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/lookupArtist?provider_id=${provider_id}&provider=${provider}`);
-        if (response.ok) {
-            const { mbid } = await response.json();
-            if (mbid) {
-                return {
-                    redirect: {
-                        destination: `/artist?provider_id=${provider_id}&provider=${provider}&artist_mbid=${mbid}`,
-                        permanent: false,
-                    },
-                };
-            }
-        }
+        // const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/lookupArtist?provider_id=${provider_id}&provider=${provider}`);
+        // if (response.ok) {
+        //     const { mbid } = await response.json();
+        //     if (mbid) {
+        //         return {
+        //             redirect: {
+        //                 destination: `/artist?provider_id=${provider_id}&provider=${provider}&artist_mbid=${mbid}`,
+        //                 permanent: false,
+        //             },
+        //         };
+        //     }
+        // }
 
         const data = (await fetchArtistData(provider_id, provider)).providerData;
 

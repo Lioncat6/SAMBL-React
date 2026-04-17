@@ -203,7 +203,7 @@ export class MusicBrainzProvider extends FullProvider {
     getAlbumByMBID: (id: string, inc: ReleaseIncludes[], options?: CacheOptions) => Promise<IRelease | null>;
     getTrackByMBID: (id: string, inc: RecordingIncludes[], options?: CacheOptions) => Promise<IRecording | null>;
     getIdBySpotifyId: (spotifyId: string, options?: CacheOptions) => Promise<string | null>;
-    getIdsByExternalUrls: (spotifyUrls: string[], options?: CacheOptions) => Promise<UrlMBIDDict | null>;
+    getIdsByExternalUrls: (spotifyUrls: string[], type?: IRelationType, inc?: RelationsIncludes[], options?: CacheOptions) => Promise<UrlMBIDDict | null>;
     override getArtistAlbums: (id: string, offset?: string | number, limit?: number, options?: CacheOptions) => Promise<IBrowseReleasesResult | null>;
     override formatAlbumGetData: (rawData: any) => ExtendedAlbumData;
     getMBArtistAlbums: (id: string, offset?: string | number, limit?: number, inc?: ReleaseIncludes[], options?: CacheOptions) => Promise<IBrowseReleasesResult | null>;
@@ -218,5 +218,5 @@ export class MusicBrainzProvider extends FullProvider {
     getArtistReleaseCount: (artistId: string, options?: CacheOptions) => Promise<number | null>;
     getArtistByUrl: (url: string, inc?: UrlIncludes[], options?: CacheOptions) => Promise<IArtist | null>;
     validateMBID: (mbid: string) => boolean;
-    getIdsByUrlQuery: (query: RegexArtistUrlQuery, type?: IRelationType, options?:CacheOptions) => Promise<IdMBIDDict | null>;
+    getIdsByUrlQuery: (query: RegexArtistUrlQuery, type?: IRelationType, inc?: RelationsIncludes[], options?:CacheOptions) => Promise<IdMBIDDict | null>;
 }

@@ -148,7 +148,7 @@ function DeepSearchMenu({ close, data }: { close?: () => void, data: ArtistObjec
                                                                     <div className={styles.checkboxWrapper} {...(checked && { "data-checked": true })} {...(focus && { "data-focus": true })}>
                                                                         <span className={styles.checkbox}></span>
                                                                     </div>
-                                                                    <img src={artist.imageUrlSmall || ""}></img>
+                                                                    {artist.imageUrlSmall && <img src={artist.imageUrlSmall}></img>}
                                                                     <div className={`${styles.deepSearchStatusPill} ${artist.mostCommonMBID ? styles.blue : styles.orange}`} title={`${artist.mostCommonMBID ? "Most common MBID | " : ""}${text.truncateToTwo(artist.nameSimilarity * 100)}% Similarity`}><div className={styles.deepSearchStatusPillInner} style={{ height: `${(artist.nameSimilarity * 100).toFixed(1)}%` }}></div></div>
                                                                     <a className={styles.mbArtistName} href={artist.url.url} target={"_blank"}>{artist.name}</a>
                                                                 </div>

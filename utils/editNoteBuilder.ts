@@ -1,7 +1,7 @@
 import { AggregatedAlbum, AggregatedArtist } from "../types/aggregated-types";
 import { DeepSearchData } from "../types/api-types";
 import { DeepSearchSelection } from "../types/component-types";
-import { PartialArtistObject } from "../types/provider-types";
+import { ArtistObject, PartialArtistObject } from "../types/provider-types";
 import text from "./text";
 
 const encode = str => encodeURIComponent(str).replace(/%250A/g, '%0A');
@@ -56,22 +56,26 @@ function buildDeepSearchEditNote(data: DeepSearchSelection): string {
         return 'Name Similarity';
     }
 
+    function formatArtist(dsArtist: ArtistObject) {
+        const isSelected = dsArtist.id == artist.id;
+        return `${isSelected ? `'''${dsArtist.name}'''` : `${dsArtist.name}`} ''(${dsArtist.url.url})''`
+    }
+
     return encode(
         `Artist matched with ''SAMBL Deep Search''%0A` +
         `'''Provider:''' ${data.data.provider}%0A` +
         `'''Albums:'''%0A` +
         `${data.data.albums.map((album) => 
-            ` • '''${album.name}''' ''Barcode: ${album.upc}'' ${album.url.url}%0A`+
-            `''Artists:'' ${album.mbAlbum?.albumArtists?.map((artist) => `'''${artist.name}''' ''(${artist.url.url})''`).join(", ") || "none"}`+
-            `${data.trackArtists ? `%0A''Track Artists:'' ${getTrackArtists(album).map((artist) => `'''${artist.name}''' ''(${artist.url.url})''`).join(", ") || "none"}`: ""}`)
+            ` • '''${album.name}''' ${album.upc ? `''Barcode: ${album.upc}'' `: ''}${album.url.url}%0A`+
+            `''Artists:'' ${album.mbAlbum?.albumArtists?.map(formatArtist).join(", ") || "none"}`+
+            `${data.trackArtists ? `%0A''Track Artists:'' ${getTrackArtists(album).map(formatArtist).join(", ") || "none"}`: ""}`)
         .join("%0A ")}%0A%0A` +
-        `'''Selected Artist:''' ${sourceArtist.name} | ${sourceArtist.url.url}%0A` +
+        `'''Selected Artist:''' ''${artist.name}'' | ${artist.url.url} %0A` +
+        `'''Source Artist ''(${text.capitalizeFirst(sourceArtist.provider)})'':''' ''${sourceArtist.name}'' | ${sourceArtist.url.url}%0A` +
         `'''Name Similarity:''' ${text.truncateToTwo(artist.nameSimilarity * 100)}%%0A` +
-        ` • ''${text.capitalizeFirst(sourceArtist.provider)}'': ${sourceArtist.name}%0A`+
-        ` • ''MusicBrainz'': ${artist.name}%0A`+
         `'''Method:''' ${getMethod()}%0A` +
         `${artist.mostCommonMBID ? `'''Most Common MBID:''' ${isMostCommon() ? "Yes" : "Tie"} | ''${artist.occurrences} Occurrences''%0A` : ""}` +
-        `%0A%0A'''SAMBL ${process.env.NEXT_PUBLIC_VERSION}''': ${process.env.NEXT_PUBLIC_URL || "https://sambl.lioncat6.com"} | https://github.com/lioncat6/SAMBL-React`
+        `%0A'''SAMBL ${process.env.NEXT_PUBLIC_VERSION}''': ${process.env.NEXT_PUBLIC_URL || "https://sambl.lioncat6.com"} | https://github.com/lioncat6/SAMBL-React`
     );
 }
 

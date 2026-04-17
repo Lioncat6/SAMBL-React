@@ -1,7 +1,7 @@
 import musicbrainz from "../../lib/providers/musicbrainz";
 import providers from "../../lib/providers/providers";
 import logger from "../../utils/logger";
-import { AlbumObject, ArtistObject, ExtendedAlbumObject, PartialArtistObject, ProviderWithCapabilities } from "../../types/provider-types";
+import { AlbumObject, ArtistObject, ExtendedAlbumObject, PartialArtistObject, ProviderWithCapabilities, UrlMBIDDict } from "../../types/provider-types";
 import { DeepSearchArtist, DeepSearchData, DeepSearchMethod, SAMBLApiError } from "../../types/api-types"
 import { IArtist } from "musicbrainz-api";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -84,40 +84,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         let mbAlbums: ExtendedAlbumObject[] = [];
         let artists: PartialArtistObject[] = []
         let upcArtistArray: Map<string, PartialArtistObject[]> = new Map();
+        let urlArtistArray: Map<string, PartialArtistObject[]> = new Map();
         if (albumData.length > albumCount) {
             albumData.length = albumCount;
         }
-        for (const album of albumData) {
-            if (useUPCs && album.upc) {
-                const upc = album.upc;
-                const mbMatch = await musicbrainz.getAlbumByUPC(upc);
-                if (mbMatch && mbMatch.length > 0){
-                    if (!upcArtistArray.has(upc)) {
-                        upcArtistArray.set(upc, []);
-                    }
-                    const artistArray = upcArtistArray.get(upc)!;
-                    for (const release of mbMatch) {
-                        let formattedAlbum = release;
-                        if (useTrackArtists){
-                            const fullAlbum = await musicbrainz.getAlbumByMBID(release.id, ['artist-credits', 'recordings']);
-                            formattedAlbum = musicbrainz.formatAlbumObject(fullAlbum);
-                        }
-                        mbAlbums.push(formattedAlbum);
-                        formattedAlbum.albumArtists.forEach((artist) => {
-                            artistArray.push(artist);
-                            artists.push(artist);
-                        })  
-                        formattedAlbum.albumTracks.forEach((track) => track.trackArtists.forEach((artist) => {
-                            artistArray.push(artist);
-                            artists.push(artist);
-                        }))
-                    }
-                }
-            }
-        }
+        let albumMBIDs: string[] = [];
         if (useURLs) {
             const regexProvider = providers.parseProvider(sourceProvider, ['buildUrlSearchQuery'])
             const parser = parsers.getParser(sourceProvider.namespace);
+            let urlResults: UrlMBIDDict | null = null;
             if (regexProvider) {
                 let albumIDMap: Map<string, AlbumObject[]> = new Map();
                 albumData.forEach((album) => {
@@ -127,11 +102,67 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     albumIDMap.get(id)?.push(album);
                 });
                 let regexQuery = regexProvider.buildUrlSearchQuery('album', Array.from(albumIDMap.keys()))
-                if (regexQuery){
-                    const urlResults = await musicbrainz.getIdsByUrlQuery(regexQuery, 'release');
+                if (regexQuery) {
+                    urlResults = await musicbrainz.getIdsByUrlQuery(regexQuery, 'release', ["release-rels", "artist-rels", "url-rels"]);
                 }
             } else {
-
+                urlResults = await musicbrainz.getIdsByExternalUrls(albumData.map((album) => album.url.url), 'release', ["release-rels", "artist-rels", "url-rels"]);
+            }
+            if (urlResults) {
+                for (const urlOrId of Object.keys(urlResults)) {
+                    const mbid = urlResults[urlOrId]!;
+                    albumMBIDs.push(mbid);
+                    let url = regexProvider ? parser.createUrl('album', urlOrId).url : urlOrId;
+                    const fullAlbum = await musicbrainz.getAlbumByMBID(mbid, ['artist-credits', 'recordings']);
+                    const formattedAlbum = musicbrainz.formatAlbumObject(fullAlbum);
+                    if (!urlArtistArray.has(url)) {
+                        urlArtistArray.set(url, []);
+                    }
+                    const artistArray = urlArtistArray.get(url)!;
+                    mbAlbums.push(formattedAlbum);
+                    formattedAlbum.albumArtists.forEach((artist) => {
+                        artistArray.push(artist);
+                        artists.push(artist);
+                    })  
+                    if (useTrackArtists) {
+                        formattedAlbum.albumTracks.forEach((track) => track.trackArtists.forEach((artist) => {
+                            artistArray.push(artist);
+                            artists.push(artist);
+                        }))
+                    }
+                }
+            }
+        }
+        if (useUPCs){
+            for (const album of albumData) {
+                if (album.upc) {
+                    const upc = album.upc;
+                    const mbMatch = await musicbrainz.getAlbumByUPC(upc);
+                    if (mbMatch && mbMatch.length > 0){
+                        if (!upcArtistArray.has(upc)) {
+                            upcArtistArray.set(upc, []);
+                        }
+                        const artistArray = upcArtistArray.get(upc)!;
+                        for (const release of mbMatch) {
+                            if (!albumMBIDs.includes(release.id)){
+                                let formattedAlbum = release;
+                                if (useTrackArtists){
+                                    const fullAlbum = await musicbrainz.getAlbumByMBID(release.id, ['artist-credits', 'recordings']);
+                                    formattedAlbum = musicbrainz.formatAlbumObject(fullAlbum);
+                                }
+                                mbAlbums.push(formattedAlbum);
+                                formattedAlbum.albumArtists.forEach((artist) => {
+                                    artistArray.push(artist);
+                                    artists.push(artist);
+                                })  
+                                formattedAlbum.albumTracks.forEach((track) => track.trackArtists.forEach((artist) => {
+                                    artistArray.push(artist);
+                                    artists.push(artist);
+                                }))
+                            }
+                        }
+                    }
+                }
             }
         }
         const mbidCounts = artists.reduce((acc: {[mbid: string]: {count: number, artist: IArtist}}, artist) => {

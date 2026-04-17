@@ -1,4 +1,4 @@
-import { MusicBrainzApi, CoverArtArchiveApi, IRelation, IArtist, IBrowseReleasesQuery, IRelease, IRecording, ICoversInfo, IReleaseList, IUrlLookupResult, IUrl, IBrowseReleasesResult, IArtistList, IArtistMatch, ITrack, UrlIncludes, ReleaseIncludes, RecordingIncludes, IEntity, ITypedEntity } from "musicbrainz-api";
+import { MusicBrainzApi, CoverArtArchiveApi, IRelation, IArtist, IBrowseReleasesQuery, IRelease, IRecording, ICoversInfo, IReleaseList, IUrlLookupResult, IUrl, IBrowseReleasesResult, IArtistList, IArtistMatch, ITrack, UrlIncludes, ReleaseIncludes, RecordingIncludes, IEntity, ITypedEntity, RelationsIncludes } from "musicbrainz-api";
 import { UrlMBIDDict, ArtistObject, PartialArtistObject, ExtendedAlbumObject, MusicBrainzProvider, ExtendedAlbumData, ExtendedTrackObject, RegexArtistUrlQuery, IdMBIDDict, Capabilities, ExternalUrlData, IRelationType } from "../../types/provider-types";
 import withCache from "../../utils/cache";
 import ErrorHandler from "../../utils/errorHandler";
@@ -83,9 +83,9 @@ async function getArtistByUrl(url: string, inc: UrlIncludes[] = ["artist-rels"])
 	return null;
 }
 
-async function getIdsBySpotifyUrls(spotifyUrls: string[]): Promise<UrlMBIDDict | null> {
+async function getIdsBySpotifyUrls(spotifyUrls: string[], type: IRelationType = 'artist', inc: RelationsIncludes[] = ["artist-rels"]): Promise<UrlMBIDDict | null> {
 	try {
-		const data = await mbApi.lookupUrl(spotifyUrls, ["artist-rels"]);
+		const data = await mbApi.lookupUrl(spotifyUrls, inc);
 		if (data["url-count"] === 0) {
 			return null; // No artist found
 		}
@@ -93,7 +93,7 @@ async function getIdsBySpotifyUrls(spotifyUrls: string[]): Promise<UrlMBIDDict |
 		for (let url of data.urls) {
 			if (url && url.relations) {
 				if (url.relations?.length > 0) {
-					mbids[url.resource] = url.relations[0]?.artist?.id;
+					mbids[url.resource] = url.relations[0]?.[type]?.id;
 				}
 			}
 		}
@@ -104,10 +104,10 @@ async function getIdsBySpotifyUrls(spotifyUrls: string[]): Promise<UrlMBIDDict |
 	return null;
 }
 
-async function getIdsByUrlQuery(query: RegexArtistUrlQuery, type: IRelationType = 'artist'): Promise<UrlMBIDDict | null> {
+async function getIdsByUrlQuery(query: RegexArtistUrlQuery, type: IRelationType = 'artist', inc: RelationsIncludes[] = ["artist-rels"]): Promise<UrlMBIDDict | null> {
 	const entityType = type;
 	try {
-		const data = await mbApi.search("url", {query: `url:${(new RegExp(query.fullQuery)).toString()}`, inc: ["artist-rels", "url-rels"], limit: 100})
+		const data = await mbApi.search("url", {query: `url:${(new RegExp(query.fullQuery)).toString()}`, inc, limit: 100})
 		if (data["url-count"] === 0) {
 			return null; // No artist found
 		}
