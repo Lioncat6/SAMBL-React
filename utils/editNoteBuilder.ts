@@ -61,14 +61,24 @@ function buildDeepSearchEditNote(data: DeepSearchSelection): string {
         return `${isSelected ? `'''${dsArtist.name}'''` : `${dsArtist.name}`} ''(${dsArtist.url.url})''`
     }
 
+    function getAlbumCount() {
+        let count = 0
+        data.data.albums.forEach((album) => {
+            if (album.mbAlbum?.albumArtists.some((aartist) => aartist.id == artist.id) || (data.trackArtists && getTrackArtists(album).some((tartist) => tartist.id == artist.id))) {
+                count++;
+            }
+        })
+        return count;
+    }
+
     return encode(
         `Artist matched with ''SAMBL Deep Search''%0A` +
         `'''Provider:''' ${data.data.provider}%0A` +
-        `'''Albums:'''%0A` +
-        `${data.data.albums.map((album) => 
+        `'''Albums (${getAlbumCount()}/${data.data.albums.length}):'''%0A` +
+        `${data.data.albums.map((album) => (album.mbAlbum?.albumArtists && album.mbAlbum?.albumArtists.length > 0) ? (
             ` • '''${album.name}''' ${album.upc ? `''Barcode: ${album.upc}'' `: ''}${album.url.url}%0A`+
             `''Artists:'' ${album.mbAlbum?.albumArtists?.map(formatArtist).join(", ") || "none"}`+
-            `${data.trackArtists ? `%0A''Track Artists:'' ${getTrackArtists(album).map(formatArtist).join(", ") || "none"}`: ""}`)
+            `${data.trackArtists ? `%0A''Track Artists:'' ${getTrackArtists(album).map(formatArtist).join(", ") || "none"}`: ""}`): undefined).filter((text) => text != undefined)
         .join("%0A ")}%0A%0A` +
         `'''Selected Artist:''' ''${artist.name}'' | ${artist.url.url} %0A` +
         `'''Source Artist ''(${text.capitalizeFirst(sourceArtist.provider)})'':''' ''${sourceArtist.name}'' | ${sourceArtist.url.url}%0A` +
