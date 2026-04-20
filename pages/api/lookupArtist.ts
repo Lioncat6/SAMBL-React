@@ -53,11 +53,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         let regexProvider = provider ? providers.parseProvider(sourceProvider.namespace, ["buildUrlSearchQuery"]) : false;
         if (regexProvider) {
             let urlQuery = regexProvider.buildUrlSearchQuery("artist", [parsed_id]);
-            const urlResults = await musicbrainz.getIdsByUrlQuery(urlQuery);
-            const lookupData: ArtistLookupData = { mbid: urlResults?.[parsed_id] || null, provider: sourceProvider.namespace, provider_id: parsed_id }
-            if (lookupData.mbid) {
-                return res.status(200).json(lookupData);
-            };
+            if (urlQuery){
+                const urlResults = await musicbrainz.getIdsByUrlQuery(urlQuery);
+                const lookupData: ArtistLookupData = { mbid: urlResults?.[parsed_id] || null, provider: sourceProvider.namespace, provider_id: parsed_id }
+                if (lookupData.mbid) {
+                    return res.status(200).json(lookupData);
+                };
+            }
         }
         let mbData = await musicbrainz.getArtistByUrl(providerUrl.url, ["artist-rels", "url-rels"], { noCache: forceRefresh });
         let mbid = mbData?.id || null;

@@ -69,16 +69,28 @@ export default function Find() {
 	const [results, setResults] = useState([] as (AlbumObject | TrackObject)[]);
 	const [isLoading, setIsLoading] = useState(false);
 	const router = useRouter();
-	const { query: urlQuery } = normalizeVars(router.query);
+	const { query: urlQuery } = router.query;
 	const lastSearchedQuery = useRef(null as string | null);
 	const lastSearchTime = useRef(0);
 
-	function handleResults(results: FindData) {
-		let data = results.data || [];
-		let issues = results.issues || [];
+	function deDupeResults(newResults: (AlbumObject | TrackObject)[]) {
+		let idArray: string [] = [];
+		let uniqueNewResults: (AlbumObject | TrackObject)[] = [];
+		newResults.forEach((result) => {
+			if (!idArray.includes(result.id+result.type+result.provider)) {
+				idArray.push(result.id+result.type+result.provider);
+				uniqueNewResults.push(result);
+			}
+		});
+		return uniqueNewResults
+	}
+
+	function handleResults(newResults: FindData) {
+		let data = newResults.data || [];
+		let issues = newResults.issues || [];
 
 		if (data.length > 0) {
-			setResults(data);
+			setResults((prev) => deDupeResults([...prev, ...data]));
 		} else {
 			toasts.warn("No results found!");
 		}
@@ -90,87 +102,107 @@ export default function Find() {
 		}
 	}
 
-	function handleLookup(results: URLLookupData) {
-		if (results.albums.length > 0 || results.tracks.length > 0){
-			setResults([...results.albums, ...results.tracks])
+	function handleLookup(newResults: URLLookupData) {
+		if (newResults.albums.length > 0 || newResults.tracks.length > 0) {
+			let newData = [...newResults.albums, ...newResults.tracks, ...results];
+			setResults((prev) => deDupeResults([...prev, ...newData]));
 		} else {
 			toasts.warn("No results found!")
 		}
 	}
 
 	async function handleSearch() {
-		const query = urlQuery;
+		let queries = Array.isArray(urlQuery) ? urlQuery : [urlQuery];
+		console.log(queries)
 		const queryTime = Date.now();
-		if (query !== "") {
-			if (
-				query?.trim() !== "" &&
-				query !== undefined &&
-				(
-					query !== lastSearchedQuery.current ||
-					queryTime - lastSearchTime.current >= 500
-				)
-			) {
-				lastSearchedQuery.current = query;
-				lastSearchTime.current = queryTime;
-				setIsLoading(true);
-				try {
-					const mbidPattern = /.*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.*/i;
-					const spfPattern = /.*[A-Za-z0-9]{22}$/;
-					const isrcPattern = /^[A-Z]{2}-?[A-Z0-9]{3}-?[0-9]{2}-?[0-9]{5}$/;
-					const upcPattern = /^\d{12,14}$/;
-					const urlPattern = /^(https?|http):\/\/[^\s/$.?#].[^\s]*$/i;
-					if (isrcPattern.test(query)) {
-						const matchedQuery = query.match(isrcPattern)?.[0];
-						handleResults(await toasts.dispPromise(serverFind(matchedQuery, "ISRC"), "Finding by ISRC...", "Error finding by ISRC!"));
-					} else if (urlPattern.test(query)) {
-						const data = parsers.getUrlInfo(query);
-						if (data?.type == "track") {
-							let response = await toasts.dispPromise(getISRCFromURL(query), "Looking up ISRC...", "Error looking up ISRC!");
-							if (response.isrcs?.length > 0) {
-								router.push(`find?query=${response.isrcs[0]}`);
+		if (queries.length > 0 &&
+			(
+				String(queries) !== lastSearchedQuery.current ||
+				queryTime - lastSearchTime.current >= 500
+			) && queries.join("").trim() !== ""
+		) {
+			setResults([]);
+			setIsLoading(true);
+			lastSearchedQuery.current = String(queries);
+			lastSearchTime.current = queryTime;
+			queries.forEach(async (query, index) => {
+				if (
+					query?.trim() !== "" &&
+					query !== undefined 
+				) {
+					try {
+						console.log(query, index)
+						const mbidPattern = /.*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.*/i;
+						const spfPattern = /.*[A-Za-z0-9]{22}$/;
+						const isrcPattern = /^[A-Z]{2}-?[A-Z0-9]{3}-?[0-9]{2}-?[0-9]{5}$/;
+						const upcPattern = /^\d{12,14}$/;
+						const urlPattern = /^(https?|http):\/\/[^\s/$.?#].[^\s]*$/i;
+						if (isrcPattern.test(query)) {
+							const matchedQuery = query.match(isrcPattern)?.[0];
+							handleResults(await toasts.dispPromise(serverFind(matchedQuery, "ISRC"), "Finding by ISRC...", "Error finding by ISRC!"));
+						} else if (urlPattern.test(query)) {
+							const data = parsers.getUrlInfo(query);
+							if (index != queries.length - 1 && (data?.type === "track" || data?.type === "album")) {
+								handleLookup(await toasts.dispPromise(lookupUrl(query), "Looking up URL...", "Error looking up URL!"));
+							} else if (data?.type == "track") {
+								let response = await toasts.dispPromise(getISRCFromURL(query), "Looking up ISRC...", "Error looking up ISRC!");
+								if (response.isrcs?.length > 0) {
+									router.push(`find?query=${query}&query=${response.isrcs[0]}`);
+								} else {
+									toasts.warn("No ISRC found for this URL");
+									handleLookup(await toasts.dispPromise(lookupUrl(query), "Looking up URL...", "Error looking up URL!"));
+								}
+							} else if (data?.type == "album") {
+								let response = await toasts.dispPromise(getUPCFromURL(query), "Looking up Barcode...", "Error looking up Barcode!");
+								if (response.upcs?.length > 0) {
+									router.push(`find?query=${query}&query=${response.upcs[0]}`);
+								} else {
+									toasts.warn("No Barcode found for this URL")
+									handleLookup(await toasts.dispPromise(lookupUrl(query), "Looking up URL...", "Error looking up URL!"));
+								}
+							} else if (data?.type == "artist") {
+								toasts.warn("This finding method isn't supported yet. Try using a barcode or ISRC!");
 							} else {
-								toasts.warn("No ISRC found for this URL");
 								handleLookup(await toasts.dispPromise(lookupUrl(query), "Looking up URL...", "Error looking up URL!"));
 							}
-						} else if (data?.type == "album") {
-							let response = await toasts.dispPromise(getUPCFromURL(query), "Looking up Barcode...", "Error looking up Barcode!");
-							if (response.upcs?.length > 0) {
-								router.push(`find?query=${response.upcs[0]}`);
-							} else {
-								toasts.warn("No Barcode found for this URL");
-								handleLookup(await toasts.dispPromise(lookupUrl(query), "Looking up URL...", "Error looking up URL!"));
-							}
-						} else if (query.includes("/artist")) {
-							toasts.warn("This finding method isn't supported yet. Try using a barcode or ISRC!");
+						} else if (upcPattern.test(query)) {
+							const matchedQuery = query.match(upcPattern)?.[0];
+							handleResults(await toasts.dispPromise(serverFind(matchedQuery, "UPC"), "Finding by Barcode...", "Error finding by Barcode!"));
+						} else if (mbidPattern.test(query) || spfPattern.test(query)) {
+							toasts.warn("Please enter a full URL for the MBID or Spotify ID!");
 						} else {
-							handleLookup(await toasts.dispPromise(lookupUrl(query), "Looking up URL...", "Error looking up URL!"));
+							toasts.warn("Invalid input format. Please enter a valid ISRC, MBID, Barcode, or Spotify link.");
 						}
-					} else if (upcPattern.test(query)) {
-						const matchedQuery = query.match(upcPattern)?.[0];
-						handleResults(await toasts.dispPromise(serverFind(matchedQuery, "UPC"), "Finding by Barcode...", "Error finding by Barcode!"));
-					} else if (mbidPattern.test(query) || spfPattern.test(query)) {
-						toasts.warn("Please enter a full URL for the MBID or Spotify ID!");
-					} else {
-						toasts.warn("Invalid input format. Please enter a valid ISRC, MBID, Barcode, or Spotify link.");
+					} catch (error) {
+						toasts.error("An error occurred while searching.", error);
+					} finally {
+						
 					}
-				} catch (error) {
-					toasts.error("An error occurred while searching.", error);
-				} finally {
-					setIsLoading(false);
 				}
-			}
-		} else {
+			});
+			setIsLoading(false);
+		} else if (queries.join("").trim() === "") {
 			toast.warn("Please enter a query");
 		}
 	}
 
 	useEffect(() => {
+
+		function updateFindBox() {
+			let dispQuery = urlQuery;
+			if (Array.isArray(router.query.query)) {
+				dispQuery = router.query.query[router.query.query.length - 1];
+			}
+			const findBox = document.getElementById("findBox") as HTMLInputElement | null;
+			if (findBox) {
+				findBox.value = String(dispQuery) || "";
+			}
+		}
+
 		const handleRouteChange = (url) => {
 			if (url.startsWith("/find")) {
-				const findBox = document.getElementById("findBox") as HTMLInputElement | null;
-				if (findBox) {
-					findBox.value = String(router.query.query) || "";
-				}
+				console.log("route change")
+				updateFindBox();
 				handleSearch();
 			}
 		};
@@ -178,9 +210,8 @@ export default function Find() {
 		// Initial run
 		if (router.query.query) {
 			const findBox = document.getElementById("findBox") as HTMLInputElement | null;
-			if (findBox) {
-				findBox.value = String(router.query.query) || "";
-			}
+			console.log("page init")
+			updateFindBox();
 			handleSearch();
 		}
 
@@ -193,8 +224,8 @@ export default function Find() {
 	}, [router.query.query]);
 
 	return (
-		<>	
-			<SAMBLHead 
+		<>
+			<SAMBLHead
 				title={"SAMBL • Find"}
 				fullTitle={router.query.query ? `Results for ${router.query.query}` : null}
 				description={`SAMBL • Find by ISRC, Barcode, or URL`}

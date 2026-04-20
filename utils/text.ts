@@ -170,11 +170,20 @@ function infoToString(info: (string|null|undefined)[]){
 
 /**
  * Pads barcodes to 13 digits with leading zeros
- * @param barcode Narcode to pad
+ * @param barcode Barcode to pad
  * @returns Padded barcode
  */
 function padBarcode(barcode: string): string {
 	return barcode.padStart(13, "0")
+}
+
+/**
+ * Truncates numbers to 2 decimal places
+ * @param number Number  to truncate
+ * @returns Truncated number
+ */
+function truncateToTwo(number: number): number {
+	return Number(number.toFixed(2).replace(".00", ""))
 }
 
 /**
@@ -196,7 +205,8 @@ const text = {
 	trimUrl,
 	getColorEmoji,
 	infoToString,
-	padBarcode
+	padBarcode,
+	truncateToTwo
 };
 
 export default text;

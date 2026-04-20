@@ -1,4 +1,4 @@
-import { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities, PartialProvider, ProviderNamespace, UrlType, RegexArtistUrlQuery } from "../../types/provider-types";
+import { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities, PartialProvider, ProviderNamespace, UrlType, RegexArtistUrlQuery, LabelObject } from "../../types/provider-types";
 import logger from "../../utils/logger";
 import withCache from "../../utils/cache";
 import parsers from "../parsers/parsers";
@@ -264,12 +264,13 @@ export interface QobuzExtendedTrack extends QobuzPartialTrack, Partial<Omit<Qobu
 const baseUrl = "https://www.qobuz.com/api.json/0.2"
 
 async function qobuzFetch(query) {
-  if (!process.env.QOBUZ_APP_ID) {
-    err.handleError("Missing required environment variable QOBUZ_APP_ID")
+  if (!process.env.QOBUZ_APP_ID || !process.env.QOBUZ_AUTH_TOKEN) {
+    err.handleError("Missing required environment variable QOBUZ_APP_ID or QOBUZ_AUTH_TOKEN")
   }
   return await fetch(baseUrl + query, {
     headers: {
-      "X-App-Id": process.env.QOBUZ_APP_ID || ""
+      "X-App-Id": process.env.QOBUZ_APP_ID || "",
+      "X-User-Auth-Token": process.env.QOBUZ_AUTH_TOKEN || ""
     }
   })
 }
@@ -456,8 +457,10 @@ function buildUrlSearchQuery(type: UrlType, ids: string[]): RegexArtistUrlQuery 
   const qobuzTypes: Record<UrlType, string> = {
     "artist": "(artist|interpreter|label)",
     "album": "album",
-    "track": "track"
+    "track": "track",
+    "label": "label"
   }
+  
   const rawRegex = String.raw`https:\/\/(play|www|open)?\.?qobuz\.com\/(\w{2}-\w{2}\/)?${qobuzTypes[type]}\/([^\/]+\/)?([^\/]+\/)?(${ids.join("|")})`
   const regex: RegExp | null = new RegExp(rawRegex);
   let idQueryMap: { [key: string]: RegExp["source"] } = {};
@@ -541,15 +544,26 @@ function formatAlbumObject(rawAlbum: QobuzAlbum | QobuzPartialAlbum): AlbumObjec
     artistNames: getAlbumArtists(rawAlbum).map((artist) => artist.name),
     releaseDate: album.release_date_stream,
     trackCount: album.tracks_count,
-    albumType: album.release_type || album.tracks_count > 1 ? "album" : "single",
+    albumType: album.release_type || (album.tracks_count > 1 ? "album" : "single"),
     upc: album.upc,
-    labels: [album.label.name],
+    labels: createLabels(album.label),
     copyrights: album.copyright ? [album.copyright] : null,
     genres: getAlbumGenres(rawAlbum),
     imageUrl: getMaxImage(album.image?.small),
     imageUrlSmall: album.image.small,
     albumTracks: getAlbumTracks(album)
   }
+}
+
+function createLabels(label: QobuzLabel): LabelObject[] | null {
+	if (!label) return null
+	return [{
+		provider: namespace,
+		name: label.name,
+		url: createUrl('label', String(label.id)),
+		id: String(label.id),
+		type: 'label'
+	}]
 }
 
 function formatTrackObject(rawTrack: QobuzTrack | QobuzPartialTrack): TrackObject {
@@ -559,7 +573,7 @@ function formatTrackObject(rawTrack: QobuzTrack | QobuzPartialTrack): TrackObjec
     provider: namespace,
     type: "track",
     id: String(track.id),
-    name: track.title,
+    name: `${track.title}${track.version ? ` (${track.version})` : ""}`,
     url: createUrl("track", String(track.id)),
     trackArtists: track.album ? getAlbumArtists(track.album) : [],
     artistNames: track.album ? getAlbumArtists(track.album).map((artist) => artist.name) : [],

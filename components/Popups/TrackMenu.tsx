@@ -164,7 +164,7 @@ function TrackItem({ index, track, album, isrcSource, highlight }: { index: stri
 
 
 	return (
-		<div key={index} className={styles.trackContainter}>
+		<div key={index} className={styles.trackContainer}>
 			<div className={styles.trackButtonContainer}>
 				{/* Copy Button */}
 				<button

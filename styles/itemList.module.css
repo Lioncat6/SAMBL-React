@@ -387,6 +387,7 @@
   width: 60px;
   height: 60px;
   transition: 0.2s all;
+  display: block;
 }
 
 .albumCover img:hover {

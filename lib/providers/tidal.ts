@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, PartialArtistObject, FullProvider, RawAlbumData } from "../../types/provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, PartialArtistObject, FullProvider, RawAlbumData, LabelObject } from "../../types/provider-types";
 import { credentialsProvider, init as initAuth } from '@tidal-music/auth';
 import { createAPIClient } from '@tidal-music/api';
 import withCache from "../../utils/cache";
@@ -251,8 +251,8 @@ type TidalAlbum = NonNullable<NonNullable<TidalAlbumResponse["data"]>["data"]>;
 type TidalArtist = Extract<TidalAlbumIncluded, { type: "artists" }>;
 type TidalArtwork = Extract<TidalAlbumIncluded, { type: "artworks" }>;
 type TidalTrack = Extract<TidalAlbumIncluded, { type: "tracks" }>;
-type TidalProvider = Extract<TidalAlbumIncluded, {type: "providers"}>;
-type TidalGenre = Extract<TidalAlbumIncluded, {type: "genres"}>;
+type TidalProvider = Extract<TidalAlbumIncluded, { type: "providers" }>;
+type TidalGenre = Extract<TidalAlbumIncluded, { type: "genres" }>;
 interface ExtendedAlbum extends TidalAlbum {
     artists: TidalArtist[];
     coverArt: TidalArtwork | null;
@@ -392,11 +392,27 @@ function formatAlbumObject(album: ExtendedAlbum): AlbumObject {
         albumType: album.attributes?.type || null,
         upc: album.attributes?.barcodeId || null,
         albumTracks: getAlbumTracks(album) || [],
-        labels: album.providers.length > 0 ? album.providers.map(provider => provider.attributes?.name).filter((label) => label!=undefined): null,
+        labels: createLabels(album.providers),
         copyrights: album.attributes?.copyright?.text ? [album.attributes?.copyright?.text] : null,
         genres: album.genres.map(genre => genre.attributes?.genreName).filter(genre => genre != undefined) || null,
         type: "album"
     };
+}
+
+function createLabels(labels: TidalProvider[]): LabelObject[] | null {
+    let labelObjs: LabelObject[] = [];
+    labels.forEach((label) => {
+        if (label.attributes?.name) {
+            labelObjs.push({
+                provider: namespace,
+                name: label.attributes?.name,
+                url: null,
+                id: label.id,
+                type: 'label'
+            })
+        }
+    })
+    return labelObjs;
 }
 
 interface ExtendedTrack extends TidalTrack {
@@ -410,7 +426,7 @@ interface ExtendedTrack extends TidalTrack {
 
 function getAlbumTracks(album: ExtendedAlbum) {
     let tracks = album.tracks;
-    let items = album.relationships?.items.data || [];
+    let items = album.relationships?.items?.data || [];
     for (let item of items) {
         let track = tracks.find(t => t.id === item.id) as ExtendedTrack | undefined;
         if (track) {
@@ -490,7 +506,7 @@ function formatArtistSearchData(rawData: TidalSearchResultsData | TidalArtistDat
     const artworks = included.filter(obj => obj.type === "artworks");
     const artworkMap = Object.fromEntries(artworks.map(a => [a.id, a]));
 
-    if (rawData.data?.type == "artists"){
+    if (rawData.data?.type == "artists") {
         artists.push(rawData.data as ExtendedArtist);
     }
 
@@ -524,7 +540,7 @@ function formatArtistSearchData(rawData: TidalSearchResultsData | TidalArtistDat
                         topAlbumPopularity = popularity;
                         bestAlbumDate = releaseDate;
 
-                        const coverArtIds = album.relationships.coverArt.data?.map(ca => ca.id) || []
+                        const coverArtIds = album.relationships.coverArt?.data?.map(ca => ca.id) || []
 
                         for (let id of coverArtIds) {
                             const art = artworkMap[id];

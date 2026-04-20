@@ -25,11 +25,12 @@ function parseUrl(url: string): UrlData | null {
 }
 
 function createUrl(type: UrlType, id: string, mbTypes?: number[], country: string = "us"): ExternalUrlData {
-    const typeDict: Record<UrlType, string> = { 'album': 'album', 'track': 'song', 'artist': 'artist' };
+    const typeDict: Record<UrlType, string | null> = { 'album': 'album', 'track': 'song', 'artist': 'artist', 'label': null };
     const mbUrlTypes: Record<UrlType, number[]> = {
         "artist": [176, 978],
         "album": [980, 74],
-        "track": [254, 979]
+        "track": [254, 979],
+        "label": [],
     }
     return {
         url: `https://music.apple.com/${country}/${typeDict[type]}/${id}`,
