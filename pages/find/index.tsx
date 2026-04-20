@@ -154,6 +154,7 @@ export default function Find() {
 								}
 							} else if (data?.type == "album") {
 								let response = await toasts.dispPromise(getUPCFromURL(query), "Looking up Barcode...", "Error looking up Barcode!");
+								
 								if (response.upcs?.length > 0) {
 									router.push(`find?query=${query}&query=${response.upcs[0]}`);
 								} else {
@@ -174,7 +175,7 @@ export default function Find() {
 							toasts.warn("Invalid input format. Please enter a valid ISRC, MBID, Barcode, or Spotify link.");
 						}
 					} catch (error) {
-						toasts.error("An error occurred while searching.", error);
+						toasts.error(`An error occurred while searching: ${error}`, error);
 					} finally {
 						
 					}
