@@ -561,7 +561,7 @@ function createLabels(label: QobuzLabel): LabelObject[] | null {
 		provider: namespace,
 		name: label.name,
 		url: createUrl('label', String(label.id)),
-		id: null,
+		id: String(label.id),
 		type: 'label'
 	}]
 }
