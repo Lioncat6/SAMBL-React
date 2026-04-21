@@ -206,7 +206,7 @@ function getTags(rawData){
 }
 
 function formatArtistObject(rawData): ArtistObject {
-	const id = parseUrl(rawData.url)?.id || "";
+	const id = parseUrl(rawData.url)?.id || rawData.raw.subdomain || ":";
 	return {
 		name: rawData.name,
 		url: createUrl("artist", id),
@@ -233,6 +233,9 @@ async function getArtistAlbums(
 	offset: number = 1,
 	limit: number
 ) {
+	const rawArtist = await bandcamp.getArtistById(artistId);
+	const artist = bandcamp.formatArtistObject(rawArtist);
+	console.log(artist)
 	try {
 		let searchResults: any = await searchAsync({
 			query: artistId,
@@ -241,7 +244,7 @@ async function getArtistAlbums(
 		let albumItems = searchResults.filter(
 			(a) =>
 				(a.type == "album" || (a.type == "track" && a.artist == "")) &&
-				a.url.includes(createUrl('artist', artistId).url)
+				a.url.includes(artist.url.url)
 		); // Yes, this filters out tracks that have an album because of a coding error in the bandcamp library :3
 		return {
 			current: offset,
