@@ -85,6 +85,9 @@ async function getArtistByUrl(url: string, inc: UrlIncludes[] = ["artist-rels"])
 
 async function getIdsBySpotifyUrls(spotifyUrls: string[], type: IRelationType = 'artist', inc: RelationsIncludes[] = ["artist-rels"]): Promise<UrlMBIDDict | null> {
 	try {
+		if (spotifyUrls.length == 0) {
+			return null;
+		}
 		const data = await mbApi.lookupUrl(spotifyUrls, inc);
 		if (data["url-count"] === 0) {
 			return null; // No artist found
