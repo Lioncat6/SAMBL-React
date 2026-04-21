@@ -1,4 +1,4 @@
-import { ArtistIncludes, IArtist, IBrowseReleasesResult, ICoversInfo, IRecording, IRecordingList, IRelease, IReleaseList, IUrl, IUrlLookupResult, RecordingIncludes, RelationsIncludes, ReleaseIncludes, UrlIncludes } from "musicbrainz-api";
+import { ArtistIncludes, IArtist, IBrowseReleasesResult, ICoversInfo, IRecording, IRecordingList, IRelation, IRelease, IReleaseList, IUrl, IUrlLookupResult, RecordingIncludes, RelationsIncludes, ReleaseIncludes, UrlIncludes } from "musicbrainz-api";
 import { CacheOptions } from "../utils/cache";
 import { AggregatedAlbum } from "./aggregated-types";
 
@@ -52,13 +52,17 @@ export class AlbumObject extends ImageObject {
     albumType: string | null;
     upc: string | null;
     albumTracks: TrackObject[];
-    labels: string[] | null;
+    labels: LabelObject[] | null;
     copyrights: string[] | null;
     genres: string[] | null;
     type: "album";
 };
 
-export type UrlType = 'album' | 'track' | 'artist';
+export class LabelObject extends GenericObject {
+
+}
+
+export type UrlType = 'album' | 'track' | 'artist' | 'label';
 
 export class UrlData {
     type: UrlType | null;
@@ -80,6 +84,7 @@ export class ExtendedAlbumObject extends AlbumObject {
     comment: string | null;
     externalUrls: string[] | null;
     hasImage: boolean;
+    albumArtists: ArtistObject[];
     override albumTracks: ExtendedTrackObject[];
 };
 
@@ -176,7 +181,7 @@ export class FullProvider extends Provider {
     formatTrackObject: (track: any) => TrackObject;
     parseUrl: (url: string) => UrlData | null;
     createUrl: (urlType: UrlType, providerId: string, mbTypes?: number[]) => ExternalUrlData;
-    buildUrlSearchQuery?: (type: UrlType, ids: string[]) => RegexArtistUrlQuery;
+    buildUrlSearchQuery?: (type: UrlType, ids: string[]) => RegexArtistUrlQuery | null;
 }
 
 export type PartialProvider = Partial<FullProvider> & Provider;
@@ -185,6 +190,12 @@ export type ProviderCapability = (keyof PartialProvider);
 
 export type ProviderWithCapabilities<T extends ProviderCapability[]> = Omit<PartialProvider, T[number]> & Required<Pick<PartialProvider, T[number]>>;
 
+type KeysWithKey<T, K extends PropertyKey> = {
+  [P in keyof T]: K extends keyof NonNullable<T[P]> ? P : never
+}[keyof T];
+
+export type IRelationType = KeysWithKey<IRelation, "id">
+
 export class MusicBrainzProvider extends FullProvider {
     override getTrackByISRC: (isrc: string, options?: CacheOptions) => Promise<ExtendedTrackObject[] | null>;
     override getAlbumByUPC: (upc: string, options?: CacheOptions) => Promise<ExtendedAlbumObject[] | null>;
@@ -192,7 +203,7 @@ export class MusicBrainzProvider extends FullProvider {
     getAlbumByMBID: (id: string, inc: ReleaseIncludes[], options?: CacheOptions) => Promise<IRelease | null>;
     getTrackByMBID: (id: string, inc: RecordingIncludes[], options?: CacheOptions) => Promise<IRecording | null>;
     getIdBySpotifyId: (spotifyId: string, options?: CacheOptions) => Promise<string | null>;
-    getIdsByExternalUrls: (spotifyUrls: string[], options?: CacheOptions) => Promise<UrlMBIDDict | null>;
+    getIdsByExternalUrls: (spotifyUrls: string[], type?: IRelationType, inc?: RelationsIncludes[], options?: CacheOptions) => Promise<UrlMBIDDict | null>;
     override getArtistAlbums: (id: string, offset?: string | number, limit?: number, options?: CacheOptions) => Promise<IBrowseReleasesResult | null>;
     override formatAlbumGetData: (rawData: any) => ExtendedAlbumData;
     getMBArtistAlbums: (id: string, offset?: string | number, limit?: number, inc?: ReleaseIncludes[], options?: CacheOptions) => Promise<IBrowseReleasesResult | null>;
@@ -207,5 +218,5 @@ export class MusicBrainzProvider extends FullProvider {
     getArtistReleaseCount: (artistId: string, options?: CacheOptions) => Promise<number | null>;
     getArtistByUrl: (url: string, inc?: UrlIncludes[], options?: CacheOptions) => Promise<IArtist | null>;
     validateMBID: (mbid: string) => boolean;
-    getIdsByUrlQuery: (query: RegexArtistUrlQuery, options?:CacheOptions) => Promise<IdMBIDDict | null>;
+    getIdsByUrlQuery: (query: RegexArtistUrlQuery, type?: IRelationType, inc?: RelationsIncludes[], options?:CacheOptions) => Promise<IdMBIDDict | null>;
 }

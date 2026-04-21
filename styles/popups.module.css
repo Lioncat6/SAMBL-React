@@ -165,11 +165,45 @@
     border: 1px solid var(--foreground-tertiary);
 }
 
-.configureMenu {
+.button.warning {
+    border-color: var(--status-red);
+    color: var(--status-red)
+}
+
+.configureMenu,
+.deepSearchContent {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sectionHeader {
+    font-weight: bold;
+}
+
+.section {
+    border: none;
+    margin: 0;
+    padding: 0;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.container {
+    border: none;
+    margin: 0;
+    padding: 0;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
 }
 
 .info {
@@ -177,8 +211,8 @@
 }
 
 .propertyRow {
-display: flex;
-flex-direction: row;
+    display: flex;
+    flex-direction: row;
 }
 
 .propertyRow.expanded {
@@ -193,7 +227,7 @@ flex-direction: row;
     overflow: hidden;
     text-overflow: ellipsis;
     width: -webkit-fill-available;
-    width: moz-available;
+    width:-moz-available;
 }
 
 .subPropertyDataValue {
@@ -204,7 +238,7 @@ flex-direction: row;
     overflow: hidden;
     text-overflow: ellipsis;
     width: -webkit-fill-available;
-    width: moz-available;
+    width:-moz-available;
 }
 
 .subPropertyData {
@@ -217,7 +251,7 @@ flex-direction: row;
     display: flex;
     flex-direction: column;
     width: -webkit-fill-available;
-    width: moz-available;
+    width:-moz-available;
     flex: 1 1 0;      /* Allow to grow and shrink */
     min-width: 0;     /* Allow ellipsis to work */
 }
@@ -341,7 +375,7 @@ flex-direction: row;
     display: flex;
     flex-direction: row;
     width: -webkit-fill-available;
-    width: moz-available;
+    width:-moz-available;
 }
 
 .settingsInput {
@@ -361,6 +395,10 @@ flex-direction: row;
     display: flex;
     flex-direction: column;
     margin-bottom: 10px;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    display: flex;
 }
 
 .trackBg::before {
@@ -397,13 +435,23 @@ flex-direction: row;
 .albumCover img {
 	margin: 2px 0 0 0;
 	border-radius: 10px;
-	width: 140px;
-	height: 140px;
 	transition: 0.2s all;
     margin: 0 10px;
+    width: 140px;
+	height: 140px;
 }
 
-.albumCover img:hover {
+.sourceArtistImage img {
+    border-radius: 8px;
+    aspect-ratio: 1;
+    object-fit: cover;
+    width: 8vh;
+    margin-right: 10px;
+    transition: 0.2s all;
+}
+
+.albumCover img:hover,
+.sourceArtistImage img:hover {
 	filter: drop-shadow(0px 0px 5px #000000);
 }
 
@@ -511,8 +559,8 @@ flex-direction: row;
     text-overflow: ellipsis;
 }
 
-
-.trackTitle {
+.trackTitle,
+.sourceArtistName {
     text-wrap: nowrap;
     color: var(--foreground-primary);
 	white-space: nowrap;
@@ -520,7 +568,16 @@ flex-direction: row;
 	text-overflow: ellipsis;
 }
 
-.trackContainter {
+.sourceArtistDescription {
+    text-wrap: nowrap;
+    color: var(--foreground-tertiary);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.trackContainer,
+.sourceArtist {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -529,7 +586,8 @@ flex-direction: row;
     position: relative;
 }
 
-.trackContainter::before {
+.trackContainer::before,
+.sourceArtist::before {
     content: "";
     background-color: var(--background-secondary);
     position: absolute;
@@ -787,4 +845,167 @@ flex-direction: row;
     cursor: pointer;
     text-decoration: underline;
     filter: drop-shadow(1px 1px 8px currentColor);
+}
+
+.checkboxField {
+    margin: 3px;
+}
+
+.checkbox {
+	content: "";
+	display: inline-block;
+	vertical-align: top;
+	height: 1.15em;
+	width: 1.15em;
+	margin-right: 0.6em;
+	color: rgba(0, 0, 0, 0.275);
+	border: solid 0.06em;
+	box-shadow: 0 0 0.04em, 0 0.06em 0.16em -0.03em inset, 0 0 0 0.07em transparent inset;
+	border-radius: 0.2em;
+	background: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xml:space="preserve" fill="white" viewBox="0 0 9 9"><rect x="0" y="4.3" transform="matrix(-0.707 -0.7072 0.7072 -0.707 0.5891 10.4702)" width="4.3" height="1.6" /><rect x="2.2" y="2.9" transform="matrix(-0.7071 0.7071 -0.7071 -0.7071 12.1877 2.9833)" width="6.1" height="1.7" /></svg>') no-repeat center,
+		white;
+	background-size: 0;
+	will-change: color, border, background, background-size, box-shadow;
+	transform: translate3d(0, 0, 0);
+	transition: color 0.1s, border 0.1s, background 0.15s, box-shadow 0.1s;
+}
+
+.checkboxWrapper:not([data-disabled]) {
+    cursor: pointer;
+}
+
+.checkboxWrapper[data-active]:not([data-disabled]) .checkbox  {
+	box-shadow: 0 0 0.04em, 0 0.06em 0.16em -0.03em transparent inset, 0 0 0 0.07em rgba(0, 0, 0, 0.1) inset;
+	background-color: #f0f0f0;
+}
+
+.checkboxWrapper[data-checked] .checkbox {
+	background-color: #3b99fc;
+	background-size: 0.75em;
+	color: rgba(0, 0, 0, 0.075);
+}
+
+.checkboxWrapper[data-checked][data-active]:not([data-disabled]) .checkbox {
+	background-color: #0a7ffb;
+	color: rgba(0, 0, 0, 0.275);
+}
+
+.checkboxWrapper[data-focus] .checkbox{
+	box-shadow: 0 0 0.04em, 0 0.06em 0.16em -0.03em transparent inset, 0 0 0 0.07em rgba(0, 0, 0, 0.1) inset, 0 0 0 3.3px rgba(65, 159, 255, 0.55), 0 0 0 5px rgba(65, 159, 255, 0.3);
+}
+
+.checkboxWrapper[data-focus][data-active] .checkbox{
+	box-shadow: 0 0 0.04em, 0 0.06em 0.16em -0.03em transparent inset, 0 0 0 0.07em rgba(0, 0, 0, 0.1) inset, 0 0 0 3.3px rgba(65, 159, 255, 0.55), 0 0 0 5px rgba(65, 159, 255, 0.3);
+}
+
+.checkboxWrapper[data-disabled] .checkbox {
+	opacity: 0.5;
+}
+
+/** Dark styles **/
+
+.checkboxWrapper.dark .checkbox {
+	color: rgba(255, 255, 255, 0.275);
+	background-color: #222;
+	background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xml:space="preserve" fill="rgba(34, 34, 34, 0.999)" viewBox="0 0 9 9"><rect x="0" y="4.3" transform="matrix(-0.707 -0.7072 0.7072 -0.707 0.5891 10.4702)" width="4.3" height="1.6" /><rect x="2.2" y="2.9" transform="matrix(-0.7071 0.7071 -0.7071 -0.7071 12.1877 2.9833)" width="6.1" height="1.7" /></svg>');
+}
+
+.checkboxWrapper[data-active]:not([data-disabled]).dark .checkbox  {
+	background-color: #444;
+	box-shadow: 0 0 0.04em, 0 0.06em 0.16em -0.03em transparent inset, 0 0 0 0.07em rgba(255, 255, 255, 0.1) inset;
+}
+
+.checkboxWrapper[data-checked].dark .checkbox {
+	background-color: #a97035;
+	color: rgba(255, 255, 255, 0.075);
+}
+
+.checkboxWrapper[data-checked][data-active]:not([data-disabled]).dark .checkbox {
+	background-color: #c68035;
+	color: rgba(0, 0, 0, 0.275);
+}
+
+.resultsEnter {
+    transform-origin: top;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.resultsEnterFrom {
+    opacity: 0;
+    transform: scaleY(.95);
+}
+.resultsEnterTo {
+    opacity: 1 !important;
+    transform: scaleY(1);
+}
+
+.deepSearchStatusPill {
+	width: 6px;
+	height: 15px;
+	border-radius: 8px;
+	margin-right: 4px;
+    transform: rotate(180deg);
+}
+
+.deepSearchStatusPill.blue{
+    border: 2px solid var(--status-blue);
+}
+
+.deepSearchStatusPill.green{
+    border: 2px solid var(--status-green);
+}
+
+.deepSearchStatusPill.orange{
+    border: 2px solid var(--status-orange);
+}
+
+.deepSearchStatusPill.red{
+    border: 2px solid var(--status-red);
+}
+
+.deepSearchStatusPill.blue .deepSearchStatusPillInner {
+    background-color: var(--status-blue);
+}
+
+.deepSearchStatusPill.green .deepSearchStatusPillInner {
+    background-color: var(--status-green);
+}
+
+.deepSearchStatusPill.orange .deepSearchStatusPillInner {
+    background-color: var(--status-orange);
+}
+
+.deepSearchStatusPill.red .deepSearchStatusPillInner {
+    background-color: var(--status-red);
+}
+
+.mbArtist {
+    display: flex;
+    flex-direction: row;
+    padding: 4px;
+    margin: 2px;
+    border-radius: 8px;
+    background-color: var(--background-secondary);
+}
+
+.mbArtistLabel {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: row;
+}
+
+.mbArtistDescription {
+	display: inline-block;
+    margin: 0;
+    padding: 0;
+    margin-left: 5px;
+    color: var(--foreground-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: -webkit-fill-available;
+    width: -moz-available;
 }

@@ -17,7 +17,8 @@ function createUrl(type: UrlType, id: string, mbTypes?: number[]): ExternalUrlDa
     const mbUrlTypes: Record<UrlType, number[]> = {
         "artist": [176, 978],
         "album": [980, 74],
-        "track": [254, 979]
+        "track": [254, 979],
+        label: []
     }
     return {
         url: `https://vibe.naver.com/${type}/${id}`,

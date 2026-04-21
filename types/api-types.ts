@@ -4,15 +4,20 @@ import { AlbumObject, ArtistObject, ExtendedAlbumObject, ExtendedTrackObject, Pa
 export type DeepSearchMethod = "most_common" | "name_similarity"
 export class DeepSearchData {
     provider: ProviderNamespace
-    mbid: string
-    nameSimilarity: number
-    sourceName: string
-    mbName: string
-    method: DeepSearchMethod
-    mostCommonMbid: string
-    artists: PartialArtistObject[]
+    mbArtists: DeepSearchArtist[]
     albums: AggregatedAlbum[]
-    artist: ArtistObject
+    sourceArtist: ArtistObject
+}
+
+export class DeepSearchArtist extends PartialArtistObject {
+    nameSimilarity: number
+    occurrences: number | null
+    mostCommonMBID: boolean
+}
+
+export class DeepSearchEditData extends DeepSearchData {
+    method: DeepSearchMethod
+    mbArtist: DeepSearchArtist
 }
 
 export class ArtistData {

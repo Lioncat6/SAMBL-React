@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, FullProvider, PartialArtistObject, RawAlbumData, Capabilities, ExternalUrlData, ExtendedTrackObject } from "../../types/provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, FullProvider, PartialArtistObject, RawAlbumData, Capabilities, ExternalUrlData, ExtendedTrackObject, LabelObject } from "../../types/provider-types";
 import withCache from "../../utils/cache";
 import ErrorHandler from "../../utils/errorHandler";
 import text from "../../utils/text";
@@ -206,7 +206,7 @@ function getTags(rawData){
 }
 
 function formatArtistObject(rawData): ArtistObject {
-	const id = parseUrl(rawData.url)?.id || "";
+	const id = parseUrl(rawData.url)?.id || rawData.raw.subdomain || ":";
 	return {
 		name: rawData.name,
 		url: createUrl("artist", id),
@@ -233,6 +233,8 @@ async function getArtistAlbums(
 	offset: number = 1,
 	limit: number
 ) {
+	const rawArtist = await bandcamp.getArtistById(artistId);
+	const artist = bandcamp.formatArtistObject(rawArtist);
 	try {
 		let searchResults: any = await searchAsync({
 			query: artistId,
@@ -241,7 +243,7 @@ async function getArtistAlbums(
 		let albumItems = searchResults.filter(
 			(a) =>
 				(a.type == "album" || (a.type == "track" && a.artist == "")) &&
-				a.url.includes(createUrl('artist', artistId).url)
+				a.url.includes(artist.url.url)
 		); // Yes, this filters out tracks that have an album because of a coding error in the bandcamp library :3
 		return {
 			current: offset,
@@ -262,8 +264,15 @@ function formatAlbumGetData(rawData): RawAlbumData {
 	};
 }
 
-function getLabels(album): string[] | null {
-	return album.pageData?.albumRelease?.[0]?.recordLabel?.name ? [album.pageData?.albumRelease?.[0]?.recordLabel?.name]: null;
+function getLabels(album): LabelObject[] | null {
+	if (!album.pageData?.albumRelease?.[0]?.recordLabel?.name) return null
+	return [{
+		provider: namespace,
+		name: album.pageData?.albumRelease?.[0]?.recordLabel?.name,
+		url: null,
+		id: null,	
+		type: 'label'
+	}]
 }
 
 function formatAlbumObject(album): AlbumObject {
@@ -436,7 +445,7 @@ init();
 const capabilities: Capabilities = {
   isrcs: {
 	availability: "sometimes",
-	presence: "onAlbumRefresh"
+	presence: "onTrackRefresh"
   },
   upcs: {
 	availability: "sometimes",

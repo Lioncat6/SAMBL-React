@@ -1,4 +1,4 @@
-import { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities } from "../../types/provider-types";
+import { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities, LabelObject } from "../../types/provider-types";
 import logger from "../../utils/logger";
 import withCache from "../../utils/cache";
 import ErrorHandler from "../../utils/errorHandler";
@@ -332,12 +332,22 @@ function formatAlbumObject(album: SpotifyApi.SingleAlbumResponse): AlbumObject {
 		upc: album.external_ids?.upc || null,
 		albumTracks: getAlbumTracks(album),
 		copyrights: formatCopyright(album),
-		labels: album.label ? [album.label]: null,
+		labels: createLabels(album.label),
 		genres: album.genres,
 		type: "album"
 	};
 }
 
+function createLabels(label: string | null | undefined): [LabelObject] | null {
+	if (!label) return null
+	return [{
+		provider: namespace,
+		name: label,
+		url: null,
+		id: null,
+		type: 'label'
+	}]
+}
 
 export interface ExtendedTrack extends SpotifyApi.TrackObjectSimplified, Partial<Omit<SpotifyApi.TrackObjectFull, keyof SpotifyApi.TrackObjectSimplified>> { }
 export interface trackWithAlbumData extends ExtendedTrack {

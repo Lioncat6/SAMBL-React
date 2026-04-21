@@ -97,13 +97,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         let regexProvider = provider ? providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject", "buildUrlSearchQuery"]) : false;
         if (regexProvider) {
             let urlQuery = regexProvider.buildUrlSearchQuery("artist", artists.map((artist) => artist.id));
-            const urlResults = await musicbrainz.getIdsByUrlQuery(urlQuery);
-            if (urlResults){
-                for (let artist of artists) {
-                    artistData[artist.url.url].mbid = urlResults[artist.id] || null;
+            if (urlQuery){
+                const urlResults = await musicbrainz.getIdsByUrlQuery(urlQuery);
+                if (urlResults){
+                    for (let artist of artists) {
+                        artistData[artist.url.url].mbid = urlResults[artist.id] || null;
+                    }
                 }
+                res.status(200).json(artistData);
             }
-            res.status(200).json(artistData);
         }
         let mbids = await musicbrainz.getIdsByExternalUrls(artists.map((artist) => artist.url.url));
         if (mbids) {

@@ -7,35 +7,15 @@ import toasts from "../utils/toasts";
 import editUrlBuilder from "../utils/editUrlBuilder";
 import { DeepSearchData } from "../types/api-types";
 import { ArtistObject } from "../types/provider-types";
+import DeepSearchMenuPopup from "./Popups/DeepSearchMenu";
 
-async function deepSearch(url: string) {
-	toasts.warn("Please double check deep searches before submitting edits!")
-	try {
-		const response = await toasts.dispPromise(fetch(`/api/artistDeepSearch?url=${encodeURIComponent(url)}`), "Running Deep Search...", "Deep Search failed!");
-		if (response.ok) {
-			let data = await response.json() as DeepSearchData;
-			let editUrl = editUrlBuilder.buildDeepSearchEditUrl(data);
-			if (data.nameSimilarity < 0.30) {
-				toasts.error(`Artist name too different for match! (${Math.round(data.nameSimilarity * 100)}% - ${data.mbName})`)
-				return;
-			}
-			window.open(editUrl, "_blank");
-		} else {
-			toasts.error((await response.json()).error);
-		}
-	} catch (error) {
-		console.error(error);
-		toasts.error(error.message);
-	}
-}
-
-export default function AddButtons({ artist }: {artist: ArtistObject}) {
+export default function AddButtons({ artist }: { artist: ArtistObject }) {
 	let addUrl = editUrlBuilder.buildAddArtistEditUrl(artist);
 	return (
 		<>
 			<a
 				className={styles.addToMBButton}
-				href={ addUrl }
+				href={addUrl}
 				target="_blank"
 			>
 				<div>Add to MusicBrainz</div>
@@ -43,7 +23,12 @@ export default function AddButtons({ artist }: {artist: ArtistObject}) {
 			<Link className={styles.addToMBButton} href={`../artist/?provider_id=${artist.id}&provider=${artist.provider}`}>
 				<div>View Artist Anyway</div>
 			</Link>
-			<Button onClick={() => deepSearch(artist.url.url)} className={styles.addToMBButton}>Deep Search</Button>
+			<DeepSearchMenuPopup
+				button={
+					<Button className={styles.addToMBButton}>Deep Search</Button>
+				}
+				data={artist}
+			/>
 		</>
 	);
 }

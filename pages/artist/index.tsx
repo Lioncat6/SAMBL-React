@@ -45,6 +45,7 @@ export async function getServerSideProps(context) {
 		if (mbid) artist_mbid = mbid;
 		const splitIds = provider_ids?.split(",");
 		if (!provider_id && splitIds && splitIds.length > 0) provider_id = splitIds[0];
+		const noRedirect = Object.prototype.hasOwnProperty.call(context.query, "noRedirect");
 
 		if (!provider) {
 			const error: SAMBLError = {
@@ -66,7 +67,7 @@ export async function getServerSideProps(context) {
 			}
 		}
 
-		if (!artist_mbid && provider_id) {
+		if (!artist_mbid && provider_id && !noRedirect) {
 			let ids = provider_id ? provider_id : (splitIds && splitIds[0]);
 			const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/lookupArtist?provider_id=${ids}&provider=${provider}`);
 			if (response.ok) {

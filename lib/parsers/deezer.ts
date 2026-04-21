@@ -18,7 +18,8 @@ function createUrl(type: UrlType, id: string, mbTypes?: number[]): ExternalUrlDa
     const mbUrlTypes: Record<UrlType, number[]> = {
         "artist": [194],
         "album": [85],
-        "track": [268]
+        "track": [268],
+        "label": []
     }
     return {
         url: `https://www.deezer.com/${type}/${id}`,

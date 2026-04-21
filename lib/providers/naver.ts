@@ -1,4 +1,4 @@
-import { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities, PartialProvider, ProviderNamespace } from "../../types/provider-types";
+import { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities, PartialProvider, ProviderNamespace, LabelObject } from "../../types/provider-types";
 import logger from "../../utils/logger";
 import withCache from "../../utils/cache";
 import parsers from "../parsers/parsers";
@@ -101,6 +101,7 @@ export interface NaverAlbum extends NaverAlbumBase {
     agencyName: string
     productionName: string
     artists: NaverPartialArtist[]
+    serviceStatusMsg: string
     sizeAndDuration: string
     trackTotalCount: number
     artistTotalCount: number
@@ -138,6 +139,32 @@ export interface NaverTrackInformation {
     lyricSourceTypeCd: string
     lyricRegisterUserId: number | null
     lyricUpdateUserId: number | null
+}
+
+// Track Credits (/track/{id}/credits.json)
+export interface NaverTrackCreditsResult {
+    trackCredits: NaverTrackCredits
+}
+
+export interface NaverTrackCredits {
+    trackId: number
+    trackName: string
+    artistIds: string
+    artistNames: string
+    releaseDate: string
+    participantGroupList: NaverParticipantGroup[]
+}
+
+export interface NaverParticipantGroup {
+    roleName: string
+    participantList: NaverParticipant[]
+}
+
+export interface NaverParticipant {
+    id: number
+    name: string
+    likeCount: number
+    imageUrl: string | null
 }
 
 // Track Detail (/track/{id}.json)
@@ -272,7 +299,7 @@ function formatNaverTrackDuration(duration: string): number {
     if (segments.length == 2) {
         ms += Number(segments[0]) * 60 * 1000;
         ms += Number(segments[1]) * 1000;
-    } else if (segments.length == 1){
+    } else if (segments.length == 1) {
         ms += Number(segments[1]) * 1000;
     }
     return ms;
@@ -373,7 +400,7 @@ async function getArtistById(id: string): Promise<NaverArtist | null> {
 }
 
 async function getArtistAlbums(id: string, offset: number = 1, limit: number = 9999): Promise<RawAlbumData | null> {
-    if (offset <= 0){
+    if (offset <= 0) {
         offset = 1
     }
     try {
@@ -387,10 +414,10 @@ async function getArtistAlbums(id: string, offset: number = 1, limit: number = 9
                 albumsIdMap.set(album.albumId, album);
             });
             const trackResponse = await fetch(v1Url + `/artist/${id}/tracks.json?display=9999&start=1`)
-            function mapTracks(tracks: NaverTrack[]){
+            function mapTracks(tracks: NaverTrack[]) {
                 tracks.forEach(track => {
                     const mappedAlbum = albumsIdMap.get(track.album.albumId)
-                    if (mappedAlbum){
+                    if (mappedAlbum) {
                         if (!mappedAlbum.tracks) mappedAlbum.tracks = [];
                         mappedAlbum.tracks.push(track)
                         mappedAlbum.tracks.sort((a, b) => a.trackNumber = b.trackNumber)
@@ -398,12 +425,12 @@ async function getArtistAlbums(id: string, offset: number = 1, limit: number = 9
                     }
                 });
             }
-            if (trackResponse.ok){
+            if (trackResponse.ok) {
                 let tracks = (await trackResponse.json() as NaverResponse<NaverArtistTracksResult>).response.result.tracks
                 mapTracks(tracks);
             }
             const featuredTrackResponse = await fetch(v1Url + `/artist/${id}/tracks.json?display=9999&start=1&type=PARTICIPATION`)
-            if (featuredTrackResponse.ok){
+            if (featuredTrackResponse.ok) {
                 let tracks = (await featuredTrackResponse.json() as NaverResponse<NaverArtistTracksResult>).response.result.tracks
                 mapTracks(tracks);
             }
@@ -444,15 +471,31 @@ function formatAlbumObject(album: NaverAlbumWithTracks): AlbumObject {
         artistNames: album.artists.map(artist => artist.artistName),
         releaseDate: formatNaverDate(album.releaseDate),
         trackCount: album.trackTotalCount || null,
-        albumType: album.trackTotalCount ? album.trackTotalCount > 1 ? "album" : "single": null,
+        albumType: album.trackTotalCount ? album.trackTotalCount > 1 ? "album" : "single" : null,
         upc: null,
         albumTracks: album.tracks?.map(formatTrackObject) || [],
         imageUrl: album.imageUrl ? getFullImageUrl(album.imageUrl) : null,
         imageUrlSmall: album.imageUrl || null,
         genres: album.albumGenreList,
-        labels: [album.agencyName, album.productionName].filter((label) => label != undefined && label!=null),
+        labels: createLabels([album.agencyName, album.productionName]),
         copyrights: null,
     }
+}
+
+function createLabels(labels: (string | null | undefined)[]): LabelObject[] | null {
+    let labelObjs: LabelObject[] = [];
+    labels.forEach((label) => {
+        if (label) {
+            labelObjs.push({
+                provider: namespace,
+                name: label,
+                url: null,
+                id: null,
+                type: 'label'
+            })
+        }
+    })
+    return labelObjs;
 }
 
 function formatPartialArtistObject(artist: NaverPartialArtist): PartialArtistObject {

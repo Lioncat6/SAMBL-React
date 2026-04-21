@@ -2,6 +2,7 @@ import { ArtistObject, ExternalUrlData, ProviderNamespace, UrlData, UrlType } fr
 import { AggregatedAlbum, AggregatedArtist, AggregatedTrack } from "./aggregated-types";
 import { JSX } from "react";
 import { SeederNamespace } from "./seeder-types";
+import { DeepSearchData } from "./api-types";
 
 export type searchReason = "artist" | "title";
 export type albumSearchReason = searchReason | "track";
@@ -81,4 +82,11 @@ export interface SAMBLSettings {
 export class UrlParser {
     parseUrl: (url: string) => UrlData | null;
     createUrl: (urlType: UrlType, providerId: string, mbTypes?: number[], country?: string)=> ExternalUrlData
+}
+
+export class DeepSearchSelection {
+    mbid: string
+    userSelected: boolean
+    trackArtists: boolean 
+    data: DeepSearchData
 }

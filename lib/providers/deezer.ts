@@ -60,7 +60,7 @@ async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
 async function searchByArtistName(query) {
 	await refreshApi();
 	try {
-		const data = await deezerApi.search.artist(query);
+		const data = await deezerApi.search.artist(encodeURIComponent(query));
 		if (data.data) {
 			return data;
 		} else {
@@ -183,7 +183,7 @@ async function getArtistAlbums(artistId, offset, limit) {
 		let next: any = 0;
 		let searchAlbums: any[] = [];
 		while (next != null) {
-			let searchAlbumData = await deezerApi.search.album(`artist:"${artistData.name}"`, null, 9999, next);
+			let searchAlbumData = await deezerApi.search.album(`artist:"${encodeURIComponent(artistData.name)}"`, null, 9999, next);
 			if (searchAlbumData && searchAlbumData.data) {
 				searchAlbums.push(...searchAlbumData.data);
 				next = searchAlbumData.next ? searchAlbumData.next.match(nextIntRegex)[1] : null;
@@ -225,7 +225,7 @@ function formatAlbumObject(album): AlbumObject {
 		provider: namespace,
 		id: album.id,
 		name: album.title,
-		url: createUrl("track", album.id),
+		url: createUrl("album", album.id),
 		imageUrl: album.cover_xl || "",
 		imageUrlSmall: album.cover_medium || "",
 		albumArtists: album.contributors && album.contributors.length > 0 ? album.contributors.map(formatPartialArtistObject) : album.artist ? [formatPartialArtistObject(album.artist)] : [],
