@@ -416,7 +416,6 @@ async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> {
     const response = await qobuzFetch(`/track/search?query=${isrc}`);
     if (response.ok) {
       const data = await response.json() as QobuzSearchResponse;
-      console.log(JSON.stringify(data))
       return data.tracks?.items.filter((track) => track.isrc.toLowerCase() == isrc.toLowerCase()).map(formatTrackObject) || [];
     } else if (response.status == 404) {
       return null

@@ -113,7 +113,6 @@ export default function Find() {
 
 	async function handleSearch() {
 		let queries = Array.isArray(urlQuery) ? urlQuery : [urlQuery];
-		console.log(queries)
 		const queryTime = Date.now();
 		if (queries.length > 0 &&
 			(
@@ -131,7 +130,6 @@ export default function Find() {
 					query !== undefined 
 				) {
 					try {
-						console.log(query, index)
 						const mbidPattern = /.*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.*/i;
 						const spfPattern = /.*[A-Za-z0-9]{22}$/;
 						const isrcPattern = /^[A-Z]{2}-?[A-Z0-9]{3}-?[0-9]{2}-?[0-9]{5}$/;
@@ -202,7 +200,6 @@ export default function Find() {
 
 		const handleRouteChange = (url) => {
 			if (url.startsWith("/find")) {
-				console.log("route change")
 				updateFindBox();
 				handleSearch();
 			}
@@ -211,7 +208,6 @@ export default function Find() {
 		// Initial run
 		if (router.query.query) {
 			const findBox = document.getElementById("findBox") as HTMLInputElement | null;
-			console.log("page init")
 			updateFindBox();
 			handleSearch();
 		}

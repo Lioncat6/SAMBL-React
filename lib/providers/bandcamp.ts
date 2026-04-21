@@ -235,7 +235,6 @@ async function getArtistAlbums(
 ) {
 	const rawArtist = await bandcamp.getArtistById(artistId);
 	const artist = bandcamp.formatArtistObject(rawArtist);
-	console.log(artist)
 	try {
 		let searchResults: any = await searchAsync({
 			query: artistId,
