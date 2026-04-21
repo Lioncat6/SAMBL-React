@@ -122,7 +122,7 @@ function DeepSearchMenu({ close, data }: { close?: () => void, data: ArtistObjec
                             <Fieldset className={styles.section}>
                                 <Legend className={styles.sectionHeader}>Results</Legend>
                                 <div className={styles.sourceArtist}>
-                                    {dsData.sourceArtist.imageUrlSmall && <a className={styles.sourceArtistImage} href={dsData.sourceArtist.imageUrl || dsData.sourceArtist.imageUrlSmall} target="_blank"><img src={dsData.sourceArtist.imageUrlSmall}></img></a>}
+                                    {dsData.sourceArtist.imageUrlSmall && <a className={styles.sourceArtistImage} href={dsData.sourceArtist.imageUrl || dsData.sourceArtist.imageUrlSmall} target="_blank"><img src={dsData.sourceArtist.imageUrlSmall} title={`Image for ${artist.name}`}></img></a>}
                                     <div className={styles.sourceArtistText}>
                                         <a className={styles.sourceArtistName} href={dsData.sourceArtist.url.url} target="_blank">{dsData.sourceArtist.name}</a>
                                         <div className={styles.sourceArtistDescription}>{dsData.sourceArtist.relevance}</div>
@@ -148,7 +148,7 @@ function DeepSearchMenu({ close, data }: { close?: () => void, data: ArtistObjec
                                                                     <div className={styles.checkboxWrapper} {...(checked && { "data-checked": true })} {...(focus && { "data-focus": true })}>
                                                                         <span className={styles.checkbox}></span>
                                                                     </div>
-                                                                    {artist.imageUrlSmall && <img src={artist.imageUrlSmall}></img>}
+                                                                    {artist.imageUrlSmall && <img src={artist.imageUrlSmall} title={`Image for ${artist.name}`}></img>}
                                                                     <div className={`${styles.deepSearchStatusPill} ${artist.mostCommonMBID ? styles.blue : styles.orange}`} title={`${artist.mostCommonMBID ? "Most common MBID | " : ""}${text.truncateToTwo(artist.nameSimilarity * 100)}% Similarity`}><div className={styles.deepSearchStatusPillInner} style={{ height: `${(artist.nameSimilarity * 100).toFixed(1)}%` }}></div></div>
                                                                     <a className={styles.mbArtistName} href={artist.url.url} target={"_blank"}>{artist.name}</a>
                                                                 </div>
