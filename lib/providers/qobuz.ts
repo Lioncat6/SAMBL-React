@@ -30,7 +30,7 @@ export interface QobuzPartialAlbum {
   image: QobuzImage
   media_count: number
   artist: QobuzPartialArtist
-  artists: QobuzArtistRole[]
+  artists?: QobuzArtistRole[]
   upc: string
   released_at: number
   label: QobuzLabel
@@ -494,7 +494,7 @@ function getAlbumArtists(album: QobuzExtendedAlbum) {
   let artistIds: number[] = [];
   artists.push(formatArtistObject(album.artist));
   artistIds.push(album.artist.id);
-  album.artists.forEach((artist) => {
+  album.artists?.forEach((artist) => {
     if (!artistIds.includes(artist.id)){
       artists.push({
         provider: namespace,
