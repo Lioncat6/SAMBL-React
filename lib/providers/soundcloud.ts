@@ -82,15 +82,23 @@ function formatArtistSearchData (rawData: SoundcloudUserSearch) {
   return rawData.collection
 }
 
+function getSmallImage(image: string | null){
+  if (!image) return null;
+  return image.includes('default_avatar') ? null : image.replace('large', 't200x200') || null;
+}
+
+function getLargeImage(image: string | null) {
+  if (!image) return null;
+  return image.includes('default_avatar') ? null : image.replace('large', 't500x500') || null;
+}
+
 function formatArtistObject (rawObject: SoundcloudUser): ArtistObject {
   const countries = new Intl.DisplayNames(['en'], { type: 'region' })
   return {
     name: rawObject.username,
     url: createUrl("artist", `https://soundcloud.com/${rawObject.permalink}`),
-    imageUrl: rawObject.avatar_url?.includes('default_avatar')
-      ? rawObject.avatar_url
-      : rawObject.avatar_url?.replace('large', 't500x500') || '',
-    imageUrlSmall: rawObject.avatar_url || '',
+    imageUrl: getLargeImage(rawObject.avatar_url),
+    imageUrlSmall: getSmallImage(rawObject.avatar_url),
     bannerUrl: rawObject.visuals?.visuals[0]?.visual_url,
     relevance: `${rawObject.followers_count} Followers`,
     info: `${
@@ -211,20 +219,21 @@ function getCopyrightsFromAlbum(album: SoundcloudPlaylist | SoundcloudTrack){
 }
 
 function formatAlbumObject (rawAlbum: SoundcloudPlaylist | SoundcloudTrack): AlbumObject {
+  let tracks = getAlbumTracks(rawAlbum);
   return {
     provider: namespace,
     id: rawAlbum.urn || `soundcloud:${rawAlbum.kind}:${rawAlbum.id}`,
     name: rawAlbum.title,
     url: createUrl("album", rawAlbum.permalink_url?.split('?')[0]),
-    imageUrl: rawAlbum.artwork_url?.replace('large', 't500x500') || '',
-    imageUrlSmall: rawAlbum.artwork_url || '',
+    imageUrl: getLargeImage(rawAlbum.artwork_url) || tracks[0]?.imageUrl || null,
+    imageUrlSmall: getSmallImage(rawAlbum.artwork_url) || tracks[0]?.imageUrlSmall || null,
     albumArtists: [formatPartialArtistObject(rawAlbum.user)],
     artistNames: [rawAlbum.user.username],
     releaseDate: getReleaseDate(rawAlbum),
     trackCount: 'track_count' in rawAlbum && rawAlbum.track_count || 1,
     albumType: 'set_type' in rawAlbum && rawAlbum.set_type || 'single',
     upc: getUPCFromAlbum(rawAlbum),
-    albumTracks: getAlbumTracks(rawAlbum),
+    albumTracks: tracks,
     genres: getGenresFromAlbum(rawAlbum),
     copyrights: getCopyrightsFromAlbum(rawAlbum),
     labels: getLabelsFromAlbum(rawAlbum),
@@ -275,8 +284,8 @@ function formatTrackObject (track: SoundcloudTrackWithAlbumInfo): TrackObject {
     id: track.urn || `soundcloud:track:${track.id}`,
     name: track.title,
     url: createUrl("track", track.permalink_url?.split('?')[0]),
-    imageUrl: track.artwork_url?.replace('large', 't500x500') || '',
-    imageUrlSmall: track.artwork_url || '',
+    imageUrl: getLargeImage(track.artwork_url),
+    imageUrlSmall: getSmallImage(track.artwork_url),
     albumName: track.albumName || track.publisher_metadata.album_title || track.publisher_metadata.release_title || null,
     trackArtists: track.user ? [formatPartialArtistObject(track.user)] : [],
     artistNames: [track.user?.username],
