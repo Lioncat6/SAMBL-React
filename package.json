@@ -17,7 +17,7 @@
 		"@types/spotify-web-api-node": "^5.0.11",
 		"@types/string-similarity": "^4.0.2",
 		"bandcamp-scraper": "github:Lioncat6/bandcamp-scraper",
-		"deezer-public-api": "^1.0.5",
+		"deezer-public-api": "^2.1.4",
 		"log4js": "^6.6.0",
 		"musicbrainz-api": "^1.0.0",
 		"next": "^16.2.4",
