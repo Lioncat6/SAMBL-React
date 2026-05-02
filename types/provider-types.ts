@@ -40,6 +40,10 @@ export class ArtistObject extends PartialArtistObject {
     type: "artist";
 };
 
+export class ExtendedArtistObject extends ArtistObject {
+    aliases: string[] | null;
+}
+
 export class AlbumObject extends ImageObject {
     provider: ProviderNamespace;
     id: string;
@@ -80,6 +84,11 @@ export class ExternalUrlData {
     mbTypes: number[]
 }
 
+export class CommonExtends {
+    comment: string | null;
+    externalUrls: string[] | null;
+}
+
 export class ExtendedAlbumObject extends AlbumObject {
     comment: string | null;
     externalUrls: string[] | null;
@@ -108,8 +117,8 @@ export class TrackObject extends ImageObject {
 
 export class ExtendedTrackObject extends TrackObject {
     comment?: string | null;
-    extraInfo?: {[key: string]: any}
     externalUrls?: string[] | null;
+    extraInfo?: {[key: string]: any};
 }
 
 export class PagingData {
