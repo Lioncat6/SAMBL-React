@@ -101,7 +101,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     if (!albumIDMap.has(id)) albumIDMap.set(id, []);
                     albumIDMap.get(id)?.push(album);
                 });
-                let regexQuery = regexProvider.buildUrlSearchQuery('album', Array.from(albumIDMap.keys()))
+                let albumUrlMap: Map<string, AlbumObject[]> = new Map();
+                albumData.forEach((album) => {
+                    const url = album.url.url;
+                    if (!url) return
+                    if (!albumUrlMap.has(url)) albumUrlMap.set(url, []);
+                    albumUrlMap.get(url)?.push(album);
+                });
+                let regexQuery = regexProvider.buildUrlSearchQuery('album', Array.from(albumUrlMap.keys()))
                 if (regexQuery) {
                     urlResults = await musicbrainz.getIdsByUrlQuery(regexQuery, 'release', ["release-rels", "artist-rels", "url-rels"]);
                 }

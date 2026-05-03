@@ -6,7 +6,9 @@ import type {
   FullProvider,
   RawAlbumData,
   Capabilities,
-  LabelObject
+  LabelObject,
+  UrlType,
+  RegexArtistUrlQuery
 } from '../../types/provider-types'
 import withCache from '../../utils/cache'
 import ErrorHandler from '../../utils/errorHandler'
@@ -35,18 +37,45 @@ if (!soundcloudClientId || !soundcloudOauthToken) {
 
 const scApi = new Soundcloud(soundcloudClientId, soundcloudOauthToken)
 
-function correctId(rawId: string | number): string {
+function correctId(rawId: string | number, correctType: 'artist' | 'track' | 'album' = 'artist'): string {
   let prefix = ""
   let id = rawId.toString()
   if (id.startsWith('soundcloud:')) {
     const segments = id.split(':')
     id = segments[2]
     prefix = 'soundcloud:' + segments[1] + ":"
+  } else {
+    prefix = `soundcloud:${correctType}:`
   }
   if (id.length < 9) {
     id = id.padStart(9, '0')
   }
   return prefix + id;
+}
+
+function cleanId(id: string): string {
+  if (id.split(':').length === 3) {
+    return id.split(':')[2]
+  }
+  return id;
+}
+
+async function resolveExternalId(id: string): Promise<string> {
+  if (id.startsWith('soundcloud:')) {
+    return id;
+  } else {
+    try {
+      const resolved = await scApi.resolve.get(`https://soundcloud.com/${id}`)
+      if (resolved) {
+        return resolved.toString();
+      } else {
+        throw new Error('Could not resolve Soundcloud URL to an ID')
+      }
+    } catch (error) {
+      return id;
+    }
+  }
+  return id;
 }
 
 function getReleaseDate (entity) {
@@ -67,7 +96,7 @@ async function searchByArtistName (artistName: string) {
 
 async function getArtistById(id: string) {
   try {
-    const data = scApi.users.get(correctId(id))
+    const data = scApi.users.get(cleanId(correctId(await resolveExternalId(id), 'artist')))
     return data
   } catch (error) {
     err.handleError('Error fetching artist:', error)
@@ -82,15 +111,23 @@ function formatArtistSearchData (rawData: SoundcloudUserSearch) {
   return rawData.collection
 }
 
+function getSmallImage(image: string | null){
+  if (!image) return null;
+  return image.includes('default_avatar') ? null : image.replace('large', 't200x200') || null;
+}
+
+function getLargeImage(image: string | null) {
+  if (!image) return null;
+  return image.includes('default_avatar') ? null : image.replace('large', 't500x500') || null;
+}
+
 function formatArtistObject (rawObject: SoundcloudUser): ArtistObject {
   const countries = new Intl.DisplayNames(['en'], { type: 'region' })
   return {
     name: rawObject.username,
     url: createUrl("artist", `https://soundcloud.com/${rawObject.permalink}`),
-    imageUrl: rawObject.avatar_url?.includes('default_avatar')
-      ? rawObject.avatar_url
-      : rawObject.avatar_url?.replace('large', 't500x500') || '',
-    imageUrlSmall: rawObject.avatar_url || '',
+    imageUrl: getLargeImage(rawObject.avatar_url),
+    imageUrlSmall: getSmallImage(rawObject.avatar_url),
     bannerUrl: rawObject.visuals?.visuals[0]?.visual_url,
     relevance: `${rawObject.followers_count} Followers`,
     info: `${
@@ -105,7 +142,7 @@ function formatArtistObject (rawObject: SoundcloudUser): ArtistObject {
     genres: null,
     followers: rawObject.followers_count,
     popularity: null,
-    id: correctId(rawObject.id),
+    id: correctId(rawObject.id, 'artist'),
     provider: namespace,
     type: "artist"
   }
@@ -113,7 +150,7 @@ function formatArtistObject (rawObject: SoundcloudUser): ArtistObject {
 
 async function getArtistAlbums (artistId: string | number, offset: string | number, limit: number) {
   try {
-    let artistPlaylists = await scApi.users.playlists(correctId(artistId))
+    let artistPlaylists = await scApi.users.playlists(cleanId(correctId(artistId, "artist")))
     // let artistTracks = await scApi.users.tracks(correctId(artistId))
     return { artistTracks: [], artistPlaylists: artistPlaylists }
   } catch (error) {
@@ -211,20 +248,21 @@ function getCopyrightsFromAlbum(album: SoundcloudPlaylist | SoundcloudTrack){
 }
 
 function formatAlbumObject (rawAlbum: SoundcloudPlaylist | SoundcloudTrack): AlbumObject {
+  let tracks = getAlbumTracks(rawAlbum);
   return {
     provider: namespace,
     id: rawAlbum.urn || `soundcloud:${rawAlbum.kind}:${rawAlbum.id}`,
     name: rawAlbum.title,
     url: createUrl("album", rawAlbum.permalink_url?.split('?')[0]),
-    imageUrl: rawAlbum.artwork_url?.replace('large', 't500x500') || '',
-    imageUrlSmall: rawAlbum.artwork_url || '',
+    imageUrl: getLargeImage(rawAlbum.artwork_url) || tracks[0]?.imageUrl || null,
+    imageUrlSmall: getSmallImage(rawAlbum.artwork_url) || tracks[0]?.imageUrlSmall || null,
     albumArtists: [formatPartialArtistObject(rawAlbum.user)],
     artistNames: [rawAlbum.user.username],
     releaseDate: getReleaseDate(rawAlbum),
     trackCount: 'track_count' in rawAlbum && rawAlbum.track_count || 1,
     albumType: 'set_type' in rawAlbum && rawAlbum.set_type || 'single',
     upc: getUPCFromAlbum(rawAlbum),
-    albumTracks: getAlbumTracks(rawAlbum),
+    albumTracks: tracks,
     genres: getGenresFromAlbum(rawAlbum),
     copyrights: getCopyrightsFromAlbum(rawAlbum),
     labels: getLabelsFromAlbum(rawAlbum),
@@ -275,8 +313,8 @@ function formatTrackObject (track: SoundcloudTrackWithAlbumInfo): TrackObject {
     id: track.urn || `soundcloud:track:${track.id}`,
     name: track.title,
     url: createUrl("track", track.permalink_url?.split('?')[0]),
-    imageUrl: track.artwork_url?.replace('large', 't500x500') || '',
-    imageUrlSmall: track.artwork_url || '',
+    imageUrl: getLargeImage(track.artwork_url),
+    imageUrlSmall: getSmallImage(track.artwork_url),
     albumName: track.albumName || track.publisher_metadata.album_title || track.publisher_metadata.release_title || null,
     trackArtists: track.user ? [formatPartialArtistObject(track.user)] : [],
     artistNames: [track.user?.username],
@@ -300,7 +338,7 @@ function formatPartialArtistObject (
       ? artist.avatar_url
       : artist.avatar_url?.replace('large', 't500x500') || '',
     imageUrlSmall: artist.avatar_url || '',
-    id: correctId(artist.id),
+    id: correctId(artist.id, 'artist'),
     provider: namespace,
     type: "partialArtist"
   }
@@ -333,6 +371,39 @@ async function getAlbumById (
   }
 }
 
+function buildUrlSearchQuery(type: UrlType, urls: string[]): RegexArtistUrlQuery | null {
+  const soundcloudType: Record<UrlType, string | null> = {
+    "artist": "artist",
+    "album": null,
+    "track": null,
+    "label": null
+  }
+  if (!soundcloudType[type]) {
+    return null
+  }
+  const idUrlMap: { [key: string]: string } = {}
+	urls.forEach((url) => {
+		const parsedUrl = parseUrl(url);
+		if (parsedUrl?.id && parsedUrl.type === type) {
+			idUrlMap[parsedUrl.id] = url;
+		}
+	})
+  const ids = Object.keys(idUrlMap);
+  const regex: RegExp | null = new RegExp(`https:\/\/soundcloud\\\.com\/(${ids.join("|")})\/?`);
+  let idQueryMap: { [key: string]: RegExp["source"] } = {};
+  let urlQueryMap: { [key: string]: RegExp["source"] } = {};
+  ids.forEach((id) => {
+    const regex: RegExp | null = new RegExp(`https:\/\/soundcloud\\\.com\/${id}\/?`);
+    idQueryMap[id] = regex.source
+    urlQueryMap[idUrlMap[id]] = regex.source
+  })
+  const query: RegexArtistUrlQuery = {
+    fullQuery: regex.source,
+    idQueries: idQueryMap,
+    urlQueries: urlQueryMap
+  }
+  return query;
+}
 
 
 const capabilities: Capabilities = {
@@ -377,7 +448,8 @@ const soundcloud: FullProvider = {
   formatAlbumGetData,
   formatArtistLookupData,
   createUrl,
-  parseUrl
+  parseUrl,
+  buildUrlSearchQuery
 }
 
 export default soundcloud

@@ -395,7 +395,7 @@ function getAlbumUPCs(album: Resource<AlbumAttributes>): string[] | null {
 }
 
 
-function buildUrlSearchQuery(type: UrlType, ids: string[]): RegexArtistUrlQuery | null {
+function buildUrlSearchQuery(type: UrlType, urls: string[]): RegexArtistUrlQuery | null {
 	const appleType: Record<UrlType, string | null> = {
 		"artist": "artist",
 		"album": "album",
@@ -405,15 +405,26 @@ function buildUrlSearchQuery(type: UrlType, ids: string[]): RegexArtistUrlQuery 
 	if (!appleType[type]) {
 		return null
 	}
+	const idUrlMap: { [key: string]: string } = {}
+	urls.forEach((url) => {
+		const parsedUrl = parseUrl(url);
+		if (parsedUrl?.id && parsedUrl.type === type) {
+			idUrlMap[parsedUrl.id] = url;
+		}
+	})
+	const ids = Object.keys(idUrlMap);
 	const regex: RegExp | null = new RegExp(`https:\/\/music\\\.apple\\\.com\/[a-zA-Z]{2}\/${appleType[type]}\/(${ids.join("|")})`);
 	let idQueryMap: { [key: string]: RegExp["source"] } = {};
+	let urlQueryMap: { [key: string]: RegExp["source"] } = {};
 	ids.forEach((id) => {
 		const regex: RegExp | null = new RegExp(`https:\/\/music\\\.apple\\\.com\/[a-zA-Z]{2}\/${appleType[type]}\/${id}`);
 		idQueryMap[id] = regex.source
+		urlQueryMap[idUrlMap[id]] = regex.source
 	})
 	const query: RegexArtistUrlQuery = {
 		fullQuery: regex.source,
-		idQueries: idQueryMap
+		idQueries: idQueryMap,
+		urlQueries: urlQueryMap
 	}
 	return query;
 }

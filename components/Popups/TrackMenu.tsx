@@ -207,7 +207,8 @@ function TrackItem({ index, track, album, isrcSource, highlight }: { index: stri
 			<div className={styles.trackInfo}>
 				<div className={styles.trackTopRow}>
 					<a className={styles.trackTitle} href={track.url?.url || ""} > {track.name}</a> <MbUrlIcon status={status} url={mbUrl || ""} styleClass={styles.trackMB} isAlbum={false} />
-					<div className={`${styles.trackISRCs} ${isrcSource == "musicbrainz" && styles.mbUnderline}`} title={isrcSource == "musicbrainz" ? "This ISRC is sourced from MusicBrainz" : undefined}>{Array.isArray(track) && typeof track[0] === "object" ? JSON.stringify(track, null, 2) : String(track.isrcs)}</div>
+					<div className={`${styles.trackISRCs} ${isrcSource == "musicbrainz" && styles.mbUnderline}`} title={isrcSource == "musicbrainz" ? "This ISRC is sourced from MusicBrainz" : undefined}>{String(track.isrcs)}</div>
+					<div className={styles.trackDuration} title={track.duration ? `${track.duration} MS (Click to copy)` : 'Unknown Duration'} onClick={() => {track.duration && text.copy(String(track.duration))}}>{text.displayDuration(track.duration)}</div>
 				</div>
 				{showArtistCredit() && (
 					<div className={styles.trackArtists}>

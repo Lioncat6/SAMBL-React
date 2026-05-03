@@ -206,7 +206,7 @@ function getTags(rawData){
 }
 
 function formatArtistObject(rawData): ArtistObject {
-	const id = parseUrl(rawData.url)?.id || rawData.raw.subdomain || ":";
+	const id = parseUrl(rawData.url)?.id || rawData.raw?.subdomain || ":";
 	return {
 		name: rawData.name,
 		url: createUrl("artist", id),

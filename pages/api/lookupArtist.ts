@@ -46,13 +46,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (!artist) {
             return res.status(404).json({ error: "Artist not found" } as SAMBLApiError);
         }
-        const providerUrl = sourceProvider.createUrl("artist", parsed_id)
+        const formattedArtist = sourceProvider.formatArtistObject(artist);
+        const providerUrl = formattedArtist.url  || sourceProvider.createUrl("artist", parsed_id) || null;
         if (!providerUrl) {
             return res.status(400).json({ error: "Provider id invalid or missing" } as SAMBLApiError);
         }
         let regexProvider = provider ? providers.parseProvider(sourceProvider.namespace, ["buildUrlSearchQuery"]) : false;
         if (regexProvider) {
-            let urlQuery = regexProvider.buildUrlSearchQuery("artist", [parsed_id]);
+            let urlQuery = regexProvider.buildUrlSearchQuery("artist", [providerUrl.url]);
             if (urlQuery){
                 const urlResults = await musicbrainz.getIdsByUrlQuery(urlQuery);
                 const lookupData: ArtistLookupData = { mbid: urlResults?.[parsed_id] || null, provider: sourceProvider.namespace, provider_id: parsed_id }

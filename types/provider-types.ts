@@ -40,6 +40,10 @@ export class ArtistObject extends PartialArtistObject {
     type: "artist";
 };
 
+export class ExtendedArtistObject extends ArtistObject {
+    aliases: string[] | null;
+}
+
 export class AlbumObject extends ImageObject {
     provider: ProviderNamespace;
     id: string;
@@ -80,6 +84,11 @@ export class ExternalUrlData {
     mbTypes: number[]
 }
 
+export class CommonExtends {
+    comment: string | null;
+    externalUrls: string[] | null;
+}
+
 export class ExtendedAlbumObject extends AlbumObject {
     comment: string | null;
     externalUrls: string[] | null;
@@ -108,8 +117,8 @@ export class TrackObject extends ImageObject {
 
 export class ExtendedTrackObject extends TrackObject {
     comment?: string | null;
-    extraInfo?: {[key: string]: any}
     externalUrls?: string[] | null;
+    extraInfo?: {[key: string]: any};
 }
 
 export class PagingData {
@@ -162,6 +171,7 @@ export class Provider {
 export class RegexArtistUrlQuery {
     fullQuery: RegExp["source"]
     idQueries: { [key: string]: RegExp["source"] }
+    urlQueries: { [key: string]: RegExp["source"] }
 }
 
 export class FullProvider extends Provider {
@@ -181,7 +191,7 @@ export class FullProvider extends Provider {
     formatTrackObject: (track: any) => TrackObject;
     parseUrl: (url: string) => UrlData | null;
     createUrl: (urlType: UrlType, providerId: string, mbTypes?: number[]) => ExternalUrlData;
-    buildUrlSearchQuery?: (type: UrlType, ids: string[]) => RegexArtistUrlQuery | null;
+    buildUrlSearchQuery?: (type: UrlType, urls: string[]) => RegexArtistUrlQuery | null;
 }
 
 export type PartialProvider = Partial<FullProvider> & Provider;

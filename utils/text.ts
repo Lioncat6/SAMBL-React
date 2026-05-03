@@ -187,6 +187,17 @@ function truncateToTwo(number: number): number {
 }
 
 /**
+ * Formats MS duration to a human readable format
+ * @param duration MS
+ */
+function displayDuration(duration: number | null | undefined): string {
+	if (duration == null || duration == undefined) return "-:--";
+	const minutes = Math.floor(duration / 60000);
+	const seconds = Math.floor((duration % 60000) / 1000);
+	return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
+
+/**
  * Utility object for text formatting.
  *
  */
@@ -206,7 +217,8 @@ const text = {
 	getColorEmoji,
 	infoToString,
 	padBarcode,
-	truncateToTwo
+	truncateToTwo,
+	displayDuration
 };
 
 export default text;
