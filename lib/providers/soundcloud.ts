@@ -35,18 +35,45 @@ if (!soundcloudClientId || !soundcloudOauthToken) {
 
 const scApi = new Soundcloud(soundcloudClientId, soundcloudOauthToken)
 
-function correctId(rawId: string | number): string {
+function correctId(rawId: string | number, correctType: 'artist' | 'track' | 'album' = 'artist'): string {
   let prefix = ""
   let id = rawId.toString()
   if (id.startsWith('soundcloud:')) {
     const segments = id.split(':')
     id = segments[2]
     prefix = 'soundcloud:' + segments[1] + ":"
+  } else {
+    prefix = `soundcloud:${correctType}:`
   }
   if (id.length < 9) {
     id = id.padStart(9, '0')
   }
   return prefix + id;
+}
+
+function cleanId(id: string): string {
+  if (id.split(':').length === 3) {
+    return id.split(':')[2]
+  }
+  return id;
+}
+
+async function resolveExternalId(id: string): Promise<string> {
+  if (id.startsWith('soundcloud:')) {
+    return id;
+  } else {
+    try {
+      const resolved = await scApi.resolve.get(`https://soundcloud.com/${id}`)
+      if (resolved) {
+        return resolved.toString();
+      } else {
+        throw new Error('Could not resolve Soundcloud URL to an ID')
+      }
+    } catch (error) {
+      return id;
+    }
+  }
+  return id;
 }
 
 function getReleaseDate (entity) {
@@ -67,7 +94,7 @@ async function searchByArtistName (artistName: string) {
 
 async function getArtistById(id: string) {
   try {
-    const data = scApi.users.get(correctId(id))
+    const data = scApi.users.get(cleanId(correctId(await resolveExternalId(id), 'artist')))
     return data
   } catch (error) {
     err.handleError('Error fetching artist:', error)
@@ -113,7 +140,7 @@ function formatArtistObject (rawObject: SoundcloudUser): ArtistObject {
     genres: null,
     followers: rawObject.followers_count,
     popularity: null,
-    id: correctId(rawObject.id),
+    id: correctId(rawObject.id, 'artist'),
     provider: namespace,
     type: "artist"
   }
@@ -121,7 +148,7 @@ function formatArtistObject (rawObject: SoundcloudUser): ArtistObject {
 
 async function getArtistAlbums (artistId: string | number, offset: string | number, limit: number) {
   try {
-    let artistPlaylists = await scApi.users.playlists(correctId(artistId))
+    let artistPlaylists = await scApi.users.playlists(cleanId(correctId(artistId, "artist")))
     // let artistTracks = await scApi.users.tracks(correctId(artistId))
     return { artistTracks: [], artistPlaylists: artistPlaylists }
   } catch (error) {
@@ -309,7 +336,7 @@ function formatPartialArtistObject (
       ? artist.avatar_url
       : artist.avatar_url?.replace('large', 't500x500') || '',
     imageUrlSmall: artist.avatar_url || '',
-    id: correctId(artist.id),
+    id: correctId(artist.id, 'artist'),
     provider: namespace,
     type: "partialArtist"
   }
