@@ -131,10 +131,14 @@ export async function getServerSideProps(context) {
 			let mostPopularArtist: ArtistObject | null = null;
 			let mostPopularity = 0;
 			for (let artist of data) {
-				if (artist.popularity && artist.popularity > mostPopularity) {
+				const artistPopularity = artist.popularity || artist.followers || 0;
+				if (artistPopularity > mostPopularity) {
 					mostPopularArtist = artist;
-					mostPopularity = artist.popularity;
+					mostPopularity = artistPopularity;
 				}
+			}
+			if (mostPopularArtist == null) {
+				mostPopularArtist = data[0];
 			}
 			const totalFollowers = data.reduce(function (total, artist) {
 				return total + (artist.followers || 0);
@@ -162,8 +166,27 @@ export async function getServerSideProps(context) {
 				viewedAlbum: await getViewedAlbum(),
 				type: "artist"
 			};
+			// original ids pIDArray
+			// source ids providerIds
+			if (!providerIds.every((id) => pIDArray.includes(id)) && !noRedirect) {
+				let destination = `/artist?provider_ids=${providerIds.join(",")}${artist_mbid ? `&artist_mbid=${artist_mbid}` : ""}&provider=${provider}`;
+				return {
+					redirect: {
+						destination: destination,
+						permanent: false,
+					},
+				};
+			}
 		} else {
 			const fetchedData = (await fetchArtistData(provider_id, provider));
+			if (fetchedData.providerData.id.trim() != provider_id.trim() && !noRedirect) {
+				return {
+					redirect: {
+						destination: `/artist?provider_id=${fetchedData.providerData.id}&provider=${provider}${artist_mbid ? `&artist_mbid=${artist_mbid}` : ""}`,
+						permanent: false,
+					},
+				};
+			}
 			artist = {
 				...fetchedData.providerData,
 				mbData: fetchedData.mbData,

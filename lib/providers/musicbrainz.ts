@@ -114,15 +114,15 @@ async function getIdsByUrlQuery(query: RegexArtistUrlQuery, type: IRelationType 
 		if (data["url-count"] === 0) {
 			return null; // No artist found
 		}
-		let mbids: IdMBIDDict = {}
+		let mbids: UrlMBIDDict = {}
 		for (let url of data.urls) {
 			const relations = (url["relation-list"]?.[0]?.relations || undefined) as IRelation[] //TODO replace this when https://github.com/metabrainz/mb-solr/pull/69 gets merged
 			if (url && relations) {
 				if (relations?.length > 0) {
-					for (const id in query.idQueries) {
-						const rgx = query.idQueries[id];
+					for (const urlID in query.urlQueries) {
+						const rgx = query.urlQueries[urlID];
 						if ((new RegExp(rgx)).test(url.resource) && relations){
-							mbids[id] = relations[0]?.[entityType]?.id;
+							mbids[urlID] = relations[0]?.[entityType]?.id;
 						}
 					}
 				}

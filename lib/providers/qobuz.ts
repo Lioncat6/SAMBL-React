@@ -452,7 +452,7 @@ function formatArtistLookupData(artist: QobuzArtist): QobuzArtist {
   return artist;
 }
 
-function buildUrlSearchQuery(type: UrlType, ids: string[]): RegexArtistUrlQuery {
+function buildUrlSearchQuery(type: UrlType, urls: string[]): RegexArtistUrlQuery {
   const qobuzTypes: Record<UrlType, string> = {
     "artist": "(artist|interpreter|label)",
     "album": "album",
@@ -460,17 +460,28 @@ function buildUrlSearchQuery(type: UrlType, ids: string[]): RegexArtistUrlQuery 
     "label": "label"
   }
   
+  const idUrlMap: { [key: string]: string } = {}
+	urls.forEach((url) => {
+		const parsedUrl = parseUrl(url);
+		if (parsedUrl?.id && parsedUrl.type === type) {
+			idUrlMap[parsedUrl.id] = url;
+		}
+	})
+  const ids = Object.keys(idUrlMap);
   const rawRegex = String.raw`https:\/\/(play|www|open)?\.?qobuz\.com\/(\w{2}-\w{2}\/)?${qobuzTypes[type]}\/([^\/]+\/)?([^\/]+\/)?(${ids.join("|")})`
   const regex: RegExp | null = new RegExp(rawRegex);
   let idQueryMap: { [key: string]: RegExp["source"] } = {};
+  let urlQueryMap: { [key: string]: RegExp["source"] } = {};
   ids.forEach((id) => {
     const rawRegex = String.raw`https:\/\/(play|www|open)?\.?qobuz\.com\/(\w{2}-\w{2}\/)?${qobuzTypes[type]}\/([^\/]+\/)?([^\/]+\/)?${id}`
     const regex: RegExp | null = RegExp(rawRegex);
     idQueryMap[id] = regex.source
+    urlQueryMap[idUrlMap[id]] = regex.source
   })
   const query: RegexArtistUrlQuery = {
     fullQuery: regex.source,
-    idQueries: idQueryMap
+    idQueries: idQueryMap,
+    urlQueries: urlQueryMap
   }
   return query;
 }

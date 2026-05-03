@@ -171,6 +171,7 @@ export class Provider {
 export class RegexArtistUrlQuery {
     fullQuery: RegExp["source"]
     idQueries: { [key: string]: RegExp["source"] }
+    urlQueries: { [key: string]: RegExp["source"] }
 }
 
 export class FullProvider extends Provider {
@@ -190,7 +191,7 @@ export class FullProvider extends Provider {
     formatTrackObject: (track: any) => TrackObject;
     parseUrl: (url: string) => UrlData | null;
     createUrl: (urlType: UrlType, providerId: string, mbTypes?: number[]) => ExternalUrlData;
-    buildUrlSearchQuery?: (type: UrlType, ids: string[]) => RegexArtistUrlQuery | null;
+    buildUrlSearchQuery?: (type: UrlType, urls: string[]) => RegexArtistUrlQuery | null;
 }
 
 export type PartialProvider = Partial<FullProvider> & Provider;

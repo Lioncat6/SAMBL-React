@@ -6,7 +6,9 @@ import type {
   FullProvider,
   RawAlbumData,
   Capabilities,
-  LabelObject
+  LabelObject,
+  UrlType,
+  RegexArtistUrlQuery
 } from '../../types/provider-types'
 import withCache from '../../utils/cache'
 import ErrorHandler from '../../utils/errorHandler'
@@ -369,6 +371,39 @@ async function getAlbumById (
   }
 }
 
+function buildUrlSearchQuery(type: UrlType, urls: string[]): RegexArtistUrlQuery | null {
+  const soundcloudType: Record<UrlType, string | null> = {
+    "artist": "artist",
+    "album": null,
+    "track": null,
+    "label": null
+  }
+  if (!soundcloudType[type]) {
+    return null
+  }
+  const idUrlMap: { [key: string]: string } = {}
+	urls.forEach((url) => {
+		const parsedUrl = parseUrl(url);
+		if (parsedUrl?.id && parsedUrl.type === type) {
+			idUrlMap[parsedUrl.id] = url;
+		}
+	})
+  const ids = Object.keys(idUrlMap);
+  const regex: RegExp | null = new RegExp(`https:\/\/soundcloud\\\.com\/(${ids.join("|")})\/?`);
+  let idQueryMap: { [key: string]: RegExp["source"] } = {};
+  let urlQueryMap: { [key: string]: RegExp["source"] } = {};
+  ids.forEach((id) => {
+    const regex: RegExp | null = new RegExp(`https:\/\/soundcloud\\\.com\/${id}\/?`);
+    idQueryMap[id] = regex.source
+    urlQueryMap[idUrlMap[id]] = regex.source
+  })
+  const query: RegexArtistUrlQuery = {
+    fullQuery: regex.source,
+    idQueries: idQueryMap,
+    urlQueries: urlQueryMap
+  }
+  return query;
+}
 
 
 const capabilities: Capabilities = {
@@ -413,7 +448,8 @@ const soundcloud: FullProvider = {
   formatAlbumGetData,
   formatArtistLookupData,
   createUrl,
-  parseUrl
+  parseUrl,
+  buildUrlSearchQuery
 }
 
 export default soundcloud
