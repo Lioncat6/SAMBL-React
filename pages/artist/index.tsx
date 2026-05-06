@@ -179,7 +179,7 @@ export async function getServerSideProps(context) {
 			}
 		} else {
 			const fetchedData = (await fetchArtistData(provider_id, provider));
-			if (fetchedData.providerData.id.trim() != provider_id.trim() && !noRedirect) {
+			if (String(fetchedData.providerData.id).trim() != String(provider_id).trim() && !noRedirect) {
 				return {
 					redirect: {
 						destination: `/artist?provider_id=${fetchedData.providerData.id}&provider=${provider}${artist_mbid ? `&artist_mbid=${artist_mbid}` : ""}`,
