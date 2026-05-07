@@ -29,8 +29,8 @@ export default function Header() {
 					</div>
 				</Link>
 				<div className={styles.textwrapper}>
-					<h1>SAMBL</h1>
-					<div className={styles.subdesc}>Streaming Artist MusicBrainz Lookup</div>
+					<h1 className={styles.title}>SAMBL</h1>
+					<div className={styles.subtitle}>Streaming Artist MusicBrainz Lookup</div>
 				</div>
 				<div className={styles.buttonWrapper}>
 					<Menu as="div" className={styles.dropdownWrapper}>
