@@ -1,0 +1,227 @@
+.textwrapper {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	height: min-content;
+	font-family: Arial, sans-serif;
+	text-align: center;
+	z-index: 3;
+    width: 100%;
+
+    @media (max-height: 700px) {
+        flex-direction: row;
+    }
+}
+
+
+.imagewrapper {
+    @media (min-height: 700px) and (min-width: 800px) {
+        aspect-ratio: 1;
+        z-index: 3;
+        width: 10%;
+        height: 10%;
+        position: absolute;
+        top: 0;
+    }
+}
+
+.header {
+	width: 50%;
+	min-width: 500px;
+	margin: 0 auto;
+	height: 150px;
+	overflow: hidden;
+	display: flex;
+	flex-direction: row;
+	background: transparent;
+	z-index: 3;
+}
+
+
+@media (max-width: 500px) {
+	.samblWrapper {
+		margin-right: 30px;
+	}
+
+	.header {
+		min-width: 380px;
+		width: -webkit-fill-available;
+	}
+}
+
+.toolsButton:hover {
+	background: transparent;
+	border: 1px solid var(--toolsButton);
+	color: var(--toolsButton);
+	transition: 0.2s all;
+}
+
+.configButton:hover {
+	background: transparent;
+	border: 1px solid var(--configButton);
+	color: var(--configButton);
+	transition: 0.2s all;
+}
+
+.savedArtists:hover {
+	background: transparent;
+	border: 1px solid var(--savedArtists);
+	color: var(--savedArtists);
+	transition: 0.2s all;
+}
+
+.buttonWrapper {
+	display: flex;
+	flex-direction: row;
+	right: 0;
+	position: absolute;
+	max-width: 38vw;
+	min-width: min-content;
+	flex-wrap: wrap;
+	align-content: center;
+	justify-content: right;
+}
+
+.dropdownWrapper {
+	position: relative;
+	display: inline-block;
+}
+
+.dropdownMenu {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	background-color: var(--background);
+	border: 1px solid var(--button-border);
+	border-radius: 8px;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	z-index: 1000;
+	padding: 8px 0;
+}
+
+.dropdownMenu a,
+.dropdownMenu .menuItem {
+	font-family: Arial, sans-serif;
+	display: block;
+	padding: 8px 16px;
+	color: var(--button-text);
+	text-decoration: none;
+	font-size: 14px;
+	font-weight: normal;
+	transition: background-color 0.2s, color 0.2s;
+	cursor: pointer;
+}
+
+.dropdownMenu a:hover,
+.dropdownMenu .menuItem:hover {
+	background-color: #444;
+	color: #ffffff;
+}
+
+/* New header */
+
+.header_container {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+
+	width: 100%;
+}
+
+
+/* Title */
+.title_container {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	margin: 5px 0px;
+    min-width: 50%;
+}
+
+.logo {
+    padding-top: 10px;
+	overflow: hidden;
+	width: 120px;
+	height: 120px;
+    @media (max-height: 700px) or (max-width: 800px) {
+        height: 50px;
+        max-height: 10%;
+        width: 50px;
+        padding-top: 2px;
+    }
+	
+}
+
+.title {
+    @media (max-height: 700px) or (max-width: 800px) {
+        margin: 0px
+    }
+}
+
+.subtitle {
+    color: var(--foreground-primary);
+
+    margin-left: 20px;
+
+    @media (min-height: 700px) {
+        margin-bottom: 20px;
+    }
+
+    @media (max-width: 728px) {
+        display: none;
+    }
+}
+
+
+
+/* Buttons */
+.button_container {
+	display: flex;
+	flex-direction: row;
+	align-content: center;
+	justify-content: right;
+	min-width: min-content;
+	flex-wrap: wrap;
+    position: absolute;
+    top: 12px;
+    right: 5px;
+    max-width: 35vw;
+    @media (max-width: 938px) {
+        max-width: 20vw;
+    }
+}
+
+.configButton,
+.savedArtists,
+.toolsButton {
+	display: flex;
+	align-items: center;
+
+	border: 1px solid var(--button-border);
+	border-radius: 10px;
+
+	margin: 0px 10px 2px 0px;
+	padding: 10px;
+	height: 32px;
+
+	text-align: center;
+	font-size: 13.33px;
+	color: var(--button-text);
+
+	transition: 0.2s all;
+	background: transparent;
+}
+
+.collapse {
+    display: inline;
+
+    @media (max-width: 440px) {
+        display: none;
+    }
+    @media (max-height: 400px) {
+        display: none;
+    }
+}

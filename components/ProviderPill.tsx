@@ -2,7 +2,7 @@ import { FaSpotify, FaDeezer, FaSoundcloud } from "react-icons/fa6";
 import { SiTidal, SiBandcamp, SiApplemusic, SiNaver } from "react-icons/si";
 import { useState, useEffect } from "react";
 import { SAMBLSettingsContext, useSettings } from "./SettingsContext";
-import styles from "../styles/ProviderPill.module.css";
+import styles from "../styles/ProviderPill.module.scss";
 import { ProviderDisplay } from "../types/component-types";
 import { ProviderNamespace } from "../types/provider-types";
 import clientProviders from "../utils/clientProviders";
@@ -53,13 +53,13 @@ export default function ProviderPill() {
     useEffect(() => {
         if (!loading) {
             setCurrentProvider(settings.currentProvider);
-			const params = new URLSearchParams(window.location.search);
-			if (window.location.pathname === "/search" && params.has("provider")) {
-				const providerParam = params.get("provider");
-				if (providerArray.some((p) => p.namespace === providerParam)) {
-					handleSelect(providerParam as ProviderNamespace);
-				}
-			}
+            const params = new URLSearchParams(window.location.search);
+            if (window.location.pathname === "/search" && params.has("provider")) {
+                const providerParam = params.get("provider");
+                if (providerArray.some((p) => p.namespace === providerParam)) {
+                    handleSelect(providerParam as ProviderNamespace);
+                }
+            }
         }
     }, [loading]);
 
@@ -76,7 +76,15 @@ export default function ProviderPill() {
 
     return (
         <div className={styles.ProviderPillContainer}>
-            <div className={styles.ProviderPill} style={{ position: "absolute" }}>
+            <div className={styles.ProviderPill}>
+
+                <div
+                    className={`${styles.SelectedProvider} ${styles[currentProvider]}`}
+                    style={{
+                        left: `${selectedIndex * 30}px`,
+                    }}
+                />
+
                 {providerArray.map((element) => (
                     <button
                         className={`${styles.provider} ${styles[element.namespace]} ${currentProvider === element.namespace ? styles.selected : ""}`}
@@ -87,12 +95,7 @@ export default function ProviderPill() {
                         {element.icon}
                     </button>
                 ))}
-                <div
-                    className={`${styles.SelectedProvider} ${styles[currentProvider]}`}
-                    style={{
-                        left: `${4 + selectedIndex * 30}px`,
-                    }}
-                />
+
             </div>
         </div>
     );
