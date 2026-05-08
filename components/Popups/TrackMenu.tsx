@@ -126,15 +126,13 @@ function AlbumFooter({ data }: { data: DisplayAlbum }) {
 		)}{(labels && labels.length > 0) && (
 			<div className={styles.labels}>
 				{labels.map((label, index) => (
-					<>
-					{label.url?.url ? (
+					label.url?.url ? (
 						<a key={index} href={label.url.url} target="_blank" rel="noopener noreferrer">
 							{`${label.name}`}
 						</a>
 					): (
 						<span key={index}>{`${label.name}`}</span>
-					)}
-					</>
+					)
 				))}
 			</div>
 		)}
