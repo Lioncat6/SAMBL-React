@@ -112,7 +112,7 @@ function AlbumDetails({ data }: { data: DisplayAlbum }) {
 }
 
 function AlbumFooter({ data }: { data: DisplayAlbum }) {
-	const {copyrights} = data;
+	const {copyrights, labels} = data;
 	return (
 		<div className={styles.albumFooter}>
 		{(copyrights && copyrights.length > 0) &&
@@ -121,7 +121,24 @@ function AlbumFooter({ data }: { data: DisplayAlbum }) {
 					<span key={index}>{`${genre}`}</span>
 				))}
 			</div>
-		}</div>
+		}{(copyrights && copyrights.length > 0 && labels && labels.length > 0) && (
+			<hr className={styles.footerDivider} />
+		)}{(labels && labels.length > 0) && (
+			<div className={styles.labels}>
+				{labels.map((label, index) => (
+					<>
+					{label.url?.url ? (
+						<a key={index} href={label.url.url} target="_blank" rel="noopener noreferrer">
+							{`${label.name}`}
+						</a>
+					): (
+						<span key={index}>{`${label.name}`}</span>
+					)}
+					</>
+				))}
+			</div>
+		)}
+		</div>
 	)
 }
 
