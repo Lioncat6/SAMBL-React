@@ -18,7 +18,8 @@ function createUrl(type: UrlType, id: string, mbTypes?: number[]): ExternalUrlDa
     const mbUrlTypes: Record<UrlType, number[]> = {
         "artist": [978],
         "album": [980],
-        "track": [979]
+        "track": [979],
+        "label": []
     }
     return {
         url: `https://tidal.com/${type}/${id}`,

@@ -3,6 +3,7 @@ import logger from "../../utils/logger";
 import withCache from "../../utils/cache";
 import parsers from "../parsers/parsers";
 import ErrorHandler from "../../utils/errorHandler";
+import text from "../../utils/text";
 
 const namespace: ProviderNamespace = "naver"
 const err = new ErrorHandler(namespace);
@@ -293,18 +294,6 @@ function formatNaverDate(date: string): string {
     return date.split(".").join("-");
 }
 
-function formatNaverTrackDuration(duration: string): number {
-    const segments = duration.split(":");
-    let ms = 0;
-    if (segments.length == 2) {
-        ms += Number(segments[0]) * 60 * 1000;
-        ms += Number(segments[1]) * 1000;
-    } else if (segments.length == 1) {
-        ms += Number(segments[1]) * 1000;
-    }
-    return ms;
-}
-
 async function searchByArtistName(query): Promise<NaverResponse<NaverArtistSearchResult> | null> {
     try {
         const response = await fetch(v4Url + `/search/artist.json?query=${query}&sort=RELEVANCE`)
@@ -522,7 +511,7 @@ function formatTrackObject(track: NaverTrack): TrackObject {
         albumName: track.album.albumTitle,
         releaseDate: track.album.releaseDate,
         trackNumber: track.trackNumber,
-        duration: formatNaverTrackDuration(track.playTime),
+        duration: text.parseDuration(track.playTime),
         isrcs: [],
         imageUrl: track.album.imageUrl ? getFullImageUrl(track.album.imageUrl) : null,
         imageUrlSmall: track.album.imageUrl || null
