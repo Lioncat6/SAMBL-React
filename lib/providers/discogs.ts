@@ -383,8 +383,20 @@ async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
 	return null;
 }
 
+const capabilities: Capabilities = {
+  isrcs: {
+	availability: "never",
+	presence: "never"
+  },
+  upcs: {
+	availability: "sometimes",
+	presence: "onAlbumRefresh"
+  }
+}
+
 const discogs: FullProvider = {
 	namespace,
+	config: {capabilities},
 	// getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 30, namespace: namespace }),
 	getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 30, namespace: namespace }),
 	searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30, namespace: namespace }),
