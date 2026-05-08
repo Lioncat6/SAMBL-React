@@ -159,7 +159,7 @@ async function getMasterReleases(master: GetArtistReleasesResponses['releases'][
 	return null;
 }
 
-async function getArtistAlbums(artistId: string, offset: number = 0, limit: number = 100): Promise<ArtistAlbumsResponse | null> {
+async function getArtistAlbums(artistId: string, offset: number = 0, limit: number = 25): Promise<ArtistAlbumsResponse | null> {
 	try {
 		const artistData = await discogs.getArtistById(artistId);
 		let formattedArtistData: ArtistObject | null = null;
@@ -170,10 +170,14 @@ async function getArtistAlbums(artistId: string, offset: number = 0, limit: numb
 		let releases = data.data.releases;
 		let masters = releases.filter(release => release.type === "master");
 		let masterReleases: GetArtistReleasesResponses['releases'] = [];
-		for (const master of masters) {
+		for (let i = 0; i < masters.length; i++) {
+			const master = masters[i];
 			const masterVersions = await getMasterReleases(master);
 			if (masterVersions) {
 				masterReleases.push(...masterVersions);
+			}
+			if (i < masters.length - 1) {
+				await new Promise(resolve => setTimeout(resolve, 250));
 			}
 		}
 		data.data.releases.push(...masterReleases);
