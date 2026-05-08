@@ -187,7 +187,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 			} else if (!hasMatchingISRCs && aggregateTracks) {
 				albumIssues.push("ISRCDiff")
 			}
-			if (mbTrackCount && (mbTrackCount != providerTrackCount)) {
+			if (mbTrackCount && (mbTrackCount != providerTrackCount) && providerTrackCount != null) {
 				aggregateTracks = false;
 				albumIssues.push("trackDiff");
 			}
