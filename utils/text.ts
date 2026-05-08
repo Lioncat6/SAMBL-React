@@ -198,6 +198,23 @@ function displayDuration(duration: number | null | undefined): string {
 }
 
 /**
+ * Formats typical duration strings like "1:11:23" or "9:25" into ms
+ * @param duration duration string
+ * @returns ms
+ */
+function parseDuration(duration: string): number {
+	const segments = duration.split(":");
+	let ms = 0;
+	if (segments.length == 2) {
+		ms += Number(segments[0]) * 60 * 1000;
+		ms += Number(segments[1]) * 1000;
+	} else if (segments.length == 1) {
+		ms += Number(segments[1]) * 1000;
+	}
+	return ms;
+}
+
+/**
  * Utility object for text formatting.
  *
  */
@@ -218,7 +235,8 @@ const text = {
 	infoToString,
 	padBarcode,
 	truncateToTwo,
-	displayDuration
+	displayDuration,
+	parseDuration
 };
 
 export default text;
