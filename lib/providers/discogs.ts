@@ -7,7 +7,7 @@ import text from "../../utils/text";
 import withCache from "../../utils/cache";
 import ErrorHandler from "../../utils/errorHandler";
 import parsers from "../parsers/parsers";
-import { Artist, DiscogsClient, GetArtistReleasesResponses, GetArtistResponse, GetReleaseResponse, Label, PaginationResponse, SearchResponse, SearchResult } from '@lionralfs/discogs-client'
+import { Artist, DiscogsClient, GetArtistReleasesResponses, GetArtistResponse, GetMasterVersionsResponse, GetReleaseResponse, Label, PaginationResponse, SearchResponse, SearchResult } from '@lionralfs/discogs-client'
 import { create } from "node:domain";
 import { release } from "node:os";
 import { get } from "node:http";
@@ -35,6 +35,12 @@ let discogsClient = new DiscogsClient({
 		consumerKey: discogsKey,
 		consumerSecret: discogsSecret,
 	},
+});
+
+discogsClient.setConfig({
+    exponentialBackoffIntervalMs: 2000,
+    exponentialBackoffMaxRetries: 5,
+    exponentialBackoffRate: 2.7,
 });
 
 let discogsDB = discogsClient.database();
@@ -129,6 +135,30 @@ type ArtistAlbumsResponse = GetArtistReleasesResponses & PaginationResponse & {
 	albumArtist: ArtistObject | null;
 };
 
+async function getMasterReleases(master: GetArtistReleasesResponses['releases'][number]): Promise<GetArtistReleasesResponses['releases'] | null> {
+	console.log(`Fetching master releases for master ID ${master.id}...`);
+	try {
+		const data = await discogsDB.getMasterVersions(master.id);
+		if (data && data.data && data.data.versions) {
+			let moddedReleases: GetArtistReleasesResponses['releases'] = []
+			for (const release of data.data.versions) {
+				moddedReleases.push({ 
+					...release, 
+					artist: master.artist, 
+					main_release: master.main_release, 
+					role: master.role, 
+					type: 'release', 
+					year: master.year });
+			}
+			return moddedReleases;
+		}
+	} catch (error) {
+		err.handleError("Error fetching master releases:", error);
+		return null;
+	}
+	return null;
+}
+
 async function getArtistAlbums(artistId: string, offset: number = 0, limit: number = 100): Promise<ArtistAlbumsResponse | null> {
 	try {
 		const artistData = await discogs.getArtistById(artistId);
@@ -136,10 +166,17 @@ async function getArtistAlbums(artistId: string, offset: number = 0, limit: numb
 		if (artistData) {
 			formattedArtistData = formatArtistObject(artistData);
 		}
-		console.log(limit)
-		console.log(offset)
-		console.log(Math.floor(offset / limit) + 1)
-		const data = await discogsDB.getArtistReleases(artistId, { per_page: limit, page: Math.floor(offset / limit) + 1 });
+		let data = await discogsDB.getArtistReleases(artistId, { per_page: limit, page: Math.floor(offset / limit) + 1 });
+		let releases = data.data.releases;
+		let masters = releases.filter(release => release.type === "master");
+		let masterReleases: GetArtistReleasesResponses['releases'] = [];
+		for (const master of masters) {
+			const masterVersions = await getMasterReleases(master);
+			if (masterVersions) {
+				masterReleases.push(...masterVersions);
+			}
+		}
+		data.data.releases.push(...masterReleases);
 		return {
 			...data.data,
 			albumArtist: formattedArtistData
@@ -151,7 +188,6 @@ async function getArtistAlbums(artistId: string, offset: number = 0, limit: numb
 }
 
 function formatAlbumGetData(rawData: ArtistAlbumsResponse): RawAlbumData {
-	console.log(rawData.releases.length)
 	return {
 		albums: rawData.releases.filter(release => release.type === "release").map(release => ({ ...release, albumArtist: rawData.albumArtist })),
 		count: rawData.pagination.items,
@@ -261,7 +297,7 @@ function getAlbumType(types: GetReleaseResponse["formats"]): string | null {
 	return null;
 }
 
-function formatAlbumObject(album: PartialDiscogsRelease | GetReleaseResponse): AlbumObject {
+function formatAlbumObject(album: PartialDiscogsRelease | GetReleaseResponse | GetMasterVersionsResponse["versions"][number]): AlbumObject {
 	if ("artist" in album) {
 		album = album as PartialDiscogsRelease;
 		return {
@@ -329,7 +365,7 @@ const discogs: FullProvider = {
 	getAlbumById: withCache(getAlbumById, { ttl: 60 * 30, namespace: namespace }),
 	getTrackById: withCache(getTrackById, { ttl: 60 * 30, namespace: namespace }),
 	getArtistById: withCache(getArtistById, { ttl: 60 * 30, namespace: namespace }),
-	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 30, namespace: namespace }),
+	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 60, namespace: namespace }), //Fetching artist albums is more expensive, so cache for longer
 	formatArtistSearchData,
 	formatArtistLookupData,
 	formatArtistObject,
