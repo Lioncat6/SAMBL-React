@@ -5,7 +5,7 @@ import { SAMBLSettingsContext, useSettings } from "./SettingsContext";
 import dynamic from "next/dynamic";
 import { useExport as useExportState } from "./ExportState";
 import { List, RowComponentProps } from "react-window";
-import { FaDeezer } from "react-icons/fa";
+import { FaDeezer, FaQuestionCircle } from "react-icons/fa";
 import { SiApplemusic, SiTidal } from "react-icons/si";
 import { FaAnglesRight, FaAnglesLeft, FaNotEqual, FaSoundcloud, FaBandcamp } from "react-icons/fa6";
 import { IoMdRefresh } from "react-icons/io";
@@ -23,8 +23,8 @@ import ExportMenuPopup from "./Popups/ExportMenu";
 import TrackMenuPopup from "./Popups/TrackMenu";
 import FilterMenuPopup from "./Popups/FilterMenu";
 import toasts from "../utils/toasts";
-import { AlbumObject, ArtistObject, ExtendedTrackObject, ProviderNamespace, TrackObject } from "../types/provider-types";
-import { MdAlbum, MdAudiotrack } from "react-icons/md";
+import { AlbumObject, ArtistObject, ExtendedTrackObject, ObjectType, ProviderNamespace, TrackObject } from "../types/provider-types";
+import { MdAlbum, MdAudiotrack, MdPerson } from "react-icons/md";
 
 function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRCs: boolean) => void }) {
 	const { id, url, releaseDate, mbAlbum, trackCount, status, mbid, albumIssues, provider, artistMBID, aggregatedTracks, albumTracks, albumArtists } = item;
@@ -431,7 +431,7 @@ function Icon({ source }: {source: ProviderNamespace}) {
 	);
 }
 
-function LinkButton({ item }: { item: AlbumObject | TrackObject }) {
+function LinkButton({ item }: { item: AlbumObject | TrackObject | ArtistObject }) {
 	const { settings } = useSettings() as SAMBLSettingsContext;
 
 	return (
@@ -446,18 +446,33 @@ function LinkButton({ item }: { item: AlbumObject | TrackObject }) {
 	);
 }
 
-function GenericItem({ item }: { item: AlbumObject | ExtendedTrackObject }) {
+function getItemIcon(type: ObjectType) {
+	switch (type) {
+		case "artist":
+		case "partialArtist":
+			return<MdPerson title={"Artist"} />;
+		case "album": 
+			return <MdAlbum title={"Album"} />;
+		case "track":
+			return <MdAudiotrack title={"Track"} />;
+		default:
+			return <FaQuestionCircle title={"Unknown Type"} />;
+	}
+}
+
+function GenericItem({ item }: { item: AlbumObject | ExtendedTrackObject | ArtistObject }) {
 	const exportState = useExportState()?.exportState;
 	const { provider, imageUrl, imageUrlSmall, name, url, type } = item;
 	const info = [
 		// text.capitalizeFirst(provider),
 		"comment" in item && item.comment,
-		item.releaseDate,
+		"releaseDate" in item && item.releaseDate,
 		"albumType" in item && item.albumType ? text.capitalizeFirst(item.albumType) : null,
 		"trackCount" in item && `${item.trackCount} tracks`,
-		"duration" in item && item.duration ? text.formatMS(item.duration) : null
+		"duration" in item && item.duration ? text.formatMS(item.duration) : null,
+		"relevance" in item && item.relevance ? item.relevance : null,
 	]
-	const artists = "albumArtists" in item ? item.albumArtists : item.trackArtists;
+	const artists = "albumArtists" in item ? item.albumArtists : "trackArtists" in item ? item.trackArtists : null;
 	let artistString = artists?.map((artist, index) => (
 		<span key={index}>
 			{index > 0 && ", "}
@@ -482,7 +497,7 @@ function GenericItem({ item }: { item: AlbumObject | ExtendedTrackObject }) {
 			<div className={styles.textContainer}>
 				<div className={styles.artistName}>
 					<a href={url?.url || undefined} target="_blank">
-						{name}  {type == "track" ? <MdAudiotrack title={"Track"} /> : <MdAlbum title={"Album"} />}
+						{name}  {getItemIcon(type)}
 					</a>
 				</div>
 				<div className={styles.artistFollowers}>{artistString}</div>
