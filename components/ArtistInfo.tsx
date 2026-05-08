@@ -93,6 +93,16 @@ function QobuzUrlContainer({ id, url }) {
 	);
 }
 
+function DiscogsUrlContainer({ id, url }) {
+	return (
+		<div className={styles.discogsUrlContainer}>
+			<a id="discogsURL" target="_blank" href={url || "https://www.discogs.com/artist/" + id}>
+				<img alt="Discogs Icon" className={styles.discogsIcon} src="../assets/images/Discogs_icon.svg" />
+			</a>
+		</div>
+	);
+}
+
 function UrlContainer({ id, provider, url }: { id?: string | number; provider: string; url?: string }) {
 	id = id?.toString();
 	switch (provider) {
@@ -114,6 +124,8 @@ function UrlContainer({ id, provider, url }: { id?: string | number; provider: s
 			return <NaverUrlContainer url={url} id={id} />;
 		case "qobuz":
 			return <QobuzUrlContainer url={url} id={id} />;
+		case "discogs":
+			return <DiscogsUrlContainer url={url} id={id} />;
 		default:
 			return null;
 	}

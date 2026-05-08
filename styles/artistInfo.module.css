@@ -1,7 +1,8 @@
 .spIcon,
 .mbIcon,
 .iconWrapper,
-.deezerIcon {
+.deezerIcon,
+.discogsIcon {
 	width: 40px;
 	max-height: 10vh;
 }
@@ -26,7 +27,8 @@
 .soundcloudUrlContainer,
 .spURLContainer,
 .applemusicURLContainer,
-.qobuzUrlContainer {
+.qobuzUrlContainer,
+.discogsUrlContainer {
 	display: flex;
 	flex-direction: row;
 	padding: 1.2vh 2px 0 0;
@@ -53,6 +55,7 @@
 .bandcampURLContainer a,
 .naverUrlContainer a,
 .qobuzUrlContainer a,
+.discogsUrlContainer a,
 .urlContainer a {
 	padding: 0 3px 0 0;
 }

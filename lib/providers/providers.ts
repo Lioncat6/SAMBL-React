@@ -11,6 +11,7 @@ import clientProviders from "../../utils/clientProviders";
 import parsers from "../parsers/parsers";
 import naver from "./naver";
 import qobuz from "./qobuz";
+import discogs from "./discogs";
 const { isDisabled } = clientProviders;
 
 const providerList = [
@@ -23,7 +24,8 @@ const providerList = [
     soundcloud,
     applemusic,
     naver,
-    qobuz
+    qobuz,
+    discogs
 ];
 
 function getDefaultProvider(): Provider {

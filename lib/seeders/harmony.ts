@@ -7,7 +7,7 @@ function buildUrl(url: string, upc?: string | null): string {
 const harmony: Seeder = {
     namespace: "harmony",
     displayName: "Harmony",
-    providers: ["spotify", "applemusic", "deezer", "tidal", "bandcamp", "musicbrainz"],
+    providers: ["spotify", "applemusic", "deezer", "tidal", "bandcamp", "musicbrainz", "discogs"],
     isDefault: true,
     buildUrl: buildUrl,
 };

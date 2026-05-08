@@ -378,7 +378,7 @@ function formatTrackObject(track: IRecording | ITrack): ExtendedTrackObject {
 		id: recording.id,
 		name: recording.title,
 		url: createUrl('track', recording.id),
-		duration: recording.length || 0,
+		duration: recording.length || null,
 		imageUrl: null,
 		imageUrlSmall: null,
 		trackArtists: recording["artist-credit"] ? recording["artist-credit"].map(ac => formatArtistObject(ac.artist)) : [],

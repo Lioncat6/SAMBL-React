@@ -510,7 +510,8 @@
     color: var(--foreground-tertiary)
 }
 
-.copyrights {
+.copyrights,
+.labels {
     display: flex;
     flex-direction: column;
     font-size: small;
@@ -520,6 +521,8 @@
 .albumFooter {
     align-items: center;
     text-align: center;
+    display: flex;
+    flex-direction: column;
 }
 
 .mbUnderline {

@@ -3,6 +3,7 @@ import { FullProviderNamespace, ProviderNamespace, UrlInfo } from "../../types/p
 import applemusic from "./applemusic";
 import bandcamp from "./bandcamp";
 import deezer from "./deezer"
+import discogs from "./discogs";
 import musicbrainz from "./musicbrainz";
 import musixmatch from "./musixmatch";
 import naver from "./naver";
@@ -21,7 +22,8 @@ const parserList: Record<ProviderNamespace, UrlParser> ={
     "spotify": spotify,
     "musixmatch": musixmatch,
     "naver": naver,
-    "qobuz": qobuz
+    "qobuz": qobuz,
+    "discogs": discogs
 }
 
 function getParser(provider: ProviderNamespace): UrlParser {
