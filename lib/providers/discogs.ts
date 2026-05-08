@@ -361,10 +361,32 @@ function getTrackById(trackId: string): Promise<null> {
 	return Promise.resolve(null);
 }
 
+async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
+	try {
+		const data = await discogsDB.search({ type: "release", barcode: upc });
+		if (data.data && data.data.results) {
+			const albums: AlbumObject[] = [];
+			for (const result of data.data.results) {
+				if (result.type === "release") {
+					const fullAlbumData = await getAlbumById(String(result.id));
+					if (fullAlbumData) {
+						albums.push(formatAlbumObject(fullAlbumData));
+					}
+				}
+			}
+			return albums;
+		}
+	} catch (error) {
+		err.handleError("Error fetching album by UPC:", error);
+		return null;
+	}
+	return null;
+}
+
 const discogs: FullProvider = {
 	namespace,
 	// getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 30, namespace: namespace }),
-	// getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 30, namespace: namespace }),
+	getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 30, namespace: namespace }),
 	searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30, namespace: namespace }),
 	getAlbumById: withCache(getAlbumById, { ttl: 60 * 30, namespace: namespace }),
 	getTrackById: withCache(getTrackById, { ttl: 60 * 30, namespace: namespace }),
