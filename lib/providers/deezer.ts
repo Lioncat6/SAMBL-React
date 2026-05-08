@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities } from "../../types/provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities, LabelObject } from "../../types/provider-types";
 import logger from "../../utils/logger";
 import text from "../../utils/text";
 import withCache from "../../utils/cache";
@@ -236,10 +236,20 @@ function formatAlbumObject(album): AlbumObject {
 		upc: album.upc || null,
 		albumTracks: getAlbumTracks(album),
 		type: "album",
-		labels: album.label ? [album.label] : null,
+		labels: album.label ? [formatLabelObject(album.label)] : null,
 		copyrights: null,
 		genres: album.genres?.data ? album.genres.data.map((genre) => genre.name) : getDeezerGenre(album.genre_id) ? [getDeezerGenre(album.genre_id)]: null
 	};
+}
+
+function formatLabelObject(label: string): LabelObject {
+	return {
+		type: "label",
+		provider: namespace,
+		id: null,
+		name: label,
+		url: null,
+	}
 }
 
 function getAlbumTracks(album) {
