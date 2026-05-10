@@ -1,138 +1,138 @@
 /* Popup modal overlay */
 .popup-overlay {
-    background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .dialogRoot {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
 }
 
 .dialogBackdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
 }
 
 .dialogContainer {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1001;
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
 }
 
 .dialogEnter {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .dialogEnterFrom {
-    opacity: 0;
-    transform: scale(0.95);
+  opacity: 0;
+  transform: scale(0.95);
 }
 .dialogEnterTo {
-    opacity: 1;
-    transform: scale(1);
+  opacity: 1;
+  transform: scale(1);
 }
 .dialogLeave {
-    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .dialogLeaveFrom {
-    opacity: 1;
-    transform: scale(1);
+  opacity: 1;
+  transform: scale(1);
 }
 .dialogLeaveTo {
-    opacity: 0;
-    transform: scale(0.95);
+  opacity: 0;
+  transform: scale(0.95);
 }
 
 .overlayEnter {
-    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .overlayEnterFrom {
-    opacity: 0;
+  opacity: 0;
 }
 .overlayEnterTo {
-    opacity: 1;
+  opacity: 1;
 }
 .overlayLeave {
-    transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .overlayLeaveFrom {
-    opacity: 1;
+  opacity: 1;
 }
 .overlayLeaveTo {
-    opacity: 0;
+  opacity: 0;
 }
 
 /* Popup modal content */
 .modal {
-    font-family: Arial, sans-serif;
-    background: var(--background);
-    border-radius: 8px;
-    padding: 20px;
-    position: relative;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    max-width: 50%;
-    transition: all 0.3s ease;
-    min-width: 30%;
-    display: flex;
-    flex-direction: column;
-    max-height: 90%;
+  font-family: Arial, sans-serif;
+  background: var(--background);
+  border-radius: 8px;
+  padding: 20px;
+  position: relative;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  max-width: 50%;
+  transition: all 0.3s ease;
+  min-width: 30%;
+  display: flex;
+  flex-direction: column;
+  max-height: 90%;
 }
 
 @media screen and (max-width: 768px) {
-    .modal {
-        max-width: 80%;
-        width: 100%;
-    }
+  .modal {
+    max-width: 80%;
+    width: 100%;
+  }
 }
 
 .close {
-    position: absolute;
-    top: 14px;
-    right: 10px;
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    z-index: 1;
-    color: var(--foreground-primary);
-    transition: all 0.2s ease-in-out;
+  position: absolute;
+  top: 14px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 1;
+  color: var(--foreground-primary);
+  transition: all 0.2s ease-in-out;
 }
 
 .close:hover {
-    color: var(--foreground-secondary)
+  color: var(--foreground-secondary);
 }
 
 .header {
-    font-size: 18px;
-    margin-bottom: 10px;
-    align-items: center;
-    position: relative;
-    z-index: 1;
-    width: fit-content;
+  font-size: 18px;
+  margin-bottom: 10px;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  width: fit-content;
 }
 
 .subHeader {
-    display: inline;
-    color: var(--foreground-tertiary);
+  display: inline;
+  color: var(--foreground-tertiary);
 }
 
 .content {
-    margin-top: 20px;
-    margin-bottom: 20px;
-    overflow-y: scroll;
-    position: relative;
-    z-index: 1;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  overflow-y: scroll;
+  position: relative;
+  z-index: 1;
 }
 /* 
 .actions .button {
@@ -146,884 +146,936 @@
 } */
 
 .actions .button {
-	padding: 10px;
-	border: 1px solid var(--foreground-primary);
-	border-radius: 20px;
-	margin-top: 12px;
-    width: 100%;
-	display: block;
-    background: transparent;
-    color: var(--foreground-primary);
-    transition: all 0.2s ease-in-out;
-    position: relative;
-    z-index: 1;
-    cursor: pointer;
+  padding: 10px;
+  border: 1px solid var(--foreground-primary);
+  border-radius: 20px;
+  margin-top: 12px;
+  width: 100%;
+  display: block;
+  background: transparent;
+  color: var(--foreground-primary);
+  transition: all 0.2s ease-in-out;
+  position: relative;
+  z-index: 1;
+  cursor: pointer;
 }
 
 .actions .button:hover {
-    background-color: transparent;
-    border: 1px solid var(--foreground-tertiary);
+  background-color: transparent;
+  border: 1px solid var(--foreground-tertiary);
 }
 
 .button.warning {
-    border-color: var(--status-red);
-    color: var(--status-red)
+  border-color: var(--status-red);
+  color: var(--status-red);
 }
 
 .configureMenu,
 .deepSearchContent {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    padding: 0;
-    margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  padding: 0;
+  margin: 0;
 }
 
 .sectionHeader {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .section {
-    border: none;
-    margin: 0;
-    padding: 0;
-    justify-content: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  border: none;
+  margin: 0;
+  padding: 0;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .container {
-    border: none;
-    margin: 0;
-    padding: 0;
-    justify-content: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
+  border: none;
+  margin: 0;
+  padding: 0;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
 .info {
-    cursor: help;
+  cursor: help;
 }
 
 .propertyRow {
-    display: flex;
-    flex-direction: row;
+  display: flex;
+  flex-direction: row;
 }
 
 .propertyRow.expanded {
-    flex-direction: column;
+  flex-direction: column;
 }
 
 .propertyData {
-    display: inline-block;
-    margin-left: 5px;
-    color: var(--foreground-tertiary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: -webkit-fill-available;
-    width:-moz-available;
+  display: inline-block;
+  margin-left: 5px;
+  color: var(--foreground-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: -webkit-fill-available;
+  width: -moz-available;
 }
 
 .subPropertyDataValue {
-    display: inline-block;
-    margin-left: 5px;
-    color: var(--foreground-tertiary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: -webkit-fill-available;
-    width:-moz-available;
+  display: inline-block;
+  margin-left: 5px;
+  color: var(--foreground-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: -webkit-fill-available;
+  width: -moz-available;
 }
 
 .subPropertyData {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 .subPropertyDataColumn {
-    display: flex;
-    flex-direction: column;
-    width: -webkit-fill-available;
-    width:-moz-available;
-    flex: 1 1 0;      /* Allow to grow and shrink */
-    min-width: 0;     /* Allow ellipsis to work */
+  display: flex;
+  flex-direction: column;
+  width: -webkit-fill-available;
+  width: -moz-available;
+  flex: 1 1 0; /* Allow to grow and shrink */
+  min-width: 0; /* Allow ellipsis to work */
 }
 
 .property {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-    flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  flex-shrink: 0;
 }
 
-.copyButton, .lookupButton, .expandButton, .linkButton {
-    background: transparent;
-    border: none;
-    transition: all 0.1s ease-in-out;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    vertical-align: text-top;
+.copyButton,
+.lookupButton,
+.expandButton,
+.linkButton {
+  background: transparent;
+  border: none;
+  transition: all 0.1s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: text-top;
 }
 
 .linkButton {
-    font-size: x-large;
+  font-size: x-large;
 }
 
 .lookupButton {
-    color: var(--foreground-primary);
-    padding: 1px 5px 1px 0;
-    font-size: small;
+  color: var(--foreground-primary);
+  padding: 1px 5px 1px 0;
+  font-size: small;
 }
-
 
 .copyButton:hover,
 .lookupButton:hover,
 .expandButton:hover,
 .linkButton:hover {
-    cursor: pointer;
-    color: var(--foreground-secondary)
+  cursor: pointer;
+  color: var(--foreground-secondary);
 }
 
 .expandButton {
-    vertical-align: text-top;
-    height: 1em;
+  vertical-align: text-top;
+  height: 1em;
 }
 
 .isrcDropdownWrapper {
-    display: inline;
-    z-index: 1002;
-    position: relative;
+  display: inline;
+  z-index: 1002;
+  position: relative;
 }
 
 .dropdownMenu {
-    position: absolute;
-    top: 100%; 
-    left: 0;
-    background-color: var(--background); 
-    border: 1px solid var(--button-border);
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 1003;
-    padding: 8px 0; 
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: var(--background);
+  border: 1px solid var(--button-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1003;
+  padding: 8px 0;
 }
 
-.dropdownMenu a, .dropdownMenu .menuItem {
-	font-family: Arial, sans-serif;
-    display: block;
-    padding: 8px 16px;
-    color: var(--button-text);
-    text-decoration: none;
-    font-size: 14px;
-	font-weight: normal;
-    transition: background-color 0.2s, color 0.2s;
-	cursor: pointer;
+.dropdownMenu a,
+.dropdownMenu .menuItem {
+  font-family: Arial, sans-serif;
+  display: block;
+  padding: 8px 16px;
+  color: var(--button-text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: normal;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+  cursor: pointer;
 }
 
-.dropdownMenu a:hover, .dropdownMenu .menuItem:hover {
-    background-color: #444;
-    color: #ffffff;
+.dropdownMenu a:hover,
+.dropdownMenu .menuItem:hover {
+  background-color: #444;
+  color: #ffffff;
 }
-
 
 .version {
-    display: inline;
-    color: var(--foreground-tertiary);
-    font-size: small;
+  display: inline;
+  color: var(--foreground-tertiary);
+  font-size: small;
 }
 
 .trackNumber {
-    display: inline;
-    color: var(--foreground-tertiary);
-    font-size: small;
+  display: inline;
+  color: var(--foreground-tertiary);
+  font-size: small;
 }
 
 .disabled {
-    color: var(--foreground-tertiary);
+  color: var(--foreground-tertiary);
 }
 
 .disabled:hover {
-    cursor: not-allowed;
-    color: var(--foreground-tertiary);
+  cursor: not-allowed;
+  color: var(--foreground-tertiary);
 }
 .subPropertyDataKey {
-    display: inline;
-    color: var(--foreground-secondary);
+  display: inline;
+  color: var(--foreground-secondary);
 }
 
 .subKey {
-    color: var(--foreground-secondary);
-    display: flex;
-    align-items: center;
-    margin-right: 5px;
-    flex-shrink: 0; /* Prevent shrinking */
+  color: var(--foreground-secondary);
+  display: flex;
+  align-items: center;
+  margin-right: 5px;
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
 .subPropertyRow {
-    margin: 10px 0 10px 5%;
-    background-color: var(--background-secondary);
-    border-radius: 10px;
-    padding: 5px;
-    display: flex;
-    flex-direction: row;
-    width: -webkit-fill-available;
-    width:-moz-available;
+  margin: 10px 0 10px 5%;
+  background-color: var(--background-secondary);
+  border-radius: 10px;
+  padding: 5px;
+  display: flex;
+  flex-direction: row;
+  width: -webkit-fill-available;
+  width: -moz-available;
 }
 
 .settingsInput {
-    font-size: 14px;
-	border: 1px solid #ccc;
-	border-radius: 5px;
-	margin-bottom: 10px;
-	margin-top: 10px;
-	height: 18px;
-	resize: none;
-	background: transparent;
-    overflow: hidden;
-    width: auto;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  height: 18px;
+  resize: none;
+  background: transparent;
+  overflow: hidden;
+  width: auto;
 }
 
 .settingsInputWrapper {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 10px;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    display: flex;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  display: flex;
 }
 
 .trackBg::before {
-    content: "";
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background-image: var(--background-image);
-	background-size: cover;
-	background-position: center;
-	background-repeat: no-repeat;
-	opacity: 0.2;
-	filter: blur(14px);
-	z-index: 0;
-	transition: opacity 0.2s linear;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: var(--background-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.2;
+  filter: blur(14px);
+  z-index: 0;
+  transition: opacity 0.2s linear;
 }
 
 .albumDetails {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    position: relative;
-    z-index: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  position: relative;
+  z-index: 1;
 }
 
 .albumInfo {
-    display: flex;
-    overflow: hidden;
-    flex-direction: column;
+  display: flex;
+  overflow: hidden;
+  flex-direction: column;
 }
 
 .albumCover img {
-	margin: 2px 0 0 0;
-	border-radius: 10px;
-	transition: 0.2s all;
-    margin: 0 10px;
-    width: 140px;
-	height: 140px;
+  margin: 2px 0 0 0;
+  border-radius: 10px;
+  transition: 0.2s all;
+  margin: 0 10px;
+  width: 140px;
+  height: 140px;
 }
 
 .sourceArtistImage img {
-    border-radius: 8px;
-    aspect-ratio: 1;
-    object-fit: cover;
-    width: 8vh;
-    margin-right: 10px;
-    transition: 0.2s all;
+  border-radius: 8px;
+  aspect-ratio: 1;
+  object-fit: cover;
+  width: 8vh;
+  margin-right: 10px;
+  transition: 0.2s all;
 }
 
 .albumCover img:hover,
 .sourceArtistImage img:hover {
-	filter: drop-shadow(0px 0px 5px #000000);
+  filter: drop-shadow(0px 0px 5px #000000);
 }
 
 .albumTitle {
-	font-weight: bold !important;
-	display: flex;
-	align-items: center;
-	width: 100%;
-	overflow: hidden;
-    font-size: x-large;
+  font-weight: bold !important;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+  font-size: x-large;
 }
 
-
 .albumTitle a:first-child {
-	font-weight: bold !important;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	color: var(--foreground-primary);
-    font-size: larger;
+  font-weight: bold !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--foreground-primary);
+  font-size: larger;
 }
 
 .albumTitle .albumMB {
-	flex-shrink: 0;
-	margin-left: 4px;
+  flex-shrink: 0;
+  margin-left: 4px;
 }
 
 .albumMB {
-	width: 28px;
-	height: 30px;
-	vertical-align: middle;
+  width: 28px;
+  height: 30px;
+  vertical-align: middle;
 }
 
 .trackMB {
-    width: 14px;
-    height: 18px;
-    vertical-align: middle;
-    margin-left: 2px;
-    flex-shrink: 0;
+  width: 14px;
+  height: 18px;
+  vertical-align: middle;
+  margin-left: 2px;
+  flex-shrink: 0;
 }
 
-.artists, .releaseDate, .barcode, .alb, .genres {
-	text-align: left;
-	font-weight: normal;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
+.artists,
+.releaseDate,
+.barcode,
+.alb,
+.genres {
+  text-align: left;
+  font-weight: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .barcode {
-    color: var(--foreground-primary)
+  color: var(--foreground-primary);
 }
 
 .genres {
-    font-size: smaller;
-    color: var(--foreground-tertiary)
+  font-size: smaller;
+  color: var(--foreground-tertiary);
 }
 
 .copyrights,
 .labels {
-    display: flex;
-    flex-direction: column;
-    font-size: small;
-    color: var(--foreground-tertiary);
+  display: flex;
+  flex-direction: column;
+  font-size: small;
+  color: var(--foreground-tertiary);
+}
+
+.labelNo {
+  margin-left: 4px;
+  font-size: smaller;
+  border: 2px solid var(--foreground-primary);
+  padding: 1px;
+  color: var(--foreground-primary);
+  font-weight: bold;
+  cursor: pointer;
 }
 
 .albumFooter {
-    align-items: center;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
+  align-items: center;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
 }
 
 .mbUnderline {
-    text-decoration: underline dashed var(--musicbrainz-orange);
-    cursor: help;
+  text-decoration: underline dashed var(--musicbrainz-orange);
+  cursor: help;
 }
 
 .trackArtists {
-    font-weight: normal;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: var(--foreground-secondary);
-    font-size: small;
+  font-weight: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--foreground-secondary);
+  font-size: small;
 }
 
 .trackInfo {
-    display: flex;
-    flex-direction: column;
-    margin-left: 4px;
-    width: 100%;
-    overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  margin-left: 4px;
+  width: 100%;
+  overflow: hidden;
 }
 
 .trackTopRow {
-    display: flex;
-    align-items: center;
-	width: 100%;
-	overflow: hidden;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
 }
 
 .trackDuration {
-    color: var(--foreground-secondary);
-    font-size: 0.9em;
-    font: monospace;
-    background-color: #0000001f;
-    border-radius: 6px;
-    margin: 0 4px;
-    padding: 3px;
-    font-weight: bold;
-    display: inline;
-    cursor: pointer;
+  color: var(--foreground-secondary);
+  font-size: 0.9em;
+  font: monospace;
+  background-color: #0000001f;
+  border-radius: 6px;
+  margin: 0 4px;
+  padding: 3px;
+  font-weight: bold;
+  display: inline;
+  cursor: pointer;
 }
 
 .trackISRCs {
-    display: inline-block;
-    margin-left: 5px;
-    color: var(--foreground-tertiary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    flex-grow: 1;
+  display: inline-block;
+  margin-left: 5px;
+  color: var(--foreground-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-grow: 1;
 }
 
 .trackTitle,
 .sourceArtistName {
-    text-wrap: nowrap;
-    color: var(--foreground-primary);
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
+  text-wrap: nowrap;
+  color: var(--foreground-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sourceArtistDescription {
-    text-wrap: nowrap;
-    color: var(--foreground-tertiary);
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
+  text-wrap: nowrap;
+  color: var(--foreground-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .trackContainer,
 .sourceArtist {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    margin-bottom: 5px;
-    padding: 5px;
-    position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 5px;
+  padding: 5px;
+  position: relative;
 }
 
 .trackContainer::before,
 .sourceArtist::before {
-    content: "";
-    background-color: var(--background-secondary);
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: calc(100% - 1px);
-    border-radius: 8px;
-    z-index: -1;
-    opacity: 20%;
+  content: "";
+  background-color: var(--background-secondary);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 1px);
+  border-radius: 8px;
+  z-index: -1;
+  opacity: 20%;
 }
 
 .trackButtonContainer {
-    white-space: nowrap;
-    overflow: hidden;
-    max-width: 100%;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
 }
 
 .SAMBLicon {
-	width: 12px;
-	height: 16px;
-	vertical-align: middle;
+  width: 12px;
+  height: 16px;
+  vertical-align: middle;
 }
 
 .selectBox {
-    font-size: 14px;
-    border: 1px solid var(--foreground-primary);
-    border-radius: 5px;
-    margin-bottom: 10px;
-    margin-top: 10px;
-    height: auto;
-    min-height: 28px;
-    resize: none;
-    background: transparent;
-    overflow: hidden;
-    width: 100%;
-    padding: 4px 8px;
-    text-align: left;
-    display: flex;
-    align-items: center;
-    transition: all 0.2s ease-in-out;
-    flex-wrap: wrap;
-    row-gap: 4px;
+  font-size: 14px;
+  border: 1px solid var(--foreground-primary);
+  border-radius: 5px;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  height: auto;
+  min-height: 28px;
+  resize: none;
+  background: transparent;
+  overflow: hidden;
+  width: 100%;
+  padding: 4px 8px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease-in-out;
+  flex-wrap: wrap;
+  row-gap: 4px;
 }
 
 .selectBox:hover {
-    cursor: pointer;
-    border-color: var(--foreground-secondary);
+  cursor: pointer;
+  border-color: var(--foreground-secondary);
 }
 
 .selectOptions {
-    background-color: var(--background); 
-    border: 1px solid var(--button-border);
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 1003;
-    padding: 8px 0; 
-    width: var(--button-width);
-    max-height: 200px;
-    overflow-y: auto;
-    
+  background-color: var(--background);
+  border: 1px solid var(--button-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1003;
+  padding: 8px 0;
+  width: var(--button-width);
+  max-height: 200px;
+  overflow-y: auto;
 }
 
-.selectOptionsEnter, .selectOptionsLeave {
-    transform-origin: top;
-    transition: opacity 200ms cubic-bezier(.4,0,.2,1), transform 200ms cubic-bezier(.4,0,.2,1);
+.selectOptionsEnter,
+.selectOptionsLeave {
+  transform-origin: top;
+  transition:
+    opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
-.selectOptionsEnterFrom, .selectOptionsLeaveTo  {
-    opacity: 0;
-    transform: scale(0.95);
-    pointer-events: none;
+.selectOptionsEnterFrom,
+.selectOptionsLeaveTo {
+  opacity: 0;
+  transform: scale(0.95);
+  pointer-events: none;
 }
-.selectOptionsEnterTo, .selectOptionsLeaveFrom {
-    opacity: 1;
-    transform: scale(1);
-    pointer-events: auto;
+.selectOptionsEnterTo,
+.selectOptionsLeaveFrom {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
 }
 
 .selectOption {
-    font-family: Arial, sans-serif;
-    display: flex;
-    padding: 4px 8px;
-    color: var(--foreground-primary);
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: normal;
-    transition: background-color 0.2s, color 0.2s;
-    cursor: pointer;
+  font-family: Arial, sans-serif;
+  display: flex;
+  padding: 4px 8px;
+  color: var(--foreground-primary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: normal;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+  cursor: pointer;
 }
 
 /* highlights the elment when focused cause headless doesn't for some reason */
 .selectOption:has(data-focus) {
-    border: 2px solid var(--foreground-primary);
-    border-radius: 4px;
+  border: 2px solid var(--foreground-primary);
+  border-radius: 4px;
 }
 
-
 .selectedItem {
-    border-radius: 4px;
-    padding: 1px;
-    margin: 0 0 0 4px;
-    border: 1px solid var(--foreground-primary);
-    display: flex;
-    align-items: center;
+  border-radius: 4px;
+  padding: 1px;
+  margin: 0 0 0 4px;
+  border: 1px solid var(--foreground-primary);
+  display: flex;
+  align-items: center;
 }
 
 .selectedItem.exclusive {
-    border: 1px solid var(--exclusive);
+  border: 1px solid var(--exclusive);
 }
 
-
 .selectedItemButton {
-    background-color: transparent;
-    border: none;
-    color: var(--foreground-primary);
-    margin-left: -2px;
-    transition: all 0.2s ease-in-out;
-    text-align: center;
-    display: flex;
-    align-items: center;
+  background-color: transparent;
+  border: none;
+  color: var(--foreground-primary);
+  margin-left: -2px;
+  transition: all 0.2s ease-in-out;
+  text-align: center;
+  display: flex;
+  align-items: center;
 }
 
 .selectedItemName {
-    padding: 0 2px;
+  padding: 0 2px;
 }
 
 .selectedSortName {
-    flex-grow: 1;
-    text-align: center;
+  flex-grow: 1;
+  text-align: center;
 }
 
-.selectedItemButton:hover, .selectOption:hover, .selectOption.focused {
-    cursor: pointer;
-    color: var(--foreground-secondary);
+.selectedItemButton:hover,
+.selectOption:hover,
+.selectOption.focused {
+  cursor: pointer;
+  color: var(--foreground-secondary);
 }
 
 .optionTextContainer {
-    flex-grow: 1;
+  flex-grow: 1;
 }
 
 .sortOptionsContainer {
-    width: 100%;
-    display: flex;
-    gap: 8px;
-    align-items: center;
+  width: 100%;
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
 .sortDirectionButton {
-    background: transparent;
-    border: 1px solid var(--foreground-primary);
-    color: var(--foreground-primary);
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    border-radius: 8px;
-    padding: 8px;
+  background: transparent;
+  border: 1px solid var(--foreground-primary);
+  color: var(--foreground-primary);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  border-radius: 8px;
+  padding: 8px;
 }
 
 .ascendingIcon {
-    position: absolute;
+  position: absolute;
 }
 
 .ascendingIcon.descending,
 .descendingIcon.descending {
-    opacity: 0;
-    transform: scale(0);
-    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+  opacity: 0;
+  transform: scale(0);
+  transition:
+    opacity 0.2s ease-in-out,
+    transform 0.2s ease-in-out;
 }
 
-.exclusive .optionText{
-   border: 1px solid var(--exclusive);
-   padding: 2px 4px;
-   border-radius: 4px;
+.exclusive .optionText {
+  border: 1px solid var(--exclusive);
+  padding: 2px 4px;
+  border-radius: 4px;
 }
 
 .carrot {
-    transition: transform 0.2s ease-in-out;
+  transition: transform 0.2s ease-in-out;
 }
 
 .carrot.open {
-    transform: rotate(-180deg) translateY(-2px);
+  transform: rotate(-180deg) translateY(-2px);
 }
 
 .exclusiveIcon > svg {
-    vertical-align: text-bottom;
+  vertical-align: text-bottom;
 }
 
 .exclusiveIcon {
-    cursor: help;
+  cursor: help;
 }
 
 .statusPill {
-	margin: 2px 2px 0 4px;
-	width: 8px;
-	height: 34px;
-	border-radius: 10px;
-	cursor: help;
+  margin: 2px 2px 0 4px;
+  width: 8px;
+  height: 34px;
+  border-radius: 10px;
+  cursor: help;
 }
 
 .statusPill.red {
-	background-color: var(--status-red);
+  background-color: var(--status-red);
 }
 
 .statusPill.green {
-	background-color: var(--status-green);
+  background-color: var(--status-green);
 }
 
 .statusPill.orange {
-	background-color: var(--status-orange);
+  background-color: var(--status-orange);
 }
 
 .statusPill.blue {
-	background-color: var(--status-blue);
+  background-color: var(--status-blue);
 }
 
 .statusPill.grey {
-    background-color: var(--status-grey);
+  background-color: var(--status-grey);
 }
 
 .noAggregatedTracksWarning {
-    margin-top: 8px;
-    font-weight: bold;
-    margin-bottom: -8px;
-    text-align: center;
-    z-index: 1;
+  margin-top: 8px;
+  font-weight: bold;
+  margin-bottom: -8px;
+  text-align: center;
+  z-index: 1;
 }
 
 .trackDataSource {
-    font-weight: normal;
-    font-size: small;
+  font-weight: normal;
+  font-size: small;
 }
 
 .trackDataSource span {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .selectLabel {
-    font-weight: bold;
+  font-weight: bold;
 }
 
-.textButton{
-    background: transparent;
-    border-radius: 15px;
-    font: inherit;
-    border: none;
-    padding: 0;
-    margin: 0;
-    filter: drop-shadow(1px 1px 2px currentColor);
-    transition: all .2s ease-in-out;
+.textButton {
+  background: transparent;
+  border-radius: 15px;
+  font: inherit;
+  border: none;
+  padding: 0;
+  margin: 0;
+  filter: drop-shadow(1px 1px 2px currentColor);
+  transition: all 0.2s ease-in-out;
 }
 
 .textButton:hover {
-    cursor: pointer;
-    text-decoration: underline;
-    filter: drop-shadow(1px 1px 8px currentColor);
+  cursor: pointer;
+  text-decoration: underline;
+  filter: drop-shadow(1px 1px 8px currentColor);
 }
 
 .checkboxField {
-    margin: 3px;
+  margin: 3px;
 }
 
 .checkbox {
-	content: "";
-	display: inline-block;
-	vertical-align: top;
-	height: 1.15em;
-	width: 1.15em;
-	margin-right: 0.6em;
-	color: rgba(0, 0, 0, 0.275);
-	border: solid 0.06em;
-	box-shadow: 0 0 0.04em, 0 0.06em 0.16em -0.03em inset, 0 0 0 0.07em transparent inset;
-	border-radius: 0.2em;
-	background: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xml:space="preserve" fill="white" viewBox="0 0 9 9"><rect x="0" y="4.3" transform="matrix(-0.707 -0.7072 0.7072 -0.707 0.5891 10.4702)" width="4.3" height="1.6" /><rect x="2.2" y="2.9" transform="matrix(-0.7071 0.7071 -0.7071 -0.7071 12.1877 2.9833)" width="6.1" height="1.7" /></svg>') no-repeat center,
-		white;
-	background-size: 0;
-	will-change: color, border, background, background-size, box-shadow;
-	transform: translate3d(0, 0, 0);
-	transition: color 0.1s, border 0.1s, background 0.15s, box-shadow 0.1s;
+  content: "";
+  display: inline-block;
+  vertical-align: top;
+  height: 1.15em;
+  width: 1.15em;
+  margin-right: 0.6em;
+  color: rgba(0, 0, 0, 0.275);
+  border: solid 0.06em;
+  box-shadow:
+    0 0 0.04em,
+    0 0.06em 0.16em -0.03em inset,
+    0 0 0 0.07em transparent inset;
+  border-radius: 0.2em;
+  background:
+    url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xml:space="preserve" fill="white" viewBox="0 0 9 9"><rect x="0" y="4.3" transform="matrix(-0.707 -0.7072 0.7072 -0.707 0.5891 10.4702)" width="4.3" height="1.6" /><rect x="2.2" y="2.9" transform="matrix(-0.7071 0.7071 -0.7071 -0.7071 12.1877 2.9833)" width="6.1" height="1.7" /></svg>')
+      no-repeat center,
+    white;
+  background-size: 0;
+  will-change: color, border, background, background-size, box-shadow;
+  transform: translate3d(0, 0, 0);
+  transition:
+    color 0.1s,
+    border 0.1s,
+    background 0.15s,
+    box-shadow 0.1s;
 }
 
 .checkboxWrapper:not([data-disabled]) {
-    cursor: pointer;
+  cursor: pointer;
 }
 
-.checkboxWrapper[data-active]:not([data-disabled]) .checkbox  {
-	box-shadow: 0 0 0.04em, 0 0.06em 0.16em -0.03em transparent inset, 0 0 0 0.07em rgba(0, 0, 0, 0.1) inset;
-	background-color: #f0f0f0;
+.checkboxWrapper[data-active]:not([data-disabled]) .checkbox {
+  box-shadow:
+    0 0 0.04em,
+    0 0.06em 0.16em -0.03em transparent inset,
+    0 0 0 0.07em rgba(0, 0, 0, 0.1) inset;
+  background-color: #f0f0f0;
 }
 
 .checkboxWrapper[data-checked] .checkbox {
-	background-color: #3b99fc;
-	background-size: 0.75em;
-	color: rgba(0, 0, 0, 0.075);
+  background-color: #3b99fc;
+  background-size: 0.75em;
+  color: rgba(0, 0, 0, 0.075);
 }
 
 .checkboxWrapper[data-checked][data-active]:not([data-disabled]) .checkbox {
-	background-color: #0a7ffb;
-	color: rgba(0, 0, 0, 0.275);
+  background-color: #0a7ffb;
+  color: rgba(0, 0, 0, 0.275);
 }
 
-.checkboxWrapper[data-focus] .checkbox{
-	box-shadow: 0 0 0.04em, 0 0.06em 0.16em -0.03em transparent inset, 0 0 0 0.07em rgba(0, 0, 0, 0.1) inset, 0 0 0 3.3px rgba(65, 159, 255, 0.55), 0 0 0 5px rgba(65, 159, 255, 0.3);
+.checkboxWrapper[data-focus] .checkbox {
+  box-shadow:
+    0 0 0.04em,
+    0 0.06em 0.16em -0.03em transparent inset,
+    0 0 0 0.07em rgba(0, 0, 0, 0.1) inset,
+    0 0 0 3.3px rgba(65, 159, 255, 0.55),
+    0 0 0 5px rgba(65, 159, 255, 0.3);
 }
 
-.checkboxWrapper[data-focus][data-active] .checkbox{
-	box-shadow: 0 0 0.04em, 0 0.06em 0.16em -0.03em transparent inset, 0 0 0 0.07em rgba(0, 0, 0, 0.1) inset, 0 0 0 3.3px rgba(65, 159, 255, 0.55), 0 0 0 5px rgba(65, 159, 255, 0.3);
+.checkboxWrapper[data-focus][data-active] .checkbox {
+  box-shadow:
+    0 0 0.04em,
+    0 0.06em 0.16em -0.03em transparent inset,
+    0 0 0 0.07em rgba(0, 0, 0, 0.1) inset,
+    0 0 0 3.3px rgba(65, 159, 255, 0.55),
+    0 0 0 5px rgba(65, 159, 255, 0.3);
 }
 
 .checkboxWrapper[data-disabled] .checkbox {
-	opacity: 0.5;
+  opacity: 0.5;
 }
 
 /** Dark styles **/
 
 .checkboxWrapper.dark .checkbox {
-	color: rgba(255, 255, 255, 0.275);
-	background-color: #222;
-	background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xml:space="preserve" fill="rgba(34, 34, 34, 0.999)" viewBox="0 0 9 9"><rect x="0" y="4.3" transform="matrix(-0.707 -0.7072 0.7072 -0.707 0.5891 10.4702)" width="4.3" height="1.6" /><rect x="2.2" y="2.9" transform="matrix(-0.7071 0.7071 -0.7071 -0.7071 12.1877 2.9833)" width="6.1" height="1.7" /></svg>');
+  color: rgba(255, 255, 255, 0.275);
+  background-color: #222;
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xml:space="preserve" fill="rgba(34, 34, 34, 0.999)" viewBox="0 0 9 9"><rect x="0" y="4.3" transform="matrix(-0.707 -0.7072 0.7072 -0.707 0.5891 10.4702)" width="4.3" height="1.6" /><rect x="2.2" y="2.9" transform="matrix(-0.7071 0.7071 -0.7071 -0.7071 12.1877 2.9833)" width="6.1" height="1.7" /></svg>');
 }
 
-.checkboxWrapper[data-active]:not([data-disabled]).dark .checkbox  {
-	background-color: #444;
-	box-shadow: 0 0 0.04em, 0 0.06em 0.16em -0.03em transparent inset, 0 0 0 0.07em rgba(255, 255, 255, 0.1) inset;
+.checkboxWrapper[data-active]:not([data-disabled]).dark .checkbox {
+  background-color: #444;
+  box-shadow:
+    0 0 0.04em,
+    0 0.06em 0.16em -0.03em transparent inset,
+    0 0 0 0.07em rgba(255, 255, 255, 0.1) inset;
 }
 
 .checkboxWrapper[data-checked].dark .checkbox {
-	background-color: #a97035;
-	color: rgba(255, 255, 255, 0.075);
+  background-color: #a97035;
+  color: rgba(255, 255, 255, 0.075);
 }
 
-.checkboxWrapper[data-checked][data-active]:not([data-disabled]).dark .checkbox {
-	background-color: #c68035;
-	color: rgba(0, 0, 0, 0.275);
+.checkboxWrapper[data-checked][data-active]:not([data-disabled]).dark
+  .checkbox {
+  background-color: #c68035;
+  color: rgba(0, 0, 0, 0.275);
 }
 
 .resultsEnter {
-    transform-origin: top;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: top;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .resultsEnterFrom {
-    opacity: 0;
-    transform: scaleY(.95);
+  opacity: 0;
+  transform: scaleY(0.95);
 }
 .resultsEnterTo {
-    opacity: 1 !important;
-    transform: scaleY(1);
+  opacity: 1 !important;
+  transform: scaleY(1);
 }
 
 .deepSearchStatusPill {
-	width: 6px;
-	height: 15px;
-	border-radius: 8px;
-	margin-right: 4px;
-    transform: rotate(180deg);
+  width: 6px;
+  height: 15px;
+  border-radius: 8px;
+  margin-right: 4px;
+  transform: rotate(180deg);
 }
 
-.deepSearchStatusPill.blue{
-    border: 2px solid var(--status-blue);
+.deepSearchStatusPill.blue {
+  border: 2px solid var(--status-blue);
 }
 
-.deepSearchStatusPill.green{
-    border: 2px solid var(--status-green);
+.deepSearchStatusPill.green {
+  border: 2px solid var(--status-green);
 }
 
-.deepSearchStatusPill.orange{
-    border: 2px solid var(--status-orange);
+.deepSearchStatusPill.orange {
+  border: 2px solid var(--status-orange);
 }
 
-.deepSearchStatusPill.red{
-    border: 2px solid var(--status-red);
+.deepSearchStatusPill.red {
+  border: 2px solid var(--status-red);
 }
 
 .deepSearchStatusPill.blue .deepSearchStatusPillInner {
-    background-color: var(--status-blue);
+  background-color: var(--status-blue);
 }
 
 .deepSearchStatusPill.green .deepSearchStatusPillInner {
-    background-color: var(--status-green);
+  background-color: var(--status-green);
 }
 
 .deepSearchStatusPill.orange .deepSearchStatusPillInner {
-    background-color: var(--status-orange);
+  background-color: var(--status-orange);
 }
 
 .deepSearchStatusPill.red .deepSearchStatusPillInner {
-    background-color: var(--status-red);
+  background-color: var(--status-red);
 }
 
 .mbArtist {
-    display: flex;
-    flex-direction: row;
-    padding: 4px;
-    margin: 2px;
-    border-radius: 8px;
-    background-color: var(--background-secondary);
+  display: flex;
+  flex-direction: row;
+  padding: 4px;
+  margin: 2px;
+  border-radius: 8px;
+  background-color: var(--background-secondary);
 }
 
 .mbArtistLabel {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: row;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
 }
 
 .mbArtistDescription {
-	display: inline-block;
-    margin: 0;
-    padding: 0;
-    margin-left: 5px;
-    color: var(--foreground-tertiary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: -webkit-fill-available;
-    width: -moz-available;
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  margin-left: 5px;
+  color: var(--foreground-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: -webkit-fill-available;
+  width: -moz-available;
 }
