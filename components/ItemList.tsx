@@ -472,7 +472,7 @@ function GenericItem({ item }: { item: AlbumObject | ExtendedTrackObject | Artis
 		"duration" in item && item.duration ? text.formatMS(item.duration) : null,
 		"relevance" in item && item.relevance ? item.relevance : null,
 	]
-	const artists = "albumArtists" in item ? item.albumArtists : "trackArtists" in item ? item.trackArtists : null;
+	const artists = "albumArtists" in item ? item.albumArtists : "trackArtists" in item ? item.trackArtists: type == "artist" ? [item] : null;
 	let artistString = artists?.map((artist, index) => (
 		<span key={index}>
 			{index > 0 && ", "}
