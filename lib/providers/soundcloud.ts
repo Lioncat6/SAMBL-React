@@ -65,7 +65,7 @@ async function resolveExternalId(id: string): Promise<string> {
     return id;
   } else {
     try {
-      const resolved = await scApi.resolve.get(`https://soundcloud.com/${id}`)
+      const resolved = await scApi.resolve.get(id.startsWith('https://soundcloud.com/') ? id : `https://soundcloud.com/${id}`)
       if (resolved) {
         return resolved.toString();
       } else {
@@ -95,8 +95,10 @@ async function searchByArtistName (artistName: string) {
 }
 
 async function getArtistById(id: string) {
+  console.log(id)
   try {
-    const data = scApi.users.get(cleanId(correctId(await resolveExternalId(id), 'artist')))
+    const data = await scApi.users.get(cleanId(correctId(await resolveExternalId(id), 'artist')))
+    console.log(data)
     return data
   } catch (error) {
     err.handleError('Error fetching artist:', error)
