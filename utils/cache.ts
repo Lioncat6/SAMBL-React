@@ -23,7 +23,7 @@ export default function withCache<T extends (...args: any[]) => Promise<any>>(fu
 			"noCache" in (args[args.length - 1] as any)
 		) {
 			const override = args.pop() as NoCacheOverride;
-			skipCache = override.noCache !== false;
+			skipCache = override.noCache !== false && override.noCache !== undefined;
 		}
 		const cacheKey = `${namespace ? namespace + ":" : ""}${func.name}-${JSON.stringify(args)}`;
 
