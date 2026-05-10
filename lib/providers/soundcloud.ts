@@ -95,10 +95,8 @@ async function searchByArtistName (artistName: string) {
 }
 
 async function getArtistById(id: string) {
-  console.log(id)
   try {
     const data = await scApi.users.get(cleanId(correctId(await resolveExternalId(id), 'artist')))
-    console.log(data)
     return data
   } catch (error) {
     err.handleError('Error fetching artist:', error)
