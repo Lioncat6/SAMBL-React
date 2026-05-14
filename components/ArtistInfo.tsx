@@ -103,6 +103,16 @@ function DiscogsUrlContainer({ id, url }) {
 	);
 }
 
+function SubvertUrlContainer({ id, url }) {
+	return (
+		<div className={styles.subvertUrlContainer}>
+			<a id="subvertUrl" target="_blank" href={url || "https://www.subvert.fm" + id}>
+				<img alt="Subvert Icon" className={styles.subvertIcon} src="../assets/images/Subvert_logo.svg" />
+			</a>
+		</div>
+	);
+}
+
 function UrlContainer({ id, provider, url }: { id?: string | number; provider: string; url?: string }) {
 	id = id?.toString();
 	switch (provider) {
@@ -126,6 +136,8 @@ function UrlContainer({ id, provider, url }: { id?: string | number; provider: s
 			return <QobuzUrlContainer url={url} id={id} />;
 		case "discogs":
 			return <DiscogsUrlContainer url={url} id={id} />;
+		case "subvert": 
+			return <SubvertUrlContainer url={url} id={id}/>;
 		default:
 			return null;
 	}
