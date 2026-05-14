@@ -267,3 +267,39 @@ export interface SubvertCredit {
   name: string
   role: string
 }
+
+export interface SubvertTrack {
+  id: string
+  name: string
+  slug: string
+  artistDisplayName: any
+  coverImageId: string
+  description: string
+  isPublic: boolean
+  audioId: string
+  duration: number
+  key: string
+  bpm: string
+  genres: string[]
+  credits: SubvertCredit[]
+  links: SubvertLink[]
+  releaseDate: any
+  isrc: string
+  iswc: string
+  publisher: any
+  license: string
+  priceCents: number
+  memberPriceCents: number
+  isStreamingAllowed: boolean
+  isDownloadAllowed: boolean
+  isOverpayAllowed: boolean
+  isUnlimitedMemberStreaming: boolean
+  isFreeMemberDownload: boolean
+  isExclusive: boolean
+  exclusiveUntilDate: any
+  lyrics: string
+  isExplicit: boolean
+  audio: SubvertAudio
+  artists: SubvertAlbumArtist[]
+  labelsOnTracks: SubvertLabelOnRelease[]
+}

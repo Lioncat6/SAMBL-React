@@ -8,7 +8,7 @@ const namespace = "subvert";
 
 const err = new ErrorHandler(namespace);
 import { CurlMultiImpl, CurlSession, req } from 'curl-cffi';
-import { SubvertAlbum, SubvertAlbumArtist, SubvertAlbumTrack, SubvertAlbumTrackPosition, SubvertArtistProfile, SubvertLabelOnRelease, SubvertSearchAlbumTrack, SubvertSearchAlbumTrackPosition, SubvertSearchResult, SubvertSearchResults } from "./lib/subvert-types";
+import { SubvertAlbum, SubvertAlbumArtist, SubvertAlbumTrack, SubvertAlbumTrackPosition, SubvertArtistProfile, SubvertLabelOnRelease, SubvertSearchAlbumTrack, SubvertSearchAlbumTrackPosition, SubvertSearchResult, SubvertSearchResults, SubvertTrack } from "./lib/subvert-types";
 import { AlbumIssues } from "../issues";
 
 const { parseUrl, createUrl } = parsers.getParser(namespace);
@@ -340,7 +340,7 @@ interface SubvertAlbumTrackWithArtist extends SubvertAlbumTrack {
     artist?: SubvertArtistProfile
 }
 
-function formatTrackObject(rawData: SubvertSearchAlbumTrackWithArtistPosition | SubvertAlbumTrackWithArtistPosition): TrackObject {
+function formatTrackObject(rawData: SubvertSearchAlbumTrackWithArtistPosition | SubvertAlbumTrackWithArtistPosition | SubvertTrack): TrackObject {
     if ("trackNumber" in rawData){
         if ("isrc" in rawData){
             const trackPosition = rawData as SubvertAlbumTrackWithArtistPosition;
@@ -382,9 +382,22 @@ function formatTrackObject(rawData: SubvertSearchAlbumTrackWithArtistPosition | 
             }
         }
     } else {
-        const track = rawData
+        const track = rawData as SubvertTrack;
         return {
-
+            id: track.id,
+            type: 'track',
+            provider: namespace,
+            name: track.name,
+            url: createUrl('track', `${track.artists[0]?.slug}/${track.slug}`),
+            duration: track.duration ? track.duration * 1000 : null,
+            trackArtists: track.artists.map(formatPartialArtistObject),
+            artistNames: track.artists.map((artist) => artist.name),
+            albumName: null,
+            releaseDate: track.releaseDate ? text.formatDate(track.releaseDate) : null,
+            trackNumber: null,
+            isrcs: (track.isrc && track.isrc != '') ? [track.isrc] : [],
+            imageUrl: createSubvertImage(track.coverImageId),
+            imageUrlSmall: createSubvertImage(track.coverImageId, true)
         }
     }
 }
@@ -415,8 +428,22 @@ function formatPartialArtistObject(rawData: SubvertArtistProfile | SubvertAlbumA
     }
 }
 
-async function getTrackById(id: string): Promise<null> {
-
+async function getTrackById(id: string): Promise<SubvertTrack | null> {
+    try {
+        if (id.includes(":")){
+            const resolvedId = await cachedResolvedSlug(id, 'track');
+            if (resolvedId){
+                id = resolvedId
+            }
+        }
+        const data = await subvertFetch(`track/${id}`);
+        if (data && typeof data == "object" &&  "slug" in data) {
+            return data as SubvertTrack;
+        }
+    } catch (error) {
+        err.handleError("Failed to fetch album by id", error)
+    }
+    return null;
 }
 
 const capabilities: Capabilities = {
