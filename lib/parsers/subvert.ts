@@ -26,23 +26,25 @@ function createUrl(type: UrlType, id: string, mbTypes?: number[]): ExternalUrlDa
 
 function parseUrl(url: string): UrlData | null {
     const musicRegex =
-        /www\.subvert\.fm\/([\w-]+)(?:\/)?(tracks)?(?:\/)([\w-]+)?/;
+        /www\.subvert\.fm\/([\w-]+)(?:\/)?(tracks)?(?:\/)?([\w-]+)?/;
     const musicMatch = url.match(musicRegex);
+    console.log(musicMatch)
     if (musicMatch) {
-        if (musicMatch.length == 2) {
-            return {
-                type: 'artist',
-                id: musicMatch[1]
-            }
-        } else if (musicMatch.length == 3) {
-            return {
-                type: 'album',
-                id: `${musicMatch[1]}/${musicMatch[2]}`
-            }
-        } if (musicMatch.length == 4) {
+        if (musicMatch[2] && musicMatch[3]) {
             return {
                 type: 'track',
-                id: `${musicMatch[1]}/${musicMatch[3]}`
+                id: `${musicMatch[1]}:track:${musicMatch[3]}`
+            }
+            
+        } else if (musicMatch[3]) {
+            return {
+                type: 'album',
+                id: `${musicMatch[1]}:${musicMatch[3]}`
+            }
+        } if (musicMatch[1]) {
+            return {
+                type: 'artist',
+                id: `${musicMatch[1]}:`
             }
         }
     }

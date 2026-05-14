@@ -83,10 +83,10 @@ async function subvertFetch(path: string, body?: {}): Promise<unknown | null> {
 }
 
 async function resolveSlug(slug: string, type: 'artist'|'album'|'track'): Promise<string | null> {
-    let url = `https://www.subvert.fm/${slug}`;
+    let url = `https://www.subvert.fm/${slug.replace(":", "/")}`;
     if (type == 'track') {
-        const chunks = slug.split('/');
-        url = `https://www.subvert.fm/${chunks[0]}/tracks/${chunks[1]}`;
+        const chunks = slug.split(':');
+        url = `https://www.subvert.fm/${chunks[0]}/tracks/${chunks[2]}`;
     }
     console.log(url)
     const response = await reqSession.get(url,
@@ -147,6 +147,12 @@ function formatArtistSearchData(rawData: SubvertSearchResults): SubvertSearchRes
 
 async function getArtistById(id: string): Promise<SubvertArtistProfile | null> {
     try {
+        if (id.includes(":") || id.length != 25){
+            const resolvedId = await cachedResolvedSlug(id, 'artist');
+            if (resolvedId){
+                id = resolvedId;
+            }
+        }
         const data = await subvertFetch(`artist/${id}`);
         if (data && typeof data == "object"){
             return data as SubvertArtistProfile;
@@ -245,7 +251,7 @@ function formatAlbumGetData(rawData: SubvertSearchResults): RawAlbumData {
 
 async function getAlbumById(id: string): Promise<SubvertAlbum | null> {
     try {
-        if (id.includes("/")){
+        if (id.includes(":")){
             const resolvedId = await cachedResolvedSlug(id, 'album');
             if (resolvedId){
                 id = resolvedId
