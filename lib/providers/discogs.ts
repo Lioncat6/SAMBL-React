@@ -416,7 +416,6 @@ function getReleaseLabels(release: PartialDiscogsSearchResult): LabelObject[] {
 }
 
 function formatAlbumObject(album: PartialDiscogsRelease | GetReleaseResponse | SearchResult): AlbumObject {
-	console.log(album)
 	if ("artist" in album) {
 		album = album as PartialDiscogsRelease;
 		return {
