@@ -397,14 +397,18 @@ function findSearchResultBarcode(barcodes: SearchResult["barcode"]): string | nu
 function getReleaseLabels(release: PartialDiscogsSearchResult): LabelObject[] {
 	let labels: LabelObject[] = []
 	release.label?.forEach((label) => {
-		labels.push({
-			provider: namespace,
-			type: 'label',
-			name: label,
-			id: null,
-			url: null,
-			catalogNumber: release.catno || undefined
-		})
+		const notOnLabelRegex = /Not On Label \([^\)]+\)/
+		if (!notOnLabelRegex.test(label)) {
+			labels.push({
+				provider: namespace,
+				type: 'label',
+				name: label,
+				id: null,
+				url: null,
+				catalogNumber: release.catno || undefined
+			})
+		}
+		
 	})
 	return labels;
 }
