@@ -427,6 +427,7 @@ function Icon({ source }: {source: ProviderNamespace}) {
 			{source === "naver" && <img className={styles.naverIcon} title={"Naver"} src="../assets/images/Naver_icon.svg" />}
 			{source === "qobuz" && <img className={styles.qobuzIcon} title={"Qobuz"} src="../assets/images/Qobuz_icon.svg" />}
 			{source === "discogs" && <img className={styles.discogsIcon} title={"Discogs"} src="../assets/images/Discogs_icon.svg" />}
+			{source === "discogs" && <img className={styles.subvertIcon} title={"Subert"} src="../assets/images/Subvert_logo.svg" />}
 		</>
 	);
 }

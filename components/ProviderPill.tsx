@@ -1,4 +1,4 @@
-import { FaSpotify, FaDeezer, FaSoundcloud } from "react-icons/fa6";
+import { FaSpotify, FaDeezer, FaSoundcloud, FaQuestion } from "react-icons/fa6";
 import { SiTidal, SiBandcamp, SiApplemusic, SiNaver, SiDiscogs } from "react-icons/si";
 import { useState, useEffect } from "react";
 import { SAMBLSettingsContext, useSettings } from "./SettingsContext";
@@ -18,7 +18,8 @@ let providerArray: ProviderDisplay[] = [
     { name: "SoundCloud", namespace: "soundcloud", icon: <FaSoundcloud /> },
     { name: "Naver", namespace: "naver", icon: <SiNaver />},
     { name: "Qobuz", namespace: "qobuz", icon: <TbVinyl />},
-    { name: 'Discogs', namespace: "discogs", icon: <SiDiscogs /> }
+    { name: 'Discogs', namespace: "discogs", icon: <SiDiscogs /> },
+    { name: 'Subvert', namespace: 'subvert', icon: <FaQuestion />}
 ];
 
 //Remove disabled providers
