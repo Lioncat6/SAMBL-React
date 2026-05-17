@@ -299,12 +299,19 @@ function getAlbumImage(album: GetReleaseResponse): string | null {
 }
 
 function findBarcode(identifiers: GetReleaseResponse["identifiers"]): string | null {
+	const upcPattern = /^\d{12,14}$/;
 	const barcodes = identifiers.filter((identifier) => identifier.type === 'Barcode');
 	if (!barcodes.length) {
 		return null;
 	}
-	const gtinCandidates = barcodes.map((barcode) => (barcode.value));
+	const gtinCandidates = barcodes.map((barcode) => (barcode.value)).filter((barcode) => (upcPattern.test(text.removeLeadingZeros(barcode).toString())));
 	return gtinCandidates[0];
+}
+
+function findSearchResultBarcode(barcodes: SearchResult["barcode"]): string | null {
+	if (!barcodes) return null;
+	const upcPattern = /^\d{12,14}$/;
+	return barcodes.find((barcode) => upcPattern.test(text.removeLeadingZeros(barcode.trim()).toString())) || null
 }
 
 function cleanName(name: string): string {
@@ -387,11 +394,6 @@ function getAlbumType(types: GetReleaseResponse["formats"] | Format[] | undefine
 		}
 	}
 	return null;
-}
-
-function findSearchResultBarcode(barcodes: SearchResult["barcode"]): string | null {
-	if (!barcodes) return null;
-	return barcodes.find((barcode) => /^\d+$/.test(barcode.trim())) || null
 }
 
 function getReleaseLabels(release: PartialDiscogsSearchResult): LabelObject[] {
