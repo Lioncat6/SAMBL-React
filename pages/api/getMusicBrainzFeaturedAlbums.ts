@@ -2,15 +2,16 @@ import musicbrainz from "../../lib/providers/musicbrainz";
 import logger from "../../utils/logger";
 import normalizeVars from "../../utils/normalizeVars";
 import { SAMBLApiError } from "../../types/api-types";
+import { NextApiRequest, NextApiResponse } from "next";
 
-export default async function handler(req, res) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 	try {
 		const { mbid, offset, limit } = normalizeVars(req.query);
-		const forceRefresh = Object.prototype.hasOwnProperty.call(req.query, "forceRefresh");
+		const forceRefresh: boolean = Object.prototype.hasOwnProperty.call(req.query, "forceRefresh");
 		if (!mbid || !musicbrainz.validateMBID(mbid)) {
 			return res.status(400).json({ error: "Parameter `mbid` is missing or malformed" } as SAMBLApiError);
 		}
-		const data = await musicbrainz.getArtistFeaturedAlbums(mbid, offset, limit ? Number(limit) : undefined, ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"], { noCache: forceRefresh });
+		const data = await musicbrainz.getArtistFeaturedAlbums(mbid, offset, limit ? Number(limit) : undefined, ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits"], { noCache: forceRefresh || undefined });
 		const formattedData = musicbrainz.formatAlbumGetData(data);
 		res.status(200).json(formattedData);
 	} catch (error) {

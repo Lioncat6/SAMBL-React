@@ -8,7 +8,7 @@ import { FaWindowRestore } from "react-icons/fa6";
 import toasts from "../../utils/toasts";
 import { FindData, ISRCData, UPCData, URLLookupData } from "../../types/api-types";
 import normalizeVars from "../../utils/normalizeVars";
-import { AlbumObject, TrackObject } from "../../types/provider-types";
+import { AlbumObject, ArtistObject, TrackObject } from "../../types/provider-types";
 import parsers from "../../lib/parsers/parsers";
 import SAMBLHead from "../../components/SAMBLHead";
 
@@ -52,7 +52,7 @@ async function getUPCFromURL(url) {
 	}
 }
 
-async function lookupUrl(url) {
+async function lookupUrl(url: string) {
 	try {
 		const response = await fetch(`/api/lookupURL?url=${encodeURIComponent(url)}`)
 		if (response.ok) {
@@ -66,16 +66,16 @@ async function lookupUrl(url) {
 }
 
 export default function Find() {
-	const [results, setResults] = useState([] as (AlbumObject | TrackObject)[]);
+	const [results, setResults] = useState([] as (AlbumObject | TrackObject | ArtistObject)[]);
 	const [isLoading, setIsLoading] = useState(false);
 	const router = useRouter();
 	const { query: urlQuery } = router.query;
 	const lastSearchedQuery = useRef(null as string | null);
 	const lastSearchTime = useRef(0);
 
-	function deDupeResults(newResults: (AlbumObject | TrackObject)[]) {
+	function deDupeResults(newResults: (AlbumObject | TrackObject | ArtistObject)[]) {
 		let idArray: string [] = [];
-		let uniqueNewResults: (AlbumObject | TrackObject)[] = [];
+		let uniqueNewResults: (AlbumObject | TrackObject | ArtistObject)[] = [];
 		newResults.forEach((result) => {
 			if (!idArray.includes(result.id+result.type+result.provider)) {
 				idArray.push(result.id+result.type+result.provider);
@@ -103,8 +103,8 @@ export default function Find() {
 	}
 
 	function handleLookup(newResults: URLLookupData) {
-		if (newResults.albums.length > 0 || newResults.tracks.length > 0) {
-			let newData = [...newResults.albums, ...newResults.tracks, ...results];
+		if (newResults.albums.length > 0 || newResults.tracks.length > 0 || newResults.artists.length > 0) {
+			let newData = [...newResults.artists, ...newResults.albums, ...newResults.tracks, ...results];
 			setResults((prev) => deDupeResults([...prev, ...newData]));
 		} else {
 			toasts.warn("No results found!")
@@ -160,7 +160,8 @@ export default function Find() {
 									handleLookup(await toasts.dispPromise(lookupUrl(query), "Looking up URL...", "Error looking up URL!"));
 								}
 							} else if (data?.type == "artist") {
-								toasts.warn("This finding method isn't supported yet. Try using a barcode or ISRC!");
+								// toasts.warn("This finding method isn't supported yet. Try using a barcode or ISRC!");
+								handleLookup(await toasts.dispPromise(lookupUrl(query), "Looking up URL...", "Error looking up URL!"));
 							} else {
 								handleLookup(await toasts.dispPromise(lookupUrl(query), "Looking up URL...", "Error looking up URL!"));
 							}

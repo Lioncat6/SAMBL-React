@@ -69,6 +69,19 @@
 	text-align: center;
 	height: 100%;
 	min-width: 500px;
+	transition: all 0.2s;
+}
+
+@media (max-width: 1100px) and (min-width: 920px) {
+	#main {
+		width: 60%;
+	}
+}
+
+@media (max-width: 920px) {
+	#main {
+		width: 90%;
+	}
 }
 
 #__next {

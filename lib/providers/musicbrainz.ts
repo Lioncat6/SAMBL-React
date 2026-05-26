@@ -1,5 +1,5 @@
-import { MusicBrainzApi, CoverArtArchiveApi, IRelation, IArtist, IBrowseReleasesQuery, IRelease, IRecording, ICoversInfo, IReleaseList, IUrlLookupResult, IUrl, IBrowseReleasesResult, IArtistList, IArtistMatch, ITrack, UrlIncludes, ReleaseIncludes, RecordingIncludes, IEntity, ITypedEntity, RelationsIncludes } from "musicbrainz-api";
-import { UrlMBIDDict, ArtistObject, PartialArtistObject, ExtendedAlbumObject, MusicBrainzProvider, ExtendedAlbumData, ExtendedTrackObject, RegexArtistUrlQuery, IdMBIDDict, Capabilities, ExternalUrlData, IRelationType } from "../../types/provider-types";
+import { MusicBrainzApi, CoverArtArchiveApi, IRelation, IArtist, IBrowseReleasesQuery, IRelease, IRecording, ICoversInfo, IReleaseList, IUrlLookupResult, IUrl, IBrowseReleasesResult, IArtistList, IArtistMatch, ITrack, UrlIncludes, ReleaseIncludes, RecordingIncludes, IEntity, ITypedEntity, RelationsIncludes, ILabel, ILabelInfo } from "musicbrainz-api";
+import { UrlMBIDDict, ArtistObject, PartialArtistObject, ExtendedAlbumObject, MusicBrainzProvider, ExtendedAlbumData, ExtendedTrackObject, RegexArtistUrlQuery, IdMBIDDict, Capabilities, ExternalUrlData, IRelationType, LabelObject } from "../../types/provider-types";
 import withCache from "../../utils/cache";
 import ErrorHandler from "../../utils/errorHandler";
 import parsers from "../parsers/parsers";
@@ -357,13 +357,22 @@ function formatAlbumObject(album: IRelease): ExtendedAlbumObject {
 		albumTracks: ( album.media && album.media.length > 0 ) ? album.media.flatMap(medium => medium.tracks?.map(track => formatTrackObject(track))).filter((track) => track != null) : [],
 		externalUrls: album.relations ? album.relations.filter(rel => rel.url && rel.url?.resource)?.map(rel => rel.url?.resource).filter(url => typeof url == 'string') : [],
 		hasImage: album["cover-art-archive"]?.artwork,
-		genres: null, //TODO: https://github.com/Borewit/musicbrainz-api/pull/1145
-		labels: null, //TODO: https://github.com/Borewit/musicbrainz-api/pull/1145
+		genres: album.genres ? album.genres.map(genre => genre.name) : null,
+		labels: album["label-info"] ? album["label-info"].filter(label => label.label).map(label => formatLabelObject(label)) : null, //TODO: https://github.com/Borewit/musicbrainz-api/pull/1145
 		copyrights: formatCopyright(album),
 		type: "album"
 	}
 }
 
+function formatLabelObject(label: ILabelInfo): LabelObject {
+	return {
+		type: "label",
+		provider: namespace,
+		id: label.label?.id || null,
+		name: label.label?.name || "",
+		url: label.label?.id ? createUrl('label', label.label.id) : null,
+	}
+}
 
 function formatTrackObject(track: IRecording | ITrack): ExtendedTrackObject {
 	let trackNumber: number | null = null;
@@ -378,7 +387,7 @@ function formatTrackObject(track: IRecording | ITrack): ExtendedTrackObject {
 		id: recording.id,
 		name: recording.title,
 		url: createUrl('track', recording.id),
-		duration: recording.length || 0,
+		duration: recording.length || null,
 		imageUrl: null,
 		imageUrlSmall: null,
 		trackArtists: recording["artist-credit"] ? recording["artist-credit"].map(ac => formatArtistObject(ac.artist)) : [],

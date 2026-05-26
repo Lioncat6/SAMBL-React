@@ -1,244 +1,224 @@
 .textwrapper {
-	font-family: Arial, sans-serif;
-	background: transparent;
-	padding: 0;
-	justify-content: center;
-	display: flex;
-	flex-direction: column;
-	margin: auto;
-	margin-top: 18px;
-	width: 50%;
-	text-align: center;
-	z-index: 3;
+  font-family: Arial, sans-serif;
+  background: transparent;
+  padding: 0;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  margin-top: 18px;
+  width: 50%;
+  text-align: center;
+  z-index: 3;
 }
 
-
 .logo {
-	padding-top: 10px;
-	overflow: hidden;
-	width: 120px;
-	height: 120px;
+  padding-top: 10px;
+  overflow: hidden;
+  width: 120px;
+  height: 120px;
 }
 
 .imagewrapper {
-	position: absolute;
-	aspect-ratio: 1 / 1;
-	width: 10%;
-	height: 10%;
-	z-index: 3;
+  position: absolute;
+  aspect-ratio: 1 / 1;
+  width: 10%;
+  height: 10%;
+  z-index: 3;
 }
 
 .header {
-	width: 50%;
-	min-width: 500px;
-	margin: 0 auto;
-	height: 150px;
-	overflow: hidden;
-	display: flex;
-	flex-direction: row;
-	background: transparent;
-	z-index: 3;
+  width: 50%;
+  min-width: 500px;
+  margin: 0 auto;
+  height: 150px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  background: transparent;
+  z-index: 3;
 }
 
-.spotifyStatus {
-	height: 30px;
-	position: absolute;
-	right: 0;
-}
+@media (max-height: 600px) {
+  .title {
+    margin: 0;
+  }
 
-.spfButton {
-	cursor: pointer;
-	display: flex;
-	flex-direction: row;
-	width: auto;
-	height: auto;
-	border-radius: 20px;
-	color: white;
-	background-color: var(--foreground-primary);
-}
+  .subtitle {
+    display: none;
+  }
 
-.spfTextWrapper {
-	text-align: center;
-	display: flex;
-	justify-content: center;
-	padding: 8px;
-	width: 100%;
-	right: 5%;
-	font-size: larger;
-	text-overflow: ellipsis;
-}
+  .header {
+    height: auto;
+  }
 
-.spotifyLogo img {
-	padding: 5px;
-	width: 30px;
-	height: 30px;
-}
-
-.spotifyLogo {
-	padding: 0;
-	width: 20%;
-	height: 50%;
+  .logo {
+    width: 60px;
+    height: 60px;
+  }
 }
 
 /* dark mode slider */
 .darkModeSwitch {
-	position: absolute;
-	width: 80px;
-	right: 150px;
+  position: absolute;
+  width: 80px;
+  right: 150px;
 }
 
 .darkModeSwitch label {
-	position: absolute;
-	width: 100%;
-	height: 40px;
-	background-color: #28292c;
-	border-radius: 20px;
-	cursor: pointer;
+  position: absolute;
+  width: 100%;
+  height: 40px;
+  background-color: #28292c;
+  border-radius: 20px;
+  cursor: pointer;
 }
 
 .darkModeSwitch input {
-	position: absolute;
-	display: none;
+  position: absolute;
+  display: none;
 }
 
 .darkModeSwitch .slider {
-	position: absolute;
-	width: 80.5px;
-	height: 40.5px;
-	transform: translateX(-0.5px) translateY(-0.5px);
-	border-radius: 50px;
-	transition: 0.3s;
+  position: absolute;
+  width: 80.5px;
+  height: 40.5px;
+  transform: translateX(-0.5px) translateY(-0.5px);
+  border-radius: 50px;
+  transition: 0.3s;
 }
 
-.darkModeSwitch input:checked~.slider {
-	background-color: #d8dbe0;
+.darkModeSwitch input:checked ~ .slider {
+  background-color: #d8dbe0;
 }
 
 .darkModeSwitch .slider::before {
-	content: "";
-	position: absolute;
-	top: 5.2px;
-	left: 6.4px;
-	width: 30px;
-	height: 30px;
-	border-radius: 50%;
-	box-shadow: inset 11.2px -1.6px 0px 0px #d8dbe0;
-	background-color: #28292c;
-	transition: 0.3s;
+  content: "";
+  position: absolute;
+  top: 5.2px;
+  left: 6.4px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  box-shadow: inset 11.2px -1.6px 0px 0px #d8dbe0;
+  background-color: #28292c;
+  transition: 0.3s;
 }
 
-.darkModeSwitch input:checked~.slider::before {
-	transform: translateX(38px);
-	background-color: #28292c;
-	box-shadow: none;
+.darkModeSwitch input:checked ~ .slider::before {
+  transform: translateX(38px);
+  background-color: #28292c;
+  box-shadow: none;
 }
 
 @media (max-width: 500px) {
-	.samblWrapper {
-		margin-right: 30px;
-	}
+  .samblWrapper {
+    margin-right: 30px;
+  }
 
-	.header {
-		min-width: 380px;
-		width: -webkit-fill-available;
-	}
+  .header {
+    min-width: 380px;
+    width: -webkit-fill-available;
+  }
 }
 
 .configButton,
 .savedArtists,
 .toolsButton {
-	position: relative;
-	right: 0;
-	margin: 10px 10px 2px 0px;
-	padding: 10px;
-	height: 32px;
-	border: 1px solid var(--button-border);
-	border-radius: 10px;
-	transition: 0.2s all;
-	background: transparent;
-	color: var(--button-text);
-	text-align: center;
-	font-size: 13.33px;
-	display: flex;
-	align-items: center;
-	z-index: 3;
+  position: relative;
+  right: 0;
+  margin: 10px 10px 2px 0px;
+  padding: 10px;
+  height: 32px;
+  border: 1px solid var(--button-border);
+  border-radius: 10px;
+  transition: 0.2s all;
+  background: transparent;
+  color: var(--button-text);
+  text-align: center;
+  font-size: 13.33px;
+  display: flex;
+  align-items: center;
+  z-index: 3;
 }
 
 .toolsButton:hover {
-	background: transparent;
-	border: 1px solid var(--toolsButton);
-	color: var(--toolsButton);
-	transition: 0.2s all;
+  background: transparent;
+  border: 1px solid var(--toolsButton);
+  color: var(--toolsButton);
+  transition: 0.2s all;
 }
 
 .configButton:hover {
-	background: transparent;
-	border: 1px solid var(--configButton);
-	color: var(--configButton);
-	transition: 0.2s all;
+  background: transparent;
+  border: 1px solid var(--configButton);
+  color: var(--configButton);
+  transition: 0.2s all;
 }
 
 .savedArtists:hover {
-	background: transparent;
-	border: 1px solid var(--savedArtists);
-	color: var(--savedArtists);
-	transition: 0.2s all;
+  background: transparent;
+  border: 1px solid var(--savedArtists);
+  color: var(--savedArtists);
+  transition: 0.2s all;
 }
 
 .buttonWrapper {
-	display: flex;
-	flex-direction: row;
-	right: 0;
-	position: absolute;
-	max-width: 38vw;
-	min-width: min-content;
-	flex-wrap: wrap;
-	align-content: center;
-	justify-content: right;
+  display: flex;
+  flex-direction: row;
+  right: 0;
+  position: absolute;
+  max-width: 38vw;
+  min-width: min-content;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: right;
 }
 
 .dropdownWrapper {
-	position: relative;
-	display: inline-block;
+  position: relative;
+  display: inline-block;
 }
 
 .dropdownMenu {
-	position: absolute;
-	top: 100%;
-	left: 0;
-	background-color: var(--background);
-	border: 1px solid var(--button-border);
-	border-radius: 8px;
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-	z-index: 1000;
-	padding: 8px 0;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: var(--background);
+  border: 1px solid var(--button-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  padding: 8px 0;
 }
 
 .dropdownMenu a,
 .dropdownMenu .menuItem {
-	font-family: Arial, sans-serif;
-	display: block;
-	padding: 8px 16px;
-	color: var(--button-text);
-	text-decoration: none;
-	font-size: 14px;
-	font-weight: normal;
-	transition: background-color 0.2s, color 0.2s;
-	cursor: pointer;
+  font-family: Arial, sans-serif;
+  display: block;
+  padding: 8px 16px;
+  color: var(--button-text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: normal;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+  cursor: pointer;
 }
 
 .dropdownMenu a:hover,
 .dropdownMenu .menuItem:hover {
-	background-color: #444;
-	color: #ffffff;
+  background-color: #444;
+  color: #ffffff;
 }
 
 .collapse {
-	display: inline;
+  display: inline;
 }
 
 @media (max-width: 600px) {
-	.collapse {
-		display: none;
-	}
+  .collapse {
+    display: none;
+  }
 }

@@ -1,6 +1,7 @@
 import styles from "../../styles/popups.module.css";
 import { FaCopy, FaMagnifyingGlass, FaBarcode, FaLink, FaL, FaMusic } from "react-icons/fa6";
 import { MdOutlineAlbum, MdPerson, MdOutlineCalendarMonth, MdOutlineWarningAmber } from "react-icons/md";
+import { AiOutlineFieldNumber } from "react-icons/ai";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import text from "../../utils/text";
 import { ProviderNamespace, TrackObject } from "../../types/provider-types";
@@ -102,7 +103,7 @@ function AlbumDetails({ data }: { data: DisplayAlbum }) {
 					<div className={styles.genres}>
 						<FaMusic />{" "}
 						{genres.map((genre, index) => (
-							<span key={index}>{`${index > 0 ? ', ': ''}${genre}`}</span>
+							<span key={index}>{`${index > 0 ? ', ' : ''}${genre}`}</span>
 						))}
 					</div>
 				}
@@ -112,16 +113,34 @@ function AlbumDetails({ data }: { data: DisplayAlbum }) {
 }
 
 function AlbumFooter({ data }: { data: DisplayAlbum }) {
-	const {copyrights} = data;
+	const { copyrights, labels } = data;
 	return (
 		<div className={styles.albumFooter}>
-		{(copyrights && copyrights.length > 0) &&
-			<div className={styles.copyrights}>
-				{copyrights.map((genre, index) => (
-					<span key={index}>{`${genre}`}</span>
-				))}
-			</div>
-		}</div>
+			{(copyrights && copyrights.length > 0) &&
+				<div className={styles.copyrights}>
+					{copyrights.map((genre, index) => (
+						<span key={index}>{`${genre}`}</span>
+					))}
+				</div>
+			}{(copyrights && copyrights.length > 0 && labels && labels.length > 0) && (
+				<hr className={styles.footerDivider} />
+			)}{(labels && labels.length > 0) && (
+				<div className={styles.labels}>
+					{labels.map((label, index) => (
+						<span key={index}>
+							{label.url?.url ? (
+								<a href={label.url.url} target="_blank" rel="noopener noreferrer">
+									{`${label.name}`}
+								</a>
+							) : (
+								`${label.name}`
+							)}
+							{label.catalogNumber && <span className={styles.labelNo} title="Category Number (Click to copy)" onClick={() => text.copy(label.catalogNumber!)}>{label.catalogNumber}</span>}
+						</span>
+					))}
+				</div>
+			)}
+		</div>
 	)
 }
 
@@ -206,9 +225,9 @@ function TrackItem({ index, track, album, isrcSource, highlight }: { index: stri
 			</div>
 			<div className={styles.trackInfo}>
 				<div className={styles.trackTopRow}>
-					<a className={styles.trackTitle} href={track.url?.url || ""} > {track.name}</a> <MbUrlIcon status={status} url={mbUrl || ""} styleClass={styles.trackMB} isAlbum={false} />
+					<a className={styles.trackTitle} href={track.url?.url || ""} target="_blank" rel="noopener noreferrer" > {track.name}</a> <MbUrlIcon status={status} url={mbUrl || ""} styleClass={styles.trackMB} isAlbum={false} />
 					<div className={`${styles.trackISRCs} ${isrcSource == "musicbrainz" && styles.mbUnderline}`} title={isrcSource == "musicbrainz" ? "This ISRC is sourced from MusicBrainz" : undefined}>{String(track.isrcs)}</div>
-					<div className={styles.trackDuration} title={track.duration ? `${track.duration} MS (Click to copy)` : 'Unknown Duration'} onClick={() => {track.duration && text.copy(String(track.duration))}}>{text.displayDuration(track.duration)}</div>
+					<div className={styles.trackDuration} title={track.duration ? `${track.duration} MS (Click to copy)` : 'Unknown Duration'} onClick={() => { track.duration && text.copy(String(track.duration)) }}>{text.displayDuration(track.duration)}</div>
 				</div>
 				{showArtistCredit() && (
 					<div className={styles.trackArtists}>

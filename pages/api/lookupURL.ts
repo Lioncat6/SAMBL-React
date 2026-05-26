@@ -16,7 +16,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(500).json(<SAMBLApiError>{ error: "Missing required paramter `url`", parameters: ['url'], code: 500 })
         }
         const forceRefresh = Object.prototype.hasOwnProperty.call(req.query, "forceRefresh");
-        const data = await musicbrainz.getAlbumsBySourceUrls(url, ["recording-rels", "release-rels", "url-rels", "artist-rels"], { noCache: forceRefresh })
         let albums: AlbumObject[] = []
         let tracks: TrackObject[] = []
         let artists: ArtistObject[] = []
@@ -40,9 +39,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         if (formattedTrackData) tracks.push(formattedTrackData);
                     }
                 }
+            } else if (urlData.type == "artist"){
+                const provider = providers.parseProvider(urlData?.provider, ["getArtistById", "formatArtistObject"]);
+                if (provider){
+                    const artistData = await provider.getArtistById(urlData.id);
+                    if (artistData){
+                        const formattedArtistData = provider.formatArtistObject(artistData);
+                        if (formattedArtistData) artists.push(formattedArtistData);
+                    }
+                }
             }
         }
-        
+        if (urlData?.provider) { // Clean URL if possible
+            const provider = providers.parseProvider(urlData.provider, ["createUrl"]);
+            if (provider && urlData.id && urlData.type) {
+                const createdUrl = provider.createUrl( urlData.type, urlData.id);
+                if (createdUrl) {
+                    url = createdUrl.url;
+                }
+            }
+        }
+        const data = await musicbrainz.getAlbumsBySourceUrls(url, ["recording-rels", "release-rels", "url-rels", "artist-rels"], { noCache: forceRefresh })
         if (data?.relations) {
             if (data?.relations) {
                 for (const relation of data.relations) {
@@ -77,7 +94,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         albums = deduplicate(albums);
         tracks = deduplicate(tracks);
         artists = deduplicate(artists);
-        return res.status(200).json({ albums, tracks, artists } as URLLookupData);
+        const lookupData: URLLookupData = {
+            albums,
+            tracks,
+            artists,
+            query: url
+        }
+        return res.status(200).json(lookupData);
     } catch (error) {
         logger.error("Error in lookupArtist API", error);
         return res.status(500).json({ error: "Internal Server Error", details: error.message } as SAMBLApiError);

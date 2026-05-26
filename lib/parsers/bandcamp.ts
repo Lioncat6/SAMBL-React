@@ -5,12 +5,13 @@ function createUrl(type: UrlType, id: string, mbTypes?: number[]): ExternalUrlDa
     const mbUrlTypes: Record<UrlType, number[]> = {
         "artist": [718],
         "album": [85, 74],
-        "track": [254, 268]
+        "track": [254, 268],
+        "label": [718]
     }
     const baseUrl = "bandcamp.com";
     const idArray = id.split("/");
     let url = `https://${idArray[0]}.bandcamp.com/${idArray[1]}/${idArray[2]}`
-    if (type == "artist"){
+    if (type == "artist" || type == "label") {
         url = `https://${id}.bandcamp.com/`
     }
     return {

@@ -1,237 +1,81 @@
-import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
-import { toast, Flip } from "react-toastify";
 import ItemList from "../../components/ItemList";
-import Head from "next/head";
-import SearchBox from "../../components/SearchBox";
-import { FaWindowRestore } from "react-icons/fa6";
-import toasts from "../../utils/toasts";
-import { FindData, ISRCData, UPCData, URLLookupData } from "../../types/api-types";
-import normalizeVars from "../../utils/normalizeVars";
-import { AlbumObject, TrackObject } from "../../types/provider-types";
-import parsers from "../../lib/parsers/parsers";
+import Head from 'next/head';
+import SearchBox from '../../components/SearchBox';
+import { ArtistSearchData, SAMBLApiError } from "../../types/api-types";
+import { SAMBLError } from "../../types/component-types";
+import ErrorPage from "../../components/ErrorPage";
 import SAMBLHead from "../../components/SAMBLHead";
+import text from "../../utils/text";
+import { ProviderNamespace } from "../../types/provider-types";
 
-async function serverFind(query, type) {
-	try {
-		const response = await fetch(`/api/find?query=${query}&type=${type}`)
-		if (response.ok) {
-			return await response.json() as FindData;
-		} else {
-			throw new Error((await response.json()).error || response.statusText);
-		}
-	} catch (error) {
-		throw new Error(error)
-	}
-
+async function getItems(query, provider) {
+    const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/searchArtists?query=${query}&provider=${provider}`);
+    if (response.ok) {
+        const data = await response.json() as ArtistSearchData;
+        return data;
+    } else {
+        let errorData: null | SAMBLApiError = null
+        try {
+            errorData = await response.json() as SAMBLApiError
+        } catch {}
+        throw new Error("Error fetching artist data: " + errorData?.details || response.statusText);
+    }
 }
 
-async function getISRCFromURL(url) {
-	try {
-		const response = await fetch(`/api/getTrackISRCs?url=${encodeURIComponent(url)}`)
-		if (response.ok) {
-			return await response.json() as ISRCData;
-		} else {
-			throw new Error((await response.json()).error || response.statusText);
-		}
-	} catch (error) {
-		throw new Error(error)
-	}
+export async function getServerSideProps(context) {
+    try {
+        let { query, provider } = context.query;
+        if (!provider) {
+            provider = context.req.cookies?.provider || "spotify";
+        }
+        const items = await getItems(query, provider);
+        return {
+            props: { items, provider },
+        };
+    } catch (error) {
+        const samblError: SAMBLError = {
+            type: "general",
+            message: String(error)
+        }
+        return {
+            props: { error: samblError }
+        };
+    }
 }
 
-async function getUPCFromURL(url) {
-	try {
-		const response = await fetch(`/api/getAlbumUPCs?url=${encodeURIComponent(url)}`)
-		if (response.ok) {
-			return await response.json() as UPCData;
-		} else {
-			throw new Error((await response.json()).error || response.statusText);
-		}
-	} catch (error) {
-		throw new Error(error)
-	}
-}
+export default function search({ items, error, provider }: {items?: [], error?:SAMBLError, provider?: ProviderNamespace}) {
+    if (error || !items) {
+        return (
+            <ErrorPage error={error || null} />
+        )
+    }
+    const router = useRouter();
+    const { query } = router.query;
+    return (
+        <>
+            <SAMBLHead
+                title = {`SAMBL • Results for "${query}"`}
+                fullTitle={`Search results for "${query}"`}
+                description={text.infoToString([
+                    provider && text.capitalizeFirst(provider),
+                    `${items.length} results for "${query}"`
+                ])}
+            />
+            <div id="err" />
+            <div className="titleContainer">
+                <h1 id="searchFor">Search Results for "{query}"</h1>
+            </div>
+            <SearchBox />
+            <br />
+            <div id="contentContainer">
+                <div id="loadingContainer" />
+                <div id="loadingText" />
+                <ItemList type={"artist"} items={items} />
+                <div id="statusText" />
+            </div>
 
-async function lookupUrl(url) {
-	try {
-		const response = await fetch(`/api/lookupURL?url=${encodeURIComponent(url)}`)
-		if (response.ok) {
-			return await response.json() as URLLookupData;
-		} else {
-			throw new Error((await response.json()).error || response.statusText);
-		}
-	} catch (error) {
-		throw new Error(error)
-	}
-}
+        </>
 
-export default function Find() {
-	const [results, setResults] = useState([] as (AlbumObject | TrackObject)[]);
-	const [isLoading, setIsLoading] = useState(false);
-	const router = useRouter();
-	const { query: urlQuery } = router.query;
-	const lastSearchedQuery = useRef(null as string | null);
-	const lastSearchTime = useRef(0);
-
-	function deDupeResults(newResults: (AlbumObject | TrackObject)[]) {
-		let idArray: string [] = [];
-		let uniqueNewResults: (AlbumObject | TrackObject)[] = [];
-		newResults.forEach((result) => {
-			if (!idArray.includes(result.id+result.type+result.provider)) {
-				idArray.push(result.id+result.type+result.provider);
-				uniqueNewResults.push(result);
-			}
-		});
-		return uniqueNewResults
-	}
-
-	function handleResults(newResults: FindData) {
-		let data = newResults.data || [];
-		let issues = newResults.issues || [];
-
-		if (data.length > 0) {
-			setResults((prev) => deDupeResults([...prev, ...data]));
-		} else {
-			toasts.warn("No results found!");
-		}
-
-		if (issues.length > 0) {
-			issues.forEach((issue) => {
-				toasts.error(`Error with provider ${issue.provider}: ${issue.error}`);
-			});
-		}
-	}
-
-	function handleLookup(newResults: URLLookupData) {
-		if (newResults.albums.length > 0 || newResults.tracks.length > 0) {
-			let newData = [...newResults.albums, ...newResults.tracks, ...results];
-			setResults((prev) => deDupeResults([...prev, ...newData]));
-		} else {
-			toasts.warn("No results found!")
-		}
-	}
-
-	async function handleSearch() {
-		let queries = Array.isArray(urlQuery) ? urlQuery : [urlQuery];
-		const queryTime = Date.now();
-		if (queries.length > 0 &&
-			(
-				String(queries) !== lastSearchedQuery.current ||
-				queryTime - lastSearchTime.current >= 500
-			) && queries.join("").trim() !== ""
-		) {
-			setResults([]);
-			setIsLoading(true);
-			lastSearchedQuery.current = String(queries);
-			lastSearchTime.current = queryTime;
-			queries.forEach(async (query, index) => {
-				if (
-					query?.trim() !== "" &&
-					query !== undefined 
-				) {
-					try {
-						const mbidPattern = /.*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.*/i;
-						const spfPattern = /.*[A-Za-z0-9]{22}$/;
-						const isrcPattern = /^[A-Z]{2}-?[A-Z0-9]{3}-?[0-9]{2}-?[0-9]{5}$/;
-						const upcPattern = /^\d{12,14}$/;
-						const urlPattern = /^(https?|http):\/\/[^\s/$.?#].[^\s]*$/i;
-						if (isrcPattern.test(query)) {
-							const matchedQuery = query.match(isrcPattern)?.[0];
-							handleResults(await toasts.dispPromise(serverFind(matchedQuery, "ISRC"), "Finding by ISRC...", "Error finding by ISRC!"));
-						} else if (urlPattern.test(query)) {
-							const data = parsers.getUrlInfo(query);
-							if (index != queries.length - 1 && (data?.type === "track" || data?.type === "album")) {
-								handleLookup(await toasts.dispPromise(lookupUrl(query), "Looking up URL...", "Error looking up URL!"));
-							} else if (data?.type == "track") {
-								let response = await toasts.dispPromise(getISRCFromURL(query), "Looking up ISRC...", "Error looking up ISRC!");
-								if (response.isrcs?.length > 0) {
-									router.push(`find?query=${query}&query=${response.isrcs[0]}`);
-								} else {
-									toasts.warn("No ISRC found for this URL");
-									handleLookup(await toasts.dispPromise(lookupUrl(query), "Looking up URL...", "Error looking up URL!"));
-								}
-							} else if (data?.type == "album") {
-								let response = await toasts.dispPromise(getUPCFromURL(query), "Looking up Barcode...", "Error looking up Barcode!");
-								
-								if (response.upcs?.length > 0) {
-									router.push(`find?query=${query}&query=${response.upcs[0]}`);
-								} else {
-									toasts.warn("No Barcode found for this URL")
-									handleLookup(await toasts.dispPromise(lookupUrl(query), "Looking up URL...", "Error looking up URL!"));
-								}
-							} else if (data?.type == "artist") {
-								toasts.warn("This finding method isn't supported yet. Try using a barcode or ISRC!");
-							} else {
-								handleLookup(await toasts.dispPromise(lookupUrl(query), "Looking up URL...", "Error looking up URL!"));
-							}
-						} else if (upcPattern.test(query)) {
-							const matchedQuery = query.match(upcPattern)?.[0];
-							handleResults(await toasts.dispPromise(serverFind(matchedQuery, "UPC"), "Finding by Barcode...", "Error finding by Barcode!"));
-						} else if (mbidPattern.test(query) || spfPattern.test(query)) {
-							toasts.warn("Please enter a full URL for the MBID or Spotify ID!");
-						} else {
-							toasts.warn("Invalid input format. Please enter a valid ISRC, MBID, Barcode, or Spotify link.");
-						}
-					} catch (error) {
-						toasts.error(`An error occurred while searching: ${error}`, error);
-					} finally {
-						
-					}
-				}
-			});
-			setIsLoading(false);
-		} else if (queries.join("").trim() === "") {
-			toast.warn("Please enter a query");
-		}
-	}
-
-	useEffect(() => {
-
-		function updateFindBox() {
-			let dispQuery = urlQuery;
-			if (Array.isArray(router.query.query)) {
-				dispQuery = router.query.query[router.query.query.length - 1];
-			}
-			const findBox = document.getElementById("findBox") as HTMLInputElement | null;
-			if (findBox) {
-				findBox.value = String(dispQuery) || "";
-			}
-		}
-
-		const handleRouteChange = (url) => {
-			if (url.startsWith("/find")) {
-				updateFindBox();
-				handleSearch();
-			}
-		};
-
-		// Initial run
-		if (router.query.query) {
-			const findBox = document.getElementById("findBox") as HTMLInputElement | null;
-			updateFindBox();
-			handleSearch();
-		}
-
-		router.events.on("routeChangeComplete", handleRouteChange);
-
-		return () => {
-			router.events.off("routeChangeComplete", handleRouteChange);
-		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [router.query.query]);
-
-	return (
-		<>
-			<SAMBLHead
-				title={"SAMBL • Find"}
-				fullTitle={router.query.query ? `Results for ${router.query.query}` : null}
-				description={`SAMBL • Find by ISRC, Barcode, or URL`}
-			/>
-			<SearchBox type="find" />
-			<div id="contentContainer">
-				<div id="loadingMsg" />
-				{results.length > 0 && <ItemList type={"mixed"} items={results} />}
-			</div>
-		</>
-	);
+    )
 }

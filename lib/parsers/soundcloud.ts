@@ -1,6 +1,6 @@
 import { ExternalUrlData, ProviderNamespace, UrlData, UrlType } from "../../types/provider-types";
 const namespace: ProviderNamespace = "soundcloud"
-function createUrl (type: UrlType, id:string, mbTypes): ExternalUrlData {
+function createUrl (type: UrlType, id:string, mbTypes: number[]): ExternalUrlData {
   const mbUrlTypes: Record<UrlType, number[]> = {
         "artist": [291],
         "album": [85],
@@ -8,7 +8,7 @@ function createUrl (type: UrlType, id:string, mbTypes): ExternalUrlData {
         label: []
     }
   return {
-    url: id,
+    url: id.replace(/www\./, ''),
     urlInfo: {
       provider: namespace,
       id,
@@ -23,6 +23,7 @@ function parseUrl (url:string): UrlData | null {
   const setRegex = /soundcloud\.com\/[^\/]*\/sets\/([^\/]*)/
   const trackRegex = /soundcloud\.com\/[^\/]*\/([^\/]*)/
   const artistRegex = /soundcloud\.com\/([^\/]*)/
+  url = url.replace(/www\./, '')
   if (url.match(setRegex)) {
     return {
       type: 'album',
@@ -38,7 +39,7 @@ function parseUrl (url:string): UrlData | null {
     if (!artistMatch) return null
     return {
       type: 'artist',
-      id: url
+      id: artistMatch[1]
     }
   }
   return null

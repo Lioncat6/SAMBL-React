@@ -4,22 +4,14 @@ const namespace: ProviderNamespace = "applemusic";
 function parseUrl(url: string): UrlData | null {
     const match = url.match(/music\.apple\.com\/.+?\/(?<type>artist|album|song)(\/(.+?))?\/(?<id>\d+)/);
     if (!match?.groups) return null;
-
-    let type: "artist" | "album" | "track" | null = null;
-    switch (match.groups["type"]) {
-        case "artist":
-            type = "artist";
-            break;
-        case "album":
-            type = "album";
-            break;
-        case "song":
-            type = "track";
-            break;
+    const typeMap: Record<string, UrlType | null> = {
+        "artist": "artist",
+        "album": "album",
+        "song": "track"
     }
-
+    if (!typeMap[match.groups["type"]]) return null;
     return {
-        type,
+        type: typeMap[match.groups["type"]],
         id: match.groups["id"],
     };
 }

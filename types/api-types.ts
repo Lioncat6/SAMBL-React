@@ -32,9 +32,10 @@ export class ArtistLookupData {
 }
 
 export class URLLookupData {
-    albums: ExtendedAlbumObject[]
+    albums: ExtendedAlbumObject[] | AlbumObject[]
     tracks: ExtendedTrackObject[]
     artists: ArtistObject[]
+    query: string
 }
 
 export type ArtistSearchData = Record<string, AggregatedArtist>
@@ -51,7 +52,7 @@ export class SAMBLApiError {
 
 export class FindData {
     type: 'UPC' | 'ISRC'
-    data: AlbumObject[] | TrackObject[]
+    data: AlbumObject[] | TrackObject[] | ArtistObject[]
     issues: SAMBLApiError[]
 }
 

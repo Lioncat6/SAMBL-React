@@ -1,9 +1,9 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities } from "../../types/provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities, LabelObject } from "../../types/provider-types";
 import logger from "../../utils/logger";
 import text from "../../utils/text";
 import withCache from "../../utils/cache";
 import ErrorHandler from "../../utils/errorHandler";
-import DeezerPublicApi from "deezer-public-api";
+import { DeezerAlbum, DeezerArtist, DeezerPaginationResult, DeezerPublicApi, DeezerTrack } from "deezer-public-api";
 import parsers from "../parsers/parsers";
 import getDeezerGenre from "./lib/deezer-genres";
 const namespace = "deezer";
@@ -27,7 +27,7 @@ async function refreshApi() {
 async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> {
 	await refreshApi();
 	try {
-		const data = await deezerApi.track(`isrc:${isrc}`);
+		const data = await deezerApi.track({id: `isrc:${isrc}`});
 		if (data.title) {
 			return [formatTrackObject(data)];
 		} else {
@@ -43,7 +43,7 @@ async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> {
 async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
 	await refreshApi();
 	try {
-		const data = await deezerApi.album(`upc:${upc.replace(/^0+/, "")}`);
+		const data = await deezerApi.album({id: `upc:${upc.replace(/^0+/, "")}`});
 		if (data.title) {
 			return [formatAlbumObject(data)];
 		} else {
@@ -57,10 +57,10 @@ async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
 }
 
 
-async function searchByArtistName(query) {
+async function searchByArtistName(query: string) {
 	await refreshApi();
 	try {
-		const data = await deezerApi.search.artist(encodeURIComponent(query));
+		const data = await deezerApi.search.artist({ q: encodeURIComponent(query) });
 		if (data.data) {
 			return data;
 		} else {
@@ -72,10 +72,10 @@ async function searchByArtistName(query) {
 	}
 }
 
-async function getAlbumById(deezerId) {
+async function getAlbumById(deezerId: string) {
 	await refreshApi();
 	try {
-		const data = await deezerApi.album(deezerId);
+		const data = await deezerApi.album({id: deezerId});
 		if (data.title) {
 			return data;
 		} else {
@@ -87,10 +87,10 @@ async function getAlbumById(deezerId) {
 	}
 }
 
-async function getTrackById(deezerId) {
+async function getTrackById(deezerId: string) {
 	await refreshApi();
 	try {
-		const data = await deezerApi.track(deezerId);
+		const data = await deezerApi.track({id: deezerId});
 		if (data.title) {
 			return data;
 		} else {
@@ -102,10 +102,10 @@ async function getTrackById(deezerId) {
 	}
 }
 
-async function getArtistById(deezerId) {
+async function getArtistById(deezerId: string) {
 	await refreshApi();
 	try {
-		const data = await deezerApi.artist(deezerId);
+		const data = await deezerApi.artist({id: deezerId});
 		if (data.name) {
 			return data;
 		} else {
@@ -117,27 +117,27 @@ async function getArtistById(deezerId) {
 	}
 }
 
-function getTrackISRCs(track) {
+function getTrackISRCs(track: DeezerTrack) {
 	if (!track) return null;
 	let isrcs = track?.isrc ? [track.isrc] : [];
 	return isrcs;
 }
 
-function getAlbumUPCs(album) {
+function getAlbumUPCs(album: DeezerAlbum) {
 	if (!album) return null;
 	let upcs = album?.upc ? [album.upc] : [];
 	return upcs;
 }
 
-function formatArtistSearchData(rawData) {
+function formatArtistSearchData(rawData: DeezerPaginationResult<DeezerArtist>) {
 	return rawData.data;
 }
 
-function formatArtistLookupData(rawData) {
+function formatArtistLookupData(rawData: DeezerArtist) {
 	return rawData;
 }
 
-function formatArtistObject(artist): ArtistObject {
+function formatArtistObject(artist: DeezerArtist): ArtistObject {
 	let imageUrl = artist.picture_xl;
 	let imageUrlSmall = artist.picture_medium;
 	if (imageUrl.includes("/artist//")) {
@@ -148,47 +148,45 @@ function formatArtistObject(artist): ArtistObject {
 	}
 	return {
 		name: artist.name,
-		url: createUrl("artist", artist.id),
+		url: createUrl("artist", String(artist.id)),
 		imageUrl: imageUrl || "",
 		imageUrlSmall: imageUrlSmall || "",
 		bannerUrl: null,
 		relevance: `${artist.nb_fan} fans`,
 		info: `${artist.nb_album} albums`,
 		genres: null,
-		followers: artist.nb_fan,
+		followers: artist.nb_fan || null,
 		popularity: null,
-		id: artist.id,
+		id: String(artist.id),
 		provider: namespace,
 		type: "artist"
 	};
 }
 
-function formatPartialArtistObject(artist): PartialArtistObject {
+function formatPartialArtistObject(artist: DeezerArtist): PartialArtistObject {
 	return {
 		name: artist.name,
-		url: createUrl("artist", artist.id),
+		url: createUrl("artist", String(artist.id)),
 		imageUrl: artist.picture_xl || "",
 		imageUrlSmall: artist.picture_medium || "",
-		id: artist.id,
+		id: String(artist.id),
 		provider: namespace,
 		type: "partialArtist"
 	};
 }
 
-async function getArtistAlbums(artistId, offset, limit) {
+async function getArtistAlbums(artistId: string, offset, limit) {
 	const nextIntRegex = /index=(\d+)/;
 	try {
-		let artistAlbumData = await await deezerApi.artist.albums(artistId, 9999, 0);
+		let artistAlbumData = await await deezerApi.artist.albums({id: artistId, limit: 9999, index: 0});
 		let artistData = await deezer.getArtistById(artistId);
-		let next: any = 0;
 		let searchAlbums: any[] = [];
-		while (next != null) {
-			let searchAlbumData = await deezerApi.search.album(`artist:"${encodeURIComponent(artistData.name)}"`, null, 9999, next);
+		let searchAlbumData = await deezerApi.search.album({ q: `artist:"${encodeURIComponent(artistData.name)}"`, limit: 9999, index: 0 });
+		searchAlbums.push(...searchAlbumData.data);
+		while (searchAlbumData.next) {
+			searchAlbumData = await searchAlbumData.next();
 			if (searchAlbumData && searchAlbumData.data) {
 				searchAlbums.push(...searchAlbumData.data);
-				next = searchAlbumData.next ? searchAlbumData.next.match(nextIntRegex)[1] : null;
-			} else {
-				next = null;
 			}
 		}
 		let searchAlbumMap = Object.fromEntries(searchAlbums.map(album => [album.id, album]));
@@ -209,65 +207,84 @@ async function getArtistAlbums(artistId, offset, limit) {
 	}
 }
 
-function formatAlbumGetData(rawData): RawAlbumData {
+function formatAlbumGetData(rawData: DeezerPaginationResult<DeezerAlbum>): RawAlbumData {
 	const nextIntRegex = /index=(\d+)/;
 	return {
-		count: rawData.total,
-		current: !(rawData.prev) ? 0 : rawData.prev.match(nextIntRegex) ? parseInt(rawData.prev.match(nextIntRegex)[1]) + rawData.data.length : 0,
-		next: rawData.next ? rawData.next.match(nextIntRegex)[1] : null,
+		count: rawData.total || null,
+		current: !(rawData.prev) ? 0 : rawData.prevIndex ? rawData.prevIndex + rawData.data.length : 0,
+		next: rawData.nextIndex ? String(rawData.nextIndex) : null,
 		albums: rawData.data,
 	};
 }
 
 
-function formatAlbumObject(album): AlbumObject {
+type FixedDeezerAlbum = DeezerAlbum & {
+	contributors?: DeezerTrack["contributors"] //TODO: https://github.com/zaosoula/deezer-public-api/issues/47
+}
+
+function formatAlbumObject(album: FixedDeezerAlbum): AlbumObject {
+	const fallbackGenre = getDeezerGenre(album.genre_id);
 	return {
 		provider: namespace,
-		id: album.id,
+		id: String(album.id),
 		name: album.title,
-		url: createUrl("album", album.id),
+		url: createUrl("album", String(album.id)),
 		imageUrl: album.cover_xl || "",
 		imageUrlSmall: album.cover_medium || "",
 		albumArtists: album.contributors && album.contributors.length > 0 ? album.contributors.map(formatPartialArtistObject) : album.artist ? [formatPartialArtistObject(album.artist)] : [],
-		artistNames: album.contributors && album.contributors.length > 0 ? album.contributors.map(artist => artist.name).join(", ") : album.artist ? album.artist.name : "",
+		artistNames: album.contributors && album.contributors.length > 0 ? album.contributors.map(artist => artist.name) : album.artist ? [album.artist.name] : [],
 		releaseDate: album.release_date,
-		trackCount: album.nb_tracks,
+		trackCount: album.nb_tracks || null,
 		albumType: album.record_type,
 		upc: album.upc || null,
 		albumTracks: getAlbumTracks(album),
 		type: "album",
-		labels: album.label ? [album.label] : null,
+		labels: album.label ? [formatLabelObject(album.label)] : null,
 		copyrights: null,
-		genres: album.genres?.data ? album.genres.data.map((genre) => genre.name) : getDeezerGenre(album.genre_id) ? [getDeezerGenre(album.genre_id)]: null
+		genres: album.genres?.data ? album.genres.data.map((genre) => genre.name) : fallbackGenre ? [fallbackGenre]: null 
 	};
 }
 
-function getAlbumTracks(album) {
-	let tracks = album.tracks?.data;
+function formatLabelObject(label: string): LabelObject {
+	return {
+		type: "label",
+		provider: namespace,
+		id: null,
+		name: label,
+		url: null,
+	}
+}
+
+export type DeezerTrackWithTrackNumber = DeezerTrack & {
+	trackNumber?: number;
+}
+
+function getAlbumTracks(album: DeezerAlbum) {
+	let tracks = album.tracks?.data as DeezerTrackWithTrackNumber[];
 	if (tracks) {
 		for (let track in tracks) {
 			tracks[track].trackNumber = parseInt(track) + 1;
 		}
-		tracks = tracks.map(formatTrackObject);
+		let newTracks = tracks.map(formatTrackObject);
 		tracks.sort((a, b) => (a.trackNumber || 0) - (b.trackNumber || 0));
-		return tracks;
+		return newTracks;
 	}
 	return [];
 }
 
-function formatTrackObject(track): TrackObject {
+function formatTrackObject(track: DeezerTrackWithTrackNumber): TrackObject {
 	return {
 		provider: namespace,
-		id: track.id,
+		id: String(track.id),
 		name: track.title,
-		url: createUrl("track", track.id),
-		imageUrl: track.album.cover_xl || "",
-		imageUrlSmall: track.album.cover_medium || "",
-		albumName: track.album.title,
+		url: createUrl("track", String(track.id)),
+		imageUrl: track.album?.cover_xl || null,
+		imageUrlSmall: track.album?.cover_medium || null,
+		albumName: track.album?.title || null,
 		trackArtists: track.artist ? [formatPartialArtistObject(track.artist)] : [],
 		artistNames: track.artist ? [track.artist.name] : [],
 		duration: track.duration * 1000,
-		trackNumber: track.trackNumber,
+		trackNumber: track.trackNumber || null,
 		releaseDate: track.release_date || null,
 		isrcs: track.isrc ? [track.isrc] : [],
 		type: "track"

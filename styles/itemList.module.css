@@ -18,6 +18,12 @@
   height: calc(100% - 224px);
 }
 
+@media (max-height: 600px) {
+  .listWrapper {
+    height: calc(100% - 100px);
+  }
+}
+
 .artistName {
   font-size: larger;
   font-weight: bold !important;
@@ -137,6 +143,7 @@
 .bandcampIcon,
 .naverIcon,
 .qobuzIcon,
+.discogsIcon,
 .mbIcon {
   width: 16px;
   height: 20px;
@@ -689,7 +696,7 @@
   margin-left: auto;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 700px) {
   .collapse,
   .expand {
     opacity: 100% !important;
