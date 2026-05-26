@@ -400,7 +400,6 @@ function buildUrlSearchQuery(type: UrlType, urls: string[]): RegexArtistUrlQuery
     idQueries: idQueryMap,
     urlQueries: urlQueryMap
   }
-  console.log(query)
   return query;
 }
 
