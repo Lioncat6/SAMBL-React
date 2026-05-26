@@ -174,7 +174,7 @@ function infoToString(info: (string|null|undefined)[]){
  * @returns Padded barcode
  */
 function padBarcode(barcode: string): string {
-	return barcode.padStart(13, "0")
+	return String(text.removeLeadingZeros(barcode)).padStart(13, "0")
 }
 
 /**
