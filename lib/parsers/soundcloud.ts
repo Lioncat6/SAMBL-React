@@ -39,7 +39,7 @@ function parseUrl (url:string): UrlData | null {
     if (!artistMatch) return null
     return {
       type: 'artist',
-      id: url
+      id: artistMatch[1]
     }
   }
   return null
