@@ -3,7 +3,7 @@ import logger from "../../utils/logger";
 import text from "../../utils/text";
 import withCache from "../../utils/cache";
 import ErrorHandler from "../../utils/errorHandler";
-import { DeezerAlbum, DeezerPaginationResult, DeezerPublicApi, DeezerTrack } from "deezer-public-api";
+import { DeezerAlbum, DeezerArtist, DeezerPaginationResult, DeezerPublicApi, DeezerTrack } from "deezer-public-api";
 import parsers from "../parsers/parsers";
 import getDeezerGenre from "./lib/deezer-genres";
 const namespace = "deezer";
@@ -57,7 +57,7 @@ async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
 }
 
 
-async function searchByArtistName(query) {
+async function searchByArtistName(query: string) {
 	await refreshApi();
 	try {
 		const data = await deezerApi.search.artist({ q: encodeURIComponent(query) });
@@ -117,27 +117,27 @@ async function getArtistById(deezerId: string) {
 	}
 }
 
-function getTrackISRCs(track) {
+function getTrackISRCs(track: DeezerTrack) {
 	if (!track) return null;
 	let isrcs = track?.isrc ? [track.isrc] : [];
 	return isrcs;
 }
 
-function getAlbumUPCs(album) {
+function getAlbumUPCs(album: DeezerAlbum) {
 	if (!album) return null;
 	let upcs = album?.upc ? [album.upc] : [];
 	return upcs;
 }
 
-function formatArtistSearchData(rawData) {
+function formatArtistSearchData(rawData: DeezerPaginationResult<DeezerArtist>) {
 	return rawData.data;
 }
 
-function formatArtistLookupData(rawData) {
+function formatArtistLookupData(rawData: DeezerArtist) {
 	return rawData;
 }
 
-function formatArtistObject(artist): ArtistObject {
+function formatArtistObject(artist: DeezerArtist): ArtistObject {
 	let imageUrl = artist.picture_xl;
 	let imageUrlSmall = artist.picture_medium;
 	if (imageUrl.includes("/artist//")) {
@@ -148,28 +148,28 @@ function formatArtistObject(artist): ArtistObject {
 	}
 	return {
 		name: artist.name,
-		url: createUrl("artist", artist.id),
+		url: createUrl("artist", String(artist.id)),
 		imageUrl: imageUrl || "",
 		imageUrlSmall: imageUrlSmall || "",
 		bannerUrl: null,
 		relevance: `${artist.nb_fan} fans`,
 		info: `${artist.nb_album} albums`,
 		genres: null,
-		followers: artist.nb_fan,
+		followers: artist.nb_fan || null,
 		popularity: null,
-		id: artist.id,
+		id: String(artist.id),
 		provider: namespace,
 		type: "artist"
 	};
 }
 
-function formatPartialArtistObject(artist): PartialArtistObject {
+function formatPartialArtistObject(artist: DeezerArtist): PartialArtistObject {
 	return {
 		name: artist.name,
-		url: createUrl("artist", artist.id),
+		url: createUrl("artist", String(artist.id)),
 		imageUrl: artist.picture_xl || "",
 		imageUrlSmall: artist.picture_medium || "",
-		id: artist.id,
+		id: String(artist.id),
 		provider: namespace,
 		type: "partialArtist"
 	};
@@ -255,32 +255,36 @@ function formatLabelObject(label: string): LabelObject {
 	}
 }
 
-function getAlbumTracks(album) {
-	let tracks = album.tracks?.data;
+export type DeezerTrackWithTrackNumber = DeezerTrack & {
+	trackNumber?: number;
+}
+
+function getAlbumTracks(album: DeezerAlbum) {
+	let tracks = album.tracks?.data as DeezerTrackWithTrackNumber[];
 	if (tracks) {
 		for (let track in tracks) {
 			tracks[track].trackNumber = parseInt(track) + 1;
 		}
-		tracks = tracks.map(formatTrackObject);
+		let newTracks = tracks.map(formatTrackObject);
 		tracks.sort((a, b) => (a.trackNumber || 0) - (b.trackNumber || 0));
-		return tracks;
+		return newTracks;
 	}
 	return [];
 }
 
-function formatTrackObject(track): TrackObject {
+function formatTrackObject(track: DeezerTrackWithTrackNumber): TrackObject {
 	return {
 		provider: namespace,
-		id: track.id,
+		id: String(track.id),
 		name: track.title,
-		url: createUrl("track", track.id),
-		imageUrl: track.album.cover_xl || "",
-		imageUrlSmall: track.album.cover_medium || "",
-		albumName: track.album.title,
+		url: createUrl("track", String(track.id)),
+		imageUrl: track.album?.cover_xl || null,
+		imageUrlSmall: track.album?.cover_medium || null,
+		albumName: track.album?.title || null,
 		trackArtists: track.artist ? [formatPartialArtistObject(track.artist)] : [],
 		artistNames: track.artist ? [track.artist.name] : [],
 		duration: track.duration * 1000,
-		trackNumber: track.trackNumber,
+		trackNumber: track.trackNumber || null,
 		releaseDate: track.release_date || null,
 		isrcs: track.isrc ? [track.isrc] : [],
 		type: "track"
