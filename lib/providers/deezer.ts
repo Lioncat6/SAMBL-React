@@ -34,6 +34,9 @@ async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> {
 			return null;
 		}
 	} catch (error) {
+		if (error.message.includes("no data")) {
+			return null;
+		}
 		err.handleError("Error fetching track by ISRC:", error);
 		return null;
 
@@ -50,14 +53,16 @@ async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
 			return null;
 		}
 	} catch (error) {
+		if (error.message.includes("no data")) {
+			return null;
+		}
 		err.handleError("Error fetching album by UPC:", error);
 		return null;
-
 	}
 }
 
 
-async function searchByArtistName(query: string) {
+async function searchByArtistName(query: string): Promise<DeezerPaginationResult<DeezerArtist> | null> {
 	await refreshApi();
 	try {
 		const data = await deezerApi.search.artist({ q: encodeURIComponent(query) });
@@ -67,12 +72,15 @@ async function searchByArtistName(query: string) {
 			return null;
 		}
 	} catch (error) {
+		if (error.message.includes("no data")) {
+			return null;
+		}
 		err.handleError("Error searching for artist:", error);
-
+		return null;
 	}
 }
 
-async function getAlbumById(deezerId: string) {
+async function getAlbumById(deezerId: string): Promise<DeezerAlbum | null> {
 	await refreshApi();
 	try {
 		const data = await deezerApi.album({id: deezerId});
@@ -82,12 +90,15 @@ async function getAlbumById(deezerId: string) {
 			return null;
 		}
 	} catch (error) {
+		if (error.message.includes("no data")) {
+			return null;
+		}
 		err.handleError("Error fetching album by ID:", error);
-
+		return null;
 	}
 }
 
-async function getTrackById(deezerId: string) {
+async function getTrackById(deezerId: string): Promise<DeezerTrack | null> {
 	await refreshApi();
 	try {
 		const data = await deezerApi.track({id: deezerId});
@@ -97,12 +108,15 @@ async function getTrackById(deezerId: string) {
 			return null;
 		}
 	} catch (error) {
+		if (error.message.includes("no data")) {
+			return null;
+		}
 		err.handleError("Error fetching track by ID:", error);
-
+		return null;
 	}
 }
 
-async function getArtistById(deezerId: string) {
+async function getArtistById(deezerId: string): Promise<DeezerArtist | null> {
 	await refreshApi();
 	try {
 		const data = await deezerApi.artist({id: deezerId});
@@ -112,8 +126,11 @@ async function getArtistById(deezerId: string) {
 			return null;
 		}
 	} catch (error) {
+		if (error.message.includes("no data")) {
+			return null;
+		}
 		err.handleError("Error fetching artist by ID:", error);
-
+		return null;
 	}
 }
 
