@@ -358,7 +358,7 @@ function formatAlbumObject(album: IRelease): ExtendedAlbumObject {
 		externalUrls: album.relations ? album.relations.filter(rel => rel.url && rel.url?.resource)?.map(rel => rel.url?.resource).filter(url => typeof url == 'string') : [],
 		hasImage: album["cover-art-archive"]?.artwork,
 		genres: album.genres ? album.genres.map(genre => genre.name) : null,
-		labels: album["label-info"] ? album["label-info"].filter(label => label.label).map(label => formatLabelObject(label)) : null, //TODO: https://github.com/Borewit/musicbrainz-api/pull/1145
+		labels: album["label-info"]?.filter(label => label.label).map(label => formatLabelObject(label)) || null,
 		copyrights: formatCopyright(album),
 		type: "album"
 	}

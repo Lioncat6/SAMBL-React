@@ -217,12 +217,7 @@ function formatAlbumGetData(rawData: DeezerPaginationResult<DeezerAlbum>): RawAl
 	};
 }
 
-
-type FixedDeezerAlbum = DeezerAlbum & {
-	contributors?: DeezerTrack["contributors"] //TODO: https://github.com/zaosoula/deezer-public-api/issues/47
-}
-
-function formatAlbumObject(album: FixedDeezerAlbum): AlbumObject {
+function formatAlbumObject(album: DeezerAlbum): AlbumObject {
 	const fallbackGenre = getDeezerGenre(album.genre_id);
 	return {
 		provider: namespace,
