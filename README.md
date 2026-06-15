@@ -44,6 +44,7 @@ SOUNDCLOUD_OAUTH_TOKEN=<Soundcloud Oath Token>
 NEXT_PUBLIC_DISABLED_PROVIDERS=<Providers to disable>
 DISCOGS_CONSUMER_KEY=<Discogs Consumer Key>
 DISCOGS_CONSUMER_SECRET=<Discogs Consumer Secret>
+APPLEMUSIC_TOKEN=<Token Regex>
 ```
 * The Spotify Redirect URI does not need to be a valid URL, but must match your Spotify developer application
 * The contact email is for MusicBrainz's api requirements
