@@ -11,7 +11,7 @@
 	"dependencies": {
 		"@headlessui/react": "^2.2.9",
 		"@lionralfs/discogs-client": "^4.1.4",
-		"@tidal-music/api": "^0.25.0",
+		"@tidal-music/api": "^0.28.0",
 		"@tidal-music/auth": "^1.6.1",
 		"@types/nprogress": "^0.2.3",
 		"@types/react": "^19.2.15",
