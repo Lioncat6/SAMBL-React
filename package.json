@@ -14,7 +14,7 @@
 		"@tidal-music/api": "^0.25.0",
 		"@tidal-music/auth": "^1.6.1",
 		"@types/nprogress": "^0.2.3",
-		"@types/react": "^19.2.15",
+		"@types/react": "^19.2.17",
 		"@types/spotify-web-api-node": "^5.0.11",
 		"@types/string-similarity": "^4.0.2",
 		"bandcamp-scraper": "github:Lioncat6/bandcamp-scraper",
