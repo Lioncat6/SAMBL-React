@@ -12,6 +12,7 @@ import parsers from "../parsers/parsers";
 import naver from "./naver";
 import qobuz from "./qobuz";
 import discogs from "./discogs";
+import volumo from "./volumo";
 const { isDisabled } = clientProviders;
 
 const providerList = [
@@ -25,7 +26,8 @@ const providerList = [
     applemusic,
     naver,
     qobuz,
-    discogs
+    discogs,
+    volumo
 ];
 
 function getDefaultProvider(): Provider {

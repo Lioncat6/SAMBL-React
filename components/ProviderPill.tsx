@@ -8,6 +8,7 @@ import { ProviderNamespace } from "../types/provider-types";
 import clientProviders from "../utils/clientProviders";
 import { GenIcon } from "react-icons";
 import { TbVinyl } from "react-icons/tb";
+import { PiLetterCircleVFill } from "react-icons/pi";
 
 let providerArray: ProviderDisplay[] = [
     { name: "Spotify", namespace: "spotify", icon: <FaSpotify /> },
@@ -18,7 +19,8 @@ let providerArray: ProviderDisplay[] = [
     { name: "SoundCloud", namespace: "soundcloud", icon: <FaSoundcloud /> },
     { name: "Naver", namespace: "naver", icon: <SiNaver />},
     { name: "Qobuz", namespace: "qobuz", icon: <TbVinyl />},
-    { name: 'Discogs', namespace: "discogs", icon: <SiDiscogs /> }
+    { name: 'Discogs', namespace: "discogs", icon: <SiDiscogs /> },
+    { name: 'Volumo', namespace: "volumo", icon: <PiLetterCircleVFill  /> }
 ];
 
 //Remove disabled providers

@@ -1,0 +1,5 @@
+<!-- Copyright: Volumo Music OÜ, author: Stanislav Kryshtal -->
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" viewBox="0 0 512 512" fill="none" style="cursor: default;">
+    <circle cx="256" cy="256" r="240" fill="#99FF00"/>
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M166.819 162.667H95.9995L200.918 367.108H311.082L416 162.667H345.18L256 336.438L166.819 162.667Z" fill="#04070A"/>
+</svg>

@@ -78,6 +78,9 @@
 .qobuz {
     color: var(--qobuz-black);
 }
+.volumo {
+    color: var(--volumo-green);
+}
 
 /* Makes it where you only have to define the color with the provider namespace */
 .provider:not(.selected):not(:hover) {
