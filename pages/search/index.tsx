@@ -18,8 +18,9 @@ async function getItems(query, provider) {
         let errorData: null | SAMBLApiError = null
         try {
             errorData = await response.json() as SAMBLApiError
+            console.log(errorData);
         } catch {}
-        throw new Error("Error fetching artist data: " + errorData?.details || response.statusText);
+        throw new Error(`Error fetching artist data: ${errorData?.details ? errorData?.details : errorData?.error ? errorData?.error : response.statusText}`);
     }
 }
 
