@@ -18,6 +18,7 @@ Streaming Artist MusicBrainz Lookup
 | Qobuz | ❌️ | ✅ | ✅ | ✅ | ✅ |
 | Naver VIBE | ❌️ | ❌️ | ✅ | ✅ | ✅ |
 | Discogs | ❌️ | ✅ | ✅ | ✅ | ✅ |
+| Volumo | ❌️ | ✅ | ✅ | ✅ | ✅ |
 
 ### MetaBrainz Thread:
 
@@ -65,6 +66,7 @@ Generation of the API docs should be automated with a swagger UI at some point, 
 | Qobuz | qobuz |
 | Naver VIBE | naver |
 | Discogs | discogs |
+| Volumo | volumo |
 
 
 ### Supported API endpoints
