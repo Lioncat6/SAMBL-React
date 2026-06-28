@@ -17,9 +17,9 @@ function parseUrl(url: string): UrlData | null {
 function createUrl(type: UrlType, id: string, mbTypes?: number[]): ExternalUrlData {
     const mbUrlTypes: Record<UrlType, number[]> = {
         "artist": [176, 978],
-        "album": [980, 74],
+        "album": [74, 980],
         "track": [254, 979],
-        "label": [959, 997],
+        "label": [959, 1005],
     }
     return {
         url: `https://www.volumo.com/${type}/${id}`,
