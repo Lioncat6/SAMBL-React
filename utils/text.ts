@@ -64,6 +64,30 @@ function formatDate(dateStr: string): string | null {
 	const yyyy = date.getFullYear();
 	return `${yyyy}-${mm}-${dd}`;
 }
+
+/**
+ * Gets the time in milliseconds since the Unix epoch for a given date string.
+ *
+ * @param {string | null} dateStr The date string to convert.
+ * @returns {number} The time in milliseconds since the Unix epoch.
+ */
+function getIntTime(dateStr: string | null): number {
+    const date = new Date(dateStr || "");
+    return isNaN(date.getTime()) ? 0 : date.getTime();
+}
+
+/**
+ * Compares two dates and returns a value indicating their relative order.
+ * @param date1 a
+ * @param date2 b
+ * @returns {number} The result of the date comparison.
+ */
+function compareDates(date1: string, date2: string, ascending: boolean = false): number  {
+	const intTime1 = getIntTime(date1);
+	const intTime2 = getIntTime(date2);
+	return ascending ? intTime1 - intTime2 : intTime2 - intTime1;
+}
+
 /**
  * Handles ISO 8601 duration strings like "PT4M8S".
  *
@@ -236,7 +260,9 @@ const text = {
 	padBarcode,
 	truncateToTwo,
 	displayDuration,
-	parseDuration
+	parseDuration,
+	compareDates,
+	getIntTime
 };
 
 export default text;

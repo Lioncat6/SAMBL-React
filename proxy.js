@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-export function middleware(request) {
+export function proxy(request) {
     const url = new URL(request.url)
     const spotifyParams = ["spid", "spotifyId"]
     const spotifyRedirect = spotifyParams.find(param => url.searchParams.has(param))

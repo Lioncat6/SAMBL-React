@@ -103,6 +103,16 @@ function DiscogsUrlContainer({ id, url }) {
 	);
 }
 
+function VolumoUrlContainer({ id, url }) {
+	return (
+		<div className={styles.volumoUrlContainer}>
+			<a id="volumoURL" target="_blank" href={url || "https://www.volumo.com/artist/" + id}>
+				<img alt="Volumo Icon" className={styles.volumoIcon} src="../assets/images/Volumo_icon.svg" />
+			</a>
+		</div>
+	);
+}
+
 function UrlContainer({ id, provider, url }: { id?: string | number; provider: string; url?: string }) {
 	id = id?.toString();
 	switch (provider) {
@@ -126,6 +136,8 @@ function UrlContainer({ id, provider, url }: { id?: string | number; provider: s
 			return <QobuzUrlContainer url={url} id={id} />;
 		case "discogs":
 			return <DiscogsUrlContainer url={url} id={id} />;
+		case "volumo":
+			return <VolumoUrlContainer url={url} id={id} />;
 		default:
 			return null;
 	}

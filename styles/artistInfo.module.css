@@ -2,7 +2,8 @@
 .mbIcon,
 .iconWrapper,
 .deezerIcon,
-.discogsIcon {
+.discogsIcon,
+.volumoIcon {
 	width: 40px;
 	max-height: 10vh;
 }
@@ -28,7 +29,8 @@
 .spURLContainer,
 .applemusicURLContainer,
 .qobuzUrlContainer,
-.discogsUrlContainer {
+.discogsUrlContainer,
+.volumoUrlContainer {
 	display: flex;
 	flex-direction: row;
 	padding: 1.2vh 2px 0 0;
@@ -56,7 +58,8 @@
 .naverUrlContainer a,
 .qobuzUrlContainer a,
 .discogsUrlContainer a,
-.urlContainer a {
+.urlContainer a,
+.volumoUrlContainer a {
 	padding: 0 3px 0 0;
 }
 

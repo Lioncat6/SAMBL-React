@@ -104,13 +104,13 @@ async function getToken(): Promise<string> {
 	const homeBody = await homeRes.text();
 	const scriptMatch = homeBody.match(/<script.*type="module".*src="(.+?)"/);
 	if (!scriptMatch) throw new Error("Could not locate script");
-
 	const scriptRes = await fetch(new URL(scriptMatch[1], "http://music.apple.com"), {
 		headers: HEADERS
 	});
-
+	
 	const scriptBody = await scriptRes.text();
-	const tokenMatch = scriptBody.match(/(?<=")eyJhbGciOiJ.+?(?=")/);
+	const tokenRegex = process.env.APPLEMUSIC_TOKEN ? new RegExp(process.env.APPLEMUSIC_TOKEN) : /(?<=")eyJ0eXAiOiJ.+?(?=")/;
+	const tokenMatch = scriptBody.match(tokenRegex);
 	if (!tokenMatch) throw new Error("Could not locate token");
 
 	const token = tokenMatch[0];

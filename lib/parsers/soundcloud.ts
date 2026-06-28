@@ -20,9 +20,9 @@ function createUrl (type: UrlType, id:string, mbTypes: number[]): ExternalUrlDat
 }
 
 function parseUrl (url:string): UrlData | null {
-  const setRegex = /soundcloud\.com\/[^\/]*\/sets\/([^\/]*)/
-  const trackRegex = /soundcloud\.com\/[^\/]*\/([^\/]*)/
-  const artistRegex = /soundcloud\.com\/([^\/]*)/
+  const setRegex = /soundcloud\.com\/[^\/]*\/sets\/([^\/]+)/
+  const trackRegex = /soundcloud\.com\/[^\/]*\/([^\/]+)/
+  const artistRegex = /soundcloud\.com\/([^\/]+)/
   url = url.replace(/www\./, '')
   if (url.match(setRegex)) {
     return {

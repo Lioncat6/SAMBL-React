@@ -485,7 +485,7 @@ export default function Artist({ artist, error }: { artist: ArtistPageData, erro
 		setStatusText("Refreshing albums...");
 		loadArtistAlbums && await loadArtistAlbums(true);
 	}
-	const aiTags = ["ai", "ai-generated", "ai generated"]
+	const aiTags = ["ai", "ai-generated", "ai generated", "ai slop", "ai music"]
 	const isAi = artist?.mbData?.genres?.some((tag) => aiTags.includes(tag));
 
 	return (

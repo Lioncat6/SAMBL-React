@@ -7,13 +7,18 @@ Streaming Artist MusicBrainz Lookup
 
 | Provider | ISRC Lookup | UPC Lookup | Entity Lookup | Artist Search | Album Matching |
 |:---:|:---:|:---:|:---:|:---:|:---:|
-| MusicBrainz | ✅ | ✅ | ✅ | ❌ | N/A |
+| MusicBrainz | ✅ | ✅ | ✅ | ⚠️ | N/A |
 | Spotify | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Apple Music | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Deezer | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Tidal | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Bandcamp | ⚠️ | ⚠️ | ✅ | ✅ | ✅ |
 | MusixMatch | ✅ | ❌ | ❌ | ❌ | ❌ |
 | SoundCloud | ❌️ | ❌️ | ✅️ | ✅️ | ✅️ |
+| Qobuz | ❌️ | ✅ | ✅ | ✅ | ✅ |
+| Naver VIBE | ❌️ | ❌️ | ✅ | ✅ | ✅ |
+| Discogs | ❌️ | ✅ | ✅ | ✅ | ✅ |
+| Volumo | ❌️ | ✅ | ✅ | ✅ | ✅ |
 
 ### MetaBrainz Thread:
 
@@ -24,33 +29,48 @@ https://community.metabrainz.org/t/sambl-spotify-artist-musicbrainz-lookup/71655
 ```
 REACT_APP_VERSION=$npm_package_version
 REACT_APP_NAME=$npm_package_name
+NEXT_PUBLIC_VERSION=$npm_package_version
 SPOTIFY_CLIENT_ID=<Spotify Client ID>
 SPOTIFY_CLIENT_SECRET=<Spotify Client Secret>
 SPOTIFY_REDIRECT_URI=<Spotify Redirect URI>
+SPOTIFY_ALTERNATE=<This should be unset unless you know what you're doing>
 CONTACT_INFO=<Contact email>
 MUSIXMATCH_API_KEY=<MusixMatch Api Key or browser cookie [Optional]>
 MUSIXMATCH_ALTERNATE=<Bool 1 or 0>
 NEXT_PUBLIC_MASTODON_URL=<Mastodon URL [Optional]>
 TIDAL_CLIENT_ID=<Tidal Client ID>
 TIDAL_CLIENT_SECRET=<Tidal Client Secret>
+SOUNDCLOUD_CLIENT_ID=<Soundcloud Client ID>
+SOUNDCLOUD_OAUTH_TOKEN=<Soundcloud Oath Token>
+NEXT_PUBLIC_DISABLED_PROVIDERS=<Providers to disable>
+DISCOGS_CONSUMER_KEY=<Discogs Consumer Key>
+DISCOGS_CONSUMER_SECRET=<Discogs Consumer Secret>
+APPLEMUSIC_TOKEN=<Token Regex>
 ```
 * The Spotify Redirect URI does not need to be a valid URL, but must match your Spotify developer application
 * The contact email is for MusicBrainz's api requirements
 * MUSIXMATCH_ALTERNATE allows you to use browser cookies for an alternate authentication method
 
-## API Docs
+## API Docs (Outdated)
+Generation of the API docs should be automated with a swagger UI at some point, but for now you should just read the source for each endpoint [`/pages/api/`](pages/api/)
 
 ### Providers (See supported features above)
 | Provider | Namespace |
 |:---:|:---:|
 | Musicbrainz | musicbrainz |
 | Spotify | spotify |
+| Apple Music | applemusic |
 | Deezer | deezer |
 | Tidal | tidal |
 | MusixMatch | musixmatch |
+| Qobuz | qobuz |
+| Naver VIBE | naver |
+| Discogs | discogs |
+| Volumo | volumo |
 
-### Officially Supported API endpoints
-These API endpoints were verified against the server source and will be kept stable for public use.
+
+### Supported API endpoints
+These API endpoints will be kept stable for public use.
 
 The API root is `/api/` (Ex: `https://sambl.lioncat6.com/api/find`)
 
@@ -76,8 +96,8 @@ The API root is `/api/` (Ex: `https://sambl.lioncat6.com/api/find`)
 
 ---
 
-### Unsupported / internal-but-public API endpoints
-These endpoints are used internally by SAMBL and are publicly accessible; they may change.
+### Unsupported API endpoints
+These endpoints are used internally by SAMBL and are publicly accessible but they may change unexpectedly.
 
 - `/getArtistAlbums`
   - `provider_id` (string) **[Required]**
