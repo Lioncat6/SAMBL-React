@@ -350,9 +350,9 @@ async function getArtistAlbums(artistId: string, offset: number = 0, limit: numb
 function formatAlbumGetData(data: ExtendedAlbumFilterResponse): RawAlbumData {
     return {
         albums: data.items,
-        count: data.limit + data.offset,
+        count: Number(data.limit) + Number(data.offset),
         current: data.offset,
-        next: data.items.length == data.limit ? String(Number(data.offset + data.limit)) : null
+        next: data.items.length == data.limit ? String(Number(data.offset) + Number(data.limit)) : null
     }
 }
 
