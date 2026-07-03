@@ -352,7 +352,8 @@ function formatAlbumGetData(data: ExtendedAlbumFilterResponse): RawAlbumData {
         albums: data.items,
         count: Number(data.limit) + Number(data.offset),
         current: data.offset,
-        next: data.items.length == data.limit ? String(Number(data.offset) + Number(data.limit)) : null
+        next: data.items.length == data.limit ? String(Number(data.offset) + Number(data.limit)) : null,
+        max: 1000
     }
 }
 

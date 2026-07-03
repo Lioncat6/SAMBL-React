@@ -393,7 +393,7 @@ async function getArtistAlbums(id: string, offset: number = 1, limit: number = 9
         offset = 1
     }
     try {
-        const response = await fetch(v1Url + `/artist/${id}/albums.json?display=9999&start=1`)
+        const response = await fetch(v1Url + `/artist/${id}/albums.json?display=99999&start=1`)
         if (response.ok) {
             let artistAlbums = (await response.json() as NaverResponse<NaverArtistAlbumsResult>).response.result;
             let albums = artistAlbums.albums
@@ -402,7 +402,7 @@ async function getArtistAlbums(id: string, offset: number = 1, limit: number = 9
                 if (albumsIdMap.has(album.albumId)) return;
                 albumsIdMap.set(album.albumId, album);
             });
-            const trackResponse = await fetch(v1Url + `/artist/${id}/tracks.json?display=9999&start=1`)
+            const trackResponse = await fetch(v1Url + `/artist/${id}/tracks.json?display=99999&start=1`)
             function mapTracks(tracks: NaverTrack[]) {
                 tracks.forEach(track => {
                     const mappedAlbum = albumsIdMap.get(track.album.albumId)
@@ -418,7 +418,7 @@ async function getArtistAlbums(id: string, offset: number = 1, limit: number = 9
                 let tracks = (await trackResponse.json() as NaverResponse<NaverArtistTracksResult>).response.result.tracks
                 mapTracks(tracks);
             }
-            const featuredTrackResponse = await fetch(v1Url + `/artist/${id}/tracks.json?display=9999&start=1&type=PARTICIPATION`)
+            const featuredTrackResponse = await fetch(v1Url + `/artist/${id}/tracks.json?display=99999&start=1&type=PARTICIPATION`)
             if (featuredTrackResponse.ok) {
                 let tracks = (await featuredTrackResponse.json() as NaverResponse<NaverArtistTracksResult>).response.result.tracks
                 mapTracks(tracks);

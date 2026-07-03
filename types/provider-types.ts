@@ -125,6 +125,7 @@ export class PagingData {
     count: number | null;
     current: string | number | null;
     next: string | null;
+    max?: number | null;
 }
 
 export class RawAlbumData extends PagingData {

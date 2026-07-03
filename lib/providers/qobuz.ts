@@ -363,7 +363,8 @@ function formatAlbumGetData(rawData: QobuzArtist): RawAlbumData {
       albums: albums.items,
       count: albums.total,
       current: albums.offset,
-      next: next < albums.total ? String(next) : null
+      next: next < albums.total ? String(next) : null,
+      max: 500
     }
   }
 }

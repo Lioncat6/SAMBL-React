@@ -284,6 +284,7 @@ function formatAlbumGetData(rawData: SpotifyApi.ArtistsAlbumsResponse): RawAlbum
 		current: rawData.offset,
 		next: rawData.next ? rawData.next.match(nextIntRegex)?.[1] || null : null,
 		albums: rawData.items,
+		max: 50
 	};
 }
 
