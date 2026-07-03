@@ -8,6 +8,8 @@ import { SearchBoxType } from "../types/component-types";
 import toasts from "../utils/toasts";
 import { ArtistLookupData, SAMBLApiError } from "../types/api-types";
 import { PiBoatDuotone } from "react-icons/pi";
+import parsers from "../lib/parsers/parsers";
+import { ActionButton } from "./buttons";
 function SearchBox() {
 	const [loadingState, setLoadingState] = useState(false);
 	const [inputValue, setInputValue] = useState("");
@@ -33,11 +35,13 @@ function SearchBox() {
 				checkArtist(query);
 			} else if (spfPattern.test(query) || uuidPattern.test(query)) {
 				toasts.warn("This type of lookup is currently unsupported. Please enter a provider link instead!");
+				setLoadingState(false);
 			} else {
 				router.push(`/search?query=${encodeURIComponent(query)}&provider=${settings.currentProvider}`);
 			}
 		} else {
 			toasts.warn("Please enter a query");
+			setLoadingState(false);
 		}
 	}
 
@@ -93,18 +97,7 @@ function SearchBox() {
 				value={inputValue}
 				onChange={e => setInputValue(e.target.value)}
 			/>
-			<button type="button" className={styles.searchButton} id="searchEnter" onClick={handleSearch}>
-				{loadingState ? (
-					<div className="lds-ellipsis">
-						<div></div>
-						<div></div>
-						<div></div>
-						<div></div>
-					</div>
-				) : (
-					"Search"
-				)}
-			</button>
+			<ActionButton type="search" onClick={handleSearch} isLoading={loadingState} />
 		</>
 	);
 }
@@ -150,9 +143,80 @@ function FindBox() {
 				placeholder="Find by ISRC, MBID, Barcode..."
 				defaultValue={""}
 			/>
-			<button type="button" className={styles.findButton} onClick={handleSearch}>
-				<><FaMagnifyingGlass /> Find</>
-			</button>
+			<ActionButton type="find" onClick={handleSearch} />
+		</>
+	);
+}
+
+function LookupBox() {
+	const [loadingState, setLoadingState] = useState(false);
+	const [inputValue, setInputValue] = useState("");
+	const router = useRouter();
+
+	useEffect(() => {
+		// Populate box if URL has a query param
+		if (router && router.query && router.query.url) {
+			setInputValue(Array.isArray(router.query.url) ? router.query.url[0] : router.query.url);
+		}
+	}, [router.query]);
+
+	async function handleSearch() {
+		const query = inputValue.trim();
+		setLoadingState(true);
+		if (query !== "") {
+			let URLInfo = parsers.getUrlInfo(query);
+			if (URLInfo && URLInfo.type === "album") {
+				let parser = parsers.getParser(URLInfo.provider);
+				let albumUrl = parser.createUrl('album', String(URLInfo.id));
+				router.push(`/seed?url=${encodeURIComponent(albumUrl.url)}`);
+			} else {
+				toasts.warn("Please enter a valid album URL");
+				setLoadingState(false);
+			}
+		} else {
+			toasts.warn("Please enter a query");
+			setLoadingState(false);
+		}
+	}
+
+	useEffect(() => {
+		// Handle enter key
+		const lookupBox = document.getElementById("lookupBox");
+		if (lookupBox) {
+			lookupBox.focus();
+		}
+		function handleKeyDown(e) {
+			if (e.keyCode === 13 && document.activeElement === lookupBox) {
+				e.preventDefault();
+				handleSearch();
+			}
+		}
+		document.addEventListener("keydown", handleKeyDown);
+		return () => {
+			document.removeEventListener("keydown", handleKeyDown);
+		};
+	}, [inputValue]);
+
+	useEffect(() => {
+		// Handle resetting loading state
+		const handleRouteChange = () => setLoadingState(false);
+		router.events.on("routeChangeComplete", handleRouteChange);
+		return () => {
+			router.events.off("routeChangeComplete", handleRouteChange);
+		};
+	}, [router.events]);
+
+	return (
+		<>
+			<textarea
+				id="lookupBox"
+				className={styles.searchBox}
+				rows={1}
+				placeholder="Enter a supported release URL..."
+				value={inputValue}
+				onChange={e => setInputValue(e.target.value)}
+			/>
+			<ActionButton type="lookup" onClick={handleSearch} isLoading={loadingState} />
 		</>
 	);
 }
@@ -160,5 +224,5 @@ function FindBox() {
 //TODO: refactor to remove duplication
 
 export default function Box({ type = "search" }: { type?: SearchBoxType}) {
-	return <>{type == "find" ? <FindBox /> : <SearchBox />}</>;
+	return <>{type == "find" ? <FindBox /> : type == "lookup" ? <LookupBox /> : <SearchBox />}</>;
 }

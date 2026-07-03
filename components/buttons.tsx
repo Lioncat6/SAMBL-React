@@ -8,6 +8,8 @@ import editUrlBuilder from "../utils/editUrlBuilder";
 import { DeepSearchData } from "../types/api-types";
 import { ArtistObject } from "../types/provider-types";
 import DeepSearchMenuPopup from "./Popups/DeepSearchMenu";
+import { AggregatedAlbum } from "../types/aggregated-types";
+import { FaMagnifyingGlass } from "react-icons/fa6";
 
 export default function AddButtons({ artist }: { artist: ArtistObject }) {
 	let addUrl = editUrlBuilder.buildAddArtistEditUrl(artist);
@@ -30,5 +32,56 @@ export default function AddButtons({ artist }: { artist: ArtistObject }) {
 				data={artist}
 			/>
 		</>
+	);
+}
+
+function LookupButtonInner(){
+	return <><FaMagnifyingGlass /> Lookup</>
+}
+
+function FindButtonInner(){
+	return <><FaMagnifyingGlass /> Find</>
+}
+
+function SearchButtonInner(){
+	return <>Search</>
+}
+
+export function ActionButton({ type, onClick, isLoading, data }: { type: "lookup" | "find" | "search", onClick: () => void, isLoading?: boolean, data?: any}) {
+	let buttonContent = <>Enter</>;
+	let className = styles.actionButton;
+	let buttonId = "actionButton";
+
+	switch (type) {
+		case "lookup":
+			buttonContent = <LookupButtonInner />;
+			className = styles.lookupButton;
+			buttonId = "lookupButton";
+			break;
+		case "find":
+			buttonContent = <FindButtonInner />;
+			className = styles.findButton;
+			buttonId = "findButton";
+			break;
+		case "search":
+			buttonContent = <SearchButtonInner />;
+			className = styles.searchButton;
+			buttonId = "searchEnter";
+			break;
+	}
+
+	return (
+		<button type="button" className={className} id={buttonId} onClick={onClick}>
+			{isLoading ? (
+				<div className="lds-ellipsis">
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+				</div>
+			) : (
+				buttonContent
+			)}
+		</button>
 	);
 }
