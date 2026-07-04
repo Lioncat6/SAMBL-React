@@ -3,7 +3,7 @@ import styles from "../styles/header.module.css";
 import dynamic from "next/dynamic";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 
-import { FaMagnifyingGlass, FaGear } from "react-icons/fa6";
+import { FaMagnifyingGlass, FaGear, FaSeedling } from "react-icons/fa6";
 import { FaTools, FaUser } from "react-icons/fa";
 import { TbTableExport, TbPackageExport } from "react-icons/tb";
 
@@ -53,6 +53,11 @@ export default function Header() {
 							<MenuItem>
 								<Link className={styles.activeItem} href="/find">
 									<FaMagnifyingGlass /> Find
+								</Link>
+							</MenuItem>
+							<MenuItem>
+								<Link className={styles.activeItem} href="/seed">
+									<FaSeedling  /> Seed
 								</Link>
 							</MenuItem>
 						</MenuItems>

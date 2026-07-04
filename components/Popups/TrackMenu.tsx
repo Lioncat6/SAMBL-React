@@ -251,7 +251,7 @@ function TrackItem({ index, track, album, isrcSource, highlight }: { index: stri
 	);
 }
 
-function TrackMenu({ data, refresh, close }: { data: AggregatedAlbum, refresh: () => void, close?: () => void }) {
+export function TrackMenuInner({ data, refresh }: { data: AggregatedAlbum, refresh: () => void, close?: () => void }) {
 	let trackData: TrackObject[] | AggregatedTrack[] = [];
 	let trackDataSource: ProviderNamespace | null = null as ProviderNamespace | null;
 	let hasFullTrackData: boolean = false;
@@ -269,15 +269,7 @@ function TrackMenu({ data, refresh, close }: { data: AggregatedAlbum, refresh: (
 	}
 	getTrackData();
 	return (
-		<>
-			<div className={styles.trackBg} style={{ "--background-image": `url(${data.imageUrl})` } as React.CSSProperties} >
-				{" "}
-				<div className={styles.header}>
-					{" "}
-					<MdOutlineAlbum /> Tracks for {data.name}
-				</div>
-			</div>
-			<AlbumDetails data={data} />
+		<><AlbumDetails data={data} />
 			{!hasFullTrackData && (
 				<div className={styles.noAggregatedTracksWarning}>
 					<MdOutlineWarningAmber /> {data.status == "red" && trackData.length > 0 ? "Add this album to musicbrainz to see full track data" : <><button className={styles.textButton} onClick={() => (refresh())} title={"Refresh Album"}>Refresh</button> this album to see full track data</>}
@@ -299,7 +291,21 @@ function TrackMenu({ data, refresh, close }: { data: AggregatedAlbum, refresh: (
 
 				})}
 				<AlbumFooter data={data} />
+			</div></>
+	);
+}
+
+export function TrackMenu({ data, refresh, close }: { data: AggregatedAlbum, refresh: () => void, close?: () => void }) {
+	return (
+		<>
+			<div className={styles.trackBg} style={{ "--background-image": `url(${data.imageUrl})` } as React.CSSProperties} >
+				{" "}
+				<div className={styles.header}>
+					{" "}
+					<MdOutlineAlbum /> Tracks for {data.name}
+				</div>
 			</div>
+			<TrackMenuInner data={data} refresh={refresh} />
 			<div className={styles.actions}>
 				<button className={styles.button} onClick={close}>
 					Close

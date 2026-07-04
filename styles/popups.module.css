@@ -500,6 +500,7 @@
 .artists,
 .releaseDate,
 .barcode,
+.albumType,
 .alb,
 .genres {
   text-align: left;
@@ -555,6 +556,7 @@
   text-overflow: ellipsis;
   color: var(--foreground-secondary);
   font-size: small;
+  text-align: left;
 }
 
 .trackInfo {

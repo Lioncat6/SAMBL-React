@@ -61,7 +61,7 @@ export class ArtistPageData extends AggregatedArtist {
     viewedAlbum?: AggregatedAlbum | null
 }
 
-export type SearchBoxType = "search" | "find";
+export type SearchBoxType = "search" | "find" | "lookup";
 
 export class ProviderDisplay {
     name: string;

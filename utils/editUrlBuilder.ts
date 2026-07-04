@@ -1,3 +1,4 @@
+import { AggregatedAlbum } from "../types/aggregated-types";
 import { DeepSearchData } from "../types/api-types";
 import { DeepSearchSelection } from "../types/component-types";
 import { ArtistObject, PartialArtistObject } from "../types/provider-types";
@@ -21,9 +22,15 @@ function buildDeepSearchEditUrl(data: DeepSearchSelection): string {
     return `https://musicbrainz.org/artist/${data.mbid}/edit?${urls}&edit-artist.edit_note=${editNote}`
 }
 
+function buildSeedReleaseEditUrl(data: AggregatedAlbum): string {
+    let editNote = "placeholder";
+    return '';
+}
+
 const editUrlBuilder = {
     buildAddArtistEditUrl,
-    buildDeepSearchEditUrl
+    buildDeepSearchEditUrl,
+    buildSeedReleaseEditUrl
 }
 
 export default editUrlBuilder;

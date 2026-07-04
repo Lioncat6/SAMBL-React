@@ -23,13 +23,15 @@
 .searchButton,
 .findButton,
 .lookupButton,
-.actionButton {
+.actionButton,
+.seedButton {
 	color: #fff;
 	border: none;
 	padding: 10px 20px;
 	font-size: 16px;
 	border-radius: 5px;
 	cursor: pointer;
+    margin-bottom: 10px;
 }
 
 .searchButton {
@@ -54,4 +56,12 @@
 
 .lookupButton:hover {
 	background-color: #218838;
+}
+
+.seedButton {
+    background-color: #0081c7;
+}
+
+.seedButton:hover {
+    background-color: #006297;
 }

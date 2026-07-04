@@ -1,0 +1,11 @@
+.albumContainer {
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 224px);
+}
+
+@media (max-height: 600px) {
+  .albumContainer {
+    height: calc(100% - 100px);
+  }
+}
