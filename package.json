@@ -10,6 +10,7 @@
 	},
 	"dependencies": {
 		"@headlessui/react": "^2.2.9",
+		"@kellnerd/musicbrainz": "npm:@jsr/kellnerd__musicbrainz@^0.4.2",
 		"@lionralfs/discogs-client": "^4.1.4",
 		"@tidal-music/api": "^0.31.0",
 		"@tidal-music/auth": "^1.6.1",
