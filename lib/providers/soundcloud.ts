@@ -19,6 +19,7 @@ import Soundcloud, {
   SoundcloudPlaylist
 } from 'soundcloud.ts'
 import parsers from '../parsers/parsers'
+import medium from '../../utils/medium'
 
 const namespace = 'soundcloud'
 
@@ -260,7 +261,7 @@ function formatAlbumObject(rawAlbum: SoundcloudPlaylist | SoundcloudTrack): Albu
     trackCount: 'track_count' in rawAlbum && rawAlbum.track_count || 1,
     albumType: 'set_type' in rawAlbum && rawAlbum.set_type || 'single',
     upc: getUPCFromAlbum(rawAlbum),
-    albumTracks: tracks,
+    mediums: medium.convertTrackList(tracks),
     genres: getGenresFromAlbum(rawAlbum),
     copyrights: getCopyrightsFromAlbum(rawAlbum),
     labels: getLabelsFromAlbum(rawAlbum),
@@ -273,20 +274,25 @@ interface SoundcloudTrackWithAlbumInfo extends SoundcloudTrack {
   track_number?: number;
 }
 
-function getAlbumTracks(album) {
-  let tracks = album.tracks
-  if (tracks) {
+interface SoundcloudPlaylistWithAlbumInfo extends SoundcloudPlaylist {
+  albumName?: string;
+  track_number?: number;
+}
+
+function getAlbumTracks(album: SoundcloudPlaylist | SoundcloudTrack): TrackObject[] {
+  if ("tracks" in album && album.tracks) {
+    let tracks = album.tracks;
+    let newTracks: SoundcloudTrackWithAlbumInfo[] = []
     for (let trackNumber = 0; trackNumber < tracks.length; trackNumber++) {
-      tracks[trackNumber].albumName = album.title
-      tracks[trackNumber].track_number = trackNumber + 1
+      newTracks[trackNumber].albumName = album.title
+      newTracks[trackNumber].track_number = trackNumber + 1
     }
-    tracks = tracks.map(formatTrackObject)
-    return tracks
+    return newTracks.map(formatTrackObject)
   } else if (album.title) {
-    album.albumName = album.title
-    album.track_number = 1
-    tracks = [formatTrackObject(album)]
-    return tracks
+    let newTrack: SoundcloudPlaylistWithAlbumInfo = album as SoundcloudPlaylistWithAlbumInfo;
+    newTrack.albumName = album.title
+    newTrack.track_number = 1
+    return [formatTrackObject(newTrack)]
   }
   return []
 }
@@ -305,7 +311,8 @@ function getAlbumUPCs(album) {
   return upc ? [upc] : []
 }
 
-function formatTrackObject(track: SoundcloudTrackWithAlbumInfo): TrackObject {
+function formatTrackObject(track: SoundcloudTrackWithAlbumInfo | SoundcloudPlaylistWithAlbumInfo): TrackObject {
+  let publisherMetadata = "publisher_metadata" in track ? track.publisher_metadata : null
   return {
     provider: namespace,
     id: track.urn || `soundcloud:track:${track.id}`,
@@ -313,14 +320,14 @@ function formatTrackObject(track: SoundcloudTrackWithAlbumInfo): TrackObject {
     url: track.permalink_url?.split('?')[0] ? createUrl("track", track.permalink_url?.split('?')[0]): null,
     imageUrl: getLargeImage(track.artwork_url),
     imageUrlSmall: getSmallImage(track.artwork_url),
-    albumName: track.albumName || track.publisher_metadata.album_title || track.publisher_metadata.release_title || null,
+    albumName: track.albumName || publisherMetadata?.album_title || publisherMetadata?.release_title || null,
     trackArtists: track.user ? [formatPartialArtistObject(track.user)] : [],
     artistNames: [track.user?.username],
     duration: track.duration,
     trackNumber: track.track_number || null,
     releaseDate: getReleaseDate(track),
-    isrcs: track.publisher_metadata?.isrc
-      ? [track.publisher_metadata?.isrc]
+    isrcs: publisherMetadata?.isrc
+      ? [publisherMetadata?.isrc]
       : [],
     type: "track"
   }

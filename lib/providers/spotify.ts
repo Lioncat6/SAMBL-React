@@ -1,4 +1,4 @@
-import { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities, LabelObject } from "../../types/provider-types";
+import { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities, LabelObject, MediumObject } from "../../types/provider-types";
 import logger from "../../utils/logger";
 import withCache from "../../utils/cache";
 import ErrorHandler from "../../utils/errorHandler";
@@ -331,7 +331,7 @@ function formatAlbumObject(album: SpotifyApi.SingleAlbumResponse): AlbumObject {
 		trackCount: album.total_tracks,
 		albumType: album.album_type,
 		upc: album.external_ids?.upc || null,
-		albumTracks: getAlbumTracks(album),
+		mediums: getAlbumMediums(album),
 		copyrights: formatCopyright(album),
 		labels: createLabels(album.label),
 		genres: album.genres,
@@ -358,17 +358,35 @@ export interface trackWithAlbumData extends ExtendedTrack {
 	release_date?: string
 }
 
-function getAlbumTracks(album: SpotifyApi.SingleAlbumResponse): TrackObject[] {
+function getAlbumMediums(album: SpotifyApi.SingleAlbumResponse): MediumObject[] {
 	let tracks: trackWithAlbumData[] = album.tracks?.items
+	let mediums: MediumObject[] = []
 	if (tracks) {
+		let medium: MediumObject = {
+			format: 'Digital Media',
+			number: 1,
+			tracks: []
+		}
+		
 		tracks.forEach((track) => {
 			track.imageUrl = getFullAlbumImageUrl(album.images[0]?.url);
 			track.imageUrlSmall = album.images[1]?.url || album.images[0]?.url || "";
 			track.albumName = album.name;
 			track.release_date = album.release_date
+			if (track.disc_number && track.disc_number != medium.number) {
+				mediums.push(medium);
+				medium = {
+					format: 'Digital Media',
+					number: track.disc_number,
+					tracks: []
+				}
+			}
+			medium.tracks.push(formatTrackObject(track));
 		});
-		const formattedTracks = tracks.map(formatTrackObject);
-		return formattedTracks;
+		if (medium.tracks.length > 0) {
+			mediums.push(medium);
+		}
+		return mediums;
 	}
 	return []
 }

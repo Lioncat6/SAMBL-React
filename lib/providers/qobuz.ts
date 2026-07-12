@@ -1,4 +1,4 @@
-import { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities, PartialProvider, ProviderNamespace, UrlType, RegexArtistUrlQuery, LabelObject } from "../../types/provider-types";
+import { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities, PartialProvider, ProviderNamespace, UrlType, RegexArtistUrlQuery, LabelObject, MediumObject } from "../../types/provider-types";
 import logger from "../../utils/logger";
 import withCache from "../../utils/cache";
 import parsers from "../parsers/parsers";
@@ -538,11 +538,29 @@ function getAlbumGenres(album: QobuzExtendedAlbum) {
   return [...new Set(genres)];
 }
 
-function getAlbumTracks(album: QobuzExtendedAlbum) {
+function getAlbumMediums(album: QobuzExtendedAlbum): MediumObject[] {
+  const mediums: MediumObject[] = [];
+  let medium: MediumObject = {
+    number: 1,
+    format: 'Digital Media',
+    tracks: []
+  };
   album.tracks?.items.forEach(track => {
     track.album = album
+    if (track.media_number && track.media_number != medium.number) {
+      mediums.push(medium);
+      medium = {
+        number: track.media_number,
+        format: 'Digital Media',
+        tracks: []
+      };
+    }
+    medium.tracks.push(formatTrackObject(track));
   });
-  return (album.tracks?.items.map(formatTrackObject) || [])
+  if (medium.tracks.length > 0) {
+    mediums.push(medium);
+  }
+  return mediums;
 }
 
 function getMaxImage(url: string): string {
@@ -568,7 +586,7 @@ function formatAlbumObject(rawAlbum: QobuzAlbum | QobuzPartialAlbum): AlbumObjec
     genres: getAlbumGenres(rawAlbum),
     imageUrl: getMaxImage(album.image?.small),
     imageUrlSmall: album.image.small,
-    albumTracks: getAlbumTracks(album)
+    mediums: getAlbumMediums(album)
   }
 }
 

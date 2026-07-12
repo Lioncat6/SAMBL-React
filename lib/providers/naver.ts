@@ -1,4 +1,4 @@
-import { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities, PartialProvider, ProviderNamespace, LabelObject } from "../../types/provider-types";
+import { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities, PartialProvider, ProviderNamespace, LabelObject, MediumObject } from "../../types/provider-types";
 import logger from "../../utils/logger";
 import withCache from "../../utils/cache";
 import parsers from "../parsers/parsers";
@@ -462,13 +462,37 @@ function formatAlbumObject(album: NaverAlbumWithTracks): AlbumObject {
         trackCount: album.trackTotalCount || null,
         albumType: album.trackTotalCount ? album.trackTotalCount > 1 ? "album" : "single" : null,
         upc: null,
-        albumTracks: album.tracks?.map(formatTrackObject) || [],
+        mediums: getAlbumMediums(album.tracks || []),
         imageUrl: album.imageUrl ? getFullImageUrl(album.imageUrl) : null,
         imageUrlSmall: album.imageUrl || null,
         genres: album.albumGenreList,
         labels: createLabels([album.agencyName, album.productionName]),
         copyrights: null,
     }
+}
+
+function getAlbumMediums(tracks: NaverAlbumTrack[]): MediumObject[] {
+    const mediums: MediumObject[] = [];
+    let medium: MediumObject = {
+        number: 1,
+        format: 'Digital Media',
+        tracks: []
+    };
+    tracks.forEach(track => {
+        if (track.discNumber && track.discNumber !== medium.number) {
+            mediums.push(medium);
+            medium = {
+                number: track.discNumber,
+                format: 'Digital Media',
+                tracks: []
+            };
+        }
+        medium.tracks.push(formatTrackObject(track));
+    });
+    if (medium.tracks.length > 0) {
+        mediums.push(medium);
+    }
+    return mediums;
 }
 
 function createLabels(labels: (string | null | undefined)[]): LabelObject[] | null {

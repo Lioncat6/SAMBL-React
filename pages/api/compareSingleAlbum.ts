@@ -13,6 +13,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
 		var { provider_id, provider, url, mbid, artist_id } = normalizeVars(req.query);
 
         const fetchISRCs: boolean = Object.prototype.hasOwnProperty.call(req.query, "fetchISRCs");
+        const compareArtists: boolean = Object.prototype.hasOwnProperty.call(req.query, "compareArtists");
 
         if (provider_id && !provider) {
             return res.status(400).json({ error: "Provider must be specified when provider_id is provided" } as SAMBLApiError);

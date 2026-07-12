@@ -8,6 +8,9 @@ export type FullProviderNamespace = "spotify" | "tidal" | "deezer" | "musicbrain
 
 export type ObjectType = "partialArtist" | "artist" | "album" | "track" | "label"
 
+/** Incomplete Format List */
+export type MediumFormat = "Digital Media" | "CD" | "Vinyl" | "Cassette"
+
 export class GenericObject {
     provider: ProviderNamespace;
     id: string | null;
@@ -55,7 +58,7 @@ export class AlbumObject extends ImageObject {
     trackCount: number | null;
     albumType: string | null;
     upc: string | null;
-    albumTracks: TrackObject[];
+    mediums: MediumObject[];
     labels: LabelObject[] | null;
     copyrights: string[] | null;
     genres: string[] | null;
@@ -94,8 +97,22 @@ export class ExtendedAlbumObject extends AlbumObject {
     externalUrls: string[] | null;
     hasImage: boolean;
     albumArtists: ArtistObject[];
-    override albumTracks: ExtendedTrackObject[];
+    override mediums: ExtendedMediumObject[];
 };
+
+export class MediumObject {
+    /**
+     * Medium format, if unspecified, assumed to be "Digital Media"
+     */
+    format?: MediumFormat | null;
+    name?: string | null;
+    tracks: TrackObject[];
+    number: number | null;
+}
+
+export class ExtendedMediumObject extends MediumObject {
+    tracks: ExtendedTrackObject[];
+}
 
 export class TrackObject extends ImageObject {
     provider: ProviderNamespace;
