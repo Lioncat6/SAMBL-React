@@ -17,6 +17,7 @@ export class GenericObject {
     name: string;
     url: ExternalUrlData | null;
     type: ObjectType
+    mbid?: string | null;
 }
 
 export class ImageObject extends GenericObject {
@@ -52,6 +53,7 @@ export class AlbumObject extends ImageObject {
     id: string;
     name: string;
     url: ExternalUrlData;
+    sourceArtist: ArtistObject;
     albumArtists: PartialArtistObject[];
     artistNames: string[];
     releaseDate: string | null;

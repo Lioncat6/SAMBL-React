@@ -1,4 +1,4 @@
-import { ExtendedAlbumObject, TrackObject, ArtistObject, AlbumObject, LabelObject } from "./provider-types";
+import { ExtendedAlbumObject, TrackObject, ArtistObject, AlbumObject, LabelObject, MediumObject } from "./provider-types";
 
 export type AlbumIssue = 'noUPC' | 'UPCDiff' | 'missingISRCs' | 'ISRCDiff' | 'trackDiff' | 'noDate' | 'dateDiff' | 'noCover';
 export type AlbumStatus = 'green' | 'orange' | 'blue' | 'red';
@@ -20,13 +20,6 @@ export class AggregatedArtist extends ArtistObject {
     mbid?: string | null;
 }
 
-export class AggregatedPartialArtist extends AggregatedArtist {
-    mbid?: string | null;
-}
-
-export class ArtistMatchedTrack extends TrackObject {
-    trackArtists: AggregatedPartialArtist[];
-}
 
 export class AggregatedLabel extends LabelObject {
     mbid?: string | null;
@@ -35,34 +28,27 @@ export class AggregatedLabel extends LabelObject {
 export class AlbumGroup {
     status: AlbumStatus;
     albumIssues: AlbumIssue[];
-    Albums: AlbumMatch[];
+    albums: AlbumMatch[];
+    aggregated: AggregatedAlbum | null;
 }
 
 export class AlbumMatch {
     type: AlbumMatchType;
-    
+    album: AlbumObject
 }
 
 export class AggregatedAlbum extends AlbumObject{
-    status: AlbumStatus;
-    albumIssues: AlbumIssue[];
-    mbid: string | null;
-    artistID: string | null;
-    artistMBID: string | null;
-    mbAlbum: AlbumObject | null;
-    aggregatedTracks: AggregatedTrack[];
-    albumArtists: AggregatedPartialArtist[];
-    albumTracks: ArtistMatchedTrack[];
-    labels: AggregatedLabel[] | null;
+    mediums: AggregatedMedium[];
+}
+
+export class AggregatedMedium extends MediumObject {
+    override tracks: AggregatedTrack[]
 }
 
 export class AggregatedTrack extends TrackObject {
     status: TrackStatus;
     trackIssues: TrackIssue[];
-    mbid?: string | null;
-    artistMBID: string | null;
     mbTrack: TrackObject | null;
-    trackArtists: AggregatedPartialArtist[];
 }
 
 export class BasicTrack {
