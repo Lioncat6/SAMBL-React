@@ -53,7 +53,6 @@ export class AlbumObject extends ImageObject {
     id: string;
     name: string;
     url: ExternalUrlData;
-    sourceArtist: ArtistObject;
     albumArtists: PartialArtistObject[];
     artistNames: string[];
     releaseDate: string | null;

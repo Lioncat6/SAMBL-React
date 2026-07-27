@@ -1,6 +1,7 @@
 import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities, LabelObject, } from "../../types/provider-types";
 import withCache from "../../utils/cache";
 import ErrorHandler from "../../utils/errorHandler";
+import medium from "../../utils/medium";
 import text from "../../utils/text";
 import parsers from "../parsers/parsers";
 import getVolumoGenre from "./lib/volumo-genres";
@@ -381,7 +382,7 @@ function formatAlbumObject(album: VolumoAlbum): AlbumObject {
         genres: getVolumoGenres(album.genres),
         copyrights: null,
         labels: getAlbumLabels(album),
-        albumTracks: tracksWithNumbers.map(formatTrackObject)
+        mediums: medium.convertTrackList(tracksWithNumbers.map(formatTrackObject))
     }
 }
 

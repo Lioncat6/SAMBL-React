@@ -39,6 +39,7 @@ export class AlbumMatch {
 
 export class AggregatedAlbum extends AlbumObject{
     mediums: AggregatedMedium[];
+    sourceArtist: ArtistObject;
 }
 
 export class AggregatedMedium extends MediumObject {
@@ -56,17 +57,8 @@ export class BasicTrack {
     isrcs: string[];
 }
 
-export class AggregatedAlbumData {
-    albumData: AggregatedAlbum[];
-    statusText: string;
-    green: number;
-    orange: number;
-    red: number;
-    total: number;
-}
-
 export class AggregatedData {
-    albumData: AggregatedAlbum[]
+    albumData: AlbumGroup[]
     statusText: string
     green: number
     orange: number
