@@ -1,9 +1,10 @@
-import { AlbumObject, ExtendedAlbumObject, ExtendedTrackObject, FullProviderNamespace, ProviderNamespace, TrackObject } from "../types/provider-types";
+import { AlbumObject, ExtendedAlbumObject, ExtendedTrackObject, FullProviderNamespace, PartialArtistObject, ProviderNamespace, TrackObject } from "../types/provider-types";
 import { AggregatedAlbum, AggregatedData, AggregatedTrack, AlbumIssue, AlbumStatus, BasicTrack, TrackIssue, TrackStatus } from "../types/aggregated-types";
 import text from "./text";
 import parsers from "../lib/parsers/parsers";
+import medium from "./medium";
 
-export default function processData(sourceAlbums: AlbumObject[], mbAlbums: ExtendedAlbumObject[], currentArtistMBID: string | null = null, currentArtistID: string | null = null, provider: ProviderNamespace, quick = false, full = false ): AggregatedData {
+export default function processData(sourceAlbums: AlbumObject[], providerAlbums: AlbumObject[] | undefined, targetAlbums: ExtendedAlbumObject[], provider: ProviderNamespace, currentArtist?: PartialArtistObject | null, quick = false, full = false ): AggregatedData {
 	let albumData: AggregatedAlbum[] = [];
 	let green = 0;
 	let red = 0;
@@ -14,41 +15,41 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 	const parser = parsers.getParser(provider);
 
 	// Map of Streaming service URLs to MB Albums
-	let mbIdAlbumMap: Map<string, ExtendedAlbumObject[]> = new Map();
+	let targetIdAlbumMap: Map<string, ExtendedAlbumObject[]> = new Map();
 
-	mbAlbums.forEach((mbAlbum) => {
+	targetAlbums.forEach((mbAlbum) => {
 		if (!mbAlbum?.externalUrls) return;
 		(mbAlbum.externalUrls || []).forEach((url) => {
 			const id = parser.parseUrl(url)?.id;
 			if (!id) return
-			if (!mbIdAlbumMap.has(id)) mbIdAlbumMap.set(id, []);
-			mbIdAlbumMap.get(id)?.push(mbAlbum);
+			if (!targetIdAlbumMap.has(id)) targetIdAlbumMap.set(id, []);
+			targetIdAlbumMap.get(id)?.push(mbAlbum);
 		});
 	});
 
 	//Map of UPCs to MB Albums
 
-	let mbUPCAlbumMap: Map<string, ExtendedAlbumObject[]> = new Map();
+	let targetUPCAlbumMap: Map<string, ExtendedAlbumObject[]> = new Map();
 
-	mbAlbums.forEach((mbAlbum) => {
+	targetAlbums.forEach((mbAlbum) => {
 		const rawUPC = mbAlbum.upc;
 		if (!rawUPC || text.removeLeadingZeros(rawUPC) == 0) return;
 		const formattedUPC = text.removeLeadingZeros(rawUPC).toString();
 		if (formattedUPC && formattedUPC != "") {
-			if (!mbUPCAlbumMap.has(formattedUPC)) mbUPCAlbumMap.set(formattedUPC, []);
-			mbUPCAlbumMap.get(formattedUPC)?.push(mbAlbum);
+			if (!targetUPCAlbumMap.has(formattedUPC)) targetUPCAlbumMap.set(formattedUPC, []);
+			targetUPCAlbumMap.get(formattedUPC)?.push(mbAlbum);
 		}
 	})
 
 	// Map of normalized release names
-	let mbNameAlbumMap: Map<string, ExtendedAlbumObject[]> = new Map();
+	let targetNameAlbumMap: Map<string, ExtendedAlbumObject[]> = new Map();
 
-	mbAlbums.forEach((mbAlbum) => {
+	targetAlbums.forEach((mbAlbum) => {
 		if (!mbAlbum?.name) return;
 		const normalizedTitle = text.normalizeText(mbAlbum.name || "");
 		if (normalizedTitle) {
-			if (!mbNameAlbumMap.has(normalizedTitle)) mbNameAlbumMap.set(normalizedTitle, []);
-			mbNameAlbumMap.get(normalizedTitle)?.push(mbAlbum);
+			if (!targetNameAlbumMap.has(normalizedTitle)) targetNameAlbumMap.set(normalizedTitle, []);
+			targetNameAlbumMap.get(normalizedTitle)?.push(mbAlbum);
 		}
 	});
 
@@ -69,12 +70,13 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 		let providerTrackCount = album.trackCount;
 		let providerAlbumType = album.albumType;
 		let providerBarcode = album.upc || null;
-		let providerTracks = album.albumTracks || [];
+		let providerMediums = album.mediums || [];
+		let providerTracks = album.mediums.flatMap(medium => medium.tracks) || [];
 		let providerGenres = album.genres;
 		let providerCopyrights = album.copyrights;
 		let providerLabels = album.labels;
 
-		let mbTrackCount: number | null = 0;
+		let targetTrackCount: number | null = 0;
 		let mbReleaseDate: string | null = "";
 		let mbid = "";
 		let finalHasCoverArt = false;
@@ -86,25 +88,26 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 		function tryMap(map: Map<String, ExtendedAlbumObject[]>, input: string, status: AlbumStatus) {
 			if (input && map.has(input)) {
 				const matches = map.get(input) || [];
-				for (const mbAlbum of matches) {
-					if (!mbAlbum?.name) continue;
-					const MBTrackCount = mbAlbum.trackCount;
-					const MBReleaseDate = mbAlbum.releaseDate;
-					const MBReleaseUPC = mbAlbum.upc;
-					const hasCoverArt = mbAlbum.hasImage;
-					let MBTracks = mbAlbum.albumTracks;
+				for (const targetAlbum of matches) {
+					if (!targetAlbum?.name) continue;
+					const localTargetTrackCount = targetAlbum.trackCount;
+					const localTargetReleaseDate = targetAlbum.releaseDate;
+					const targetReleaseUPC = targetAlbum.upc;
+					const hasCoverArt = targetAlbum.hasImage;
+					let targetMediums = targetAlbum.mediums;
+					let targetTracks = targetAlbum.mediums.flatMap(medium => medium.tracks);
 
 					albumStatus = status;
-					mbid = mbAlbum.id;
+					mbid = targetAlbum.id;
 					albumMBUrl = `https://musicbrainz.org/release/${mbid}`;
-					mbTrackCount = MBTrackCount;
-					mbReleaseDate = MBReleaseDate;
+					targetTrackCount = localTargetTrackCount;
+					mbReleaseDate = localTargetReleaseDate;
 					finalHasCoverArt = hasCoverArt;
-					finalTracks = MBTracks;
-					finalAlbum = mbAlbum;
-					mbBarcode = MBReleaseUPC;
+					finalTracks = targetTracks;
+					finalAlbum = targetAlbum;
+					mbBarcode = targetReleaseUPC;
 					// prefer the first exact URL match
-					if (mbAlbum.trackCount == providerTrackCount && (providerBarcode ? (MBReleaseUPC == providerBarcode): true)){
+					if (targetAlbum.trackCount == providerTrackCount && (providerBarcode ? (targetReleaseUPC == providerBarcode): true)){
 						break; //Break if match is good enough, keep looping if not
 					}
 				}
@@ -113,20 +116,20 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 
 		// Try URL map
 		const sourceUrl = providerUrl.url?.trim();
-		tryMap(mbIdAlbumMap, parser.parseUrl(sourceUrl)?.id || providerId, "green")
+		tryMap(targetIdAlbumMap, parser.parseUrl(sourceUrl)?.id || providerId, "green")
 
 		// Try UPC map
 		if (albumStatus == "red" && providerBarcode) {
 			const formattedUPC = text.removeLeadingZeros(providerBarcode).toString()
 			if (formattedUPC != ""){
-				tryMap(mbUPCAlbumMap, formattedUPC, "blue")
+				tryMap(targetUPCAlbumMap, formattedUPC, "blue")
 			}
 		}
 
 		// Try name map
 		if (albumStatus == "red") {
 			const normalized = text.normalizeText(providerAlbumName || "");
-			tryMap(mbNameAlbumMap, normalized, "orange")
+			tryMap(targetNameAlbumMap, normalized, "orange")
 		}
 		
 		// TODO: Figure out a way to do this client side
@@ -187,7 +190,7 @@ export default function processData(sourceAlbums: AlbumObject[], mbAlbums: Exten
 			} else if (!hasMatchingISRCs && aggregateTracks) {
 				albumIssues.push("ISRCDiff")
 			}
-			if (mbTrackCount && (mbTrackCount != providerTrackCount) && providerTrackCount != null) {
+			if (targetTrackCount && (targetTrackCount != providerTrackCount) && providerTrackCount != null) {
 				aggregateTracks = false;
 				albumIssues.push("trackDiff");
 			}
