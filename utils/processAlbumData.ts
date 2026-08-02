@@ -1,11 +1,12 @@
 import { AlbumObject, ExtendedAlbumObject, ExtendedTrackObject, FullProviderNamespace, PartialArtistObject, ProviderNamespace, TrackObject } from "../types/provider-types";
-import { AggregatedAlbum, AggregatedData, AggregatedTrack, AlbumIssue, AlbumStatus, BasicTrack, TrackIssue, TrackStatus } from "../types/aggregated-types";
+import { AggregatedAlbum, AggregatedData, AggregatedMedium, AggregatedTrack, AlbumGroup, AlbumIssue, AlbumMatch, AlbumStatus, BasicTrack, TrackIssue, TrackStatus } from "../types/aggregated-types";
 import text from "./text";
 import parsers from "../lib/parsers/parsers";
 import medium from "./medium";
 
-export default function processData(sourceAlbums: AlbumObject[], providerAlbums: AlbumObject[] | undefined, targetAlbums: ExtendedAlbumObject[], provider: ProviderNamespace, currentArtist?: PartialArtistObject | null, quick = false, full = false ): AggregatedData {
-	let albumData: AggregatedAlbum[] = [];
+export default function processData(sourceAlbums: AlbumObject[], providerAlbums: AlbumObject[] | undefined, targetAlbums: ExtendedAlbumObject[], provider: ProviderNamespace, currentArtist?: PartialArtistObject | null, quick = false, full = false): AggregatedData {
+	let albumData: AlbumGroup[] = [];
+	let sourceIdsArray: string[] = [];
 	let green = 0;
 	let red = 0;
 	let orange = 0;
@@ -68,6 +69,7 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 		let providerArtistNames = album.artistNames;
 		let providerReleaseDate = album.releaseDate;
 		let providerTrackCount = album.trackCount;
+		let providerMediumCount = album.mediums.length;
 		let providerAlbumType = album.albumType;
 		let providerBarcode = album.upc || null;
 		let providerMediums = album.mediums || [];
@@ -77,6 +79,7 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 		let providerLabels = album.labels;
 
 		let targetTrackCount: number | null = 0;
+		let targetMediumCount: number | null = 0;
 		let mbReleaseDate: string | null = "";
 		let mbid = "";
 		let finalHasCoverArt = false;
@@ -91,23 +94,25 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 				for (const targetAlbum of matches) {
 					if (!targetAlbum?.name) continue;
 					const localTargetTrackCount = targetAlbum.trackCount;
+					const localTargetMediumCount = targetAlbum.mediums.length;
 					const localTargetReleaseDate = targetAlbum.releaseDate;
 					const targetReleaseUPC = targetAlbum.upc;
 					const hasCoverArt = targetAlbum.hasImage;
-					let targetMediums = targetAlbum.mediums;
+					let targetMediums = targetAlbum.mediums;;
 					let targetTracks = targetAlbum.mediums.flatMap(medium => medium.tracks);
 
 					albumStatus = status;
 					mbid = targetAlbum.id;
 					albumMBUrl = `https://musicbrainz.org/release/${mbid}`;
 					targetTrackCount = localTargetTrackCount;
+					targetMediumCount = localTargetMediumCount;
 					mbReleaseDate = localTargetReleaseDate;
 					finalHasCoverArt = hasCoverArt;
 					finalTracks = targetTracks;
 					finalAlbum = targetAlbum;
 					mbBarcode = targetReleaseUPC;
 					// prefer the first exact URL match
-					if (targetAlbum.trackCount == providerTrackCount && (providerBarcode ? (targetReleaseUPC == providerBarcode): true)){
+					if (targetAlbum.trackCount == providerTrackCount && (providerBarcode ? (targetReleaseUPC == providerBarcode) : true)) {
 						break; //Break if match is good enough, keep looping if not
 					}
 				}
@@ -121,7 +126,7 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 		// Try UPC map
 		if (albumStatus == "red" && providerBarcode) {
 			const formattedUPC = text.removeLeadingZeros(providerBarcode).toString()
-			if (formattedUPC != ""){
+			if (formattedUPC != "") {
 				tryMap(targetUPCAlbumMap, formattedUPC, "blue")
 			}
 		}
@@ -131,7 +136,7 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 			const normalized = text.normalizeText(providerAlbumName || "");
 			tryMap(targetNameAlbumMap, normalized, "orange")
 		}
-		
+
 		// TODO: Figure out a way to do this client side
 		// const allProviders = providers.getAllProviders(["config"]);
 		// const alwaysBarcodeProviders: ProviderNamespace[] = allProviders.filter((provider) => provider.config.capabilities.upcs?.availability == "always").map((provider) => provider.namespace)
@@ -207,15 +212,16 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 		if (!finalTracks || !providerTracks || finalTracks.length == 0 || providerTracks.length == 0 || finalTracks.length != providerTracks.length || !finalTracks[0] || !providerTracks[0] || providerTracks.some((track) => !track.url)) {
 			aggregateTracks = false;
 		}
-		//Track Aggregation
-		let aggregatedTracks: AggregatedTrack[] = [];
+		//Track Aggregation3
+		let aggregatedMediums: AggregatedMedium[] = [];
+		let aggregatedTracks: AggregatedTrack[] = []; //TODO: Properly Aggregate mediums
 		if (aggregateTracks) {
 			for (let i = 0; i < providerTracks.length; i++) {
 				let trackIssues: TrackIssue[] = [];
 				let providerTrack = providerTracks[i];
 				let mbTrack = finalTracks[i] || null;
-				let status : TrackStatus = "orange";
-				
+				let status: TrackStatus = "orange";
+
 
 
 				// export type TrackIssue = 'noISRC' | 'ISRCDiff' | 'noUrl' | 'noDuration' | "artistDiff"
@@ -263,21 +269,32 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 				if (artistDiff) {
 					trackIssues.push("artistDiff");
 				}
-				
+
 				aggregatedTracks.push({
 					status: status,
 					...providerTrack,
 					mbid: mbTrack ? mbTrack.id : null,
-					artistMBID: currentArtistMBID,
+					sourceArtist: currentArtist || null,
 					mbTrack: mbTrack,
 					trackIssues: trackIssues,
 					isrcs: providerTrack.isrcs.length > 0 ? providerTrack.isrcs : mbTrack.isrcs.length > 0 ? mbTrack.isrcs : [],
-					trackNumber: providerTrack.trackNumber || mbTrack.trackNumber || Number(i)+1
+					trackNumber: providerTrack.trackNumber || mbTrack.trackNumber || Number(i) + 1
 				});
 			}
 		}
 
-		if (!albumData.find((a) => a.id === providerId)) { //Deduplicate
+		if (!sourceIdsArray.find((a) => a === provider+providerId)) { //Deduplicate; Will eventually support multiple providers in once comparison, so we probably don't want to have collisions if two different streaming services use the same ID for some reason
+			let albumMatches: AlbumMatch[] = []
+			if (finalAlbum) {
+				albumMatches.push({
+					type: "target",
+					album: finalAlbum
+				})
+			}
+			albumMatches.push({
+				type: "source",
+				album: album
+			})
 			total++;
 			if (albumStatus == "green") {
 				green++;
@@ -287,32 +304,33 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 				blue++;
 			} else {
 				red++;
-			} hasMatchingISRCs
+			}
+			sourceIdsArray.push(provider+providerId);
 			albumData.push({
-				provider: provider,
-				id: providerId,
-				name: providerAlbumName,
-				url: providerUrl,
-				imageUrl: providerAlbumImage,
-				imageUrlSmall: providerAlbumImageSmall,
-				albumArtists: providerAlbumArtists,
-				artistNames: providerArtistNames,
-				releaseDate: providerReleaseDate,
-				trackCount: providerTrackCount,
-				albumType: providerAlbumType,
-				status: albumStatus,
-				mbAlbum: finalAlbum,
-				upc: providerBarcode,
-				albumTracks: providerTracks,
-				mbid,
-				artistMBID: currentArtistMBID,
-				artistID: currentArtistID,
 				albumIssues,
-				aggregatedTracks: aggregatedTracks,
-				labels: providerLabels,
-				copyrights: providerCopyrights,
-				genres: providerGenres,
-				type: "album"
+				status: albumStatus,
+				aggregated: {
+					provider: provider,
+					id: providerId,
+					name: providerAlbumName,
+					url: providerUrl,
+					imageUrl: providerAlbumImage,
+					imageUrlSmall: providerAlbumImageSmall,
+					albumArtists: providerAlbumArtists,
+					artistNames: providerArtistNames,
+					releaseDate: providerReleaseDate,
+					trackCount: providerTrackCount,
+					albumType: providerAlbumType,
+					upc: providerBarcode,
+					mediums: medium.convertTrackList(aggregatedTracks) as AggregatedMedium[], //TODO: Properly Aggregate mediums
+					mbid,
+					sourceArtist: currentArtist || null,
+					labels: providerLabels,
+					copyrights: providerCopyrights,
+					genres: providerGenres,
+					type: "album"
+				},
+				albums: albumMatches
 			});
 		}
 	});

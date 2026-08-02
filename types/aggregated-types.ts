@@ -1,4 +1,4 @@
-import { ExtendedAlbumObject, TrackObject, ArtistObject, AlbumObject, LabelObject, MediumObject } from "./provider-types";
+import { ExtendedAlbumObject, TrackObject, ArtistObject, AlbumObject, LabelObject, MediumObject, PartialArtistObject } from "./provider-types";
 
 export type AlbumIssue = 'noUPC' | 'UPCDiff' | 'missingISRCs' | 'ISRCDiff' | 'trackDiff' | 'noDate' | 'dateDiff' | 'noCover';
 export type AlbumStatus = 'green' | 'orange' | 'blue' | 'red';
@@ -39,7 +39,7 @@ export class AlbumMatch {
 
 export class AggregatedAlbum extends AlbumObject{
     mediums: AggregatedMedium[];
-    sourceArtist: ArtistObject;
+    sourceArtist: PartialArtistObject | null;
 }
 
 export class AggregatedMedium extends MediumObject {
@@ -47,6 +47,7 @@ export class AggregatedMedium extends MediumObject {
 }
 
 export class AggregatedTrack extends TrackObject {
+    sourceArtist: PartialArtistObject | null;
     status: TrackStatus;
     trackIssues: TrackIssue[];
     mbTrack: TrackObject | null;
