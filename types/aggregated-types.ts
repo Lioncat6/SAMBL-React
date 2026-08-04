@@ -29,7 +29,7 @@ export class AlbumGroup {
     status: AlbumStatus;
     albumIssues: AlbumIssue[];
     albums: AlbumMatch[];
-    aggregated: AggregatedAlbum | null;
+    aggregated: AggregatedAlbum;
 }
 
 export class AlbumMatch {

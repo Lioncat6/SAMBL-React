@@ -1,5 +1,6 @@
-import { albumSearchReason, DisplayAlbum, FilterData, listFilter, listFilterOption, listSort, listSortOption } from "../types/component-types"
-import { AlbumStatus } from "../types/aggregated-types";
+import { albumSearchReason, DisplayAlbum, DisplayTrack, FilterData, listFilter, listFilterOption, listSort, listSortOption } from "../types/component-types"
+import { AggregatedAlbum, AlbumStatus } from "../types/aggregated-types";
+import { AlbumObject } from "../types/provider-types";
 
 const listFilterOptions: listFilterOption[] = [
     { id: 1, name: 'Green', key: 'showGreen', default: true },
@@ -23,25 +24,25 @@ const variousArtistsList = ["Various Artists", "Artistes Variés", "Verschiedene
 const FilterFunctions: Record<listFilter, (items: DisplayAlbum[]) => DisplayAlbum[]> = {
     // These functions are only called when the filter is not selected, with the exception of exclusive filters
     'showGreen': (items) => {
-        return items.filter((item) => item.status != "green")
+        return items.filter((item) => item.albumGroup.status != "green")
     },
     'showBlue': (items) => {
-        return items.filter((item) => item.status != "blue")
+        return items.filter((item) => item.albumGroup.status != "blue")
     },
     'showOrange': (items) => {
-        return items.filter((item) => item.status != "orange")
+        return items.filter((item) => item.albumGroup.status != "orange")
     },
     'showRed': (items) => {
-        return items.filter((item) => item.status != "red")
+        return items.filter((item) => item.albumGroup.status != "red")
     },
     'showVarious': (items) => {
-        return items.filter((item) => item.albumArtists.some((artist) => !variousArtistsList.includes(artist.name)))
+        return items.filter((item) => item.albumGroup.aggregated.albumArtists.some((artist) => !variousArtistsList.includes(artist.name)))
     },
     'onlyIssues': (items) => {
-        return items.filter((item) => item.albumIssues.length > 0)
+        return items.filter((item) => item.albumGroup.albumIssues.length > 0)
     },
     'featuredAlbums': (items) => {
-        return items.filter((item) => (item.artistID && !item.albumArtists.map((artist) => artist.id).includes(item.artistID)))
+        return items.filter((item) => (item.albumGroup.aggregated.sourceArtist?.id && !item.albumGroup.aggregated.albumArtists.map((artist) => artist.id).includes(item.albumGroup.aggregated.sourceArtist.id)))
     }
 }
 
@@ -54,18 +55,18 @@ const statusSortOrder: AlbumStatus[] = ["red", "orange", "blue", "green"]
 
 const SortFunctions: Record<listSort, (items: DisplayAlbum[], ascending: boolean) => DisplayAlbum[]> = {
     'count': (items, ascending) => {
-        return items.sort((a, b) => ascending ? (a.trackCount || 0) - (b.trackCount || 0) : (b.trackCount || 0) - (a.trackCount || 0))
+        return items.sort((a, b) => ascending ? (a.albumGroup.aggregated.trackCount || 0) - (b.albumGroup.aggregated.trackCount || 0) : (b.albumGroup.aggregated.trackCount || 0) - (a.albumGroup.aggregated.trackCount || 0))
     },
     'date': (items, ascending) => {
-        return items.sort((a, b) => ascending ? (getIntTime(a.releaseDate)) - (getIntTime(b.releaseDate)) : (getIntTime(b.releaseDate)) - (getIntTime(a.releaseDate)))
+        return items.sort((a, b) => ascending ? (getIntTime(a.albumGroup.aggregated.releaseDate)) - (getIntTime(b.albumGroup.aggregated.releaseDate)) : (getIntTime(b.albumGroup.aggregated.releaseDate)) - (getIntTime(a.albumGroup.aggregated.releaseDate)))
     },
     'name': (items, ascending) => {
-        return items.sort((a, b) => ascending ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name))
+        return items.sort((a, b) => ascending ? a.albumGroup.aggregated.name.localeCompare(b.albumGroup.aggregated.name) : b.albumGroup.aggregated.name.localeCompare(a.albumGroup.aggregated.name))
     },
     'status': (items, ascending) => {
         return items.sort((a, b) => {
-            const indexA = statusSortOrder.indexOf(a.status);
-            const indexB = statusSortOrder.indexOf(b.status);
+            const indexA = statusSortOrder.indexOf(a.albumGroup.status);
+            const indexB = statusSortOrder.indexOf(b.albumGroup.status);
             return ascending ? indexA - indexB : indexB - indexA;
         });
     },
@@ -89,10 +90,10 @@ function searchItems(items: DisplayAlbum[], query: string): DisplayAlbum[] {
         const lowerCaseQuery = query.toLowerCase().trim();
         updatedItems = updatedItems
             .map((item) => {
-                const matchesTitle = item.name.toLowerCase().includes(lowerCaseQuery);
+                const matchesTitle = item.albumGroup.aggregated.name.toLowerCase().includes(lowerCaseQuery);
                 let matchesArtist: boolean = false;
-                if (!matchesTitle && item.artistNames) {
-                    let artistArray = Array.isArray(item.artistNames) ? item.artistNames : [item.artistNames]
+                if (!matchesTitle && item.albumGroup.aggregated.artistNames) {
+                    let artistArray = Array.isArray(item.albumGroup.aggregated.artistNames) ? item.albumGroup.aggregated.artistNames : [item.albumGroup.aggregated.artistNames]
                     matchesArtist = artistArray.some((artist) => 
                         artist.toLocaleLowerCase().includes(lowerCaseQuery)
                     )
@@ -101,10 +102,14 @@ function searchItems(items: DisplayAlbum[], query: string): DisplayAlbum[] {
                 let matchingTracks: number[] = []
                 // If we can't find a title or artist match
                 if (!(matchesTitle || matchesArtist)) {
-                    const useAggregatedTracks = item.aggregatedTracks?.length > 0
-                    const useMBTracks = item.mbAlbum?.albumTracks?.length == item.trackCount
-                    const mbTracks = item.mbAlbum?.albumTracks
-                    let itemTracks = useAggregatedTracks ? item.aggregatedTracks : useMBTracks ? mbTracks : item.albumTracks
+                    const sourceAlbum = item.albumGroup.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
+                    const aggregatedTracks = item.albumGroup.aggregated.mediums.flatMap((medium) => medium.tracks);
+                    const sourceTracks = sourceAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
+                    const useAggregatedTracks = aggregatedTracks.length > 0
+                    const targetAlbum = item.albumGroup.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
+                    const useMBTracks = targetAlbum?.mediums.flatMap((medium) => medium.tracks)?.length == item.albumGroup.aggregated.trackCount
+                    const mbTracks = targetAlbum?.mediums.flatMap((medium) => medium.tracks)
+                    let itemTracks = useAggregatedTracks ? aggregatedTracks : useMBTracks ? mbTracks : sourceTracks as DisplayTrack[]
                     itemTracks?.forEach((track) => {
                         if (track.name?.toLocaleLowerCase().includes(lowerCaseQuery)) {
                             matchesTrack = true;
@@ -114,7 +119,7 @@ function searchItems(items: DisplayAlbum[], query: string): DisplayAlbum[] {
                     })
                     // Tell tracks to highlight
                     if (useAggregatedTracks && matchesTrack && matchingTracks.length > 0) {
-                        item.aggregatedTracks.forEach((track) => {
+                        (aggregatedTracks as DisplayTrack[])?.forEach((track) => {
                             if (track.trackNumber && matchingTracks.includes(track.trackNumber)) {
                                 track.highlight = true;
                                 track.searchReason = "title";

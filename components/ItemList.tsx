@@ -27,7 +27,14 @@ import { AlbumObject, ArtistObject, ExtendedTrackObject, ObjectType, ProviderNam
 import { MdAlbum, MdAudiotrack, MdPerson } from "react-icons/md";
 
 function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRCs: boolean) => void }) {
-	const { id, url, releaseDate, mbAlbum, trackCount, status, mbid, albumIssues, provider, artistMBID, aggregatedTracks, albumTracks, albumArtists } = item;
+	const targetAlbum = item.albumGroup.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
+	const sourceAlbum = item.albumGroup.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
+	const aggregatedAlbum = item.albumGroup.aggregated;
+	const sourceArtist = item.albumGroup.aggregated?.sourceArtist;
+	const { status, albumIssues } = item.albumGroup;
+	const { id, url, releaseDate, trackCount, mbid, provider, albumArtists } = aggregatedAlbum;
+	const albumTracks = sourceAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
+	const aggregatedTracksList = aggregatedAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -65,8 +72,8 @@ function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRC
 
 	return (
 		<div className={styles.iconContainer}>
-			{albumIssues.includes("noUPC") && <span className={styles.upcIcon}title="This release is missing a UPC/Barcode!">UPC</span>}
-			{albumIssues.includes("UPCDiff") && <span className={styles.upcDiff}title="This release has the wrong barcode for this album!">UPC<FaNotEqual /></span>}
+			{albumIssues.includes("noUPC") && <span className={styles.upcIcon} title="This release is missing a UPC/Barcode!">UPC</span>}
+			{albumIssues.includes("UPCDiff") && <span className={styles.upcDiff} title="This release has the wrong barcode for this album!">UPC<FaNotEqual /></span>}
 			{albumIssues.includes("missingISRCs") && (
 				<a
 					className={status === "green" ? styles.isrcTextAvaliable : styles.isrcText}
@@ -76,7 +83,7 @@ function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRC
 					ISRC
 				</a>
 			)}
-			{albumIssues.includes("ISRCDiff") && <span className={styles.upcDiff}title="This release has the wrong ISRCs for this album!">ISRC<FaNotEqual /></span>}
+			{albumIssues.includes("ISRCDiff") && <span className={styles.upcDiff} title="This release has the wrong ISRCs for this album!">ISRC<FaNotEqual /></span>}
 			{albumIssues.includes("noCover") && (
 				<a
 					className={status === "green" ? styles.coverArtMissingAvaliable : styles.coverArtMissing}
@@ -87,7 +94,7 @@ function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRC
 				/>
 			)}
 			{albumIssues.includes("trackDiff") && (
-				<div className={styles.numDiff} title={`This release has a differing track count! [SP: ${trackCount} MB: ${mbAlbum?.trackCount}]`}>
+				<div className={styles.numDiff} title={`This release has a differing track count! [SP: ${trackCount} MB: ${targetAlbum?.trackCount}]`}>
 					#
 				</div>
 			)}
@@ -95,9 +102,9 @@ function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRC
 				<a
 					className={`${styles.dateMissing} ${status === "green" ? styles.dateMissingAvaliable : ""}`}
 					href={
-						status === "green"
+						(status === "green" && sourceArtist?.mbid)
 							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${releaseDate?.split("-")[0]}&events.0.date.month=${releaseDate?.split("-")[1]}&events.0.date.day=${releaseDate?.split("-")[2]
-							}&edit_note=${encodeURIComponent(editNoteBuilder.buildEditNote(`Release Date`, provider, url.url, `https://musicbrainz.org/artist/${artistMBID}`))}`
+							}&edit_note=${encodeURIComponent(editNoteBuilder.buildEditNote(`Release Date`, provider, url.url, `https://musicbrainz.org/artist/${sourceArtist.mbid}`))}`
 							: undefined
 					}
 					title={status === "green" ? "This release is missing a release date!\n[Click to Fix]" : "This release is missing a release date!"}
@@ -105,14 +112,14 @@ function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRC
 					rel={status === "green" ? "noopener" : undefined}
 				></a>
 			)}
-			{albumIssues.includes("dateDiff") && <div className={styles.dateDiff} title={`This release has a differing release date! [SP: ${releaseDate} MB: ${mbAlbum?.releaseDate}]\n(This may indicate that you have to split a release.)`} />}
+			{albumIssues.includes("dateDiff") && <div className={styles.dateDiff} title={`This release has a differing release date! [SP: ${releaseDate} MB: ${targetAlbum?.releaseDate}]\n(This may indicate that you have to split a release.)`} />}
 		</div>
 	);
 }
 
 function ActionButtons({ item }: { item: DisplayAlbum }) {
 	const { settings } = useSettings() as SAMBLSettingsContext;
-	const { url, upc, provider } = item;
+	const { url, upc, provider } = item.albumGroup.aggregated;
 	const [collapsed, setCollapsed] = useState(true);
 	function toggleState() {
 		setCollapsed(!collapsed);
@@ -192,7 +199,11 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 			)
 			.finally(() => { });
 	}
-
+	console.log(item)
+	const targetAlbum = item.albumGroup.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
+	const sourceAlbum = item.albumGroup.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
+	const { searchReason } = item;
+	const { status, albumIssues } = item.albumGroup;
 	const {
 		provider,
 		id,
@@ -204,19 +215,14 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 		releaseDate,
 		trackCount,
 		albumType,
-		status,
-		mbAlbum,
-		albumTracks,
 		mbid,
-		artistMBID,
-		artistID,
-		albumIssues,
-		searchReason,
-	} = item;
+	} = item.albumGroup.aggregated;
+	const albumTracks = item.albumGroup.aggregated?.mediums.flatMap((medium) => medium.tracks) || [];
+	const sourceArtist = item.albumGroup.aggregated?.sourceArtist;
 
 	async function refreshData(fetchISRCs = false) {
 		setIsLoading(true);
-		const response = await dispPromise(fetch(`/api/compareSingleAlbum?url=${url.url}&mbid=${artistMBID}&artist_id=${artistID}${fetchISRCs ? '&fetchISRCs' : ""}`), "Refreshing album...");
+		const response = await dispPromise(fetch(`/api/compareSingleAlbum?url=${url.url}&mbid=${sourceArtist?.mbid}&artist_id=${sourceArtist?.id}${fetchISRCs ? '&fetchISRCs' : ""}`), "Refreshing album...");
 		setIsLoading(false);
 		if (response.ok) {
 			const updatedItem = await response.json();
@@ -226,10 +232,10 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 		}
 	}
 
-	const sourceTrackString = trackCount && trackCount > 1 ? `${trackCount} Tracks` : trackCount == 1 ? "1 Track": "? Tracks";
+	const sourceTrackString = trackCount && trackCount > 1 ? `${trackCount} Tracks` : trackCount == 1 ? "1 Track" : "? Tracks";
 
-	const mbTrackString = mbAlbum?.albumTracks.map((track) => track.name).join(",");
-	const mbISRCString = mbAlbum?.albumTracks.map((track) => track.isrcs.join(",")).join(",");
+	const mbTrackString = targetAlbum?.mediums.flatMap((medium) => medium.tracks).map((track) => track.name).join(",");
+	const mbISRCString = targetAlbum?.mediums.flatMap((medium) => medium.tracks).map((track) => track.isrcs.join(",")).join(",");
 	const trackISRCString = albumTracks.map((track) => track.isrcs.join(",")).join(",");
 
 	function getTracksWithoutISRCs(): string {
@@ -270,15 +276,15 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 		"data-track-count": trackCount,
 		"data-album-type": albumType,
 		"data-status": status,
-		"data-mb-track-count": mbAlbum?.trackCount,
-		"data-mb-release-date": mbAlbum?.releaseDate,
+		"data-mb-track-count": targetAlbum?.trackCount,
+		"data-mb-release-date": targetAlbum?.releaseDate,
 		"data-mbid": mbid,
 		"data-album-issues": albumIssues,
 		"data-track-names": mbTrackString,
 		"data-track-isrcs": mbISRCString,
 		"data-isrcs": trackISRCString,
 		"data-tracks-without-isrcs": getTracksWithoutISRCs(),
-		"data-barcode": mbAlbum?.upc || "",
+		"data-barcode": targetAlbum?.upc || "",
 	};
 
 	return (
@@ -303,8 +309,8 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 						<a href={url.url} target="_blank" rel="noopener noreferrer">
 							{name}
 						</a>
-						{mbAlbum?.url && (
-							<a href={mbAlbum.url.url} target="_blank" rel="noopener noreferrer">
+						{targetAlbum?.url && (
+							<a href={targetAlbum.url.url} target="_blank" rel="noopener noreferrer">
 								<img
 									className={styles.albumMB}
 									src={status === "green" ? "../assets/images/MusicBrainz_logo_icon.svg" : "../assets/images/MB_Error.svg"}
@@ -341,8 +347,8 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 									releaseDate,
 									albumType && text.capitalizeFirst(albumType),
 								])}
-								{} •{" "}
-								{albumTracks.length > 0 || mbAlbum?.albumTracks && mbAlbum?.albumTracks?.length > 0
+								{ } •{" "}
+								{albumTracks.length > 0 || targetAlbum?.mediums && targetAlbum?.mediums?.length > 0
 									?
 									<span className={`${styles.hasTracks} ${searchReason == "track" ? styles.trackHighlight : ""}`} title={"Click to view tracks"}>
 										<PiPlaylistBold /> {sourceTrackString}
@@ -355,7 +361,7 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 								}
 							</div>
 							}
-							data={item}
+							data={item.albumGroup}
 							refresh={refreshData}
 							open={item.viewingAlbum}
 						/>
@@ -388,7 +394,7 @@ function ViewButton({ item }) {
 	);
 }
 
-function ArtistItem({ item }: { item: AggregatedArtist}) {
+function ArtistItem({ item }: { item: AggregatedArtist }) {
 	return (
 		<div className={styles.listItem} style={{ '--background-image': `url('${item.bannerUrl || item.imageUrl || ""}')` } as React.CSSProperties}>
 			{item.imageUrl && (
@@ -413,7 +419,7 @@ function ArtistItem({ item }: { item: AggregatedArtist}) {
 	);
 }
 
-function Icon({ source }: {source: ProviderNamespace}) {
+function Icon({ source }: { source: ProviderNamespace }) {
 	return (
 		<>
 			{source === "spotify" && <img className={styles.spotifyIcon} title={"Spotify"} src="../assets/images/Spotify_icon.svg" />}
@@ -451,8 +457,8 @@ function getItemIcon(type: ObjectType) {
 	switch (type) {
 		case "artist":
 		case "partialArtist":
-			return<MdPerson title={"Artist"} />;
-		case "album": 
+			return <MdPerson title={"Artist"} />;
+		case "album":
 			return <MdAlbum title={"Album"} />;
 		case "track":
 			return <MdAudiotrack title={"Track"} />;
@@ -473,7 +479,7 @@ function GenericItem({ item }: { item: AlbumObject | ExtendedTrackObject | Artis
 		"duration" in item && item.duration ? text.formatMS(item.duration) : null,
 		"relevance" in item && item.relevance ? item.relevance : null,
 	]
-	const artists = "albumArtists" in item ? item.albumArtists : "trackArtists" in item ? item.trackArtists: type == "artist" ? [item] : null;
+	const artists = "albumArtists" in item ? item.albumArtists : "trackArtists" in item ? item.trackArtists : type == "artist" ? [item] : null;
 	let artistString = artists?.map((artist, index) => (
 		<span key={index}>
 			{index > 0 && ", "}
@@ -665,7 +671,7 @@ function SearchContainer({ onSearch, currentFilter, setFilter, refresh }) {
 
 export type listType = "album" | "loadingAlbum" | "artist" | "mixed"
 
-export function ItemList(props: { items: AggregatedAlbum[], type: "album", text?: string, refresh: () => void }): JSX.Element;
+export function ItemList(props: { items: DisplayAlbum[], type: "album", text?: string, refresh: () => void }): JSX.Element;
 export function ItemList(props: { items: any[], type: listType, text?: string, refresh?: () => void }): JSX.Element;
 
 export default function ItemList({ items, type, text, refresh, viewItem }: { items: any[], type: listType, text?: string, refresh?: () => void, viewItem?: string | null }) {
@@ -676,23 +682,32 @@ export default function ItemList({ items, type, text, refresh, viewItem }: { ite
 	const [hasOpenedItem, setHasOpenedItem] = useState(false);
 	function getSavedFilter(): Partial<FilterData> {
 		let filter: Partial<FilterData> = {};
-		if (settings.saveFilter){
+		if (settings.saveFilter) {
 			filter.filters = settings.currentFilter?.filters || filters.getDefaultOptions().filters;
 		}
-		if (settings.saveSort){
+		if (settings.saveSort) {
 			filter.sort = settings.currentFilter?.sort || filters.getDefaultOptions().sort;
 			filter.ascending = settings.currentFilter?.ascending || filters.getDefaultOptions().ascending;
 		}
 		return filter;
 	}
-	const [filter, setFilter] = useState({... getSavedFilter(), ...filters.getDefaultOptions()});
+	const [filter, setFilter] = useState({ ...getSavedFilter(), ...filters.getDefaultOptions() });
 	useEffect(() => {
-		setFilter({ ...filters.getDefaultOptions(),... getSavedFilter()}); //Settings isn't always loaded right away
+		setFilter({ ...filters.getDefaultOptions(), ...getSavedFilter() }); //Settings isn't always loaded right away
 	}, [settings]);
 	const setAllItems = useExportState()?.setAllItems;
-	
+
 
 	useEffect(() => {
+		if (items.some((item) => !("searchReason" in item) )) { //Type conversion
+			items = items.map((item) => {
+				return {
+					searchReason: undefined,
+					albumGroup: item,
+					viewingAlbum: undefined,
+				}
+			})
+		}	
 		setCurrentItems(items || []);
 	}, [items]);
 
@@ -700,10 +715,11 @@ export default function ItemList({ items, type, text, refresh, viewItem }: { ite
 		if (type !== "album") {
 			return;
 		}
+
 		items = items as DisplayAlbum[];
 
-
 		let updatedItems = currentItems as DisplayAlbum[];
+
 
 		updatedItems = filters.filterItems(updatedItems, filter)
 		updatedItems = filters.searchItems(updatedItems, searchQuery)
@@ -723,21 +739,21 @@ export default function ItemList({ items, type, text, refresh, viewItem }: { ite
 		}
 		let updatedItems = currentItems as DisplayAlbum[];
 		updatedItems.forEach((item) => {
-			if (item.id == viewItem){
+			if (item.albumGroup.aggregated.id == viewItem) {
 				item.viewingAlbum = true;
 				setHasOpenedItem(false)
 			}
 		})
 		setFilteredItems(updatedItems)
-	},[viewItem, currentItems])
-	
+	}, [viewItem, currentItems])
+
 	let itemArray: any = [];
 	if (type != "album" && type != "loadingAlbum") {
 		itemArray = Array.isArray(currentItems) ? currentItems : Object.values(currentItems);
 	}
 
 	const handleItemUpdate = (updatedItem: DisplayAlbum) => {
-		setCurrentItems((prev) => prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)));
+		setCurrentItems((prev) => prev.map((item) => (item.albumGroup.aggregated.id === updatedItem.albumGroup.aggregated.id ? updatedItem : item)));
 	};
 	return (
 		<div className={styles.listWrapper}>

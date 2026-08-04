@@ -285,16 +285,16 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 
 		if (!sourceIdsArray.find((a) => a === provider+providerId)) { //Deduplicate; Will eventually support multiple providers in once comparison, so we probably don't want to have collisions if two different streaming services use the same ID for some reason
 			let albumMatches: AlbumMatch[] = []
+			albumMatches.push({
+				type: "source",
+				album: album
+			})
 			if (finalAlbum) {
 				albumMatches.push({
 					type: "target",
 					album: finalAlbum
 				})
 			}
-			albumMatches.push({
-				type: "source",
-				album: album
-			})
 			total++;
 			if (albumStatus == "green") {
 				green++;

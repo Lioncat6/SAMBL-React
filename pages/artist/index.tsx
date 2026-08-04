@@ -10,7 +10,7 @@ import { AlbumData, AlbumObject, ArtistObject, ExtendedAlbumData, ExtendedAlbumO
 import { SAMBLApiError, ArtistData, ReleaseCountData } from "../../types/api-types"
 import { ArtistPageData, SAMBLError } from "../../types/component-types";
 import ErrorPage from "../../components/ErrorPage";
-import { AggregatedAlbum, AggregatedData } from "../../types/aggregated-types";
+import { AggregatedAlbum, AggregatedData, AlbumGroup } from "../../types/aggregated-types";
 import toasts from "../../utils/toasts";
 import { set } from "nprogress";
 import text from "../../utils/text";
@@ -96,12 +96,12 @@ export async function getServerSideProps(context) {
 			};
 		}
 
-		async function getViewedAlbum(): Promise<AggregatedAlbum | null> {
+		async function getViewedAlbum(): Promise<AlbumGroup | null> {
 			if (viewingAlbum) {
 				const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/compareSingleAlbum?provider_id=${viewingAlbum}&provider=${provider}`);
 				if (response.ok) {
 					try {
-						return (await response.json()) as AggregatedAlbum
+						return (await response.json()) as AlbumGroup
 					} catch {
 						return null;
 					}
@@ -272,7 +272,7 @@ export default function Artist({ artist, error }: { artist: ArtistPageData, erro
 		}
 	}, [router.isReady, router.query.viewingAlbum]);
 	const [isQuickFetched, setIsQuickFetched] = useState(false);
-	const [albums, setAlbums] = useState<AggregatedAlbum[]>([]);
+	const [albums, setAlbums] = useState<AlbumGroup[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [statusText, setStatusText] = useState("Loading albums...");
 	// const { setExportData } = useExport(); // Access setExportData from context
@@ -469,7 +469,7 @@ export default function Artist({ artist, error }: { artist: ArtistPageData, erro
 			if (didQuickFetch) {
 				data = await toasts.dispPromise(quickFetchAlbums(providerIds[0], artist.provider, artist.mbid, bypassCache), "Quick Fetching albums...", "Failed to quick fetch albums!");
 			} else {
-				data = processData(sourceAlbums.current, [...mbAlbums.current, ...mbFeaturedAlbums.current], artist.mbid, artist.id, artist.provider);
+				data = processData(sourceAlbums.current, [], [...mbAlbums.current, ...mbFeaturedAlbums.current], artist.provider, artist);
 			}
 			setStatusText(data.statusText);
 			setAlbums(data.albumData);
@@ -488,20 +488,22 @@ export default function Artist({ artist, error }: { artist: ArtistPageData, erro
 	const aiTags = ["ai", "ai-generated", "ai generated", "ai slop", "ai music"]
 	const isAi = artist?.mbData?.genres?.some((tag) => aiTags.includes(tag));
 
+	const sourceAlbum = artist.viewedAlbum?.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
+
 	return (
 		<>
-			{artist.viewedAlbum ?
+			{(sourceAlbum && artist.viewedAlbum) ?
 				<>
 					<SAMBLHead
 						title={`SAMBL • ${artist.name}`}
-						fullTitle={`View Artist Album • ${artist.viewedAlbum.name} by ${artist.name}`}
-						image={artist.viewedAlbum.imageUrl}
+						fullTitle={`View Artist Album • ${sourceAlbum.name} by ${artist.name}`}
+						image={sourceAlbum.imageUrl}
 						description={text.infoToString([
-							`${text.getColorEmoji(artist.viewedAlbum.status)}|${artist.viewedAlbum.name}`,
-							`${artist.viewedAlbum.albumType ? `${text.capitalizeFirst(artist.viewedAlbum.albumType)} - `: ""}${text.capitalizeFirst(artist.viewedAlbum.provider)}`,
-							artist.viewedAlbum.upc ? `Barcode: ${artist.viewedAlbum.upc}`: null,
-							artist.viewedAlbum.trackCount ? `${artist.viewedAlbum.trackCount} tracks`: null,
-							artist.viewedAlbum.releaseDate	
+							`${text.getColorEmoji(artist.viewedAlbum?.status)}|${sourceAlbum.name}`,
+							`${sourceAlbum.albumType ? `${text.capitalizeFirst(sourceAlbum.albumType)} - `: ""}${text.capitalizeFirst(sourceAlbum.provider)}`,
+							sourceAlbum.upc ? `Barcode: ${sourceAlbum.upc}`: null,
+							sourceAlbum.trackCount ? `${sourceAlbum.trackCount} tracks`: null,
+							sourceAlbum.releaseDate	
 						])}
 
 					/>

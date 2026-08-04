@@ -4,8 +4,8 @@ import { MdOutlineAlbum, MdPerson, MdOutlineCalendarMonth, MdOutlineWarningAmber
 import { AiOutlineFieldNumber } from "react-icons/ai";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import text from "../../utils/text";
-import { ProviderNamespace, TrackObject } from "../../types/provider-types";
-import { AggregatedAlbum, AggregatedTrack, AlbumStatus, TrackIssue, TrackStatus } from "../../types/aggregated-types";
+import { AlbumObject, ProviderNamespace, TrackObject } from "../../types/provider-types";
+import { AggregatedAlbum, AggregatedTrack, AlbumGroup, AlbumStatus, TrackIssue, TrackStatus } from "../../types/aggregated-types";
 import Popup from "../Popup";
 import { JSX } from "react";
 import { IoMdRefresh } from "react-icons/io";
@@ -34,7 +34,10 @@ function copyLink(id) {
 	text.handleCopy(url);
 }
 
-function AlbumDetails({ data }: { data: DisplayAlbum }) {
+function AlbumDetails({ data }: { data: AlbumGroup }) {
+	const targetAlbum = data.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
+	const sourceAlbum = data.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
+	const { status, albumIssues } = data;
 	const {
 		provider,
 		id,
@@ -46,14 +49,14 @@ function AlbumDetails({ data }: { data: DisplayAlbum }) {
 		releaseDate,
 		trackCount,
 		albumType,
-		status,
-		mbAlbum,
 		upc,
 		genres,
-		copyrights
-	} = data;
+		mbid,
+	} = data.aggregated;
+	const albumTracks = data.aggregated?.mediums.flatMap((medium) => medium.tracks) || [];
+	const sourceArtist = data.aggregated?.sourceArtist;
 
-	const barcode = upc || mbAlbum?.upc || null;
+	const barcode = upc || targetAlbum?.upc || null;
 	const mbBarcode = !upc;
 	return (
 		<div className={styles.albumDetails}>
@@ -69,8 +72,8 @@ function AlbumDetails({ data }: { data: DisplayAlbum }) {
 					<a href={url.url} target="_blank" rel="noopener noreferrer">
 						{name}
 					</a>
-					<MbUrlIcon status={status} url={mbAlbum?.url.url || null} styleClass={styles.albumMB} />
-					<button onClick={() => copyLink(data.id)} title={"Copy SAMBL link to this album"} className={styles.linkButton}>
+					<MbUrlIcon status={status} url={targetAlbum?.url.url || null} styleClass={styles.albumMB} />
+					<button onClick={() => copyLink(id)} title={"Copy SAMBL link to this album"} className={styles.linkButton}>
 						<FaLink />
 					</button>
 				</div>
@@ -112,8 +115,11 @@ function AlbumDetails({ data }: { data: DisplayAlbum }) {
 	);
 }
 
-function AlbumFooter({ data }: { data: DisplayAlbum }) {
-	const { copyrights, labels } = data;
+function AlbumFooter({ data }: { data: AlbumGroup }) {
+	const {
+		copyrights,
+		labels
+	} = data.aggregated;
 	return (
 		<div className={styles.albumFooter}>
 			{(copyrights && copyrights.length > 0) &&
@@ -151,7 +157,7 @@ function TrackItem({ index, track, album, isrcSource, highlight }: { index: stri
 	let trackIssues: TrackIssue[] = [];
 
 	if ((track as AggregatedTrack).mbid !== undefined) {
-		mbid = (track as AggregatedTrack).mbid;
+		mbid = (track as AggregatedTrack).mbid || null;
 		mbUrl = (track as AggregatedTrack).mbTrack?.url?.url || null;
 		status = (track as AggregatedTrack).status;
 		trackIssues = (track as AggregatedTrack).trackIssues;
@@ -251,19 +257,30 @@ function TrackItem({ index, track, album, isrcSource, highlight }: { index: stri
 	);
 }
 
-export function TrackMenuInner({ data, refresh }: { data: AggregatedAlbum, refresh: () => void, close?: () => void }) {
+export function TrackMenuInner({ data, refresh }: { data: AlbumGroup, refresh: () => void, close?: () => void }) {
+	const targetAlbum = data.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
+	const sourceAlbum = data.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
+	const aggregatedAlbum = data.aggregated;
+	const sourceArtist = data.aggregated?.sourceArtist;
+	const { status, albumIssues } = data;
+	const { id, url, releaseDate, trackCount, mbid, provider, albumArtists } = aggregatedAlbum;
+	const albumTracks = sourceAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
+	const targetAlbumTracks = targetAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
+	const aggregatedTracksList = aggregatedAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
+
+
 	let trackData: TrackObject[] | AggregatedTrack[] = [];
 	let trackDataSource: ProviderNamespace | null = null as ProviderNamespace | null;
 	let hasFullTrackData: boolean = false;
 	function getTrackData() {
-		if (data.aggregatedTracks?.length > 0) {
-			trackData = data.aggregatedTracks;
+		if (aggregatedTracksList?.length > 0) {
+			trackData = aggregatedTracksList;
 			hasFullTrackData = true;
-		} else if (data.albumTracks?.length > 0) {
-			trackData = data.albumTracks;
-			trackDataSource = data.provider;
-		} else if (data.mbAlbum?.albumTracks && data.mbAlbum.albumTracks.length > 0) {
-			trackData = data.mbAlbum.albumTracks;
+		} else if (aggregatedTracksList?.length > 0) {
+			trackData = aggregatedTracksList;
+			trackDataSource = aggregatedAlbum.provider;
+		} else if (targetAlbumTracks && targetAlbumTracks.length > 0) {
+			trackData = targetAlbumTracks;
 			trackDataSource = "musicbrainz";
 		}
 	}
@@ -283,8 +300,8 @@ export function TrackMenuInner({ data, refresh }: { data: AggregatedAlbum, refre
 							key={index} //This isn't confusing and hard to read at all
 							index={key}
 							track={value}
-							album={data}
-							isrcSource={data.albumTracks[(value.trackNumber || 1) - 1]?.isrcs.length > 0 ? data.provider : "musicbrainz"}
+							album={data.aggregated}
+							isrcSource={albumTracks[(value.trackNumber || 1) - 1]?.isrcs.length > 0 ? sourceAlbum?.provider || aggregatedAlbum.provider : "musicbrainz"}
 							highlight={false}
 						/>
 					)
@@ -295,14 +312,23 @@ export function TrackMenuInner({ data, refresh }: { data: AggregatedAlbum, refre
 	);
 }
 
-export function TrackMenu({ data, refresh, close }: { data: AggregatedAlbum, refresh: () => void, close?: () => void }) {
+export function TrackMenu({ data, refresh, close }: { data: AlbumGroup, refresh: () => void, close?: () => void }) {
+	const targetAlbum = data.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
+	const sourceAlbum = data.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
+	const aggregatedAlbum = data.aggregated;
+	const sourceArtist = data.aggregated?.sourceArtist;
+	const { status, albumIssues } = data;
+	const { id, url, releaseDate, trackCount, mbid, provider, albumArtists } = aggregatedAlbum;
+	const albumTracks = sourceAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
+	const aggregatedTracksList = aggregatedAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
+	
 	return (
 		<>
-			<div className={styles.trackBg} style={{ "--background-image": `url(${data.imageUrl})` } as React.CSSProperties} >
+			<div className={styles.trackBg} style={{ "--background-image": `url(${aggregatedAlbum.imageUrl})` } as React.CSSProperties} >
 				{" "}
 				<div className={styles.header}>
 					{" "}
-					<MdOutlineAlbum /> Tracks for {data.name}
+					<MdOutlineAlbum /> Tracks for {aggregatedAlbum.name}
 				</div>
 			</div>
 			<TrackMenuInner data={data} refresh={refresh} />
@@ -316,7 +342,7 @@ export function TrackMenu({ data, refresh, close }: { data: AggregatedAlbum, ref
 	);
 }
 
-export default function TrackMenuPopup({ data, button, refresh, open }: { data: AggregatedAlbum, button?: JSX.Element, refresh: () => void, open?: boolean }) {
+export default function TrackMenuPopup({ data, button, refresh, open }: { data: AlbumGroup, button?: JSX.Element, refresh: () => void, open?: boolean }) {
 	return (
 		<Popup button={button} open={open}>
 			<TrackMenu data={data} refresh={refresh} />

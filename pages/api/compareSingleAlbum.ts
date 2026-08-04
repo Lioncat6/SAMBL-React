@@ -6,7 +6,8 @@ import { NextApiRequest, NextApiResponse } from "next";
 import normalizeVars from "../../utils/normalizeVars";
 import { IRelease } from "musicbrainz-api";
 import { SAMBLApiError } from "../../types/api-types";
-import { AlbumObject, TrackObject } from "../../types/provider-types";
+import { AlbumObject, ArtistObject, TrackObject } from "../../types/provider-types";
+import medium from "../../utils/medium";
 
 export default async function handler(req:NextApiRequest, res:NextApiResponse) {
     try {
@@ -38,7 +39,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
         } else {
             return res.status(400).json({ error: "Parameters `provider_id` and `provider` are required when not using `url`" } as SAMBLApiError);
         }
-        const providerObj = providers.parseProvider(provider || "", ["getAlbumById", "formatAlbumObject", "getTrackById", "formatTrackObject"]);
+        const providerObj = providers.parseProvider(provider || "", ["getAlbumById", "formatAlbumObject", "getTrackById", "formatTrackObject", "getArtistById", "formatArtistObject"]);
 
         if (!providerObj) {
             return res.status(400).json({ error: "Provider doesn't exist or doesn't support this operation" } as SAMBLApiError);
@@ -69,27 +70,36 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
             }
         }
         const formattedMBAlbum = mbAlbum ? musicbrainz.formatAlbumObject(mbAlbum) : null;
-        let albumData = processData([sourceAlbum], formattedMBAlbum ? [formattedMBAlbum] : [], mbid, artist_id, providerObj.namespace);
+        let albumArtist: ArtistObject | null = null;
+        if (artist_id) {
+            const rawArtist = await providerObj.getArtistById(artist_id, { noCache: true });
+            if (rawArtist) {
+                albumArtist = providerObj.formatArtistObject(rawArtist);
+            }
+        }
+        let albumData = processData([sourceAlbum], [], formattedMBAlbum ? [formattedMBAlbum] : [], providerObj.namespace, albumArtist);
         let album = albumData.albumData?.[0]
         if (!album) return res.status(500).json({error: "Error processing album data"} as SAMBLApiError)
         const ISRCConfig = providerObj.config?.capabilities.isrcs;
         if (fetchISRCs && ISRCConfig?.availability != "never" && ISRCConfig?.presence == "onTrackRefresh") {
             let tracks: (TrackObject | null)[] = [];
-            for (const track of album.albumTracks) {
+            const sourceAlbum = album.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
+            const albumTracks = sourceAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
+            for (const track of albumTracks) {
                 const rawTrack = track.id ? await providerObj.getTrackById(track.id) : null
                 const formattedTrack = rawTrack ? providerObj.formatTrackObject(rawTrack): null;
                 tracks.push(formattedTrack)
             }
             let finalTracks: TrackObject[] = [];
             for (const newTrack in tracks){
-                finalTracks.push(tracks[newTrack] || album.albumTracks[newTrack]);
+                finalTracks.push(tracks[newTrack] || albumTracks[newTrack]);
             }
             tracks.filter((track) => (track));
             const newAlbum: AlbumObject = {
-                ...sourceAlbum,
-                albumTracks: finalTracks
+                ...sourceAlbum!,
+                mediums: medium.convertTrackList(finalTracks)
             }
-            let finalAlbum = processData([newAlbum], formattedMBAlbum ? [formattedMBAlbum] : [], mbid, artist_id, providerObj.namespace);
+            let finalAlbum = processData([newAlbum], [], formattedMBAlbum ? [formattedMBAlbum] : [], providerObj.namespace, albumArtist);
             return res.status(200).json(finalAlbum.albumData[0]);
         }
         return res.status(200).json(album);
