@@ -699,7 +699,7 @@ export default function ItemList({ items, type, text, refresh, viewItem }: { ite
 
 
 	useEffect(() => {
-		if (items.some((item) => !("searchReason" in item) )) { //Type conversion
+		if (items.some((item) => !("searchReason" in item) && item.type === "album")) { //Type conversion
 			items = items.map((item) => {
 				return {
 					searchReason: undefined,
