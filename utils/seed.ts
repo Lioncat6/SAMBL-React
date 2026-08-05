@@ -1,5 +1,5 @@
 import { PartialDate } from "@kellnerd/musicbrainz/common-types";
-import { AggregatedAlbum, AggregatedLabel, AggregatedPartialArtist } from "../types/aggregated-types";
+import { AggregatedAlbum, AggregatedLabel } from "../types/aggregated-types";
 import type {
     ArtistCreditNameSeed,
     ArtistCreditSeed,
@@ -49,21 +49,42 @@ function convertLabels(SAMBLLabels: AggregatedLabel[] | null): ReleaseLabelSeed[
 
 }
 
+export function flatten(record: Record<string, any>, preservedKeys: string[] = []): Record<string, any> {
+	const flatRecord = {};
+
+	for (const key in record) {
+		let value = record[key];
+		if (typeof value === 'object' && value !== null && !preservedKeys.includes(key)) { // also matches arrays
+			value = flatten(value, preservedKeys);
+			for (const childKey in value) {
+				flatRecord[key + '.' + childKey] = value[childKey]; // concatenate keys
+			}
+		} else if (value !== undefined) { // value is already flat (e.g. a string) or should be preserved
+			flatRecord[key] = value; // keep the key
+		}
+	}
+
+	return flatRecord;
+}
 
 function buildSeed(album: AggregatedAlbum) {
     // Artist PreProcess
     // TODO: Move MBID obtaining to compareSingleAlbum API code
-    if (album.artistID && album.artistMBID) {
+    if (album.sourceArtist?.id && album.sourceArtist?.mbid) {
+        let id = album.sourceArtist.id;
+        let mbid = album.sourceArtist.mbid;
         album.albumArtists.forEach((artist) => {
-            if (artist.id == album.artistID && !artist.mbid) {
-                artist.mbid = album.artistMBID;
+            if (artist.id == id && !artist.mbid) {
+                artist.mbid = mbid;
             }
         });
-        album.albumTracks.forEach((track) => {
-            track.trackArtists.forEach((artist) => {
-                if (artist.id == album.artistID && !artist.mbid) {
-                    artist.mbid = album.artistMBID;
-                }
+        album.mediums.forEach((medium) => {
+            medium.tracks.forEach((track) => {
+                track.trackArtists.forEach((artist) => {
+                    if (artist.id == id && !artist.mbid) {
+                        artist.mbid = mbid;
+                    }
+                });
             });
         });
     }
@@ -85,23 +106,23 @@ function buildSeed(album: AggregatedAlbum) {
             name: medium.name || undefined,
             track: medium.tracks.map<TrackSeed>((track) => ({
                 name: track.name,
-                artist_credit: convertArtistCredit(track.trackArtists as AggregatedPartialArtist[]),
+                artist_credit: convertArtistCredit(track.trackArtists as PartialArtistObject[]),
                 number: track.trackNumber?.toString(),
                 length: track.duration || undefined,
-                recording: track.mbid,
+                recording: track.mbid || undefined,
             })),
         })),
         language: undefined, //TODO: Determine language
         script: undefined, //TODO: Determine script
         urls: convertUrls(album.url),
-        annotation: undefined //TODO: Add detail text to albums,
-        edit_note: buildEditNote(release.info, options),
+        annotation: undefined, //TODO: Add detail text to albums,
+        edit_note: undefined,
         redirect_uri: undefined //TODO: Release Actions,
     };
-
+    return flatten(seed);
 }
 
-function convertArtistCredit(artists?: AggregatedPartialArtist[]): ArtistCreditSeed | undefined {
+function convertArtistCredit(artists?: PartialArtistObject[]): ArtistCreditSeed | undefined {
     if (!artists) return;
 
     const lastIndex = artists.length - 1;

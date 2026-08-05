@@ -8,13 +8,13 @@ import ErrorPage from "../../components/ErrorPage";
 import SAMBLHead from "../../components/SAMBLHead";
 import text from "../../utils/text";
 import { ProviderNamespace } from "../../types/provider-types";
-import { AggregatedAlbum } from "../../types/aggregated-types";
+import { AggregatedAlbum, AlbumStack } from "../../types/aggregated-types";
 import { TrackMenu, TrackMenuInner } from "../../components/Popups/TrackMenu";
 import styles from "../../styles/Seed.module.css";
 import { ActionButton } from "../../components/buttons";
 
 
-async function getAlbum(url?: string, provider?: ProviderNamespace, artistId?: string, albumId?: string): Promise<AggregatedAlbum | null> {
+async function getAlbum(url?: string, provider?: ProviderNamespace, artistId?: string, albumId?: string): Promise<AlbumStack | null> {
     // provider_id, provider, url, mbid, artist_id
     let apiUrl = `http://localhost:${process.env.PORT || 3000}/api/compareSingleAlbum?artist_id=${artistId}&provider_id=${albumId}&provider=${provider}`;
     if (url) {
@@ -22,7 +22,7 @@ async function getAlbum(url?: string, provider?: ProviderNamespace, artistId?: s
     }
     const response = await fetch(apiUrl);
     if (response.ok) {
-        const data = await response.json() as AggregatedAlbum;
+        const data = await response.json() as AlbumStack;
         return data;
     } else {
         let errorMessage = "";
@@ -40,7 +40,7 @@ async function getAlbum(url?: string, provider?: ProviderNamespace, artistId?: s
 export async function getServerSideProps(context) {
     try {
         let { url, provider, artistId, albumId } = context.query;
-        let fetchCall: Promise<AggregatedAlbum | null> | null = null;
+        let fetchCall: Promise<AlbumStack | null> | null = null;
         if (url) {
             fetchCall = getAlbum(url);
         } else if (artistId && albumId && provider) {
@@ -83,7 +83,7 @@ export async function getServerSideProps(context) {
     }
 }
 
-export default function Search({ data, error }: {data?: AggregatedAlbum | null, error?:SAMBLError}) {
+export default function Search({ data, error }: {data?: AlbumStack | null, error?:SAMBLError}) {
     if (error || data == undefined && data !== null) {
         return (
             <ErrorPage error={error || null} />
@@ -105,12 +105,15 @@ export default function Search({ data, error }: {data?: AggregatedAlbum | null, 
             </>
         )
     }
+    const aggregatedAlbum = data.aggregated;
+    const sourceAlbum = data.albums.find((match) => match.type === "source")?.album;
+    const targetAlbum = data.albums.find((match) => match.type === "target")?.album;
     return (
         <>
             <SAMBLHead
                 title = {`SAMBL • Seed release`}
-                fullTitle={`Seed Release "${data.name}"`}
-                description={`${data.name} by ${data.artistNames.join(", ")} (${data.releaseDate}) • ${data.albumTracks.length} tracks`}
+                fullTitle={`Seed Release "${aggregatedAlbum.name}"`}
+                description={`${aggregatedAlbum.name} by ${aggregatedAlbum.artistNames.join(", ")} (${aggregatedAlbum.releaseDate}) • ${aggregatedAlbum.trackCount} tracks`}
             />
             <div id="err" />
             <div className="titleContainer">
