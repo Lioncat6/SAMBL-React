@@ -378,11 +378,13 @@ function formatLabelObject(label: ILabelInfo): LabelObject {
 function getReleaseMediums(mediums: IMedium[]): ExtendedMediumObject[] {
 	let formattedMediums: ExtendedMediumObject[] = [];
 	mediums.forEach(medium => {
-		formattedMediums.push({
-			number: medium.position,
-			name: medium.title.length > 0 ? medium.title : undefined,
-			tracks: medium.tracks.map(formatTrackObject)
-		})
+		if ("tracks" in medium && medium.tracks) {
+			formattedMediums.push({
+				number: medium.position,
+				name: medium.title.length > 0 ? medium.title : undefined,
+				tracks: medium.tracks.map(formatTrackObject)
+			})
+		}
 	})
 	return formattedMediums;
 }
