@@ -25,7 +25,7 @@ export class AggregatedLabel extends LabelObject {
     mbid?: string | null;
 }
 
-export class AlbumGroup {
+export class AlbumStack {
     status: AlbumStatus;
     albumIssues: AlbumIssue[];
     albums: AlbumMatch[];
@@ -59,7 +59,7 @@ export class BasicTrack {
 }
 
 export class AggregatedData {
-    albumData: AlbumGroup[]
+    albumData: AlbumStack[]
     statusText: string
     green: number
     orange: number

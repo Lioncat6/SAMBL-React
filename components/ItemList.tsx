@@ -27,11 +27,11 @@ import { AlbumObject, ArtistObject, ExtendedTrackObject, ObjectType, ProviderNam
 import { MdAlbum, MdAudiotrack, MdPerson } from "react-icons/md";
 
 function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRCs: boolean) => void }) {
-	const targetAlbum = item.albumGroup.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
-	const sourceAlbum = item.albumGroup.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
-	const aggregatedAlbum = item.albumGroup.aggregated;
-	const sourceArtist = item.albumGroup.aggregated?.sourceArtist;
-	const { status, albumIssues } = item.albumGroup;
+	const targetAlbum = item.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
+	const sourceAlbum = item.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
+	const aggregatedAlbum = item.aggregated;
+	const sourceArtist = item.aggregated?.sourceArtist;
+	const { status, albumIssues } = item;
 	const { id, url, releaseDate, trackCount, mbid, provider, albumArtists } = aggregatedAlbum;
 	const albumTracks = sourceAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
 	const aggregatedTracksList = aggregatedAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
@@ -119,7 +119,7 @@ function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRC
 
 function ActionButtons({ item }: { item: DisplayAlbum }) {
 	const { settings } = useSettings() as SAMBLSettingsContext;
-	const { url, upc, provider } = item.albumGroup.aggregated;
+	const { url, upc, provider } = item.aggregated;
 	const [collapsed, setCollapsed] = useState(true);
 	function toggleState() {
 		setCollapsed(!collapsed);
@@ -200,10 +200,10 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 			.finally(() => { });
 	}
 	console.log(item)
-	const targetAlbum = item.albumGroup.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
-	const sourceAlbum = item.albumGroup.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
+	const targetAlbum = item.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
+	const sourceAlbum = item.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
 	const { searchReason } = item;
-	const { status, albumIssues } = item.albumGroup;
+	const { status, albumIssues } = item;
 	const {
 		provider,
 		id,
@@ -216,9 +216,9 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 		trackCount,
 		albumType,
 		mbid,
-	} = item.albumGroup.aggregated;
-	const albumTracks = item.albumGroup.aggregated?.mediums.flatMap((medium) => medium.tracks) || [];
-	const sourceArtist = item.albumGroup.aggregated?.sourceArtist;
+	} = item.aggregated;
+	const albumTracks = item.aggregated?.mediums.flatMap((medium) => medium.tracks) || [];
+	const sourceArtist = item.aggregated?.sourceArtist;
 
 	async function refreshData(fetchISRCs = false) {
 		setIsLoading(true);
@@ -361,7 +361,7 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 								}
 							</div>
 							}
-							data={item.albumGroup}
+							data={item}
 							refresh={refreshData}
 							open={item.viewingAlbum}
 						/>
@@ -674,7 +674,7 @@ export type listType = "album" | "loadingAlbum" | "artist" | "mixed"
 export function ItemList(props: { items: DisplayAlbum[], type: "album", text?: string, refresh: () => void }): JSX.Element;
 export function ItemList(props: { items: any[], type: listType, text?: string, refresh?: () => void }): JSX.Element;
 
-export default function ItemList({ items, type, text, refresh, viewItem }: { items: any[], type: listType, text?: string, refresh?: () => void, viewItem?: string | null }) {
+export default function ItemList({ items, type, text, refresh, viewItem }: { items: DisplayAlbum[] | any[], type: listType, text?: string, refresh?: () => void, viewItem?: string | null }) {
 	const { settings } = useSettings() as SAMBLSettingsContext;
 	const [searchQuery, setSearchQuery] = useState(""); // State for search query
 	const [filteredItems, setFilteredItems] = useState(items || []); // State for filtered items
@@ -699,15 +699,6 @@ export default function ItemList({ items, type, text, refresh, viewItem }: { ite
 
 
 	useEffect(() => {
-		if (items.some((item) => !("searchReason" in item) && item.type === "album")) { //Type conversion
-			items = items.map((item) => {
-				return {
-					searchReason: undefined,
-					albumGroup: item,
-					viewingAlbum: undefined,
-				}
-			})
-		}	
 		setCurrentItems(items || []);
 	}, [items]);
 
@@ -739,7 +730,7 @@ export default function ItemList({ items, type, text, refresh, viewItem }: { ite
 		}
 		let updatedItems = currentItems as DisplayAlbum[];
 		updatedItems.forEach((item) => {
-			if (item.albumGroup.aggregated.id == viewItem) {
+			if (item.aggregated.id == viewItem) {
 				item.viewingAlbum = true;
 				setHasOpenedItem(false)
 			}
@@ -753,7 +744,7 @@ export default function ItemList({ items, type, text, refresh, viewItem }: { ite
 	}
 
 	const handleItemUpdate = (updatedItem: DisplayAlbum) => {
-		setCurrentItems((prev) => prev.map((item) => (item.albumGroup.aggregated.id === updatedItem.albumGroup.aggregated.id ? updatedItem : item)));
+		setCurrentItems((prev) => prev.map((item) => (item.aggregated.id === updatedItem.aggregated.id ? updatedItem : item)));
 	};
 	return (
 		<div className={styles.listWrapper}>

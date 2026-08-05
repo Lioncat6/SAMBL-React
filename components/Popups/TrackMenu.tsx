@@ -5,7 +5,7 @@ import { AiOutlineFieldNumber } from "react-icons/ai";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import text from "../../utils/text";
 import { AlbumObject, ProviderNamespace, TrackObject } from "../../types/provider-types";
-import { AggregatedAlbum, AggregatedTrack, AlbumGroup, AlbumStatus, TrackIssue, TrackStatus } from "../../types/aggregated-types";
+import { AggregatedAlbum, AggregatedTrack, AlbumStack, AlbumStatus, TrackIssue, TrackStatus } from "../../types/aggregated-types";
 import Popup from "../Popup";
 import { JSX } from "react";
 import { IoMdRefresh } from "react-icons/io";
@@ -34,7 +34,7 @@ function copyLink(id) {
 	text.handleCopy(url);
 }
 
-function AlbumDetails({ data }: { data: AlbumGroup }) {
+function AlbumDetails({ data }: { data: AlbumStack }) {
 	const targetAlbum = data.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
 	const sourceAlbum = data.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
 	const { status, albumIssues } = data;
@@ -115,7 +115,7 @@ function AlbumDetails({ data }: { data: AlbumGroup }) {
 	);
 }
 
-function AlbumFooter({ data }: { data: AlbumGroup }) {
+function AlbumFooter({ data }: { data: AlbumStack }) {
 	const {
 		copyrights,
 		labels
@@ -257,7 +257,7 @@ function TrackItem({ index, track, album, isrcSource, highlight }: { index: stri
 	);
 }
 
-export function TrackMenuInner({ data, refresh }: { data: AlbumGroup, refresh: () => void, close?: () => void }) {
+export function TrackMenuInner({ data, refresh }: { data: AlbumStack, refresh: () => void, close?: () => void }) {
 	const targetAlbum = data.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
 	const sourceAlbum = data.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
 	const aggregatedAlbum = data.aggregated;
@@ -312,7 +312,7 @@ export function TrackMenuInner({ data, refresh }: { data: AlbumGroup, refresh: (
 	);
 }
 
-export function TrackMenu({ data, refresh, close }: { data: AlbumGroup, refresh: () => void, close?: () => void }) {
+export function TrackMenu({ data, refresh, close }: { data: AlbumStack, refresh: () => void, close?: () => void }) {
 	const targetAlbum = data.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
 	const sourceAlbum = data.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
 	const aggregatedAlbum = data.aggregated;
@@ -342,7 +342,7 @@ export function TrackMenu({ data, refresh, close }: { data: AlbumGroup, refresh:
 	);
 }
 
-export default function TrackMenuPopup({ data, button, refresh, open }: { data: AlbumGroup, button?: JSX.Element, refresh: () => void, open?: boolean }) {
+export default function TrackMenuPopup({ data, button, refresh, open }: { data: AlbumStack, button?: JSX.Element, refresh: () => void, open?: boolean }) {
 	return (
 		<Popup button={button} open={open}>
 			<TrackMenu data={data} refresh={refresh} />

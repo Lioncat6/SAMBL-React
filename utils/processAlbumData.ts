@@ -1,11 +1,11 @@
 import { AlbumObject, ExtendedAlbumObject, ExtendedTrackObject, FullProviderNamespace, PartialArtistObject, ProviderNamespace, TrackObject } from "../types/provider-types";
-import { AggregatedAlbum, AggregatedData, AggregatedMedium, AggregatedTrack, AlbumGroup, AlbumIssue, AlbumMatch, AlbumStatus, BasicTrack, TrackIssue, TrackStatus } from "../types/aggregated-types";
+import { AggregatedAlbum, AggregatedData, AggregatedMedium, AggregatedTrack, AlbumStack, AlbumIssue, AlbumMatch, AlbumStatus, BasicTrack, TrackIssue, TrackStatus } from "../types/aggregated-types";
 import text from "./text";
 import parsers from "../lib/parsers/parsers";
 import medium from "./medium";
 
 export default function processData(sourceAlbums: AlbumObject[], providerAlbums: AlbumObject[] | undefined, targetAlbums: ExtendedAlbumObject[], provider: ProviderNamespace, currentArtist?: PartialArtistObject | null, quick = false, full = false): AggregatedData {
-	let albumData: AlbumGroup[] = [];
+	let albumData: AlbumStack[] = [];
 	let sourceIdsArray: string[] = [];
 	let green = 0;
 	let red = 0;

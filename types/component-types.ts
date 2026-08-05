@@ -1,19 +1,19 @@
 import { AlbumObject, ArtistObject, ExternalUrlData, MediumObject, ProviderNamespace, UrlData, UrlType } from "./provider-types";
-import { AggregatedAlbum, AggregatedArtist, AggregatedTrack, AlbumGroup, AlbumMatch } from "./aggregated-types";
+import { AggregatedAlbum, AggregatedArtist, AggregatedTrack, AlbumStack, AlbumMatch } from "./aggregated-types";
 import { JSX } from "react";
 import { SeederNamespace } from "./seeder-types";
 import { DeepSearchData } from "./api-types";
 
 export type searchReason = "artist" | "title";
 export type albumSearchReason = searchReason | "track";
-export class DisplayAlbum {
-    searchReason?: albumSearchReason
-    albumGroup: DisplayAlbumGroup;
-    viewingAlbum?: boolean
+
+export class DisplayAlbumStack extends AlbumStack {
+    albums: DisplayAlbumMatch[];
 }
 
-export class DisplayAlbumGroup extends AlbumGroup {
-    albums: DisplayAlbumMatch[];
+export class DisplayAlbum extends DisplayAlbumStack {
+    searchReason?: albumSearchReason
+    viewingAlbum?: boolean
 }
 
 export class DisplayAlbumMatch extends AlbumMatch {
@@ -74,7 +74,7 @@ export class ArtistPageData extends AggregatedArtist {
     names?: string[] | null;
     mbData?: ArtistObject | null;
     viewingAlbum?: string | null;
-    viewedAlbum?: AlbumGroup | null
+    viewedAlbum?: AlbumStack | null
 }
 
 export type SearchBoxType = "search" | "find" | "lookup";

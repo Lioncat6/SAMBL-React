@@ -24,25 +24,25 @@ const variousArtistsList = ["Various Artists", "Artistes Variés", "Verschiedene
 const FilterFunctions: Record<listFilter, (items: DisplayAlbum[]) => DisplayAlbum[]> = {
     // These functions are only called when the filter is not selected, with the exception of exclusive filters
     'showGreen': (items) => {
-        return items.filter((item) => item.albumGroup.status != "green")
+        return items.filter((item) => item.status != "green")
     },
     'showBlue': (items) => {
-        return items.filter((item) => item.albumGroup.status != "blue")
+        return items.filter((item) => item.status != "blue")
     },
     'showOrange': (items) => {
-        return items.filter((item) => item.albumGroup.status != "orange")
+        return items.filter((item) => item.status != "orange")
     },
     'showRed': (items) => {
-        return items.filter((item) => item.albumGroup.status != "red")
+        return items.filter((item) => item.status != "red")
     },
     'showVarious': (items) => {
-        return items.filter((item) => item.albumGroup.aggregated.albumArtists.some((artist) => !variousArtistsList.includes(artist.name)))
+        return items.filter((item) => item.aggregated.albumArtists.some((artist) => !variousArtistsList.includes(artist.name)))
     },
     'onlyIssues': (items) => {
-        return items.filter((item) => item.albumGroup.albumIssues.length > 0)
+        return items.filter((item) => item.albumIssues.length > 0)
     },
     'featuredAlbums': (items) => {
-        return items.filter((item) => (item.albumGroup.aggregated.sourceArtist?.id && !item.albumGroup.aggregated.albumArtists.map((artist) => artist.id).includes(item.albumGroup.aggregated.sourceArtist.id)))
+        return items.filter((item) => (item.aggregated.sourceArtist?.id && !item.aggregated.albumArtists.map((artist) => artist.id).includes(item.aggregated.sourceArtist.id)))
     }
 }
 
@@ -55,18 +55,18 @@ const statusSortOrder: AlbumStatus[] = ["red", "orange", "blue", "green"]
 
 const SortFunctions: Record<listSort, (items: DisplayAlbum[], ascending: boolean) => DisplayAlbum[]> = {
     'count': (items, ascending) => {
-        return items.sort((a, b) => ascending ? (a.albumGroup.aggregated.trackCount || 0) - (b.albumGroup.aggregated.trackCount || 0) : (b.albumGroup.aggregated.trackCount || 0) - (a.albumGroup.aggregated.trackCount || 0))
+        return items.sort((a, b) => ascending ? (a.aggregated.trackCount || 0) - (b.aggregated.trackCount || 0) : (b.aggregated.trackCount || 0) - (a.aggregated.trackCount || 0))
     },
     'date': (items, ascending) => {
-        return items.sort((a, b) => ascending ? (getIntTime(a.albumGroup.aggregated.releaseDate)) - (getIntTime(b.albumGroup.aggregated.releaseDate)) : (getIntTime(b.albumGroup.aggregated.releaseDate)) - (getIntTime(a.albumGroup.aggregated.releaseDate)))
+        return items.sort((a, b) => ascending ? (getIntTime(a.aggregated.releaseDate)) - (getIntTime(b.aggregated.releaseDate)) : (getIntTime(b.aggregated.releaseDate)) - (getIntTime(a.aggregated.releaseDate)))
     },
     'name': (items, ascending) => {
-        return items.sort((a, b) => ascending ? a.albumGroup.aggregated.name.localeCompare(b.albumGroup.aggregated.name) : b.albumGroup.aggregated.name.localeCompare(a.albumGroup.aggregated.name))
+        return items.sort((a, b) => ascending ? a.aggregated.name.localeCompare(b.aggregated.name) : b.aggregated.name.localeCompare(a.aggregated.name))
     },
     'status': (items, ascending) => {
         return items.sort((a, b) => {
-            const indexA = statusSortOrder.indexOf(a.albumGroup.status);
-            const indexB = statusSortOrder.indexOf(b.albumGroup.status);
+            const indexA = statusSortOrder.indexOf(a.status);
+            const indexB = statusSortOrder.indexOf(b.status);
             return ascending ? indexA - indexB : indexB - indexA;
         });
     },
@@ -90,10 +90,10 @@ function searchItems(items: DisplayAlbum[], query: string): DisplayAlbum[] {
         const lowerCaseQuery = query.toLowerCase().trim();
         updatedItems = updatedItems
             .map((item) => {
-                const matchesTitle = item.albumGroup.aggregated.name.toLowerCase().includes(lowerCaseQuery);
+                const matchesTitle = item.aggregated.name.toLowerCase().includes(lowerCaseQuery);
                 let matchesArtist: boolean = false;
-                if (!matchesTitle && item.albumGroup.aggregated.artistNames) {
-                    let artistArray = Array.isArray(item.albumGroup.aggregated.artistNames) ? item.albumGroup.aggregated.artistNames : [item.albumGroup.aggregated.artistNames]
+                if (!matchesTitle && item.aggregated.artistNames) {
+                    let artistArray = Array.isArray(item.aggregated.artistNames) ? item.aggregated.artistNames : [item.aggregated.artistNames]
                     matchesArtist = artistArray.some((artist) => 
                         artist.toLocaleLowerCase().includes(lowerCaseQuery)
                     )
@@ -102,12 +102,12 @@ function searchItems(items: DisplayAlbum[], query: string): DisplayAlbum[] {
                 let matchingTracks: number[] = []
                 // If we can't find a title or artist match
                 if (!(matchesTitle || matchesArtist)) {
-                    const sourceAlbum = item.albumGroup.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
-                    const aggregatedTracks = item.albumGroup.aggregated.mediums.flatMap((medium) => medium.tracks);
+                    const sourceAlbum = item.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
+                    const aggregatedTracks = item.aggregated.mediums.flatMap((medium) => medium.tracks);
                     const sourceTracks = sourceAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
                     const useAggregatedTracks = aggregatedTracks.length > 0
-                    const targetAlbum = item.albumGroup.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
-                    const useMBTracks = targetAlbum?.mediums.flatMap((medium) => medium.tracks)?.length == item.albumGroup.aggregated.trackCount
+                    const targetAlbum = item.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
+                    const useMBTracks = targetAlbum?.mediums.flatMap((medium) => medium.tracks)?.length == item.aggregated.trackCount
                     const mbTracks = targetAlbum?.mediums.flatMap((medium) => medium.tracks)
                     let itemTracks = useAggregatedTracks ? aggregatedTracks : useMBTracks ? mbTracks : sourceTracks as DisplayTrack[]
                     itemTracks?.forEach((track) => {

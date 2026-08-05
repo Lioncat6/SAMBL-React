@@ -8,9 +8,9 @@ import { SAMBLSettingsContext, useSettings } from "../../components/SettingsCont
 import processData from "../../utils/processAlbumData";
 import { AlbumData, AlbumObject, ArtistObject, ExtendedAlbumData, ExtendedAlbumObject, ProviderNamespace } from "../../types/provider-types";
 import { SAMBLApiError, ArtistData, ReleaseCountData } from "../../types/api-types"
-import { ArtistPageData, SAMBLError } from "../../types/component-types";
+import { ArtistPageData, DisplayAlbum, SAMBLError } from "../../types/component-types";
 import ErrorPage from "../../components/ErrorPage";
-import { AggregatedAlbum, AggregatedData, AlbumGroup } from "../../types/aggregated-types";
+import { AggregatedAlbum, AggregatedData, AlbumStack } from "../../types/aggregated-types";
 import toasts from "../../utils/toasts";
 import { set } from "nprogress";
 import text from "../../utils/text";
@@ -96,12 +96,12 @@ export async function getServerSideProps(context) {
 			};
 		}
 
-		async function getViewedAlbum(): Promise<AlbumGroup | null> {
+		async function getViewedAlbum(): Promise<AlbumStack | null> {
 			if (viewingAlbum) {
 				const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/compareSingleAlbum?provider_id=${viewingAlbum}&provider=${provider}`);
 				if (response.ok) {
 					try {
-						return (await response.json()) as AlbumGroup
+						return (await response.json()) as AlbumStack
 					} catch {
 						return null;
 					}
@@ -272,7 +272,7 @@ export default function Artist({ artist, error }: { artist: ArtistPageData, erro
 		}
 	}, [router.isReady, router.query.viewingAlbum]);
 	const [isQuickFetched, setIsQuickFetched] = useState(false);
-	const [albums, setAlbums] = useState<AlbumGroup[]>([]);
+	const [albums, setAlbums] = useState<DisplayAlbum[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [statusText, setStatusText] = useState("Loading albums...");
 	// const { setExportData } = useExport(); // Access setExportData from context
