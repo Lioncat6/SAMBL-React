@@ -12,6 +12,7 @@ import { AggregatedAlbum, AlbumStack } from "../../types/aggregated-types";
 import { TrackMenu, TrackMenuInner } from "../../components/Popups/TrackMenu";
 import styles from "../../styles/Seed.module.css";
 import { ActionButton } from "../../components/buttons";
+import { ReleaseSeedButton } from "../../components/ReleaseSeed";
 
 
 async function getAlbum(url?: string, provider?: ProviderNamespace, artistId?: string, albumId?: string): Promise<AlbumStack | null> {
@@ -120,7 +121,7 @@ export default function Search({ data, error }: {data?: AlbumStack | null, error
                 <h1 id="searchFor">Seed Release</h1>
             </div>
             <SearchBox type="lookup" />
-            <ActionButton type="seed" onClick={() => {}} data={data} />
+            <ReleaseSeedButton data={aggregatedAlbum} />
             <br />
             <div id="contentContainer" >
                 <div id="albumContainer" className={styles.albumContainer}>

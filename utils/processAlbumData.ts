@@ -4,7 +4,7 @@ import text from "./text";
 import parsers from "../lib/parsers/parsers";
 import medium from "./medium";
 
-export default function processData(sourceAlbums: AlbumObject[], providerAlbums: AlbumObject[] | undefined, targetAlbums: ExtendedAlbumObject[], provider: ProviderNamespace, currentArtist?: PartialArtistObject | null, quick = false, full = false): AggregatedData {
+export default function processData(sourceAlbums: AlbumObject[], providerAlbums: AlbumObject[] | undefined, targetAlbums: ExtendedAlbumObject[], provider: ProviderNamespace, currentArtist?: PartialArtistObject | null, quick = false, full = false, aggregateSourceTracks = false): AggregatedData {
 	let albumData: AlbumStack[] = [];
 	let sourceIdsArray: string[] = [];
 	let green = 0;

@@ -30,7 +30,7 @@ function buildEditNote(edit: string, provider: string, sourceUrl: string, artist
 function buildDeepSearchEditNote(data: DeepSearchSelection): string {
     const artist = data.data.mbArtists.find(artist => artist.id == data.mbid) || data.data.mbArtists[0];
     const sourceArtist = data.data.sourceArtist;
-
+    
     function getTrackArtists(album: AggregatedAlbum): PartialArtistObject[] {
         const tracks = album.mbAlbum?.albumTracks || [];
         const albumArtists = album.mbAlbum?.albumArtists || [];
@@ -89,9 +89,20 @@ function buildDeepSearchEditNote(data: DeepSearchSelection): string {
     );
 }
 
+function buildSeedReleaseEditNote(data: AggregatedAlbum): string {
+    return encode(
+        `Release seeded from ''SAMBL''%0A` +
+        `'''Provider:''' ${data.provider}%0A` +
+        `'''Source:''' ${data.url.url}%0A` +
+        `'''Artist:''' ${data.sourceArtist?.name || "Unknown"} | ${data.sourceArtist?.url.url || "Unknown"}%0A` +
+        `%0A'''SAMBL ${process.env.NEXT_PUBLIC_VERSION}''': ${process.env.NEXT_PUBLIC_URL || "https://sambl.lioncat6.com"} | https://github.com/lioncat6/SAMBL-React`
+    );
+}
+
 const editNoteBuilder = {
     buildEditNote,
-    buildDeepSearchEditNote
+    buildDeepSearchEditNote,
+    buildSeedReleaseEditNote,
 }
 
 export default editNoteBuilder;

@@ -12,6 +12,7 @@ import type {
 } from '@kellnerd/musicbrainz/seeding/release';
 import { ExternalUrlData, PartialArtistObject } from "../types/provider-types";
 import { ReleaseGroupType } from "@kellnerd/musicbrainz/data/release-group";
+import editNoteBuilder from "./editNoteBuilder";
 
 function convertDate(SAMBLDate: string): PartialDate | undefined {
     const parts = SAMBLDate.split('-').map((part) => parseInt(part, 10));
@@ -35,7 +36,7 @@ function convertUrls(SAMBLUrl: ExternalUrlData): ReleaseUrlSeed[] {
     if (SAMBLUrl.mbTypes.length == 0) return [{ url: SAMBLUrl.url }];
     return SAMBLUrl.mbTypes.map((type) => ({
         url: SAMBLUrl.url,
-        link_type_id: type,
+        link_type: type,
     }));
 }
 
@@ -116,7 +117,7 @@ function buildSeed(album: AggregatedAlbum) {
         script: undefined, //TODO: Determine script
         urls: convertUrls(album.url),
         annotation: undefined, //TODO: Add detail text to albums,
-        edit_note: undefined,
+        edit_note: editNoteBuilder.buildSeedReleaseEditNote(album),
         redirect_uri: undefined //TODO: Release Actions,
     };
     return flatten(seed);

@@ -263,11 +263,11 @@ export function TrackMenuInner({ data, refresh }: { data: AlbumStack, refresh: (
 	const aggregatedAlbum = data.aggregated;
 	const sourceArtist = data.aggregated?.sourceArtist;
 	const { status, albumIssues } = data;
-	const { id, url, releaseDate, trackCount, mbid, provider, albumArtists } = aggregatedAlbum;
+	const { id, url, releaseDate, trackCount, mbid, provider, albumArtists } = aggregatedAlbum; //TODO: Medium Support
 	const albumTracks = sourceAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
 	const targetAlbumTracks = targetAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
 	const aggregatedTracksList = aggregatedAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
-
+	const sourceAlbumTracks = sourceAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
 
 	let trackData: TrackObject[] | AggregatedTrack[] = [];
 	let trackDataSource: ProviderNamespace | null = null as ProviderNamespace | null;
@@ -276,14 +276,15 @@ export function TrackMenuInner({ data, refresh }: { data: AlbumStack, refresh: (
 		if (aggregatedTracksList?.length > 0) {
 			trackData = aggregatedTracksList;
 			hasFullTrackData = true;
-		} else if (aggregatedTracksList?.length > 0) {
-			trackData = aggregatedTracksList;
-			trackDataSource = aggregatedAlbum.provider;
+		} else if (sourceAlbum && sourceAlbumTracks?.length > 0) {
+			trackData = sourceAlbumTracks;
+			trackDataSource = sourceAlbum.provider;
 		} else if (targetAlbumTracks && targetAlbumTracks.length > 0) {
 			trackData = targetAlbumTracks;
 			trackDataSource = "musicbrainz";
 		}
 	}
+	console.log(data)
 	getTrackData();
 	return (
 		<><AlbumDetails data={data} />

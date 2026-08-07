@@ -1,14 +1,9 @@
 import styles from "../styles/buttons.module.css";
 import Link from "next/link";
-import text from "../utils/text";
-import editNoteBuilder from "../utils/editNoteBuilder";
 import { Button } from "@headlessui/react";
-import toasts from "../utils/toasts";
 import editUrlBuilder from "../utils/editUrlBuilder";
-import { DeepSearchData } from "../types/api-types";
 import { ArtistObject } from "../types/provider-types";
 import DeepSearchMenuPopup from "./Popups/DeepSearchMenu";
-import { AggregatedAlbum } from "../types/aggregated-types";
 import { FaMagnifyingGlass, FaSeedling } from "react-icons/fa6";
 
 export default function AddButtons({ artist }: { artist: ArtistObject }) {
@@ -35,23 +30,25 @@ export default function AddButtons({ artist }: { artist: ArtistObject }) {
 	);
 }
 
-function LookupButtonInner(){
+function LookupButtonInner() {
 	return <><FaMagnifyingGlass /> Lookup</>
 }
 
-function FindButtonInner(){
+function FindButtonInner() {
 	return <><FaMagnifyingGlass /> Find</>
 }
 
-function SearchButtonInner(){
+function SearchButtonInner() {
 	return <>Search</>
 }
 
-function SeedButtonInner(){
-	return <><FaSeedling /> Seed Release</>
+function SeedButtonInner() {
+	return (
+		<><FaSeedling /> Seed Release</>
+	)
 }
 
-export function ActionButton({ type, onClick, isLoading, data }: { type: "lookup" | "find" | "search" | "seed", onClick: () => void, isLoading?: boolean, data?: any}) {
+export function ActionButton({ type, onClick, isLoading, data }: { type: "lookup" | "find" | "search" | "seed", onClick: () => void, isLoading?: boolean, data?: any }) {
 	let buttonContent = <>Enter</>;
 	let className = styles.actionButton;
 	let buttonId = "actionButton";

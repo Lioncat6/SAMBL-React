@@ -1,6 +1,6 @@
 import { ProviderNamespace } from "../types/provider-types"
 import { NextApiRequest, NextApiResponse } from "next";
-import { DeepSearchData, DeepSearchMethod, SAMBLApiError } from "../types/api-types"
+import { SAMBLApiError } from "../types/api-types"
 
 class ApiErrorHandler {
     private request: string;
