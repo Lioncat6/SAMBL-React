@@ -1,5 +1,5 @@
 import { PartialDate } from "@kellnerd/musicbrainz/common-types";
-import { AggregatedAlbum, AggregatedLabel } from "../types/aggregated-types";
+import { AggregatedAlbum, AggregatedArtist, AggregatedLabel, AlbumStack } from "../types/aggregated-types";
 import type {
     ArtistCreditNameSeed,
     ArtistCreditSeed,
@@ -68,18 +68,22 @@ export function flatten(record: Record<string, any>, preservedKeys: string[] = [
 	return flatRecord;
 }
 
-function buildSeed(album: AggregatedAlbum) {
+function buildSeed(stack: AlbumStack) {
+    const aggregatedAlbum = stack.aggregated;
+    const sourceAlbum = stack.albums.find((match) => match.type === "source")?.album;
+    const targetAlbum = stack.albums.find((match) => match.type === "target")?.album;
     // Artist PreProcess
     // TODO: Move MBID obtaining to compareSingleAlbum API code
-    if (album.sourceArtist?.id && album.sourceArtist?.mbid) {
-        let id = album.sourceArtist.id;
-        let mbid = album.sourceArtist.mbid;
-        album.albumArtists.forEach((artist) => {
+    console.log(aggregatedAlbum.sourceArtist)
+    if (aggregatedAlbum.sourceArtist?.id && aggregatedAlbum.sourceArtist?.mbid) {
+        let id = aggregatedAlbum.sourceArtist.id;
+        let mbid = aggregatedAlbum.sourceArtist.mbid;
+        aggregatedAlbum.albumArtists.forEach((artist) => {
             if (artist.id == id && !artist.mbid) {
                 artist.mbid = mbid;
             }
         });
-        album.mediums.forEach((medium) => {
+        aggregatedAlbum.mediums.forEach((medium) => {
             medium.tracks.forEach((track) => {
                 track.trackArtists.forEach((artist) => {
                     if (artist.id == id && !artist.mbid) {
@@ -91,18 +95,18 @@ function buildSeed(album: AggregatedAlbum) {
     }
 
     const seed: ReleaseSeed = {
-        name: album.name,
-        artist_credit: convertArtistCredit(album.albumArtists),
-        release_group: album.name,
-        barcode: album.upc?.toString(),
-        events: album.releaseDate ? [{
-            date: convertDate(album.releaseDate),
+        name: aggregatedAlbum.name,
+        artist_credit: convertArtistCredit(aggregatedAlbum.albumArtists),
+        release_group: undefined, // Leave blank since MBS fills based on release title
+        barcode: aggregatedAlbum.upc?.toString(),
+        events: aggregatedAlbum.releaseDate ? [{
+            date: convertDate(aggregatedAlbum.releaseDate),
         }] : undefined,
-        labels: convertLabels(album.labels),
+        labels: convertLabels(aggregatedAlbum.labels),
         status: "Official", //TODO: Determine release status
-        type: convertReleaseGroupType(album.albumType),
+        type: convertReleaseGroupType(aggregatedAlbum.albumType),
         packaging: undefined, //TODO: Determine packaging
-        mediums: album.mediums.map<MediumSeed>((medium) => ({
+        mediums: (aggregatedAlbum.mediums.length > 0 ? aggregatedAlbum.mediums : sourceAlbum?.mediums || []).map<MediumSeed>((medium) => ({
             format: medium.format || undefined,
             name: medium.name || undefined,
             track: medium.tracks.map<TrackSeed>((track) => ({
@@ -115,9 +119,9 @@ function buildSeed(album: AggregatedAlbum) {
         })),
         language: undefined, //TODO: Determine language
         script: undefined, //TODO: Determine script
-        urls: convertUrls(album.url),
+        urls: convertUrls(aggregatedAlbum.url),
         annotation: undefined, //TODO: Add detail text to albums,
-        edit_note: editNoteBuilder.buildSeedReleaseEditNote(album),
+        edit_note: editNoteBuilder.buildSeedReleaseEditNote(aggregatedAlbum),
         redirect_uri: undefined //TODO: Release Actions,
     };
     return flatten(seed);

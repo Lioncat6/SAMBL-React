@@ -308,6 +308,7 @@ async function getArtistById(tidalId: string) {
     await refreshApi(); // /artists/${tidalId}?countryCode=US&include=artists&include=artists.profileArt&include=artists.albums&include=albums.artists&include=albums.coverArt&include=artists.albums.coverArt
     try {
         const data = await tidalApi.GET(`/artists/{id}`, { params: { path: { id: tidalId }, query: { countryCode: "US", include: ["artists", "artists.profileArt", "artists.albums", "albums.artists", "albums.coverArt", "artists.albums.coverArt"] } } });
+        console.log(JSON.stringify(data))
         if (data.data) {
             return JSON.parse(JSON.stringify(data.data)) as typeof data.data;
         } else {

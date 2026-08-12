@@ -17,9 +17,9 @@ import { ReleaseSeedButton } from "../../components/ReleaseSeed";
 
 async function getAlbum(url?: string, provider?: ProviderNamespace, artistId?: string, albumId?: string): Promise<AlbumStack | null> {
     // provider_id, provider, url, mbid, artist_id
-    let apiUrl = `http://localhost:${process.env.PORT || 3000}/api/compareSingleAlbum?artist_id=${artistId}&provider_id=${albumId}&provider=${provider}`;
+    let apiUrl = `http://localhost:${process.env.PORT || 3000}/api/compareSingleAlbum?artist_id=${artistId}&provider_id=${albumId}&provider=${provider}&fetchISRCs&resolveArtists`;
     if (url) {
-        apiUrl = `http://localhost:${process.env.PORT || 3000}/api/compareSingleAlbum?url=${url}`;
+        apiUrl = `http://localhost:${process.env.PORT || 3000}/api/compareSingleAlbum?url=${url}&fetchISRCs&resolveArtists`;
     }
     const response = await fetch(apiUrl);
     if (response.ok) {
@@ -121,7 +121,7 @@ export default function Search({ data, error }: {data?: AlbumStack | null, error
                 <h1 id="searchFor">Seed Release</h1>
             </div>
             <SearchBox type="lookup" />
-            <ReleaseSeedButton data={aggregatedAlbum} />
+            <ReleaseSeedButton data={data} />
             <br />
             <div id="contentContainer" >
                 <div id="albumContainer" className={styles.albumContainer}>

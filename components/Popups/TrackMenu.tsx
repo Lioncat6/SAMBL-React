@@ -302,7 +302,7 @@ export function TrackMenuInner({ data, refresh }: { data: AlbumStack, refresh: (
 							index={key}
 							track={value}
 							album={data.aggregated}
-							isrcSource={albumTracks[(value.trackNumber || 1) - 1]?.isrcs.length > 0 ? sourceAlbum?.provider || aggregatedAlbum.provider : "musicbrainz"}
+							isrcSource={albumTracks[0]?.isrcs.length > 0 ? sourceAlbum?.provider || aggregatedAlbum.provider : "musicbrainz"}
 							highlight={false}
 						/>
 					)

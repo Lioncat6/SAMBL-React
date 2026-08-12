@@ -1,9 +1,10 @@
 import { useRef } from "react";
 import seed from "../utils/seed";
-import { AggregatedAlbum } from "../types/aggregated-types";
+import { AggregatedAlbum, AlbumStack } from "../types/aggregated-types";
 import { ActionButton } from "./buttons";
+import { AlbumObject } from "../types/provider-types";
 
-export function ReleaseSeedButton({ data }: { data?: AggregatedAlbum }) {
+export function ReleaseSeedButton({ data }: { data?: AlbumStack }) {
 	if (!data) return;
 	const seedData = seed.buildSeed(data);
 	function preferArray<T>(maybeArray: T | T[]) {
