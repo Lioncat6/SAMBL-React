@@ -72,27 +72,6 @@ function buildSeed(stack: AlbumStack) {
     const aggregatedAlbum = stack.aggregated;
     const sourceAlbum = stack.albums.find((match) => match.type === "source")?.album;
     const targetAlbum = stack.albums.find((match) => match.type === "target")?.album;
-    // Artist PreProcess
-    // TODO: Move MBID obtaining to compareSingleAlbum API code
-    console.log(aggregatedAlbum.sourceArtist)
-    if (aggregatedAlbum.sourceArtist?.id && aggregatedAlbum.sourceArtist?.mbid) {
-        let id = aggregatedAlbum.sourceArtist.id;
-        let mbid = aggregatedAlbum.sourceArtist.mbid;
-        aggregatedAlbum.albumArtists.forEach((artist) => {
-            if (artist.id == id && !artist.mbid) {
-                artist.mbid = mbid;
-            }
-        });
-        aggregatedAlbum.mediums.forEach((medium) => {
-            medium.tracks.forEach((track) => {
-                track.trackArtists.forEach((artist) => {
-                    if (artist.id == id && !artist.mbid) {
-                        artist.mbid = mbid;
-                    }
-                });
-            });
-        });
-    }
 
     const seed: ReleaseSeed = {
         name: aggregatedAlbum.name,
