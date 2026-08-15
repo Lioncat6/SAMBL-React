@@ -5,22 +5,24 @@ import processData from "../../utils/processAlbumData";
 import { NextApiRequest, NextApiResponse } from "next";
 import normalizeVars from "../../utils/normalizeVars";
 import { IRelease } from "musicbrainz-api";
-import { ArtistSearchData, SAMBLApiError } from "../../types/api-types";
+import { APITimingStage, ArtistSearchData, SAMBLAPIResponse } from "../../types/api-types";
 import { AlbumObject, ArtistObject, PartialArtistObject, ProviderNamespace, TrackObject } from "../../types/provider-types";
 import medium from "../../utils/medium";
-import { AlbumStack } from "../../types/aggregated-types";
+import { AggregatedAlbum, AlbumStack } from "../../types/aggregated-types";
 import objectUtils from "../../utils/objectUtils";
+import scriptAndLanguage from "../../utils/scriptAndLanguage";
+import { Stages } from "../../utils/timings";
 
-async function lookupArtists(artists: PartialArtistObject[], provider: ProviderNamespace): Promise<Map<string, string|null>> {
+async function lookupArtists(artists: PartialArtistObject[], provider: ProviderNamespace): Promise<Map<string, string | null>> {
     let regexProvider = provider ? providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject", "buildUrlSearchQuery"]) : false;
-    let idMap: Map<string, string|null> = new Map();
+    let idMap: Map<string, string | null> = new Map();
     if (regexProvider) {
         let urlQuery = regexProvider.buildUrlSearchQuery("artist", artists.map((artist) => artist.url.url));
         if (urlQuery) {
             const urlResults = await musicbrainz.getIdsByUrlQuery(urlQuery);
             if (urlResults) {
                 for (let artist of artists) {
-                   idMap.set(artist.id, urlResults[artist.url.url] || null);
+                    idMap.set(artist.id, urlResults[artist.url.url] || null);
                 }
             }
             return idMap;
@@ -37,7 +39,7 @@ async function lookupArtists(artists: PartialArtistObject[], provider: ProviderN
 
 async function resovleArtistMBIDs(album: AlbumStack) {
     let artistProviderMap: Map<ProviderNamespace, PartialArtistObject[]> = new Map();
-    
+
     const allAlbums = [...album.albums.map((match) => match.album), album.aggregated]
     // Get all artists
     // The flattest of flatmaps
@@ -74,56 +76,90 @@ async function resovleArtistMBIDs(album: AlbumStack) {
     return album;
 }
 
+async function detectLanguageAndScript(album: AggregatedAlbum): Promise<AggregatedAlbum> {
+    return {
+        ...album,
+        language: scriptAndLanguage.detectLanguage(album.name) ?? undefined,
+        script: scriptAndLanguage.detectScript(album.name) ?? undefined
+    }
+}
+
+async function getReleaseISRCs(album: AlbumObject): Promise<AlbumObject | null> {
+    const providerObj = providers.parseProvider(album.provider ?? "", ["getTrackById", "formatTrackObject"]);
+    if (!providerObj) return null;
+    let tracks: (TrackObject | null)[] = [];
+    const sourceTracks = album.mediums.flatMap((medium) => medium.tracks);
+    for (const track of sourceTracks) {
+        const rawTrack = track.id ? await providerObj.getTrackById(track.id) : null
+        const formattedTrack = rawTrack ? providerObj.formatTrackObject(rawTrack) : null;
+        tracks.push(formattedTrack)
+    }
+    let finalTracks: TrackObject[] = [];
+    for (const newTrack in tracks) {
+        finalTracks.push(tracks[newTrack] ?? sourceTracks[newTrack]);
+    }
+    tracks.filter((track) => (track));
+    const newAlbum: AlbumObject = {
+        ...album!,
+        mediums: medium.convertTrackList(finalTracks)
+    }
+    return newAlbum;
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    const stages = new Stages()
     try {
         var { provider_id, provider, url, mbid, artist_id } = normalizeVars(req.query);
 
         const fetchISRCs: boolean = Object.prototype.hasOwnProperty.call(req.query, "fetchISRCs");
         const resolveArtists: boolean = Object.prototype.hasOwnProperty.call(req.query, "resolveArtists");
+        const detectLanguage: boolean = Object.prototype.hasOwnProperty.call(req.query, "detectLanguage");
 
         if (provider_id && !provider) {
-            return res.status(400).json({ error: "Provider must be specified when provider_id is provided" } as SAMBLApiError);
+            return res.status(400).json({ error: { error: "Provider must be specified when provider_id is provided" }, timings: stages.finish()} as SAMBLAPIResponse<AlbumStack>);
         }
         if (!provider_id && !url) {
-            return res.status(400).json({ error: "Either `provider_id` or `url` must be provided" } as SAMBLApiError);
+            return res.status(400).json({ error: { error: "Either `provider_id` or `url` must be provided" }, timings: stages.finish()} as SAMBLAPIResponse<AlbumStack>);
         }
         let parsed_id: string | null = null;
 
         if (url) {
             const urlInfo = providers.getUrlInfo(url);
             if (!urlInfo) {
-                return res.status(400).json({ error: "Invalid URL" } as SAMBLApiError);
+                return res.status(400).json({ error: { error: "Invalid URL" }, timings: stages.finish()} as SAMBLAPIResponse<AlbumStack>);
             }
             parsed_id = urlInfo.id;
             if (!parsed_id) {
-                return res.status(500).json({ error: "Failed to extract provider id from URL" } as SAMBLApiError);
+                return res.status(500).json({ error: { error: "Failed to extract provider id from URL" }, timings: stages.finish()} as SAMBLAPIResponse<AlbumStack>);
             }
             provider = urlInfo.provider;
         } else if (provider && provider_id) {
             parsed_id = provider_id;
         } else {
-            return res.status(400).json({ error: "Parameters `provider_id` and `provider` are required when not using `url`" } as SAMBLApiError);
+            return res.status(400).json({ error: { error: "Parameters `provider_id` and `provider` are required when not using `url`" }, timings: stages.finish()} as SAMBLAPIResponse<AlbumStack>);
         }
         const providerObj = providers.parseProvider(provider || "", ["getAlbumById", "formatAlbumObject", "getTrackById", "formatTrackObject", "getArtistById", "formatArtistObject"]);
 
         if (!providerObj) {
-            return res.status(400).json({ error: "Provider doesn't exist or doesn't support this operation" } as SAMBLApiError);
+            return res.status(400).json({ error: { error: "Provider doesn't exist or doesn't support this operation" }, timings: stages.finish()} as SAMBLAPIResponse<AlbumStack>);
         }
 
         // if (!mbid || !musicbrainz.validateMBID(mbid)) {
-        // 	return res.status(400).json({ error: "Parameter `mbid` is missing or malformed" } as SAMBLApiError);
+        // 	return res.status(400).json({ error: { error: "Parameter `mbid` is missing or malformed" } as SAMBLAPIResponse<AlbumStack>));
         // }
 
         if (!providerObj) {
-            return res.status(400).json({ error: "Provider doesn't exist or doesn't support this operation" } as SAMBLApiError);
+            return res.status(400).json({ error: { error: "Provider doesn't exist or doesn't support this operation" }, timings: stages.finish()} as SAMBLAPIResponse<AlbumStack>);
         }
-
+        stages.start('Album fetch')
         const rawAlbum = await providerObj.getAlbumById(parsed_id, { noCache: true });
+        stages.end('Album fetch')
         if (!rawAlbum) {
-            return res.status(404).json({ error: "Album not found" } as SAMBLApiError);
+            return res.status(404).json({ error: { error: "Album not found" }, timings: stages.finish()} as SAMBLAPIResponse<AlbumStack>);
         }
-        const sourceAlbum = providerObj.formatAlbumObject(rawAlbum);
+        let sourceAlbum = providerObj.formatAlbumObject(rawAlbum);
         let mbAlbum: IRelease | null = null;
+        stages.start('MusicBrainz album Lookup')
         let urlResults = (await musicbrainz.getAlbumsBySourceUrls([sourceAlbum.url.url], ["release-rels"], { noCache: true }))?.urls[0];
         let barcodeResults = sourceAlbum.upc ? (await musicbrainz.getAlbumByUPC(sourceAlbum.upc, { noCache: true })) : [];
         if (urlResults?.relations?.[0]?.release?.id || barcodeResults?.[0]?.id) {
@@ -134,46 +170,41 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 mbAlbum = await musicbrainz.getAlbumByMBID(mbSearch.releases[0].id, ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits", "label-rels", "artist-rels", "genres", "tags", "labels"], { noCache: true });
             }
         }
+        stages.end('MusicBrainz album Lookup')
         mbAlbum = null; // Debug
         const formattedMBAlbum = mbAlbum ? musicbrainz.formatAlbumObject(mbAlbum) : null;
         let albumArtist: ArtistObject | null = null;
         if (artist_id) {
+            stages.start('Source artist lookup')
             const rawArtist = await providerObj.getArtistById(artist_id, { noCache: true });
             if (rawArtist) {
                 albumArtist = providerObj.formatArtistObject(rawArtist);
             }
+            stages.end('Source artist lookup')
+        }
+        const ISRCConfig = providerObj.config?.capabilities.isrcs;
+        // Fetch ISRCs if needed
+        if (fetchISRCs && ISRCConfig?.availability != "never" && ISRCConfig?.presence == "onTrackRefresh") {
+            stages.start('Fetch ISRCs')
+            sourceAlbum = (await getReleaseISRCs(sourceAlbum)) ?? sourceAlbum;
+            stages.end('Fetch ISRCs')
         }
         let albumData = processData([sourceAlbum], [], formattedMBAlbum ? [formattedMBAlbum] : [], providerObj.namespace, albumArtist);
         let album = albumData.albumData?.[0]
-        if (!album) return res.status(500).json({ error: "Error processing album data" } as SAMBLApiError)
-        const ISRCConfig = providerObj.config?.capabilities.isrcs;
-        if (fetchISRCs && ISRCConfig?.availability != "never" && ISRCConfig?.presence == "onTrackRefresh") {
-            let tracks: (TrackObject | null)[] = [];
-            const sourceAlbum = album.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
-            const albumTracks = sourceAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
-            for (const track of albumTracks) {
-                const rawTrack = track.id ? await providerObj.getTrackById(track.id) : null
-                const formattedTrack = rawTrack ? providerObj.formatTrackObject(rawTrack) : null;
-                tracks.push(formattedTrack)
-            }
-            let finalTracks: TrackObject[] = [];
-            for (const newTrack in tracks) {
-                finalTracks.push(tracks[newTrack] || albumTracks[newTrack]);
-            }
-            tracks.filter((track) => (track));
-            const newAlbum: AlbumObject = {
-                ...sourceAlbum!,
-                mediums: medium.convertTrackList(finalTracks)
-            }
-            let finalAlbum = processData([newAlbum], [], formattedMBAlbum ? [formattedMBAlbum] : [], providerObj.namespace, albumArtist);
-            let albumResult = finalAlbum.albumData[0];
-            if (resolveArtists) albumResult = await resovleArtistMBIDs(albumResult);
-            return res.status(200).json(albumResult);
+        if (!album) return res.status(500).json({ error: { error: "Error processing album data" }, timings: stages.finish()} as SAMBLAPIResponse<AlbumStack>)
+        if (detectLanguage) { 
+            stages.start('Detect language')
+            album.aggregated = await detectLanguageAndScript(album.aggregated);
+            stages.end('Detect language')
+        }; 
+        if (resolveArtists) {
+            stages.start('Resolve artists');
+            album = await resovleArtistMBIDs(album);
+            stages.end('Resolve artists')
         }
-        if (resolveArtists) album = await resovleArtistMBIDs(album);
-        return res.status(200).json(album);
+        return res.status(200).json({data: album, timings: stages.finish()} as SAMBLAPIResponse<AlbumStack>);
     } catch (error) {
         logger.error("Error in CompareSingleAlbum API", error);
-        return res.status(500).json({ error: "Internal Server Error", details: error.message } as SAMBLApiError);
+        return res.status(500).json({error: { error: "Internal Server Error", details: error.message }, timings: stages.finish()} as SAMBLAPIResponse<AlbumStack>);
     }
 }
