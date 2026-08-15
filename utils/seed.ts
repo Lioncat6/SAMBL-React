@@ -96,8 +96,8 @@ function buildSeed(stack: AlbumStack) {
                 recording: track.mbid || undefined,
             })),
         })),
-        language: undefined, //TODO: Determine language
-        script: undefined, //TODO: Determine script
+        language: aggregatedAlbum.language?.code,
+        script: aggregatedAlbum.script?.code,
         urls: convertUrls(aggregatedAlbum.url),
         annotation: undefined, //TODO: Add detail text to albums,
         edit_note: editNoteBuilder.buildSeedReleaseEditNote(aggregatedAlbum),
