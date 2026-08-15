@@ -10,6 +10,7 @@ import normalizeVars from "../../utils/normalizeVars";
 import processAlbumData from "../../utils/processAlbumData";
 import text from "../../utils/text";
 import parsers from "../../lib/parsers/parsers";
+import medium from "../../utils/medium";
 
 //TODO: Implement URL based deep search as a preliminary check before checking UPCs
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {;
@@ -132,7 +133,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         artists.push(artist);
                     })  
                     if (useTrackArtists) {
-                        formattedAlbum.albumTracks.forEach((track) => track.trackArtists.forEach((artist) => {
+                        formattedAlbum.mediums.flatMap(medium => medium.tracks).forEach((track) => track.trackArtists.forEach((artist) => {
                             artistArray.push(artist);
                             artists.push(artist);
                         }))
@@ -162,7 +163,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                                     artistArray.push(artist);
                                     artists.push(artist);
                                 })  
-                                formattedAlbum.albumTracks.forEach((track) => track.trackArtists.forEach((artist) => {
+                                formattedAlbum.mediums.flatMap(medium => medium.tracks).forEach((track) => track.trackArtists.forEach((artist) => {
                                     artistArray.push(artist);
                                     artists.push(artist);
                                 }))
@@ -207,7 +208,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return stringSimilarity.compareTwoStrings(text.normalizeText(artistName), text.normalizeText(name));
         }
 
-        const formattedAlbumData = processAlbumData(albumData, mbAlbums, undefined, undefined, sourceProvider.namespace);
+        const formattedAlbumData = processAlbumData(albumData, [], mbAlbums, sourceProvider.namespace, formattedArtistInfo);
 
         let finalArtists: DeepSearchArtist[] = []
 
