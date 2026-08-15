@@ -137,7 +137,7 @@ function ActionButtons({ item }: { item: DisplayAlbum }) {
 					{seeders.getAllSeeders().map((seeder, index) => {
 						if (settings?.enabledSeeders.includes(seeder.namespace) && seeder.providers.includes(provider)) {
 							return (
-								<a key={index} className={styles[`${seeder.namespace}Button`]} href={seeder.buildUrl(url.url, upc)} target="_blank" rel="noopener noreferrer">
+								<a key={index} className={`${styles[`${seeder.namespace}Button`]} ${styles.seederButton}`} href={seeder.buildUrl(url.url, upc)} target="_blank" rel="noopener noreferrer">
 									<div>{seeder.displayName}</div>
 								</a>
 							)
@@ -155,7 +155,7 @@ function SelectionButtons({ item }) {
 		<>
 			<ExportMenuPopup
 				button={
-					<a className={styles.exportButton}>
+					<a className={styles.seederButton}>
 						<div>Export</div>
 					</a>
 				}
@@ -332,7 +332,7 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 								<a href={artist.url.url} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
 									{artist.name}
 								</a>
-								<a href={`../newartist?provider_id=${artist.id}&provider=${artist.provider}`} target="_blank" rel="noopener noreferrer">
+								<a href={`../${!artist.mbid ? 'new' : ''}artist?provider_id=${artist.id}&provider=${artist.provider}${artist.mbid ? `&artist_mbid=${artist.mbid}`: ''}`} target="_blank" rel="noopener noreferrer">
 									<img className={styles.SAMBLicon} src="../assets/images/favicon.svg" alt="SAMBL" />
 								</a>
 							</span>
@@ -486,7 +486,7 @@ function GenericItem({ item }: { item: AlbumObject | ExtendedTrackObject | Artis
 			<a href={artist.url.url} target="_blank" rel="noopener noreferrer" className={styles.artists}>
 				{artist.name}
 			</a>
-			<a href={`../newartist?provider_id=${artist.id}&provider=${artist.provider}`} target="_blank" rel="noopener noreferrer">
+			<a href={`../${!artist.mbid ? 'new' : ''}artist?provider_id=${artist.id}&provider=${artist.provider}${artist.mbid ? `&artist_mbid=${artist.mbid}`: ''}`} target="_blank" rel="noopener noreferrer">
 				<img className={styles.SAMBLicon} src="../assets/images/favicon.svg" alt="SAMBL" />
 			</a>
 		</span>

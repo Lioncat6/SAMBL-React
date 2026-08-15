@@ -295,11 +295,7 @@
   margin-left: auto;
 }
 
-.metButton,
-.atisketButton,
-.harmonyButton,
-.exportButton,
-.yambsButton {
+.seederButton {
   position: relative;
   margin-top: 14px;
   margin-right: 5px;
