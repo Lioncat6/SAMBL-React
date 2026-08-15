@@ -52,6 +52,8 @@ function AlbumDetails({ data }: { data: AlbumStack }) {
 		upc,
 		genres,
 		mbid,
+		language,
+		script
 	} = data.aggregated;
 	const albumTracks = data.aggregated?.mediums.flatMap((medium) => medium.tracks) || [];
 	const sourceArtist = data.aggregated?.sourceArtist;
@@ -85,7 +87,7 @@ function AlbumDetails({ data }: { data: AlbumStack }) {
 							<a href={artist.url.url} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
 								{artist.name}
 							</a>
-							<a href={`../newartist?provider_id=${artist.id}&provider=${artist.provider}`} target="_blank" rel="noopener noreferrer">
+							<a href={`../${!artist.mbid ? 'new' : ''}artist?provider_id=${artist.id}&provider=${artist.provider}${artist.mbid ? `&artist_mbid=${artist.mbid}`: ''}`} target="_blank" rel="noopener noreferrer">
 								<img className={styles.SAMBLicon} src="../assets/images/favicon.svg" alt="SAMBL" />
 							</a>
 						</span>
@@ -108,6 +110,16 @@ function AlbumDetails({ data }: { data: AlbumStack }) {
 						{genres.map((genre, index) => (
 							<span key={index}>{`${index > 0 ? ', ' : ''}${genre}`}</span>
 						))}
+					</div>
+				}
+				{(language || script) &&
+					<div className={styles.langIcons}>
+						{(language) &&
+							<div className={`${styles.langIcon}${language.name ? ` ${styles.hasName}`: ``}`} title={language.name}>{language.code.toUpperCase()}</div>
+						}
+						{(script) &&
+							<div className={`${styles.langIcon}${script.name ? ` ${styles.hasName}`: ``}`} title={script.name}>{script.code.toLocaleLowerCase()}</div>
+						}
 					</div>
 				}
 			</div>
@@ -244,7 +256,7 @@ function TrackItem({ index, track, album, isrcSource, highlight }: { index: stri
 									{artist.name}
 								</a>
 								{artist.provider != "musicbrainz" &&
-									<a href={`../newartist?provider_id=${artist.id}&provider=${artist.provider}`} target="_blank" rel="noopener noreferrer">
+									<a href={`../${!artist.mbid ? 'new' : ''}artist?provider_id=${artist.id}&provider=${artist.provider}${artist.mbid ? `&artist_mbid=${artist.mbid}`: ''}`} target="_blank" rel="noopener noreferrer">
 										<img className={styles.SAMBLicon} src="../assets/images/favicon.svg" alt="SAMBL" />
 									</a>
 								}
@@ -257,7 +269,7 @@ function TrackItem({ index, track, album, isrcSource, highlight }: { index: stri
 	);
 }
 
-export function TrackMenuInner({ data, refresh }: { data: AlbumStack, refresh: () => void, close?: () => void }) {
+export function TrackMenuInner({ data, refresh, isStandalone = true }: { data: AlbumStack, refresh: () => void, close?: () => void, isStandalone?: boolean }) {
 	const targetAlbum = data.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
 	const sourceAlbum = data.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
 	const aggregatedAlbum = data.aggregated;
@@ -288,7 +300,7 @@ export function TrackMenuInner({ data, refresh }: { data: AlbumStack, refresh: (
 	getTrackData();
 	return (
 		<><AlbumDetails data={data} />
-			{!hasFullTrackData && (
+			{(!hasFullTrackData && !isStandalone) && (
 				<div className={styles.noAggregatedTracksWarning}>
 					<MdOutlineWarningAmber /> {data.status == "red" && trackData.length > 0 ? "Add this album to musicbrainz to see full track data" : <><button className={styles.textButton} onClick={() => (refresh())} title={"Refresh Album"}>Refresh</button> this album to see full track data</>}
 					{trackDataSource && (<div className={styles.trackDataSource}>Currently viewing track data from <span>{text.capitalizeFirst(trackDataSource)}</span></div>)}
@@ -322,7 +334,7 @@ export function TrackMenu({ data, refresh, close }: { data: AlbumStack, refresh:
 	const { id, url, releaseDate, trackCount, mbid, provider, albumArtists } = aggregatedAlbum;
 	const albumTracks = sourceAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
 	const aggregatedTracksList = aggregatedAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
-	
+
 	return (
 		<>
 			<div className={styles.trackBg} style={{ "--background-image": `url(${aggregatedAlbum.imageUrl})` } as React.CSSProperties} >

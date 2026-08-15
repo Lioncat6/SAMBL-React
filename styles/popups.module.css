@@ -565,6 +565,7 @@
   margin-left: 4px;
   width: 100%;
   overflow: hidden;
+  text-align: left;
 }
 
 .trackTopRow {
@@ -1080,4 +1081,24 @@
   text-overflow: ellipsis;
   width: -webkit-fill-available;
   width: -moz-available;
+}
+
+.langIcons {
+  text-align: left;
+}
+
+.langIcon {
+  display: inline-block;
+  margin-right: 5px;
+  border-radius: 5px;
+  padding: 2px;
+  font-size: smaller;
+  color: var(--foreground-secondary);
+  font-weight: bold;
+  font-family: 'Courier New', Courier, monospace;
+  background-color: var(--background-secondary);
+}
+
+.langIcon.hasName {
+  cursor: help;
 }
