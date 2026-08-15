@@ -64,8 +64,21 @@ export class UPCData {
     upcs: string[]
 }
 
-export class ReleaseCountData { 
+export class ReleaseCountData {
     releaseCount: number
     ownCount: number
     featuredCount?: number | null
+}
+
+export interface APITimingStage { name: string, duration: number } 
+
+export class APITimingData {
+    totalDuration: number;
+    stages: APITimingStage[]
+}
+
+export class SAMBLAPIResponse<T> {
+    error?: SAMBLApiError
+    data?: T
+    timings: APITimingData
 }
