@@ -17,7 +17,7 @@ import editNoteBuilder from "../utils/editNoteBuilder";
 import { IoFilter } from "react-icons/io5";
 import { DisplayAlbum, FilterData } from "../types/component-types";
 import seeders from "../lib/seeders/seeders";
-import { AggregatedAlbum, AggregatedArtist } from "../types/aggregated-types";
+import { AggregatedAlbum, AggregatedArtist, AlbumStack } from "../types/aggregated-types";
 import filters from "../lib/filters";
 import ExportMenuPopup from "./Popups/ExportMenu";
 import TrackMenuPopup from "./Popups/TrackMenu";
@@ -25,6 +25,7 @@ import FilterMenuPopup from "./Popups/FilterMenu";
 import toasts from "../utils/toasts";
 import { AlbumObject, ArtistObject, ExtendedTrackObject, ObjectType, ProviderNamespace, TrackObject } from "../types/provider-types";
 import { MdAlbum, MdAudiotrack, MdPerson } from "react-icons/md";
+import { SAMBLAPIResponse } from "../types/api-types";
 
 function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRCs: boolean) => void }) {
 	const targetAlbum = item.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
@@ -168,38 +169,6 @@ function SelectionButtons({ item }) {
 const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; selecting?: boolean; onUpdate?: (updatedItem: DisplayAlbum) => void }) => {
 	const [isLoading, setIsLoading] = useState(false);
 	const exportState = useExportState()?.exportState;
-
-	let toastProperties: ToastOptions = {
-		position: "top-left",
-		autoClose: 5000,
-		hideProgressBar: false,
-		closeOnClick: false,
-		pauseOnHover: true,
-		draggable: true,
-		progress: undefined,
-
-		transition: Flip,
-	};
-	async function dispError(message, type = "warn") {
-		if (type === "error") {
-			toast.error(message, toastProperties);
-		} else {
-			toast.warn(message, toastProperties);
-		}
-	}
-	async function dispPromise(promise: Promise<any>, message: string): Promise<any> {
-		return toast
-			.promise(
-				promise,
-				{
-					pending: message,
-					error: "Data not found!",
-				},
-				toastProperties
-			)
-			.finally(() => { });
-	}
-	console.log(item)
 	const targetAlbum = item.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
 	const sourceAlbum = item.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
 	const { searchReason } = item;
@@ -222,13 +191,23 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 
 	async function refreshData(fetchISRCs = false) {
 		setIsLoading(true);
-		const response = await dispPromise(fetch(`/api/compareSingleAlbum?url=${url.url}&mbid=${sourceArtist?.mbid}&artist_id=${sourceArtist?.id}${fetchISRCs ? '&fetchISRCs' : ""}`), "Refreshing album...");
-		setIsLoading(false);
-		if (response.ok) {
-			const updatedItem = await response.json();
-			if (onUpdate) onUpdate(updatedItem);
-		} else {
-			dispError("Failed to refresh album data!", "error");
+		try {
+			const response = await toasts.dispPromise(fetch(`/api/compareSinleAlbum?url=${url.url}&mbid=${sourceArtist?.mbid}&artist_id=${sourceArtist?.id}${fetchISRCs ? '&fetchISRCs' : ""}`), "Refreshing album...", "Failed to fetch album");
+			setIsLoading(false);
+			if (response.ok) {
+				const apiResponse = await response.json() as SAMBLAPIResponse<AlbumStack>;
+				const album = apiResponse.data
+				if (onUpdate && album) onUpdate(album);
+			} else {
+				try {
+					const apiResponse = await response.json() as SAMBLAPIResponse<AlbumStack>;
+					toasts.error("Failed to refresh album data!", apiResponse.error?.error);
+				} catch {
+					toasts.error("Failed to refresh album data!", `Failed to refresh album data: ${response.status} ${response.statusText}`);
+				}
+			}
+		} catch (e) {
+			toasts.error("Failed to refresh album data!", e);
 		}
 	}
 
