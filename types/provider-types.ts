@@ -1,6 +1,7 @@
 import { ArtistIncludes, IArtist, IBrowseReleasesResult, ICoversInfo, IRecording, IRecordingList, IRelation, IRelease, IReleaseList, IUrl, IUrlLookupResult, RecordingIncludes, RelationsIncludes, ReleaseIncludes, UrlIncludes } from "musicbrainz-api";
 import { CacheOptions } from "../utils/cache";
 import { AggregatedAlbum } from "./aggregated-types";
+import { ReleaseLanguage, ReleaseScript } from "../utils/scriptAndLanguage";
 
 export type ProviderNamespace = FullProviderNamespace | "musixmatch"
 
@@ -64,6 +65,8 @@ export class AlbumObject extends ImageObject {
     copyrights: string[] | null;
     genres: string[] | null;
     type: "album";
+    script?: ReleaseScript;
+    language?: ReleaseLanguage
 };
 
 export class LabelObject extends GenericObject {
