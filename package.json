@@ -18,9 +18,13 @@
 		"@types/react": "^19.2.17",
 		"@types/spotify-web-api-node": "^5.0.11",
 		"@types/string-similarity": "^4.0.2",
+		"@types/unicode-properties": "^1.3.2",
 		"bandcamp-scraper": "github:Lioncat6/bandcamp-scraper",
 		"curl-cffi": "^0.1.50",
 		"deezer-public-api": "^2.2.1",
+		"eld": "^2.1.0",
+		"iso-15924": "^3.2.0",
+		"iso-639-1": "^3.1.6",
 		"log4js": "^6.6.0",
 		"musicbrainz-api": "^1.2.1",
 		"next": "^16.2.7",
@@ -36,7 +40,8 @@
 		"sass": "^1.101.0",
 		"soundcloud.ts": "^0.7.3",
 		"spotify-web-api-node": "^5.0.0",
-		"string-similarity": "^4.0.4"
+		"string-similarity": "^4.0.4",
+		"unicode-properties": "^1.4.1"
 	},
 	"repository": {
 		"type": "git",
