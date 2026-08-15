@@ -1,11 +1,11 @@
-import { AggregatedAlbum, AggregatedArtist } from "./aggregated-types"
+import { AggregatedAlbum, AggregatedArtist, AlbumStack } from "./aggregated-types"
 import { AlbumObject, ArtistObject, ExtendedAlbumObject, ExtendedTrackObject, PartialArtistObject, ProviderNamespace, TrackObject } from "./provider-types"
 
 export type DeepSearchMethod = "most_common" | "name_similarity"
 export class DeepSearchData {
     provider: ProviderNamespace
     mbArtists: DeepSearchArtist[]
-    albums: AggregatedAlbum[]
+    albums: AlbumStack[]
     sourceArtist: ArtistObject
 }
 
