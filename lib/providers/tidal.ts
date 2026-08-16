@@ -231,7 +231,10 @@ type TidalSearchResultsData = NonNullable<TidalSearchResultsResponse["data"]>
 async function searchByArtistName(query: string) {
     await refreshApi(); // /searchResults/${encodeURIComponent(query)}?countryCode=US&include=artists&include=artists.profileArt&include=artists.albums&include=albums.artists&include=albums.coverArt&include=artists.albums.coverArt
     try {
-        const data = await tidalApi?.GET(`/searchResults/{id}`, { params: { path: { id: encodeURIComponent(query) }, query: { countryCode: "US", include: ["artists", "artists.profileArt", "artists.albums", "albums.artists", "albums.coverArt", "artists.albums.coverArt"] } } });
+        // TODO: https://github.com/tidal-music/tidal-sdk-web/issues/714
+        // @ts-ignore
+        const data = await tidalApi?.GET(`/searchResults`, { params: { query: { 'filter[query]': encodeURIComponent(query), countryCode: "US", include: ["artists", "artists.profileArt", "artists.albums", "albums.artists", "albums.coverArt", "artists.albums.coverArt"] } } });
+        console.log(JSON.stringify(data))
         const artistData = data?.data
         if (artistData?.included && artistData?.included.length > 0) {
             return artistData;
@@ -305,9 +308,11 @@ async function getTrackById(tidalId: string) {
 }
 
 async function getArtistById(tidalId: string) {
-    await refreshApi(); // /artists/${tidalId}?countryCode=US&include=artists&include=artists.profileArt&include=artists.albums&include=albums.artists&include=albums.coverArt&include=artists.albums.coverArt
+    await refreshApi(); 
+    // /artists/${tidalId}?countryCode=US&include=artists&include=artists.profileArt&include=artists.albums&include=albums.artists&include=albums.coverArt&include=artists.albums.coverArt
+    // "artists", "artists.profileArt", "artists.albums", "albums.artists", "albums.coverArt", "artists.albums.coverArt"
     try {
-        const data = await tidalApi.GET(`/artists/{id}`, { params: { path: { id: tidalId }, query: { countryCode: "US", include: ["artists", "artists.profileArt", "artists.albums", "albums.artists", "albums.coverArt", "artists.albums.coverArt"] } } });
+        const data = await tidalApi.GET(`/artists/{id}`, { params: { path: { id: tidalId }, query: { countryCode: "US", include: ["profileArt", "albums", "tracks"] } } });
         console.log(JSON.stringify(data))
         if (data.data) {
             return JSON.parse(JSON.stringify(data.data)) as typeof data.data;

@@ -4,7 +4,9 @@ import { DeepSearchSelection } from "../types/component-types";
 import { ArtistObject, PartialArtistObject } from "../types/provider-types";
 import text from "./text";
 
-const encode = str => encodeURIComponent(str).replace(/%250A/g, '%0A');
+function encode(str: string) {
+    return encodeURIComponent(str).replace(/%250A/g, '%0A');
+}
 
 /**
  * Generate Edit note String
