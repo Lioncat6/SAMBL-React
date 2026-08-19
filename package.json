@@ -12,7 +12,7 @@
 		"@headlessui/react": "^2.2.9",
 		"@kellnerd/musicbrainz": "npm:@jsr/kellnerd__musicbrainz@^0.4.2",
 		"@lionralfs/discogs-client": "^4.1.4",
-		"@tidal-music/api": "^0.34.0",
+		"@tidal-music/api": "^0.42.0",
 		"@tidal-music/auth": "^1.6.1",
 		"@types/nprogress": "^0.2.3",
 		"@types/react": "^19.2.17",
