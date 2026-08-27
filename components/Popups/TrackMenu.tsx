@@ -296,7 +296,6 @@ export function TrackMenuInner({ data, refresh, isStandalone = true }: { data: A
 			trackDataSource = "musicbrainz";
 		}
 	}
-	console.log(data)
 	getTrackData();
 	return (
 		<><AlbumDetails data={data} />

@@ -249,7 +249,6 @@ async function searchByArtistName(name: string): Promise<VolumoFullSearch | null
 }
 
 function formatArtistSearchData(data: VolumoFullSearch): VolumoSearchArtist[] {
-    console.log(data)
     let artists = data.artists;
     let albums = Array.isArray(data.albums) ? data.albums : [];
     let tracks = data.tracks;

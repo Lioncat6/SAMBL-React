@@ -234,7 +234,6 @@ async function searchByArtistName(query: string) {
         // TODO: https://github.com/tidal-music/tidal-sdk-web/issues/714
         // @ts-ignore
         const data = await tidalApi?.GET(`/searchResults`, { params: { query: { 'filter[query]': encodeURIComponent(query), countryCode: "US", include: ["artists", "artists.profileArt", "artists.albums", "albums.artists", "albums.coverArt", "artists.albums.coverArt"] } } });
-        console.log(JSON.stringify(data))
         const artistData = data?.data
         if (artistData?.included && artistData?.included.length > 0) {
             return artistData;
@@ -313,7 +312,6 @@ async function getArtistById(tidalId: string) {
     // "artists", "artists.profileArt", "artists.albums", "albums.artists", "albums.coverArt", "artists.albums.coverArt"
     try {
         const data = await tidalApi.GET(`/artists/{id}`, { params: { path: { id: tidalId }, query: { countryCode: "US", include: ["profileArt", "albums", "tracks"] } } });
-        console.log(JSON.stringify(data))
         if (data.data) {
             return JSON.parse(JSON.stringify(data.data)) as typeof data.data;
         } else {

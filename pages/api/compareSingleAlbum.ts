@@ -136,7 +136,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             if (!parsed_id) {
                 return res.status(500).json({ error: { error: "Failed to extract provider id from URL" }, timings: stages.finish()} as SAMBLAPIResponse<AlbumStack>);
             }
-            console.log(urlInfo)
             provider = urlInfo.provider;
         } else if (provider && provider_id) {
             parsed_id = provider_id;

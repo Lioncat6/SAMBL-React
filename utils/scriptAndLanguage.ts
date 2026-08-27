@@ -44,7 +44,6 @@ function detectScript(input: string): ReleaseScript | null {
 function detectLanguage(input: string): ReleaseLanguage | null{
     const threshold = 0.65;
     let result = eld.detect(input);
-    console.log(result.getScores())
     if (result.language.length == 0) return null;
     if (result.getScores()[result.language] < threshold) return null;
     return {
