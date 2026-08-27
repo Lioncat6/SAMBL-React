@@ -14,76 +14,76 @@ const { parseUrl, createUrl } = parsers.getParser(namespace);
 // Volumo Types
 
 export interface VolumoItemList<T> {
-  items: T[];
+    items: T[];
 }
 
 export interface VolumoPartialAlbum {
-  id: number
-  icpn: string
-  title: string
-  exclusive: boolean
-  artwork_uuid: string
-  volumo_direct: boolean
-  catalog_number?: string
-  release_start_at: string
+    id: number
+    icpn: string
+    title: string
+    exclusive: boolean
+    artwork_uuid: string
+    volumo_direct: boolean
+    catalog_number?: string
+    release_start_at: string
 }
 
 export interface VolumoAlbum extends VolumoPartialAlbum {
-  hot: boolean
-  price: number
-  genres: number[]
-  tracks: VolumoTrack[]
-  artists: VolumoPartialArtist[]
-  charted: boolean
-  curated: boolean
-  formats: VolumoFormats
-  duration: number
-  featured: boolean
-  purchased: boolean
-  downloaded: boolean
-  first_live: string
-  genres_ids: number[]
-  description: string
-  recordlabel: VolumoPartialLabel
-  published_at: string
-  tracks_total: number
-  volumo_direct: boolean
-  original_release_date: string
+    hot: boolean
+    price: number
+    genres: number[]
+    tracks: VolumoTrack[]
+    artists: VolumoPartialArtist[]
+    charted: boolean
+    curated: boolean
+    formats: VolumoFormats
+    duration: number
+    featured: boolean
+    purchased: boolean
+    downloaded: boolean
+    first_live: string
+    genres_ids: number[]
+    description: string
+    recordlabel: VolumoPartialLabel
+    published_at: string
+    tracks_total: number
+    volumo_direct: boolean
+    original_release_date: string
 }
 
 export interface VolumoTrack {
-  id: number
-  bpm: number
-  isrc: string
-  album: VolumoPartialAlbum
-  genre: number
-  price: number
-  title: string
-  artists: VolumoPartialArtist[]
-  curated: boolean
-  formats: VolumoFormats
-  keysign: string
-  version: string
-  duration: number
-  featured: boolean
-  genre_id: number
-  listened: boolean
-  remixers: VolumoPartialArtist[]
-  purchased: boolean
-  album_only: boolean
-  downloaded: boolean
-  playlisted: number
-  recordlabel: VolumoPartialLabel
-  composed_title: string
-  featured_artists: VolumoPartialArtist[]
-  release_start_at: string
+    id: number
+    bpm: number
+    isrc: string
+    album: VolumoPartialAlbum
+    genre: number
+    price: number
+    title: string
+    artists: VolumoPartialArtist[]
+    curated: boolean
+    formats: VolumoFormats
+    keysign: string
+    version: string
+    duration: number
+    featured: boolean
+    genre_id: number
+    listened: boolean
+    remixers: VolumoPartialArtist[]
+    purchased: boolean
+    album_only: boolean
+    downloaded: boolean
+    playlisted: number
+    recordlabel: VolumoPartialLabel
+    composed_title: string
+    featured_artists: VolumoPartialArtist[]
+    release_start_at: string
 }
 
 export interface VolumoPartialContributor {
-  id: number
-  name: string
-  type: "recordlabel" | "artist"
-  followed: unknown
+    id: number
+    name: string
+    type: "recordlabel" | "artist"
+    followed: unknown
 }
 
 export interface VolumoPartialArtist extends VolumoPartialContributor {
@@ -95,36 +95,36 @@ export interface VolumoPartialLabel extends VolumoPartialContributor {
 }
 
 export interface VolumoFormats {
-  mp3: VolumoFilesize
-  wav: VolumoFilesize
-  aiff: VolumoFilesize
-  flac: VolumoFilesize
+    mp3: VolumoFilesize
+    wav: VolumoFilesize
+    aiff: VolumoFilesize
+    flac: VolumoFilesize
 }
 
 export interface VolumoFilesize {
-  filesize: number
+    filesize: number
 }
 
 export interface VolumoContributor extends VolumoPartialContributor {
-  rank: number
-  genres: number[]
-  parent: unknown
-  public: boolean
-  claimed: boolean
-  is_public: boolean
-  genres_ids: number[]
-  description: string
-  albums_total: number
-  artwork_uuid: string | null
-  charts_total: number
-  country_code: string
-  social_links: string[]
-  tracks_total: number
-  playlists_total: number
-  embed_youtube_ids: unknown[]
-  pick_of_the_month: unknown
-  my_user_contributor_id: unknown
-  contributor_direct_message: boolean
+    rank: number
+    genres: number[]
+    parent: unknown
+    public: boolean
+    claimed: boolean
+    is_public: boolean
+    genres_ids: number[]
+    description: string
+    albums_total: number
+    artwork_uuid: string | null
+    charts_total: number
+    country_code: string
+    social_links: string[]
+    tracks_total: number
+    playlists_total: number
+    embed_youtube_ids: unknown[]
+    pick_of_the_month: unknown
+    my_user_contributor_id: unknown
+    contributor_direct_message: boolean
 }
 
 export interface VolumoArtist extends VolumoContributor {
@@ -135,21 +135,27 @@ export interface VolumoLabel extends VolumoContributor {
     type: "recordlabel"
 }
 
-export interface VolumoSearchResponse {
-  albums: VolumoSearchAlbum[] | {}
-  charts: unknown[]
-  genres: unknown
-  tracks: VolumoSearchTrack[]
-  artists: VolumoSearchArtist[]
-  playlists: unknown[]
-  albums_total: number
-  charts_total: number
-  genres_total: number
-  recordlabels: VolumoSearchLabel[]
-  tracks_total: number
-  artists_total: number
-  playlists_total: number
-  recordlabels_total: number
+// export interface VolumoSearchResponse {
+//   albums: VolumoSearchAlbum[] | {}
+//   charts: unknown[]
+//   genres: unknown
+//   tracks: VolumoSearchTrack[]
+//   artists: VolumoSearchArtist[]
+//   playlists: unknown[]
+//   albums_total: number
+//   charts_total: number
+//   genres_total: number
+//   recordlabels: VolumoSearchLabel[]
+//   tracks_total: number
+//   artists_total: number
+//   playlists_total: number
+//   recordlabels_total: number
+// }
+
+export type VolumoSearchResults = VolumoSearchAlbum | VolumoSearchTrack | VolumoSearchArtist | VolumoSearchLabel
+
+export interface VolumoSearchResponse<T extends VolumoSearchResults> {
+    items: T[]
 }
 
 export interface VolumoSearchContributor extends VolumoPartialContributor {
@@ -195,18 +201,55 @@ async function volumoFetch(path: string) {
     return await fetch(baseUrl + path);
 }
 
-async function searchByArtistName(name: string): Promise<VolumoSearchResponse | null> {
+
+interface VolumoFullSearch {
+    artists: VolumoSearchArtist[]
+    tracks: VolumoSearchTrack[]
+    albums: VolumoSearchAlbum[]
+}
+
+async function runSearch<T extends VolumoSearchResults>(query: string, entity: "artist" | "track" | "album") {
+    const paths: Record<typeof entity, string> = {
+        "artist": `/contributors/artist/search?query=${encodeURIComponent(query)}&limit=20`,
+        "album": `/albums/search?query=${encodeURIComponent(query)}&limit=20`,
+        "track": `/tracks/search?query=${encodeURIComponent(query)}&limit=20`
+    }
+    const response = await volumoFetch(paths[entity]);
+    if (response.ok) {
+        const data = await response.json() as VolumoSearchResponse<T>;
+        return data.items;
+    } else {
+        err.handleError(`Request error`, undefined, response, await response.text())
+    }
+    return null;
+}
+
+async function searchByArtistName(name: string): Promise<VolumoFullSearch | null> {
     try {
-        const response = await volumoFetch(`/search?query=${encodeURIComponent(name)}&limit=20`);
-        const data = await response.json();
-        return data;
+        let result: VolumoFullSearch = {
+            artists: [],
+            tracks: [],
+            albums: []
+        };
+        const [artists, tracks, albums] = await Promise.all([
+            runSearch<VolumoSearchArtist>(name, "artist"),
+            runSearch<VolumoSearchTrack>(name, "track"),
+            runSearch<VolumoSearchAlbum>(name, "album"),
+        ])
+        result = {
+            artists: artists ?? [],
+            tracks: tracks ?? [],
+            albums: albums ?? []
+        }
+        return result;
     } catch (error) {
-        err.handleError("Error searching for artist:", error);
-		return null;
+        err.handleError("Error searching for artist", error);
+        return null;
     }
 }
 
-function formatArtistSearchData(data: VolumoSearchResponse): VolumoSearchArtist[] {
+function formatArtistSearchData(data: VolumoFullSearch): VolumoSearchArtist[] {
+    console.log(data)
     let artists = data.artists;
     let albums = Array.isArray(data.albums) ? data.albums : [];
     let tracks = data.tracks;
@@ -232,15 +275,15 @@ function formatArtistSearchData(data: VolumoSearchResponse): VolumoSearchArtist[
     });
     artists.forEach((artist) => {
         if (!artist.artwork_uuid) {
-            artist.artwork_uuid = albumsArtistIDMap.get(artist.id)?.find((album) => album.artwork_uuid)?.artwork_uuid  || 
-            tracksArtistIDMap.get(artist.id)?.find((track) => track.album.artwork_uuid)?.album.artwork_uuid  || null;
+            artist.artwork_uuid = albumsArtistIDMap.get(artist.id)?.find((album) => album.artwork_uuid)?.artwork_uuid ||
+                tracksArtistIDMap.get(artist.id)?.find((track) => track.album.artwork_uuid)?.album.artwork_uuid || null;
         }
     });
     return artists;
 }
 
 function getVolumoGenres(ids: number | number[]): string[] {
-    if (typeof ids == "number"){
+    if (typeof ids == "number") {
         ids = [ids]
     }
     let genres: string[] = [];
@@ -305,7 +348,7 @@ async function getArtistById(id: string): Promise<VolumoArtist | null> {
                 return null;
             }
             throw new Error(`Failed to fetch artist: ${response.status} ${response.statusText}`);
-        } 
+        }
         const artist = await response.json() as VolumoArtist;
         if (!artist.artwork_uuid) {
             const albums = await getArtistAlbums(id, 0, 10);
@@ -358,7 +401,7 @@ function formatAlbumGetData(data: ExtendedAlbumFilterResponse): RawAlbumData {
     }
 }
 
-export type VolumoTrackWithNumber = VolumoTrack & { trackNumber: number }; 
+export type VolumoTrackWithNumber = VolumoTrack & { trackNumber: number };
 
 function formatAlbumObject(album: VolumoAlbum): AlbumObject {
     const tracksWithNumbers: VolumoTrackWithNumber[] = album.tracks.map((track, index) => ({
@@ -372,7 +415,7 @@ function formatAlbumObject(album: VolumoAlbum): AlbumObject {
         type: "album",
         imageUrl: createVolumoImageUrl(album.artwork_uuid),
         imageUrlSmall: createVolumoImageUrl(album.artwork_uuid, true),
-        url: createUrl('album', String(album.id)),
+        url: createUrl('album', String(album.icpn)),
         releaseDate: text.formatDate(album.original_release_date || album.release_start_at),
         upc: album.icpn,
         albumType: album.tracks.length > 1 ? "album" : "single",
@@ -382,7 +425,7 @@ function formatAlbumObject(album: VolumoAlbum): AlbumObject {
         genres: getVolumoGenres(album.genres),
         copyrights: null,
         labels: getAlbumLabels(album),
-        mediums: medium.convertTrackList(tracksWithNumbers.map(formatTrackObject))
+        mediums: medium.convertTrackList(tracksWithNumbers.map(formatTrackObject), 'Digital Media')
     }
 }
 
@@ -433,85 +476,86 @@ function formatPartialArtistObject(artist: VolumoArtist): PartialArtistObject {
 }
 
 async function getAlbumById(id: string): Promise<VolumoAlbum | null> {
-   try {
-    const response = await volumoFetch(`/albums/${id}`);
-    if (!response.ok) {
+    try {
+        const path = text.validateUPC(id) ? `/album_by_icpn/${text.removeLeadingZeros(id)}` : `/albums/${id}`
+        const response = await volumoFetch(path);
+        if (!response.ok) {
             if (response.status === 404) {
                 return null;
             }
-            throw new Error(`Failed to fetch album: ${response.status} ${response.statusText}`);
-        } 
-    const albums = await response.json();
-    return albums[0] || null;
-   } catch (error) {
+            err.handleError(`Request error`, undefined, response, await response.text());
+        }
+        const albums = await response.json();
+        return Array.isArray(albums) ? albums[0]: albums ?? null;
+    } catch (error) {
         err.handleError(`Error fetching album:`, error);
         return null;
-   }
+    }
 }
 
 async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
-   try {
-    const response = await volumoFetch(`/album_by_icpn/${text.removeLeadingZeros(upc)}`);
-    if (!response.ok) {
+    try {
+        const response = await volumoFetch(`/album_by_icpn/${text.removeLeadingZeros(upc)}`);
+        if (!response.ok) {
             if (response.status === 404) {
                 return null;
             }
             throw new Error(`Failed to fetch album: ${response.status} ${response.statusText}`);
-        } 
-    let albums = await response.json() as VolumoAlbum;
-    return [formatAlbumObject(albums)];
-   } catch (error) {
+        }
+        let albums = await response.json() as VolumoAlbum;
+        return [formatAlbumObject(albums)];
+    } catch (error) {
         err.handleError(`Error fetching album:`, error);
         return null;
-   }
+    }
 }
 
 async function getTrackById(id: string): Promise<VolumoTrack | null> {
-   try {
-     const response = await volumoFetch(`/tracks/${id}`);
-    if (!response.ok) {
+    try {
+        const response = await volumoFetch(`/tracks/${id}`);
+        if (!response.ok) {
             if (response.status === 404) {
                 return null;
             }
             throw new Error(`Failed to fetch track: ${response.status} ${response.statusText}`);
-        } 
-    return response.json();
-   } catch (error) {
+        }
+        return response.json();
+    } catch (error) {
         err.handleError(`Error fetching track:`, error);
         return null;
-   }
+    }
 }
 
 const capabilities: Capabilities = {
-	isrcs: {
-		availability: "always",
-		presence: "always"
-	},
-	upcs: {
-		availability: "always",
-		presence: "always"
-	}
+    isrcs: {
+        availability: "always",
+        presence: "always"
+    },
+    upcs: {
+        availability: "always",
+        presence: "always"
+    }
 }
 
 const volumo: FullProvider = {
-	namespace,
-	config: { capabilities },
-	// getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 30, namespace: namespace }),
-	getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 30, namespace: namespace }),
-	searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30, namespace: namespace }),
-	getAlbumById: withCache(getAlbumById, { ttl: 60 * 30, namespace: namespace }),
-	getTrackById: withCache(getTrackById, { ttl: 60 * 30, namespace: namespace }),
-	getArtistById: withCache(getArtistById, { ttl: 60 * 30, namespace: namespace }),
-	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 30, namespace: namespace }),
-	formatArtistSearchData,
-	formatArtistLookupData,
-	formatArtistObject,
-	formatPartialArtistObject,
-	formatAlbumGetData,
-	formatAlbumObject,
-	formatTrackObject,
-	parseUrl,
-	createUrl
+    namespace,
+    config: { capabilities },
+    // getTrackByISRC: withCache(getTrackByISRC, { ttl: 60 * 30, namespace: namespace }),
+    getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 30, namespace: namespace }),
+    searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30, namespace: namespace }),
+    getAlbumById: withCache(getAlbumById, { ttl: 60 * 30, namespace: namespace }),
+    getTrackById: withCache(getTrackById, { ttl: 60 * 30, namespace: namespace }),
+    getArtistById: withCache(getArtistById, { ttl: 60 * 30, namespace: namespace }),
+    getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 30, namespace: namespace }),
+    formatArtistSearchData,
+    formatArtistLookupData,
+    formatArtistObject,
+    formatPartialArtistObject,
+    formatAlbumGetData,
+    formatAlbumObject,
+    formatTrackObject,
+    parseUrl,
+    createUrl
 };
 
 export default volumo;
