@@ -261,7 +261,7 @@ function formatAlbumObject(rawAlbum: SoundcloudPlaylist | SoundcloudTrack): Albu
     trackCount: 'track_count' in rawAlbum && rawAlbum.track_count || 1,
     albumType: 'set_type' in rawAlbum && rawAlbum.set_type || 'single',
     upc: getUPCFromAlbum(rawAlbum),
-    mediums: medium.convertTrackList(tracks),
+    mediums: medium.convertTrackList(tracks, 'Digital Media'),
     genres: getGenresFromAlbum(rawAlbum),
     copyrights: getCopyrightsFromAlbum(rawAlbum),
     labels: getLabelsFromAlbum(rawAlbum),

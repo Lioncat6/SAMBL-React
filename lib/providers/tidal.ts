@@ -398,7 +398,7 @@ function formatAlbumObject(album: ExtendedAlbum): AlbumObject {
         trackCount: album.attributes?.numberOfItems || null,
         albumType: album.attributes?.type || null,
         upc: album.attributes?.barcodeId || null,
-        mediums: medium.convertTrackList(getAlbumTracks(album)), //TODO: Split mediums
+        mediums: medium.convertTrackList(getAlbumTracks(album), 'Digital Media'), //TODO: Split mediums
         labels: createLabels(album.providers),
         copyrights: album.attributes?.copyright?.text ? [album.attributes?.copyright?.text] : null,
         genres: album.genres.map(genre => genre.attributes?.genreName).filter(genre => genre != undefined) || null,

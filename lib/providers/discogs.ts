@@ -457,7 +457,7 @@ function formatAlbumObject(album: PartialDiscogsRelease | GetReleaseResponse | S
 			labels: getAlbumLabels(fullalbum.labels),
 			copyrights: null,
 			genres: fullalbum.genres || null,
-			mediums: medium.convertTrackList(fullalbum.tracklist.map(track => formatTrackObject({ ...track, album: fullalbum })))
+			mediums: medium.convertTrackList(fullalbum.tracklist.map(track => formatTrackObject({ ...track, album: fullalbum })), 'Digital Media')
 		}
 	} else {
 		const fullalbum = album as PartialDiscogsSearchResult;
