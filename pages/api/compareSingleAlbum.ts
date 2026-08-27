@@ -6,7 +6,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import normalizeVars from "../../utils/normalizeVars";
 import { IRelease } from "musicbrainz-api";
 import { APITimingStage, ArtistSearchData, SAMBLAPIResponse } from "../../types/api-types";
-import { AlbumObject, ArtistObject, PartialArtistObject, ProviderNamespace, TrackObject } from "../../types/provider-types";
+import { AlbumObject, ArtistObject, MediumObject, PartialArtistObject, ProviderNamespace, TrackObject } from "../../types/provider-types";
 import medium from "../../utils/medium";
 import { AggregatedAlbum, AlbumStack } from "../../types/aggregated-types";
 import objectUtils from "../../utils/objectUtils";
@@ -87,21 +87,25 @@ async function detectLanguageAndScript(album: AggregatedAlbum): Promise<Aggregat
 async function getReleaseISRCs(album: AlbumObject): Promise<AlbumObject | null> {
     const providerObj = providers.parseProvider(album.provider ?? "", ["getTrackById", "formatTrackObject"]);
     if (!providerObj) return null;
-    let tracks: (TrackObject | null)[] = [];
-    const sourceTracks = album.mediums.flatMap((medium) => medium.tracks);
-    for (const track of sourceTracks) {
-        const rawTrack = track.id ? await providerObj.getTrackById(track.id) : null
-        const formattedTrack = rawTrack ? providerObj.formatTrackObject(rawTrack) : null;
-        tracks.push(formattedTrack)
+    let mediums: MediumObject[] = []
+    const sourceMediums = album.mediums;
+    for (const medium of sourceMediums) {
+        const sourceTracks = medium.tracks;
+        let tracks: TrackObject[] = [];
+        for (const track of sourceTracks) {
+            const rawTrack = track.id ? await providerObj.getTrackById(track.id) : null
+            const formattedTrack = rawTrack ? providerObj.formatTrackObject(rawTrack) : null;
+            if (formattedTrack) tracks.push(formattedTrack)
+        }
+        mediums.push({
+            ...medium,
+            tracks
+        }
+        )
     }
-    let finalTracks: TrackObject[] = [];
-    for (const newTrack in tracks) {
-        finalTracks.push(tracks[newTrack] ?? sourceTracks[newTrack]);
-    }
-    tracks.filter((track) => (track));
     const newAlbum: AlbumObject = {
         ...album!,
-        mediums: medium.convertTrackList(finalTracks)
+        mediums
     }
     return newAlbum;
 }
@@ -132,6 +136,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             if (!parsed_id) {
                 return res.status(500).json({ error: { error: "Failed to extract provider id from URL" }, timings: stages.finish()} as SAMBLAPIResponse<AlbumStack>);
             }
+            console.log(urlInfo)
             provider = urlInfo.provider;
         } else if (provider && provider_id) {
             parsed_id = provider_id;

@@ -214,76 +214,79 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 		}
 		//Track Aggregation3
 		let aggregatedMediums: AggregatedMedium[] = [];
-		let aggregatedTracks: AggregatedTrack[] = []; //TODO: Properly Aggregate mediums
 		if (aggregateTracks) {
-			for (let i = 0; i < providerTracks.length; i++) {
-				let trackIssues: TrackIssue[] = [];
-				let providerTrack = providerTracks[i];
-				let mbTrack = finalTracks[i] || null;
-				let status: TrackStatus = "orange";
-
-
-
-				// export type TrackIssue = 'noISRC' | 'ISRCDiff' | 'noUrl' | 'noDuration' | "artistDiff"
-				const shouldHaveISRC = (providerTrack.isrcs && providerTrack.isrcs.length > 0);
-				if (shouldHaveISRC) {
-					if (!mbTrack.isrcs || mbTrack.isrcs.length < 1) {
-						trackIssues.push("noISRC");
-					} else if (mbTrack) {
-						const mbISRCsForTrack = mbTrack.isrcs || [];
-						if (!mbISRCsForTrack.includes(providerTrack.isrcs[0] || "")) {
-							trackIssues.push("ISRCDiff");
+			for (const medium of providerMediums) {
+				let aggregatedTracks: AggregatedTrack[] = [];
+				for (let i = 0; i < medium.tracks.length; i++) {
+					let trackIssues: TrackIssue[] = [];
+					let providerTrack = medium.tracks[i];
+					let mbTrack = finalTracks[i] || null;
+					let status: TrackStatus = "orange";
+					// export type TrackIssue = 'noISRC' | 'ISRCDiff' | 'noUrl' | 'noDuration' | "artistDiff"
+					const shouldHaveISRC = (providerTrack.isrcs && providerTrack.isrcs.length > 0);
+					if (shouldHaveISRC) {
+						if (!mbTrack.isrcs || mbTrack.isrcs.length < 1) {
+							trackIssues.push("noISRC");
+						} else if (mbTrack) {
+							const mbISRCsForTrack = mbTrack.isrcs || [];
+							if (!mbISRCsForTrack.includes(providerTrack.isrcs[0] || "")) {
+								trackIssues.push("ISRCDiff");
+							}
 						}
 					}
-				}
 
-				if (providerTrack.isrcs.some(isrc => mbTrack.isrcs.includes(isrc))) {
-					status = "blue";
-				}
+					if (providerTrack.isrcs.some(isrc => mbTrack.isrcs.includes(isrc))) {
+						status = "blue";
+					}
 
-				if (mbTrack.externalUrls?.includes(providerTrack.url?.url || "")) {
-					status = "green";
-				}
+					if (mbTrack.externalUrls?.includes(providerTrack.url?.url || "")) {
+						status = "green";
+					}
 
-				if (!mbTrack.duration || mbTrack.duration == 0) {
-					trackIssues.push("noDuration");
-				}
-				// if artist diff
-				let providerArtistNamesSet = new Set(providerTrack.artistNames.map(name => text.normalizeText(name)));
-				let mbArtistNamesSet = new Set<string>();
-				if (mbTrack && mbTrack.trackArtists) {
-					mbTrack.trackArtists.forEach(artist => {
-						mbArtistNamesSet.add(text.normalizeText(artist.name));
+					if (!mbTrack.duration || mbTrack.duration == 0) {
+						trackIssues.push("noDuration");
+					}
+					// if artist diff
+					let providerArtistNamesSet = new Set(providerTrack.artistNames.map(name => text.normalizeText(name)));
+					let mbArtistNamesSet = new Set<string>();
+					if (mbTrack && mbTrack.trackArtists) {
+						mbTrack.trackArtists.forEach(artist => {
+							mbArtistNamesSet.add(text.normalizeText(artist.name));
+						});
+					}
+					let artistDiff = false;
+					if (providerArtistNamesSet.size != mbArtistNamesSet.size) {
+						artistDiff = true;
+					} else {
+						providerArtistNamesSet.forEach(name => {
+							if (!mbArtistNamesSet.has(name)) {
+								artistDiff = true;
+							}
+						});
+					}
+					if (artistDiff) {
+						trackIssues.push("artistDiff");
+					}
+
+					aggregatedTracks.push({
+						status: status,
+						...providerTrack,
+						mbid: mbTrack ? mbTrack.id : null,
+						sourceArtist: currentArtist || null,
+						mbTrack: mbTrack,
+						trackIssues: trackIssues,
+						isrcs: providerTrack.isrcs.length > 0 ? providerTrack.isrcs : mbTrack.isrcs.length > 0 ? mbTrack.isrcs : [],
+						trackNumber: providerTrack.trackNumber || mbTrack.trackNumber || Number(i) + 1
 					});
 				}
-				let artistDiff = false;
-				if (providerArtistNamesSet.size != mbArtistNamesSet.size) {
-					artistDiff = true;
-				} else {
-					providerArtistNamesSet.forEach(name => {
-						if (!mbArtistNamesSet.has(name)) {
-							artistDiff = true;
-						}
-					});
-				}
-				if (artistDiff) {
-					trackIssues.push("artistDiff");
-				}
-
-				aggregatedTracks.push({
-					status: status,
-					...providerTrack,
-					mbid: mbTrack ? mbTrack.id : null,
-					sourceArtist: currentArtist || null,
-					mbTrack: mbTrack,
-					trackIssues: trackIssues,
-					isrcs: providerTrack.isrcs.length > 0 ? providerTrack.isrcs : mbTrack.isrcs.length > 0 ? mbTrack.isrcs : [],
-					trackNumber: providerTrack.trackNumber || mbTrack.trackNumber || Number(i) + 1
-				});
+				aggregatedMediums.push({
+					...medium,
+					tracks: aggregatedTracks
+				})
 			}
 		}
 
-		if (!sourceIdsArray.find((a) => a === provider+providerId)) { //Deduplicate; Will eventually support multiple providers in once comparison, so we probably don't want to have collisions if two different streaming services use the same ID for some reason
+		if (!sourceIdsArray.find((a) => a === provider + providerId)) { //Deduplicate; Will eventually support multiple providers in once comparison, so we probably don't want to have collisions if two different streaming services use the same ID for some reason
 			let albumMatches: AlbumMatch[] = []
 			albumMatches.push({
 				type: "source",
@@ -305,7 +308,7 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 			} else {
 				red++;
 			}
-			sourceIdsArray.push(provider+providerId);
+			sourceIdsArray.push(provider + providerId);
 			albumData.push({
 				albumIssues,
 				status: albumStatus,
@@ -322,7 +325,7 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 					trackCount: providerTrackCount,
 					albumType: providerAlbumType,
 					upc: providerBarcode,
-					mediums: medium.convertTrackList(aggregatedTracks) as AggregatedMedium[], //TODO: Properly Aggregate mediums
+					mediums: aggregatedMediums,
 					mbid,
 					sourceArtist: currentArtist || null,
 					labels: providerLabels,
