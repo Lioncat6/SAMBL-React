@@ -317,7 +317,7 @@ function formatAlbumObject(album): AlbumObject {
 		trackCount: album.numTracks ? album.numTracks:  album.tracks?.length ? album.tracks?.length : isTrack ? 1: null,
 		albumType: albumType,
 		upc: album.raw?.current?.upc || null,
-		mediums: medium.convertTrackList(getAlbumTracks(album)),
+		mediums: medium.convertTrackList(getAlbumTracks(album), 'Digital Media'),
 		labels: getLabels(album),
 		copyrights: null,
 		genres: getTags(album),
