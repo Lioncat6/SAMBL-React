@@ -1095,7 +1095,8 @@
   font-size: smaller;
   color: var(--foreground-secondary);
   font-weight: bold;
-  font-family: 'Courier New', Courier, monospace;
+  font-size: large;
+  font-family: monospace;
   background-color: var(--background-secondary);
 }
 
