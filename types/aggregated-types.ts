@@ -50,7 +50,6 @@ export class AggregatedTrack extends TrackObject {
     sourceArtist: PartialArtistObject | null;
     status: TrackStatus;
     trackIssues: TrackIssue[];
-    mbTrack: TrackObject | null;
 }
 
 export class BasicTrack {

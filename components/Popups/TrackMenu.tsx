@@ -10,6 +10,7 @@ import Popup from "../Popup";
 import { JSX } from "react";
 import { IoMdRefresh } from "react-icons/io";
 import { DisplayAlbum } from "../../types/component-types";
+import parsers from "../../lib/parsers/parsers";
 
 function MbUrlIcon({ status, url, styleClass, isAlbum = true }: { status: AlbumStatus | TrackStatus, url: string | null, styleClass: string, isAlbum?: boolean }) {
 	return (
@@ -168,9 +169,11 @@ function TrackItem({ index, track, album, isrcSource, highlight }: { index: stri
 	let status: TrackStatus = "grey"
 	let trackIssues: TrackIssue[] = [];
 
+	const mbParser = parsers.getParser('musicbrainz');
+
 	if ((track as AggregatedTrack).mbid !== undefined) {
 		mbid = (track as AggregatedTrack).mbid || null;
-		mbUrl = (track as AggregatedTrack).mbTrack?.url?.url || null;
+		mbUrl = track.mbid ? mbParser.createUrl('track', track.mbid).url: null;
 		status = (track as AggregatedTrack).status;
 		trackIssues = (track as AggregatedTrack).trackIssues;
 	}

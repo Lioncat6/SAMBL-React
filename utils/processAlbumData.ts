@@ -273,7 +273,6 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 						...providerTrack,
 						mbid: mbTrack ? mbTrack.id : null,
 						sourceArtist: currentArtist || null,
-						mbTrack: mbTrack,
 						trackIssues: trackIssues,
 						isrcs: providerTrack.isrcs.length > 0 ? providerTrack.isrcs : mbTrack.isrcs.length > 0 ? mbTrack.isrcs : [],
 						trackNumber: providerTrack.trackNumber || mbTrack.trackNumber || Number(i) + 1
