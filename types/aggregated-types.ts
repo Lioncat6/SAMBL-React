@@ -47,7 +47,7 @@ export class AggregatedMedium extends MediumObject {
 }
 
 export class AggregatedTrack extends TrackObject {
-    sourceArtist: PartialArtistObject | null;
+    // sourceArtist: PartialArtistObject | null;
     status: TrackStatus;
     trackIssues: TrackIssue[];
 }
