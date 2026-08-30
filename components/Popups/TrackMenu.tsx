@@ -11,6 +11,8 @@ import { JSX } from "react";
 import { IoMdRefresh } from "react-icons/io";
 import { DisplayAlbum } from "../../types/component-types";
 import parsers from "../../lib/parsers/parsers";
+import { SAMBLArtistIcon } from "../icons";
+import albumStack from "../../utils/albumStack";
 
 function MbUrlIcon({ status, url, styleClass, isAlbum = true }: { status: AlbumStatus | TrackStatus, url: string | null, styleClass: string, isAlbum?: boolean }) {
 	return (
@@ -35,9 +37,8 @@ function copyLink(id) {
 	text.handleCopy(url);
 }
 
-function AlbumDetails({ data }: { data: AlbumStack }) {
-	const targetAlbum = data.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
-	const sourceAlbum = data.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
+function AlbumDetails({ data, isStandalone }: { data: AlbumStack, isStandalone?: boolean }) {
+	const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(data)
 	const { status, albumIssues } = data;
 	const {
 		provider,
@@ -55,9 +56,9 @@ function AlbumDetails({ data }: { data: AlbumStack }) {
 		mbid,
 		language,
 		script
-	} = data.aggregated;
-	const albumTracks = data.aggregated?.mediums.flatMap((medium) => medium.tracks) || [];
-	const sourceArtist = data.aggregated?.sourceArtist;
+	} = aggregatedAlbum;
+	const albumTracks = aggregatedAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
+	const sourceArtist = aggregatedAlbum?.sourceArtist;
 
 	const barcode = upc || targetAlbum?.upc || null;
 	const mbBarcode = !upc;
@@ -88,9 +89,7 @@ function AlbumDetails({ data }: { data: AlbumStack }) {
 							<a href={artist.url.url} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
 								{artist.name}
 							</a>
-							<a href={`../${!artist.mbid ? 'new' : ''}artist?provider_id=${artist.id}&provider=${artist.provider}${artist.mbid ? `&artist_mbid=${artist.mbid}`: ''}`} target="_blank" rel="noopener noreferrer">
-								<img className={styles.SAMBLicon} src="../assets/images/favicon.svg" alt="SAMBL" />
-							</a>
+							<SAMBLArtistIcon artist={artist} hasMBIDData={isStandalone} />
 						</span>
 					))}
 				</div>
@@ -129,10 +128,11 @@ function AlbumDetails({ data }: { data: AlbumStack }) {
 }
 
 function AlbumFooter({ data }: { data: AlbumStack }) {
+	const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(data)
 	const {
 		copyrights,
 		labels
-	} = data.aggregated;
+	} = aggregatedAlbum;
 	return (
 		<div className={styles.albumFooter}>
 			{(copyrights && copyrights.length > 0) &&
@@ -163,7 +163,7 @@ function AlbumFooter({ data }: { data: AlbumStack }) {
 	)
 }
 
-function TrackItem({ index, track, album, isrcSource, highlight }: { index: string, track: TrackObject | AggregatedTrack, album: AggregatedAlbum, isrcSource: ProviderNamespace | null, highlight: boolean }) {
+function TrackItem({ index, track, album, isrcSource, highlight, isStandalone }: { index: string, track: TrackObject | AggregatedTrack, album: AggregatedAlbum, isrcSource: ProviderNamespace | null, highlight: boolean, isStandalone: boolean }) {
 	let mbid: string | null = null;
 	let mbUrl: string | null = null;
 	let status: TrackStatus = "grey"
@@ -259,9 +259,7 @@ function TrackItem({ index, track, album, isrcSource, highlight }: { index: stri
 									{artist.name}
 								</a>
 								{artist.provider != "musicbrainz" &&
-									<a href={`../${!artist.mbid ? 'new' : ''}artist?provider_id=${artist.id}&provider=${artist.provider}${artist.mbid ? `&artist_mbid=${artist.mbid}`: ''}`} target="_blank" rel="noopener noreferrer">
-										<img className={styles.SAMBLicon} src="../assets/images/favicon.svg" alt="SAMBL" />
-									</a>
+									<SAMBLArtistIcon artist={artist} hasMBIDData={isStandalone} />
 								}
 							</span>
 						))}
@@ -273,10 +271,8 @@ function TrackItem({ index, track, album, isrcSource, highlight }: { index: stri
 }
 
 export function TrackMenuInner({ data, refresh, isStandalone = true }: { data: AlbumStack, refresh: () => void, close?: () => void, isStandalone?: boolean }) {
-	const targetAlbum = data.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
-	const sourceAlbum = data.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
-	const aggregatedAlbum = data.aggregated;
-	const sourceArtist = data.aggregated?.sourceArtist;
+	const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(data)
+	const sourceArtist = aggregatedAlbum.sourceArtist;
 	const { status, albumIssues } = data;
 	const { id, url, releaseDate, trackCount, mbid, provider, albumArtists } = aggregatedAlbum; //TODO: Medium Support
 	const albumTracks = sourceAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
@@ -301,7 +297,7 @@ export function TrackMenuInner({ data, refresh, isStandalone = true }: { data: A
 	}
 	getTrackData();
 	return (
-		<><AlbumDetails data={data} />
+		<><AlbumDetails data={data} isStandalone={isStandalone} />
 			{(!hasFullTrackData && !isStandalone) && (
 				<div className={styles.noAggregatedTracksWarning}>
 					<MdOutlineWarningAmber /> {data.status == "red" && trackData.length > 0 ? "Add this album to musicbrainz to see full track data" : <><button className={styles.textButton} onClick={() => (refresh())} title={"Refresh Album"}>Refresh</button> this album to see full track data</>}
@@ -315,9 +311,10 @@ export function TrackMenuInner({ data, refresh, isStandalone = true }: { data: A
 							key={index} //This isn't confusing and hard to read at all
 							index={key}
 							track={value}
-							album={data.aggregated}
+							album={aggregatedAlbum}
 							isrcSource={albumTracks[0]?.isrcs.length > 0 ? sourceAlbum?.provider || aggregatedAlbum.provider : "musicbrainz"}
 							highlight={false}
+							isStandalone={isStandalone}
 						/>
 					)
 
@@ -328,10 +325,8 @@ export function TrackMenuInner({ data, refresh, isStandalone = true }: { data: A
 }
 
 export function TrackMenu({ data, refresh, close }: { data: AlbumStack, refresh: () => void, close?: () => void }) {
-	const targetAlbum = data.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
-	const sourceAlbum = data.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
-	const aggregatedAlbum = data.aggregated;
-	const sourceArtist = data.aggregated?.sourceArtist;
+	const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(data)
+	const sourceArtist = aggregatedAlbum.sourceArtist;
 	const { status, albumIssues } = data;
 	const { id, url, releaseDate, trackCount, mbid, provider, albumArtists } = aggregatedAlbum;
 	const albumTracks = sourceAlbum?.mediums.flatMap((medium) => medium.tracks) || [];

@@ -648,12 +648,6 @@
   align-items: center;
 }
 
-.SAMBLicon {
-  width: 12px;
-  height: 16px;
-  vertical-align: middle;
-}
-
 .selectBox {
   font-size: 14px;
   border: 1px solid var(--foreground-primary);

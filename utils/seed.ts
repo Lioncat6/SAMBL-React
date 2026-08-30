@@ -13,6 +13,7 @@ import type {
 import { ExternalUrlData, PartialArtistObject } from "../types/provider-types";
 import { ReleaseGroupType } from "@kellnerd/musicbrainz/data/release-group";
 import editNoteBuilder from "./editNoteBuilder";
+import albumStack from "./albumStack";
 
 function convertDate(SAMBLDate: string): PartialDate | undefined {
     const parts = SAMBLDate.split('-').map((part) => parseInt(part, 10));
@@ -69,9 +70,7 @@ export function flatten(record: Record<string, any>, preservedKeys: string[] = [
 }
 
 function buildSeed(stack: AlbumStack) {
-    const aggregatedAlbum = stack.aggregated;
-    const sourceAlbum = stack.albums.find((match) => match.type === "source")?.album;
-    const targetAlbum = stack.albums.find((match) => match.type === "target")?.album;
+    const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(stack)
 
     const seed: ReleaseSeed = {
         name: aggregatedAlbum.name,

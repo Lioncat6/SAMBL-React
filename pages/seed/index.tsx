@@ -13,6 +13,7 @@ import { TrackMenu, TrackMenuInner } from "../../components/Popups/TrackMenu";
 import styles from "../../styles/Seed.module.css";
 import { ActionButton } from "../../components/buttons";
 import { ReleaseSeedButton } from "../../components/ReleaseSeed";
+import albumStack from "../../utils/albumStack";
 
 
 async function getAlbum(url?: string, provider?: ProviderNamespace, artistId?: string, albumId?: string): Promise<AlbumStack | null> {
@@ -106,9 +107,7 @@ export default function Seed({ data, error, timings }: { data?: AlbumStack | nul
             </>
         )
     }
-    const aggregatedAlbum = data.aggregated;
-    const sourceAlbum = data.albums.find((match) => match.type === "source")?.album;
-    const targetAlbum = data.albums.find((match) => match.type === "target")?.album;
+    const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(data)
     return (
         <>
             <div className={styles.seedPageContainer} style={{ "--background-image": `url('${aggregatedAlbum.imageUrl || ""}')` } as React.CSSProperties}>

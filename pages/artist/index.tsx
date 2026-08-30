@@ -16,6 +16,7 @@ import { set } from "nprogress";
 import text from "../../utils/text";
 import SAMBLHead from "../../components/SAMBLHead";
 import parsers from "../../lib/parsers/parsers";
+import albumStack from "../../utils/albumStack";
 
 async function fetchArtistData(id: string, provider: ProviderNamespace | string) {
 	const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?provider_id=${id}&provider=${provider}&mbData`);
@@ -488,7 +489,7 @@ export default function Artist({ artist, error }: { artist: ArtistPageData, erro
 	const aiTags = ["ai", "ai-generated", "ai generated", "ai slop", "ai music"]
 	const isAi = artist?.mbData?.genres?.some((tag) => aiTags.includes(tag));
 
-	const sourceAlbum = artist.viewedAlbum?.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
+	const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(artist.viewedAlbum || undefined)
 
 	return (
 		<>
