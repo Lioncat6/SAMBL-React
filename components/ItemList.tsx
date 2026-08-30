@@ -23,14 +23,14 @@ import ExportMenuPopup from "./Popups/ExportMenu";
 import TrackMenuPopup from "./Popups/TrackMenu";
 import FilterMenuPopup from "./Popups/FilterMenu";
 import toasts from "../utils/toasts";
-import { AlbumObject, ArtistObject, ExtendedTrackObject, ObjectType, ProviderNamespace, TrackObject } from "../types/provider-types";
+import { AlbumObject, ArtistObject, ExtendedTrackObject, ObjectType, PartialArtistObject, ProviderNamespace, TrackObject } from "../types/provider-types";
 import { MdAlbum, MdAudiotrack, MdPerson } from "react-icons/md";
 import { SAMBLAPIResponse } from "../types/api-types";
+import { SAMBLArtistIcon } from "./icons";
+import albumStack from "../utils/albumStack";
 
 function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRCs: boolean) => void }) {
-	const targetAlbum = item.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
-	const sourceAlbum = item.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
-	const aggregatedAlbum = item.aggregated;
+	const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(item)
 	const sourceArtist = item.aggregated?.sourceArtist;
 	const { status, albumIssues } = item;
 	const { id, url, releaseDate, trackCount, mbid, provider, albumArtists } = aggregatedAlbum;
@@ -169,8 +169,7 @@ function SelectionButtons({ item }) {
 const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; selecting?: boolean; onUpdate?: (updatedItem: DisplayAlbum) => void }) => {
 	const [isLoading, setIsLoading] = useState(false);
 	const exportState = useExportState()?.exportState;
-	const targetAlbum = item.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
-	const sourceAlbum = item.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
+	const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(item)
 	const { searchReason } = item;
 	const { status, albumIssues } = item;
 	const {
@@ -197,7 +196,7 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 			if (response.ok) {
 				const apiResponse = await response.json() as SAMBLAPIResponse<AlbumStack>;
 				const album = apiResponse.data
-				if (onUpdate && album) onUpdate(album);
+				if (onUpdate && album) onUpdate(album as DisplayAlbum);
 			} else {
 				try {
 					const apiResponse = await response.json() as SAMBLAPIResponse<AlbumStack>;
@@ -311,9 +310,7 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 								<a href={artist.url.url} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
 									{artist.name}
 								</a>
-								<a href={`../${!artist.mbid ? 'new' : ''}artist?provider_id=${artist.id}&provider=${artist.provider}${artist.mbid ? `&artist_mbid=${artist.mbid}`: ''}`} target="_blank" rel="noopener noreferrer">
-									<img className={styles.SAMBLicon} src="../assets/images/favicon.svg" alt="SAMBL" />
-								</a>
+								<SAMBLArtistIcon artist={artist} />
 							</span>
 						))}
 					</div>
@@ -465,9 +462,7 @@ function GenericItem({ item }: { item: AlbumObject | ExtendedTrackObject | Artis
 			<a href={artist.url.url} target="_blank" rel="noopener noreferrer" className={styles.artists}>
 				{artist.name}
 			</a>
-			<a href={`../${!artist.mbid ? 'new' : ''}artist?provider_id=${artist.id}&provider=${artist.provider}${artist.mbid ? `&artist_mbid=${artist.mbid}`: ''}`} target="_blank" rel="noopener noreferrer">
-				<img className={styles.SAMBLicon} src="../assets/images/favicon.svg" alt="SAMBL" />
-			</a>
+			<SAMBLArtistIcon artist={artist} />
 		</span>
 	));
 	let infoString = Array.isArray(info) ? info.filter((item) => item != null && item != "").join(" • ") : "";
