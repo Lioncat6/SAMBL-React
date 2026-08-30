@@ -1,6 +1,7 @@
 import { albumSearchReason, DisplayAlbum, DisplayTrack, FilterData, listFilter, listFilterOption, listSort, listSortOption } from "../types/component-types"
 import { AggregatedAlbum, AlbumStatus } from "../types/aggregated-types";
 import { AlbumObject } from "../types/provider-types";
+import albumStack from "../utils/albumStack";
 
 const listFilterOptions: listFilterOption[] = [
     { id: 1, name: 'Green', key: 'showGreen', default: true },
@@ -102,11 +103,10 @@ function searchItems(items: DisplayAlbum[], query: string): DisplayAlbum[] {
                 let matchingTracks: number[] = []
                 // If we can't find a title or artist match
                 if (!(matchesTitle || matchesArtist)) {
-                    const sourceAlbum = item.albums.find((albumMatch) => albumMatch.type === "source")?.album as AlbumObject | null;
+                    const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(item)
                     const aggregatedTracks = item.aggregated.mediums.flatMap((medium) => medium.tracks);
                     const sourceTracks = sourceAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
                     const useAggregatedTracks = aggregatedTracks.length > 0
-                    const targetAlbum = item.albums.find((albumMatch) => albumMatch.type === "target")?.album as AggregatedAlbum | null;
                     const useMBTracks = targetAlbum?.mediums.flatMap((medium) => medium.tracks)?.length == item.aggregated.trackCount
                     const mbTracks = targetAlbum?.mediums.flatMap((medium) => medium.tracks)
                     let itemTracks = useAggregatedTracks ? aggregatedTracks : useMBTracks ? mbTracks : sourceTracks as DisplayTrack[]
