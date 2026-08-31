@@ -4,14 +4,13 @@ import dynamic from "next/dynamic";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 
 import { FaMagnifyingGlass, FaGear, FaSeedling } from "react-icons/fa6";
-import { FaTools, FaUser } from "react-icons/fa";
+import { FaMusic, FaTools, FaUser } from "react-icons/fa";
 import { TbTableExport, TbPackageExport } from "react-icons/tb";
 
 import ProviderPill from "./ProviderPill";
 
 import { useExportData } from "./Export";
 
-import Popup from "./Popup"
 import ConfigureMenuPopup from "./Popups/ConfigureMenu";
 
 // const Popup = dynamic(() => import("./Popup"), { ssr: false });
@@ -58,6 +57,11 @@ export default function Header() {
 							<MenuItem>
 								<Link className={styles.activeItem} href="/seed">
 									<FaSeedling  /> Seed
+								</Link>
+							</MenuItem>
+							<MenuItem>
+								<Link className={styles.activeItem} href="/providers">
+									<FaMusic /> Providers
 								</Link>
 							</MenuItem>
 						</MenuItems>
