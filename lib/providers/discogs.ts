@@ -559,7 +559,7 @@ const discogs: FullProvider = {
 	getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 30, namespace: namespace }),
 	searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30, namespace: namespace }),
 	getAlbumById: withCache(getAlbumById, { ttl: 60 * 30, namespace: namespace }),
-	getTrackById: withCache(getTrackById, { ttl: 60 * 30, namespace: namespace }),
+	// getTrackById: withCache(getTrackById, { ttl: 60 * 30, namespace: namespace }),
 	getArtistById: withCache(getArtistById, { ttl: 60 * 30, namespace: namespace }),
 	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 60, namespace: namespace }), //Fetching artist albums is more expensive, so cache for longer
 	formatArtistSearchData,

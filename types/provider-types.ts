@@ -5,7 +5,7 @@ import { ReleaseLanguage, ReleaseScript } from "../utils/scriptAndLanguage";
 
 export type ProviderNamespace = FullProviderNamespace | "musixmatch"
 
-export type FullProviderNamespace = "spotify" | "tidal" | "deezer" | "musicbrainz" | "soundcloud" | "bandcamp" | "applemusic" | "naver" | "qobuz" | "discogs" | "volumo";
+export type FullProviderNamespace = "spotify" | "tidal" | "deezer" | "musicbrainz" | "soundcloud" | "bandcamp" | "applemusic" | "naver" | "qobuz" | "discogs" | "volumo" | "subvert";
 
 export type ObjectType = "partialArtist" | "artist" | "album" | "track" | "label"
 
@@ -201,7 +201,7 @@ export class FullProvider extends Provider {
     getAlbumByUPC?: (upc: string, options?: CacheOptions) => Promise<AlbumObject[] | null>;
     searchByArtistName: (query: string, options?: CacheOptions) => Promise<any | null>;
     getAlbumById: (id: string, options?: CacheOptions) => Promise<any | null>;
-    getTrackById: (id: string, options?: CacheOptions) => Promise<any | null>;
+    getTrackById?: (id: string, options?: CacheOptions) => Promise<any | null>;
     getArtistById: (id: string, options?: CacheOptions) => Promise<any | null>;
     getArtistAlbums: (id: string, offset?: string | number, limit?: number, options?: CacheOptions) => Promise<any | null>;
     formatArtistSearchData: (rawData: any) => any[];
