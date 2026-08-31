@@ -22,9 +22,9 @@ function normalizeText(text: string | number): string {
  *
  * @param {string} text The text to capitalize.
  */
-function capitalizeFirstLetter(text: string | number, enforeceLowercase = true): string {
+function capitalizeFirstLetter(text: string | number, enforceLowercase = true): string {
 	if (typeof text !== "string") text = String(text);
-	return text.charAt(0).toUpperCase() + (enforeceLowercase ? text.slice(1).toLowerCase() : text.slice(1));
+	return text.charAt(0).toUpperCase() + (enforceLowercase ? text.slice(1).toLowerCase() : text.slice(1));
 }
 
 /**
