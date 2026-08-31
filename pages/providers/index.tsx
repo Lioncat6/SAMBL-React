@@ -9,6 +9,7 @@ import { IoMdRefresh } from "react-icons/io";
 import styles from '../../styles/providersPage.module.scss'
 import providerColors from '../../styles/providerColors.module.css'
 import clientProviders from "../../utils/clientProviders";
+import SAMBLHead from "../../components/SAMBLHead";
 
 type providerCapabilityNames =
     "Get artist by ID" |
@@ -97,26 +98,34 @@ export default function ProvidersPage({ providers }: { providers: providerRow[] 
     }
     const keys = Object.keys(providers[0]) as Array<keyof providerRow>;
     return (
-    <>
-        <h1>Supported Providers & Capabilities</h1>
-        <table className={styles.table}>
-            <thead>
-                <tr>
-                    {keys.map((key) => (
-                        <th key={String(key)}>{text.capitalizeFirst(String(key), false)}</th>
-                    ))}
-                </tr>
-            </thead>
-            <tbody>
-                {providers.map((row) => (
-                    <tr key={row.namespace}>
-                        {keys.map((key) => (
-                            <td key={`${row.namespace}-${String(key)}`} className={styles.tableValue}>{formatValue(row[key], key, row.namespace)}</td>
-                        ))}
-                    </tr>
-                ))}
-            </tbody>
-        </table>
+        <>
+            <SAMBLHead
+                title={`SAMBL • Providers"`}
+                fullTitle={`Supported Providers & Capabilities"`}
+            />
+            <h1>Supported Providers & Capabilities</h1>
+            <div id="contentContainer">
+                <div className={styles.tableContainer}>
+                    <table className={styles.table}>
+                        <thead>
+                            <tr>
+                                {keys.map((key) => (
+                                    <th key={String(key)}>{text.capitalizeFirst(String(key), false)}</th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {providers.map((row) => (
+                                <tr key={row.namespace}>
+                                    {keys.map((key) => (
+                                        <td key={`${row.namespace}-${String(key)}`} className={styles.tableValue}>{formatValue(row[key], key, row.namespace)}</td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </>
     );
 }
