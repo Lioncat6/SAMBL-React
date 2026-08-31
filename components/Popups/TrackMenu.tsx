@@ -271,7 +271,7 @@ function TrackItem({ index, track, album, isrcSource, highlight, isStandalone }:
 	);
 }
 
-export function TrackMenuInner({ data, refresh, isStandalone = true }: { data: AlbumStack, refresh: () => void, close?: () => void, isStandalone?: boolean }) {
+export function TrackMenuInner({ data, refresh, isStandalone = false }: { data: AlbumStack, refresh: () => void, close?: () => void, isStandalone?: boolean }) {
 	const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(data)
 	const sourceArtist = aggregatedAlbum.sourceArtist;
 	const { status, albumIssues } = data;
