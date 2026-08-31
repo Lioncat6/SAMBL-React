@@ -1,6 +1,6 @@
 import styles from "../styles/itemList.module.css";
 import Link from "next/link";
-import React, { useEffect, useState, memo, JSX } from "react";
+import React, { useEffect, useState, memo, JSX, Provider } from "react";
 import { SAMBLSettingsContext, useSettings } from "./SettingsContext";
 import dynamic from "next/dynamic";
 import { useExport as useExportState } from "./ExportState";
@@ -28,6 +28,7 @@ import { MdAlbum, MdAudiotrack, MdPerson } from "react-icons/md";
 import { SAMBLAPIResponse } from "../types/api-types";
 import { SAMBLArtistIcon } from "./icons";
 import albumStack from "../utils/albumStack";
+import clientProviders from "../utils/clientProviders";
 
 function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRCs: boolean) => void }) {
 	const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(item)
@@ -396,20 +397,21 @@ function ArtistItem({ item }: { item: AggregatedArtist }) {
 }
 
 function Icon({ source }: { source: ProviderNamespace }) {
+	const displayName = clientProviders.getDisplayName(source);
 	return (
 		<>
-			{source === "spotify" && <img className={styles.spotifyIcon} title={"Spotify"} src="../assets/images/Spotify_icon.svg" />}
-			{source === "musicbrainz" && <img className={styles.mbIcon} title={"MusicBrainz"} src="../assets/images/MusicBrainz_logo_icon.svg" />}
-			{source === "deezer" && <FaDeezer title={"Deezer"} className={styles.deezerIcon} />}
-			{source === "musixmatch" && <img className={styles.musixMatchIcon} title={"Musixmatch"} src="../assets/images/Musixmatch_logo_icon_only.svg" />}
-			{source === "tidal" && <SiTidal title={"Tidal"} className={styles.tidalIcon} />}
-			{source === "applemusic" && <SiApplemusic title={"Apple Music"} className={styles.applemusicIcon} />}
-			{source === "soundcloud" && <FaSoundcloud title={"Soundcloud"} className={styles.soundcloudIcon} />}
-			{source === "bandcamp" && <FaBandcamp title={"Bandcamp"} className={styles.soundcloudIcon} />}
-			{source === "naver" && <img className={styles.naverIcon} title={"Naver"} src="../assets/images/Naver_icon.svg" />}
-			{source === "qobuz" && <img className={styles.qobuzIcon} title={"Qobuz"} src="../assets/images/Qobuz_icon.svg" />}
-			{source === "discogs" && <img className={styles.discogsIcon} title={"Discogs"} src="../assets/images/Discogs_icon.svg" />}
-			{source === "volumo" && <img className={styles.volumoIcon} title={"Volumo"} src="../assets/images/Volumo_icon.svg" />}
+			{source === "spotify" && <img className={styles.spotifyIcon} title={displayName} src="../assets/images/Spotify_icon.svg" />}
+			{source === "musicbrainz" && <img className={styles.mbIcon} title={displayName} src="../assets/images/MusicBrainz_logo_icon.svg" />}
+			{source === "deezer" && <FaDeezer title={displayName} className={styles.deezerIcon} />}
+			{source === "musixmatch" && <img className={styles.musixMatchIcon} title={displayName} src="../assets/images/Musixmatch_logo_icon_only.svg" />}
+			{source === "tidal" && <SiTidal title={displayName} className={styles.tidalIcon} />}
+			{source === "applemusic" && <SiApplemusic title={displayName} className={styles.applemusicIcon} />}
+			{source === "soundcloud" && <FaSoundcloud title={displayName} className={styles.soundcloudIcon} />}
+			{source === "bandcamp" && <FaBandcamp title={displayName} className={styles.soundcloudIcon} />}
+			{source === "naver" && <img className={styles.naverIcon} title={displayName} src="../assets/images/Naver_icon.svg" />}
+			{source === "qobuz" && <img className={styles.qobuzIcon} title={displayName} src="../assets/images/Qobuz_icon.svg" />}
+			{source === "discogs" && <img className={styles.discogsIcon} title={displayName} src="../assets/images/Discogs_icon.svg" />}
+			{source === "volumo" && <img className={styles.volumoIcon} title={displayName} src="../assets/images/Volumo_icon.svg" />}
 		</>
 	);
 }

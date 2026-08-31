@@ -82,7 +82,8 @@ export type SearchBoxType = "search" | "find" | "lookup";
 export class ProviderDisplay {
     name: string;
     namespace: ProviderNamespace;
-    icon: JSX.Element;
+    icon?: JSX.Element;
+    hide?: boolean
 }
 export interface SAMBLSettings {
     enabledSeeders: SeederNamespace[];

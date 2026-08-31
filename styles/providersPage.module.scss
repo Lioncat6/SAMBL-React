@@ -1,0 +1,33 @@
+.tableValue {
+  cursor: help;
+  text-wrap: nowrap;
+  .always {
+    color: var(--pa-always-primary);
+  }
+
+  .alwaysPassive {
+    color: var(--pa-always-secondary);
+  }
+
+  .never {
+    color: var(--pa-never-primary);
+  }
+
+  .neverPassive {
+    color: var(--pa-never-secondary);
+  }
+
+  .sometimes {
+    color: var(--pa-sometimes-primary);
+  }
+
+  .refresh {
+    color: var(--pa-refresh-primary);
+  }
+}
+
+.table {
+    display: block;
+    overflow: scroll;
+    width: 100%;
+}

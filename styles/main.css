@@ -36,6 +36,13 @@
 	--status-orange: orange;
 	--status-blue: cornflowerblue;
 	--status-grey: gray;
+	/* Presence & Availability color */
+	--pa-always-primary: #7ffc7f;
+	--pa-always-secondary: #cce7cc;
+	--pa-never-primary: #ff7c7c;
+	--pa-never-secondary: #f3d3d3;
+	--pa-sometimes-primary: #ffff9c;
+	--pa-refresh-primary: #bbbbff;
 }
 
 .dark {
@@ -284,14 +291,6 @@ iframe {
 	}
 }
 
-/* ko-fi widget button */
-.floatingchat-container,
-.floatingchat-container-mobi {
-	width: -moz-fit-content !important;
-	width: fit-content !important;
-	background: transparent !important;
-}
-
 @media (max-width: 500px) {
 	#main {
 		min-width: 380px;
@@ -300,12 +299,6 @@ iframe {
 	.popup-content {
 		min-width: 380px !important;
 		width: 95% !important;
-	}
-}
-
-@media (max-width: 950px) {
-	.floatingchat-container-wrap-mobi {
-		bottom: 100px !important;
 	}
 }
 
