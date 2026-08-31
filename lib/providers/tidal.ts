@@ -189,7 +189,7 @@ async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> {
 async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
     await refreshApi(); // /albums?countryCode=US&filter[barcodeId]=${upc}&include=coverArt&include=artists
     try {
-        let data = await tidalApi?.GET(`/albums`, { params: { query: { countryCode: "US", "filter[barcodeId]": [upc], include: ["coverArt", "artists", "tracks", "providers"] } } });
+        let data = await tidalApi?.GET(`/albums`, { params: { query: { countryCode: "US", "filter[barcodeId]": [upc], include: ["coverArt", "artists", "items", "providers", "items.artists"] } } });
         let tidalData = data?.data;
         if (tidalData && tidalData?.data?.[0]?.attributes?.title) {
             let albumsData: AlbumObject[] = []
@@ -212,6 +212,9 @@ async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
                 album.coverArt = album.relationships?.coverArt?.data?.[0]?.id ? artworkMap[album.relationships?.coverArt?.data[0]?.id] || null : null;
                 album.providers = album.relationships?.providers?.data?.map(p => providerMap[p.id]) ?? [];
                 album.genres = album.relationships?.genres?.data?.map(p => genreMap[p.id]) ?? [];
+                for (let track of album.tracks) {
+                    track.artists = track.relationships?.artists?.data?.map(a => artistMap[a.id]) ?? [];
+                }
             }
             albumsData = albums.map(formatAlbumObject);
             return albumsData;
@@ -276,7 +279,6 @@ async function getAlbumById(tidalId: string) {
     try {
         const data = await tidalApi?.GET(`/albums/{id}`, { params: { path: { id: tidalId }, query: { countryCode: "US", include: ["coverArt", "artists", "items", "providers", "genres", "items.artists"] } } });
         const albumData = data?.data;
-        console.log(data)
         if (albumData && albumData.data) {
             const included = albumData.included;
             const artists = included ? included.filter(obj => obj.type === "artists") : [];
@@ -341,7 +343,6 @@ async function getArtistAlbums(artistId: string, offset?: string | null | number
     await refreshApi(); // /artists/${artistId}/relationships/albums?countryCode=US&include=albums&include=albums.coverArt&include=albums.artists&include=albums.items&include=albums.providers${(offset && offset != 0) ? `&page[cursor]=${offset}` : ''}
     try {
         const data = await tidalApi.GET(`/artists/{id}`, { params: { path: { id: artistId }, query: { countryCode: "US", include: ["albums", "albums.coverArt", "albums.artists", "albums.items", "albums.providers", "albums.genres", "albums.items.artists"], page: offset || undefined } } });
-        console.log(JSON.stringify(data.error))
         if (data.data) {
             return JSON.parse(JSON.stringify(data)) as typeof data;
         } else {
@@ -356,7 +357,6 @@ function formatAlbumGetData(rawData: TidalArtistReponse): RawAlbumData {
     const currentPage = /%5Bcursor%5D=([a-zA-Z0-9]+)/;
     const data = rawData.data?.data;
     const included = rawData.data?.included;
-    console.log(JSON.stringify(rawData))
     if (!included) {
         return {
             count: null,
@@ -380,7 +380,6 @@ function formatAlbumGetData(rawData: TidalArtistReponse): RawAlbumData {
 
     for (let album of albums) {
         album.artists = album.relationships?.artists?.data?.map(a => artistMap[a.id]) ?? [];
-        console.log(album.artists)
         album.tracks = album.relationships?.items?.data?.map(t => trackMap[t.id]) ?? [];
         album.coverArt = album.relationships?.coverArt?.data?.[0]?.id ? artworkMap[album.relationships?.coverArt?.data[0]?.id] || null : null;
         album.providers = album.relationships?.providers?.data?.map(p => providerMap[p.id]) ?? [];
@@ -399,7 +398,6 @@ function formatAlbumGetData(rawData: TidalArtistReponse): RawAlbumData {
 }
 
 function formatAlbumObject(album: ExtendedAlbum): AlbumObject {
-    console.log(album)
     return {
         provider: namespace,
         id: album.id,
