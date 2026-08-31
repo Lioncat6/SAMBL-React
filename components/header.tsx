@@ -59,9 +59,9 @@ export default function Header() {
 									<FaSeedling  /> Seed
 								</Link>
 							</MenuItem>
-							<MenuItem>  //TODO: Find a better place for this
-								<Link className={styles.activeItem} href="/providers">
-									<FaMusic /> Providers
+							<MenuItem> {/*TODO: Find a better place for this */}
+								<Link className={styles.activeItem} href="/providers"> 
+									<FaMusic /> Providers 
 								</Link>
 							</MenuItem>
 						</MenuItems>
