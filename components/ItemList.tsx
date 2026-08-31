@@ -192,7 +192,7 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 	async function refreshData(fetchISRCs = false) {
 		setIsLoading(true);
 		try {
-			const response = await toasts.dispPromise(fetch(`/api/compareSinleAlbum?url=${url.url}&mbid=${sourceArtist?.mbid}&artist_id=${sourceArtist?.id}${fetchISRCs ? '&fetchISRCs' : ""}`), "Refreshing album...", "Failed to fetch album");
+			const response = await toasts.dispPromise(fetch(`/api/compareSingleAlbum?url=${url.url}&mbid=${sourceArtist?.mbid}&artist_id=${sourceArtist?.id}${fetchISRCs ? '&fetchISRCs' : ""}`), "Refreshing album...", "Failed to fetch album");
 			setIsLoading(false);
 			if (response.ok) {
 				const apiResponse = await response.json() as SAMBLAPIResponse<AlbumStack>;
