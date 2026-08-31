@@ -86,7 +86,7 @@ export default function ProvidersPage({ providers }: { providers: providerRow[] 
             onTrackRefresh: <span className={styles.refresh} title={"Data requires a track refresh for this provider"}><MdAudiotrack /><IoMdRefresh /></span>
         }
         if (key == 'icon') {
-            return <span className={providerColors[namespace]}>{clientProviders.getDisplayIcon(namespace)}</span>
+            return <span className={providerColors[namespace]} title={`${clientProviders.getDisplayName(namespace)} Icon`}>{clientProviders.getDisplayIcon(namespace)}</span>
         }
         if (typeof value === "boolean") {
             return value ? <FaCheck className={styles.alwaysPassive} title={"Function is supported by this provider"} /> : <FaXmark className={styles.neverPassive} title={"Function is not supported by this provider"} />

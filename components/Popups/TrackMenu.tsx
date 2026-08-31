@@ -13,6 +13,7 @@ import { DisplayAlbum } from "../../types/component-types";
 import parsers from "../../lib/parsers/parsers";
 import { SAMBLArtistIcon } from "../icons";
 import albumStack from "../../utils/albumStack";
+import clientProviders from "../../utils/clientProviders";
 
 function MbUrlIcon({ status, url, styleClass, isAlbum = true }: { status: AlbumStatus | TrackStatus, url: string | null, styleClass: string, isAlbum?: boolean }) {
 	return (
@@ -301,7 +302,7 @@ export function TrackMenuInner({ data, refresh, isStandalone = true }: { data: A
 			{(!hasFullTrackData && !isStandalone) && (
 				<div className={styles.noAggregatedTracksWarning}>
 					<MdOutlineWarningAmber /> {data.status == "red" && trackData.length > 0 ? "Add this album to musicbrainz to see full track data" : <><button className={styles.textButton} onClick={() => (refresh())} title={"Refresh Album"}>Refresh</button> this album to see full track data</>}
-					{trackDataSource && (<div className={styles.trackDataSource}>Currently viewing track data from <span>{text.capitalizeFirst(trackDataSource)}</span></div>)}
+					{trackDataSource && (<div className={styles.trackDataSource}>Currently viewing track data from <span>{clientProviders.getDisplayName(trackDataSource)}</span></div>)}
 				</div>
 			)}
 			<div className={styles.content}>

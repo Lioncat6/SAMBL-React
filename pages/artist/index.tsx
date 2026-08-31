@@ -17,6 +17,7 @@ import text from "../../utils/text";
 import SAMBLHead from "../../components/SAMBLHead";
 import parsers from "../../lib/parsers/parsers";
 import albumStack from "../../utils/albumStack";
+import clientProviders from "../../utils/clientProviders";
 
 async function fetchArtistData(id: string, provider: ProviderNamespace | string) {
 	const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?provider_id=${id}&provider=${provider}&mbData`);
@@ -501,7 +502,7 @@ export default function Artist({ artist, error }: { artist: ArtistPageData, erro
 						image={sourceAlbum.imageUrl}
 						description={text.infoToString([
 							`${text.getColorEmoji(artist.viewedAlbum?.status)}|${sourceAlbum.name}`,
-							`${sourceAlbum.albumType ? `${text.capitalizeFirst(sourceAlbum.albumType)} - `: ""}${text.capitalizeFirst(sourceAlbum.provider)}`,
+							`${sourceAlbum.albumType ? `${text.capitalizeFirst(sourceAlbum.albumType)} - `: ""}${clientProviders.getDisplayName(sourceAlbum.provider)}`,
 							sourceAlbum.upc ? `Barcode: ${sourceAlbum.upc}`: null,
 							sourceAlbum.trackCount ? `${sourceAlbum.trackCount} tracks`: null,
 							sourceAlbum.releaseDate	
@@ -515,7 +516,7 @@ export default function Artist({ artist, error }: { artist: ArtistPageData, erro
 						fullTitle={`View Artist • ${artist.name}`}
 						image={artist.imageUrl}
 						description={text.infoToString([
-							text.capitalizeFirst(artist.provider),
+							clientProviders.getDisplayName(artist.provider),
 							artist.info,
 							artist.relevance,
 						])}
