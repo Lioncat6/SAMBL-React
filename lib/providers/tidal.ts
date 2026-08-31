@@ -115,11 +115,11 @@ async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> {
         let tidalData = data?.data;
         if (tidalData) {
             let tracksData: TrackObject[] = []
-            const artists = tidalData.included?.filter((obj) => obj.type === "artists") || [];
+            const artists = tidalData.included?.filter((obj) => obj.type === "artists") ?? [];
             let artistMap = Object.fromEntries(artists.map((artist) => [artist.id, artist]));
-            const artworks = tidalData.included?.filter((obj) => obj.type === "artworks") || [];
+            const artworks = tidalData.included?.filter((obj) => obj.type === "artworks") ?? [];
             let artworkMap = Object.fromEntries(artworks.map((artwork) => [artwork.id, artwork]));
-            const albums = tidalData.included?.filter((obj) => obj.type === "albums") || [];
+            const albums = tidalData.included?.filter((obj) => obj.type === "albums") ?? [];
             let albumMap = Object.fromEntries(albums.map((album) => [album.id, album]));
 
             function getArtworkUrl(artworkId: string) {
@@ -207,11 +207,11 @@ async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
             let albums = tidalData.data as ExtendedAlbum[];
 
             for (let album of albums) {
-                album.artists = album.relationships?.artists?.data?.map(a => artistMap[a.id]) || [];
-                album.tracks = album.relationships?.items?.data?.map(t => trackMap[t.id]) || [];
+                album.artists = album.relationships?.artists?.data?.map(a => artistMap[a.id]) ?? [];
+                album.tracks = album.relationships?.items?.data?.map(t => trackMap[t.id]) ?? [];
                 album.coverArt = album.relationships?.coverArt?.data?.[0]?.id ? artworkMap[album.relationships?.coverArt?.data[0]?.id] || null : null;
-                album.providers = album.relationships?.providers?.data?.map(p => providerMap[p.id]) || [];
-                album.genres = album.relationships?.genres?.data?.map(p => genreMap[p.id]) || [];
+                album.providers = album.relationships?.providers?.data?.map(p => providerMap[p.id]) ?? [];
+                album.genres = album.relationships?.genres?.data?.map(p => genreMap[p.id]) ?? [];
             }
             albumsData = albums.map(formatAlbumObject);
             return albumsData;
@@ -224,15 +224,13 @@ async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
     }
 }
 
-type _GetSearchResults = () => ReturnType<typeof tidalApi.GET<"/searchResults/{id}", { params }>>;
+type _GetSearchResults = () => ReturnType<typeof tidalApi.GET<"/searchResults", { params }>>;
 type TidalSearchResultsResponse = Awaited<ReturnType<_GetSearchResults>>;
 type TidalSearchResultsData = NonNullable<TidalSearchResultsResponse["data"]>
 
 async function searchByArtistName(query: string) {
     await refreshApi(); // /searchResults/${encodeURIComponent(query)}?countryCode=US&include=artists&include=artists.profileArt&include=artists.albums&include=albums.artists&include=albums.coverArt&include=artists.albums.coverArt
     try {
-        // TODO: https://github.com/tidal-music/tidal-sdk-web/issues/714
-        // @ts-ignore
         const data = await tidalApi?.GET(`/searchResults`, { params: { query: { 'filter[query]': encodeURIComponent(query), countryCode: "US", include: ["artists", "artists.profileArt", "artists.albums", "albums.artists", "albums.coverArt", "artists.albums.coverArt"] } } });
         const artistData = data?.data
         if (artistData?.included && artistData?.included.length > 0) {
@@ -259,30 +257,43 @@ type TidalGenre = Extract<TidalAlbumIncluded, { type: "genres" }>;
 interface ExtendedAlbum extends TidalAlbum {
     artists: TidalArtist[];
     coverArt: TidalArtwork | null;
-    tracks: TidalTrack[];
     providers: TidalProvider[];
     genres: TidalGenre[];
+    tracks: ExtendedTrack[];
 }
 
+interface ExtendedTrack extends TidalTrack {
+    trackNumber?: number | null
+    imageUrl?: string | null
+    imageUrlSmall?: string | null
+    albumName?: string | null
+    releaseDate?: string | null
+    artists?: TidalArtist[]
+}
 
 async function getAlbumById(tidalId: string) {
     await refreshApi(); // /albums/${tidalId}?countryCode=US&include=coverArt&include=artists&include=items
     try {
-        const data = await tidalApi?.GET(`/albums/{id}`, { params: { path: { id: tidalId }, query: { countryCode: "US", include: ["coverArt", "artists", "items", "providers", "genres"] } } });
+        const data = await tidalApi?.GET(`/albums/{id}`, { params: { path: { id: tidalId }, query: { countryCode: "US", include: ["coverArt", "artists", "items", "providers", "genres", "items.artists"] } } });
         const albumData = data?.data;
+        console.log(data)
         if (albumData && albumData.data) {
             const included = albumData.included;
             const artists = included ? included.filter(obj => obj.type === "artists") : [];
+            const artistMap = Object.fromEntries(artists.map(a => [a.id, a]));
             const artworks = included ? included.filter(obj => obj.type === "artworks") : [];
             const tracks = included ? included.filter(obj => obj.type === "tracks") : [];
             const providers = included ? included.filter(obj => obj.type === "providers") : [];
             const genres = included ? included.filter(obj => obj.type === "genres") : [];
             let album = data.data?.data as ExtendedAlbum;
-            album.artists = artists;
+            album.artists = album.relationships?.artists?.data?.map(a => artistMap[a.id]) ?? [];;
             album.coverArt = artworks[0];
             album.tracks = tracks;
             album.providers = providers;
             album.genres = genres;
+            for (const track of album.tracks) {
+                track.artists = track.relationships?.artists?.data?.map(a => artistMap[a.id]) ?? [];
+            }
             return JSON.parse(JSON.stringify(album)) as ExtendedAlbum;
         } else {
             return null;
@@ -307,11 +318,11 @@ async function getTrackById(tidalId: string) {
 }
 
 async function getArtistById(tidalId: string) {
-    await refreshApi(); 
+    await refreshApi();
     // /artists/${tidalId}?countryCode=US&include=artists&include=artists.profileArt&include=artists.albums&include=albums.artists&include=albums.coverArt&include=artists.albums.coverArt
     // "artists", "artists.profileArt", "artists.albums", "albums.artists", "albums.coverArt", "artists.albums.coverArt"
     try {
-        const data = await tidalApi.GET(`/artists/{id}`, { params: { path: { id: tidalId }, query: { countryCode: "US", include: ["profileArt", "albums", "tracks"] } } });
+        const data = await tidalApi.GET(`/artists/{id}`, { params: { path: { id: tidalId }, query: { countryCode: "US", include: ["profileArt", "albums", "tracks"], collapseBy: 'NONE' } } });
         if (data.data) {
             return JSON.parse(JSON.stringify(data.data)) as typeof data.data;
         } else {
@@ -329,7 +340,8 @@ type TidalArtistData = NonNullable<TidalArtistReponse["data"]>
 async function getArtistAlbums(artistId: string, offset?: string | null | number, limit?: string | null | number) {
     await refreshApi(); // /artists/${artistId}/relationships/albums?countryCode=US&include=albums&include=albums.coverArt&include=albums.artists&include=albums.items&include=albums.providers${(offset && offset != 0) ? `&page[cursor]=${offset}` : ''}
     try {
-        const data = await tidalApi.GET(`/artists/{id}`, { params: { path: { id: artistId }, query: { countryCode: "US", include: ["albums", "albums.coverArt", "albums.artists", "albums.items", "albums.providers"], page: offset || undefined } } });
+        const data = await tidalApi.GET(`/artists/{id}`, { params: { path: { id: artistId }, query: { countryCode: "US", include: ["albums", "albums.coverArt", "albums.artists", "albums.items", "albums.providers", "albums.genres", "albums.items.artists"], page: offset || undefined } } });
+        console.log(JSON.stringify(data.error))
         if (data.data) {
             return JSON.parse(JSON.stringify(data)) as typeof data;
         } else {
@@ -340,12 +352,11 @@ async function getArtistAlbums(artistId: string, offset?: string | null | number
     }
 }
 
-
-
 function formatAlbumGetData(rawData: TidalArtistReponse): RawAlbumData {
     const currentPage = /%5Bcursor%5D=([a-zA-Z0-9]+)/;
     const data = rawData.data?.data;
     const included = rawData.data?.included;
+    console.log(JSON.stringify(rawData))
     if (!included) {
         return {
             count: null,
@@ -354,7 +365,8 @@ function formatAlbumGetData(rawData: TidalArtistReponse): RawAlbumData {
             albums: [],
         };
     }
-    const artists = included.filter(obj => obj.type === "artists");
+    // Artist of which the lookup originated from is now returned as the 'data' element of the lookup instead of just in the included
+    const artists = [...included.filter(obj => obj.type === "artists"), data].filter(a => a != undefined);
     const artistMap = Object.fromEntries(artists.map(a => [a.id, a]));
     const albums = included.filter(obj => obj.type === "albums") as ExtendedAlbum[];
     const artworks = included.filter(obj => obj.type === "artworks");
@@ -367,11 +379,15 @@ function formatAlbumGetData(rawData: TidalArtistReponse): RawAlbumData {
     const genreMap = Object.fromEntries(genres.map(p => [p.id, p]));
 
     for (let album of albums) {
-        album.artists = album.relationships?.artists?.data?.map(a => artistMap[a.id]) || [];
-        album.tracks = album.relationships?.items?.data?.map(t => trackMap[t.id]) || [];
+        album.artists = album.relationships?.artists?.data?.map(a => artistMap[a.id]) ?? [];
+        console.log(album.artists)
+        album.tracks = album.relationships?.items?.data?.map(t => trackMap[t.id]) ?? [];
         album.coverArt = album.relationships?.coverArt?.data?.[0]?.id ? artworkMap[album.relationships?.coverArt?.data[0]?.id] || null : null;
-        album.providers = album.relationships?.providers?.data?.map(p => providerMap[p.id]) || [];
-        album.genres = album.relationships?.genres?.data?.map(p => genreMap[p.id]) || [];
+        album.providers = album.relationships?.providers?.data?.map(p => providerMap[p.id]) ?? [];
+        album.genres = album.relationships?.genres?.data?.map(p => genreMap[p.id]) ?? [];
+        for (let track of album.tracks) {
+            track.artists = track.relationships?.artists?.data?.map(a => artistMap[a.id]) ?? [];
+        }
     }
 
     return {
@@ -383,6 +399,7 @@ function formatAlbumGetData(rawData: TidalArtistReponse): RawAlbumData {
 }
 
 function formatAlbumObject(album: ExtendedAlbum): AlbumObject {
+    console.log(album)
     return {
         provider: namespace,
         id: album.id,
@@ -420,18 +437,9 @@ function createLabels(labels: TidalProvider[]): LabelObject[] | null {
     return labelObjs;
 }
 
-interface ExtendedTrack extends TidalTrack {
-    trackNumber: number | null
-    imageUrl: string | null
-    imageUrlSmall: string | null
-    albumName: string | null
-    releaseDate: string | null
-    artists: TidalArtist[]
-}
-
 function getAlbumTracks(album: ExtendedAlbum) {
     let tracks = album.tracks;
-    let items = album.relationships?.items?.data || [];
+    let items = album.relationships?.items?.data ?? [];
     for (let item of items) {
         let track = tracks.find(t => t.id === item.id) as ExtendedTrack | undefined;
         if (track) {
@@ -439,7 +447,7 @@ function getAlbumTracks(album: ExtendedAlbum) {
             track.imageUrl = album.coverArt?.attributes?.files[0]?.href || null;
             track.imageUrlSmall = album.coverArt?.attributes?.files[5]?.href || null;
             track.albumName = album.attributes?.title || null;
-            track.artists = album.artists || [];
+            // track.artists = album.artists ?? [];
             track.releaseDate = album.attributes?.releaseDate || null;
         }
     }
@@ -454,13 +462,13 @@ function formatTrackObject(track: ExtendedTrack): TrackObject {
         id: track.id,
         name: `${track.attributes?.title}${track.attributes?.version ? ` (${track.attributes.version})` : ""}`,
         url: createUrl("track", track.id),
-        imageUrl: track.imageUrl,
-        imageUrlSmall: track.imageUrlSmall,
-        trackArtists: track.artists.map(formatPartialArtistObject),
-        artistNames: track.artists.map(artist => artist.attributes?.name).filter((name) => name != undefined),
-        albumName: track.albumName,
-        releaseDate: track.releaseDate,
-        trackNumber: track.trackNumber,
+        imageUrl: track.imageUrl ?? null,
+        imageUrlSmall: track.imageUrlSmall ?? null,
+        trackArtists: track.artists?.map(formatPartialArtistObject) ?? [],
+        artistNames: track.artists?.map(artist => artist.attributes?.name).filter((name) => name != undefined) ?? [],
+        albumName: track.albumName ?? null,
+        releaseDate: track.releaseDate ?? null,
+        trackNumber: track.trackNumber ?? null,
         duration: track.attributes?.duration ? text.formatDurationMS(track.attributes?.duration) : null,
         isrcs: track.attributes?.isrc ? [track.attributes.isrc] : [],
         type: "track"
@@ -545,7 +553,7 @@ function formatArtistSearchData(rawData: TidalSearchResultsData | TidalArtistDat
                         topAlbumPopularity = popularity;
                         bestAlbumDate = releaseDate;
 
-                        const coverArtIds = album.relationships.coverArt?.data?.map(ca => ca.id) || []
+                        const coverArtIds = album.relationships.coverArt?.data?.map(ca => ca.id) ?? []
 
                         for (let id of coverArtIds) {
                             const art = artworkMap[id];
