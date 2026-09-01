@@ -1,5 +1,5 @@
 import { JSX, useState } from "react";
-import { DeepSearchData } from "../../types/api-types";
+import { DeepSearchData, SAMBLAPIResponse } from "../../types/api-types";
 import { ArtistPageData, DeepSearchSelection } from "../../types/component-types";
 import { ArtistObject } from "../../types/provider-types";
 import editUrlBuilder from "../../utils/editUrlBuilder";
@@ -30,16 +30,11 @@ function DeepSearchMenu({ close, data }: { close?: () => void, data: ArtistObjec
         try {
             const response = await toasts.dispPromise(fetch(`/api/artistDeepSearch?url=${encodeURIComponent(url)}&count=${albums}&searchURLs=${searchURLs}&searchUPCs=${searchUPCs}&trackArtists=${trackArtists}`), "Running Deep Search...", "Deep Search failed!");
             if (response.ok) {
-                let data = await response.json() as DeepSearchData;
-                // let editUrl = editUrlBuilder.buildDeepSearchEditUrl(data);
-                // if (data.nameSimilarity < 0.30) {
-                //     toasts.error(`Artist name too different for match! (${Math.round(data.nameSimilarity * 100)}% - ${data.mbName})`)
-                //     return;
-                // }
-                // window.open(editUrl, "_blank");
-                setDsData(data);
+                let data = await response.json() as SAMBLAPIResponse<DeepSearchData>;
+                if (!data.data) toasts.error("Server returned no data!");
+                setDsData(data.data || null);
             } else {
-                toasts.error((await response.json()).error);
+                toasts.error((await response.json() as SAMBLAPIResponse<never>).error?.error || response.statusText);
             }
         } catch (error) {
             console.error(error);
