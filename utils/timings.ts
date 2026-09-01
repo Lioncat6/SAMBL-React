@@ -1,4 +1,5 @@
 import { APITimingData, APITimingStage } from "../types/api-types";
+import { ProviderNamespace } from "../types/provider-types";
 
 // export class Stage {
 //     name: string;
@@ -40,6 +41,20 @@ import { APITimingData, APITimingStage } from "../types/api-types";
 interface PartialStage {
     name: string
     start: number
+    provider?: ProviderNamespace
+}
+
+class SingleStage {
+    name: string
+    stagesEnd: (name: string) => void
+    constructor(name: string, end: (name: string) => void) {
+        this.name = name;
+        this.stagesEnd = end;
+    }
+    end() {
+        this.stagesEnd(this.name);
+    }
+    //TODO: startSubstage
 }
 
 // Is this overcomplicated and probably already done by somebody else? Yes.
@@ -53,8 +68,9 @@ export class Stages {
         this.startTime = Date.now()
     }
 
-    start(name: string) {
-        this.partialStages.push({ name, start: Date.now() })
+    start(name: string, provider?: ProviderNamespace) {
+        this.partialStages.push({ name, start: Date.now(), provider })
+        return new SingleStage(name, this.end.bind(this));
     }
 
     end(name: string) {
@@ -63,12 +79,13 @@ export class Stages {
         this.partialStages.filter((item) => item != ps);
         this.stages.push({
             name: name,
-            duration: Date.now() - ps.start
+            duration: Date.now() - ps.start,
+            provider: ps.provider
         })
     }
 
-    async await<T>(name: string, promise: Promise<T>): Promise<Awaited<T>> {
-        this.start(name)
+    async await<T>(name: string, promise: Promise<T>, provider?: ProviderNamespace): Promise<Awaited<T>> {
+        this.start(name, provider)
         const result = await promise;
         this.end(name);
         return result;
