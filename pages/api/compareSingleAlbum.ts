@@ -180,7 +180,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         let albumArtist: ArtistObject | null = null;
         if (artist_id) {
             stages.start('Source artist lookup')
-            const rawArtist = await providerObj.getArtistById(artist_id, { noCache: true });
+            const rawArtist = await providerObj.getArtistById(artist_id);
             if (rawArtist) {
                 albumArtist = providerObj.formatArtistObject(rawArtist);
             }
