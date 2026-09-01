@@ -288,7 +288,7 @@ interface SoundcloudPlaylistWithAlbumInfo extends SoundcloudPlaylist {
 function getAlbumTracks(album: SoundcloudPlaylist | SoundcloudTrack): TrackObject[] {
   if ("tracks" in album && album.tracks) {
     let tracks = album.tracks;
-    let newTracks: SoundcloudTrackWithAlbumInfo[] = []
+    let newTracks: SoundcloudTrackWithAlbumInfo[] = tracks;
     for (let trackNumber = 0; trackNumber < tracks.length; trackNumber++) {
       newTracks[trackNumber].albumName = album.title
       newTracks[trackNumber].track_number = trackNumber + 1
