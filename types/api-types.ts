@@ -70,7 +70,7 @@ export class ReleaseCountData {
     featuredCount?: number | null
 }
 
-export interface APITimingStage { name: string, duration: number } 
+export interface APITimingStage { name: string, duration: number, provider?: ProviderNamespace, subStages?: APITimingStage[] } 
 
 export class APITimingData {
     totalDuration: number;
