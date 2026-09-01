@@ -80,11 +80,6 @@ async function requestAccessToken() {
 
 let validUntilTimestamp: number | null = null;
 
-const tokenData = await requestAccessToken();
-nodeCredentialsProvider._setCredentials({ clientId: tidalClientId, clientSecret: tidalClientSecret, token: tokenData.accessToken, expires: tokenData.expiresIn, requestedScopes: [] });
-validUntilTimestamp = tokenData.validUntilTimestamp;
-
-
 type TidalAPI = ReturnType<typeof createAPIClient>;
 let tidalApi: TidalAPI;
 
@@ -97,12 +92,17 @@ async function refreshApi() {
     }
 }
 
-function getTidalAPI() {
+async function getTidalAPI() {
     if (!tidalApi) { 
         if (!tidalClientId || !tidalClientSecret) {
             throw new Error("TIDAL_CLIENT_ID and TIDAL_CLIENT_SECRET must be set in environment variables.");
         }
+        const tokenData = await requestAccessToken();
+        nodeCredentialsProvider._setCredentials({ clientId: tidalClientId, clientSecret: tidalClientSecret, token: tokenData.accessToken, expires: tokenData.expiresIn, requestedScopes: [] });
+        validUntilTimestamp = tokenData.validUntilTimestamp;
         tidalApi = createAPIClient(nodeCredentialsProvider);
+    } else {
+        await refreshApi();
     }
     return tidalApi;
 }
@@ -112,10 +112,9 @@ function getSmallImageUrl(url: string): string {
     return url.replace(/\/\d+x\d+/, '/320x320');
 }
 
-async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> {
-    await refreshApi(); // /tracks?countryCode=US&filter[isrc]=${isrc}&include=albums.coverArt&include=artists&include=albums
-    try {
-        let data = await getTidalAPI().GET(`/tracks`, { params: { query: { countryCode: "US", "filter[isrc]": [isrc], include: ["albums.coverArt", "artists", "albums"] } } });
+async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> { 
+    try { // /tracks?countryCode=US&filter[isrc]=${isrc}&include=albums.coverArt&include=artists&include=albums
+        let data = await (await getTidalAPI()).GET(`/tracks`, { params: { query: { countryCode: "US", "filter[isrc]": [isrc], include: ["albums.coverArt", "artists", "albums"] } } });
         let tidalData = data?.data;
         if (tidalData) {
             let tracksData: TrackObject[] = []
@@ -191,9 +190,8 @@ async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> {
 }
 
 async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
-    await refreshApi(); // /albums?countryCode=US&filter[barcodeId]=${upc}&include=coverArt&include=artists
-    try {
-        let data = await getTidalAPI().GET(`/albums`, { params: { query: { countryCode: "US", "filter[barcodeId]": [upc], include: ["coverArt", "artists", "items", "providers", "items.artists"] } } });
+    try { // /albums?countryCode=US&filter[barcodeId]=${upc}&include=coverArt&include=artists
+        let data = await (await getTidalAPI()).GET(`/albums`, { params: { query: { countryCode: "US", "filter[barcodeId]": [upc], include: ["coverArt", "artists", "items", "providers", "items.artists"] } } });
         let tidalData = data?.data;
         if (tidalData && tidalData?.data?.[0]?.attributes?.title) {
             let albumsData: AlbumObject[] = []
@@ -236,9 +234,8 @@ type TidalSearchResultsResponse = Awaited<ReturnType<_GetSearchResults>>;
 type TidalSearchResultsData = NonNullable<TidalSearchResultsResponse["data"]>
 
 async function searchByArtistName(query: string) {
-    await refreshApi(); // /searchResults/${encodeURIComponent(query)}?countryCode=US&include=artists&include=artists.profileArt&include=artists.albums&include=albums.artists&include=albums.coverArt&include=artists.albums.coverArt
-    try {
-        const data = await getTidalAPI().GET(`/searchResults`, { params: { query: { 'filter[query]': encodeURIComponent(query), countryCode: "US", include: ["artists", "artists.profileArt", "artists.albums", "albums.artists", "albums.coverArt", "artists.albums.coverArt"] } } });
+    try { // /searchResults/${encodeURIComponent(query)}?countryCode=US&include=artists&include=artists.profileArt&include=artists.albums&include=albums.artists&include=albums.coverArt&include=artists.albums.coverArt
+        const data = await (await getTidalAPI()).GET(`/searchResults`, { params: { query: { 'filter[query]': encodeURIComponent(query), countryCode: "US", include: ["artists", "artists.profileArt", "artists.albums", "albums.artists", "albums.coverArt", "artists.albums.coverArt"] } } });
         const artistData = data?.data
         if (artistData?.included && artistData?.included.length > 0) {
             return artistData;
@@ -279,9 +276,8 @@ interface ExtendedTrack extends TidalTrack {
 }
 
 async function getAlbumById(tidalId: string) {
-    await refreshApi(); // /albums/${tidalId}?countryCode=US&include=coverArt&include=artists&include=items
-    try {
-        const data = await getTidalAPI().GET(`/albums/{id}`, { params: { path: { id: tidalId }, query: { countryCode: "US", include: ["coverArt", "artists", "items", "providers", "genres", "items.artists"] } } });
+    try { // /albums/${tidalId}?countryCode=US&include=coverArt&include=artists&include=items
+        const data = await (await getTidalAPI()).GET(`/albums/{id}`, { params: { path: { id: tidalId }, query: { countryCode: "US", include: ["coverArt", "artists", "items", "providers", "genres", "items.artists"] } } });
         const albumData = data?.data;
         if (albumData && albumData.data) {
             const included = albumData.included;
@@ -310,9 +306,8 @@ async function getAlbumById(tidalId: string) {
 }
 
 async function getTrackById(tidalId: string) {
-    await refreshApi(); ///tracks/${tidalId}?countryCode=US&include=album&include=artists
-    try {
-        const data = await getTidalAPI().GET(`/tracks/{id}`, { params: { path: { id: tidalId }, query: { countryCode: "US", include: ["album", "artists"] } } });
+    try { ///tracks/${tidalId}?countryCode=US&include=album&include=artists
+        const data = await (await getTidalAPI()).GET(`/tracks/{id}`, { params: { path: { id: tidalId }, query: { countryCode: "US", include: ["album", "artists"] } } });
         if (data.data) {
             return JSON.parse(JSON.stringify(data.data)) as typeof data.data;
         } else {
@@ -324,11 +319,10 @@ async function getTrackById(tidalId: string) {
 }
 
 async function getArtistById(tidalId: string) {
-    await refreshApi();
     // /artists/${tidalId}?countryCode=US&include=artists&include=artists.profileArt&include=artists.albums&include=albums.artists&include=albums.coverArt&include=artists.albums.coverArt
     // "artists", "artists.profileArt", "artists.albums", "albums.artists", "albums.coverArt", "artists.albums.coverArt"
     try {
-        const data = await getTidalAPI().GET(`/artists/{id}`, { params: { path: { id: tidalId }, query: { countryCode: "US", include: ["profileArt", "albums", "tracks"], collapseBy: 'NONE' } } });
+        const data = await (await getTidalAPI()).GET(`/artists/{id}`, { params: { path: { id: tidalId }, query: { countryCode: "US", include: ["profileArt", "albums", "tracks"], collapseBy: 'NONE' } } });
         if (data.data) {
             return JSON.parse(JSON.stringify(data.data)) as typeof data.data;
         } else {
@@ -344,9 +338,8 @@ type TidalArtistReponse = Awaited<ReturnType<_GetArtist>>;
 type TidalArtistData = NonNullable<TidalArtistReponse["data"]>
 
 async function getArtistAlbums(artistId: string, offset?: string | null | number, limit?: string | null | number) {
-    await refreshApi(); // /artists/${artistId}/relationships/albums?countryCode=US&include=albums&include=albums.coverArt&include=albums.artists&include=albums.items&include=albums.providers${(offset && offset != 0) ? `&page[cursor]=${offset}` : ''}
-    try {
-        const data = await getTidalAPI().GET(`/artists/{id}`, { params: { path: { id: artistId }, query: { countryCode: "US", include: ["albums", "albums.coverArt", "albums.artists", "albums.items", "albums.providers", "albums.genres", "albums.items.artists"], page: offset || undefined } } });
+    try { // /artists/${artistId}/relationships/albums?countryCode=US&include=albums&include=albums.coverArt&include=albums.artists&include=albums.items&include=albums.providers${(offset && offset != 0) ? `&page[cursor]=${offset}` : ''}
+        const data = await (await getTidalAPI()).GET(`/artists/{id}`, { params: { path: { id: artistId }, query: { countryCode: "US", include: ["albums", "albums.coverArt", "albums.artists", "albums.items", "albums.providers", "albums.genres", "albums.items.artists"], page: offset || undefined } } });
         if (data.data) {
             return JSON.parse(JSON.stringify(data)) as typeof data;
         } else {
