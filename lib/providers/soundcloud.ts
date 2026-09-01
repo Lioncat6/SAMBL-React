@@ -30,13 +30,19 @@ const { parseUrl, createUrl } = parsers.getParser(namespace);
 const soundcloudClientId: string = process.env.SOUNDCLOUD_CLIENT_ID ?? ''
 const soundcloudOauthToken: string = process.env.SOUNDCLOUD_OAUTH_TOKEN ?? ''
 
-if (!soundcloudClientId || !soundcloudOauthToken) {
-  throw new Error(
-    'TIDAL_CLIENT_ID and SOUNDCLOUD_OAUTH_TOKEN must be set in environment variables.'
-  )
-}
+let scApi: Soundcloud | null = null;
 
-const scApi = new Soundcloud(soundcloudClientId, soundcloudOauthToken)
+function getSoundcloudAPI() {
+  if (!scApi) {
+    if (!soundcloudClientId || !soundcloudOauthToken) {
+      throw new Error(
+        'SOUNDCLOUD_CLIENT_ID and SOUNDCLOUD_OAUTH_TOKEN must be set in environment variables.'
+      )
+    }
+    scApi = new Soundcloud(soundcloudClientId, soundcloudOauthToken)
+  }
+  return scApi
+}
 
 function correctId(rawId: string | number, correctType: 'artist' | 'track' | 'album' = 'artist'): string {
   let prefix = ""
@@ -66,7 +72,7 @@ async function resolveExternalId(id: string): Promise<string> {
     return id;
   } else {
     try {
-      const resolved = await scApi.resolve.get(id.startsWith('https://soundcloud.com/') ? id : `https://soundcloud.com/${id}`)
+      const resolved = await getSoundcloudAPI().resolve.get(id.startsWith('https://soundcloud.com/') ? id : `https://soundcloud.com/${id}`)
       if (resolved) {
         return resolved.toString();
       } else {
@@ -88,7 +94,7 @@ function getReleaseDate(entity) {
 async function searchByArtistName(artistName: string) {
   try {
     // Fetch artist data
-    const data = await scApi.users.search({ q: artistName })
+    const data = await getSoundcloudAPI().users.search({ q: artistName })
     return data
   } catch (error) {
     err.handleError('Error searching for artist:', error)
@@ -97,7 +103,7 @@ async function searchByArtistName(artistName: string) {
 
 async function getArtistById(id: string) {
   try {
-    const data = await scApi.users.get(cleanId(correctId(await resolveExternalId(id), 'artist')))
+    const data = await getSoundcloudAPI().users.get(cleanId(correctId(await resolveExternalId(id), 'artist')))
     return data
   } catch (error) {
     err.handleError('Error fetching artist:', error)
@@ -149,8 +155,8 @@ function formatArtistObject(rawObject: SoundcloudUser): ArtistObject {
 
 async function getArtistAlbums(artistId: string | number, offset: string | number, limit: number) {
   try {
-    let artistPlaylists = await scApi.users.playlists(cleanId(correctId(artistId, "artist")))
-    // let artistTracks = await scApi.users.tracks(correctId(artistId))
+    let artistPlaylists = await getSoundcloudAPI().users.playlists(cleanId(correctId(artistId, "artist")))
+    // let artistTracks = await getSoundcloudAPI().users.tracks(correctId(artistId))
     return { artistTracks: [], artistPlaylists: artistPlaylists }
   } catch (error) {
     err.handleError('Failed to fetch artist albums', error)
@@ -351,7 +357,7 @@ function formatPartialArtistObject(
 
 async function getTrackById(id: string): Promise<SoundcloudTrack | null> {
   try {
-    const track = await scApi.tracks.get(id)
+    const track = await getSoundcloudAPI().tracks.get(id)
     return track
   } catch (error) {
     err.handleError('Failed to get track by id', error)
@@ -365,9 +371,9 @@ async function getAlbumById(
   try {
     let album: null | SoundcloudTrack | SoundcloudPlaylist = null
     if (id.includes('/set') || id.includes(':playlist:')) {
-      album = await scApi.playlists.get(id)
+      album = await getSoundcloudAPI().playlists.get(id)
     } else {
-      album = await scApi.tracks.get(id)
+      album = await getSoundcloudAPI().tracks.get(id)
     }
     return album
   } catch (error) {

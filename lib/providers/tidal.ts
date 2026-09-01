@@ -48,10 +48,6 @@ const nodeCredentialsProvider = {
 const tidalClientId: string = process.env.TIDAL_CLIENT_ID ?? "";
 const tidalClientSecret: string = process.env.TIDAL_CLIENT_SECRET ?? "";
 
-if (!tidalClientId || !tidalClientSecret) {
-    throw new Error("TIDAL_CLIENT_ID and TIDAL_CLIENT_SECRET must be set in environment variables.");
-}
-
 // Code permanently borrowed from https://github.com/kellnerd/harmony/tree
 // Credit to @kellnerd and @outsidecontext
 async function requestAccessToken() {
@@ -89,7 +85,8 @@ nodeCredentialsProvider._setCredentials({ clientId: tidalClientId, clientSecret:
 validUntilTimestamp = tokenData.validUntilTimestamp;
 
 
-let tidalApi = createAPIClient(nodeCredentialsProvider);
+type TidalAPI = ReturnType<typeof createAPIClient>;
+let tidalApi: TidalAPI;
 
 async function refreshApi() {
     if (!validUntilTimestamp || Date.now() > validUntilTimestamp || nodeCredentialsProvider.getCredentials() === null || tidalApi === null) {
@@ -100,8 +97,15 @@ async function refreshApi() {
     }
 }
 
-
-refreshApi();
+function getTidalAPI() {
+    if (!tidalApi) { 
+        if (!tidalClientId || !tidalClientSecret) {
+            throw new Error("TIDAL_CLIENT_ID and TIDAL_CLIENT_SECRET must be set in environment variables.");
+        }
+        tidalApi = createAPIClient(nodeCredentialsProvider);
+    }
+    return tidalApi;
+}
 
 function getSmallImageUrl(url: string): string {
     if (!url) return "";
@@ -111,7 +115,7 @@ function getSmallImageUrl(url: string): string {
 async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> {
     await refreshApi(); // /tracks?countryCode=US&filter[isrc]=${isrc}&include=albums.coverArt&include=artists&include=albums
     try {
-        let data = await tidalApi.GET(`/tracks`, { params: { query: { countryCode: "US", "filter[isrc]": [isrc], include: ["albums.coverArt", "artists", "albums"] } } });
+        let data = await getTidalAPI().GET(`/tracks`, { params: { query: { countryCode: "US", "filter[isrc]": [isrc], include: ["albums.coverArt", "artists", "albums"] } } });
         let tidalData = data?.data;
         if (tidalData) {
             let tracksData: TrackObject[] = []
@@ -189,7 +193,7 @@ async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> {
 async function getAlbumByUPC(upc: string): Promise<AlbumObject[] | null> {
     await refreshApi(); // /albums?countryCode=US&filter[barcodeId]=${upc}&include=coverArt&include=artists
     try {
-        let data = await tidalApi?.GET(`/albums`, { params: { query: { countryCode: "US", "filter[barcodeId]": [upc], include: ["coverArt", "artists", "items", "providers", "items.artists"] } } });
+        let data = await getTidalAPI().GET(`/albums`, { params: { query: { countryCode: "US", "filter[barcodeId]": [upc], include: ["coverArt", "artists", "items", "providers", "items.artists"] } } });
         let tidalData = data?.data;
         if (tidalData && tidalData?.data?.[0]?.attributes?.title) {
             let albumsData: AlbumObject[] = []
@@ -234,7 +238,7 @@ type TidalSearchResultsData = NonNullable<TidalSearchResultsResponse["data"]>
 async function searchByArtistName(query: string) {
     await refreshApi(); // /searchResults/${encodeURIComponent(query)}?countryCode=US&include=artists&include=artists.profileArt&include=artists.albums&include=albums.artists&include=albums.coverArt&include=artists.albums.coverArt
     try {
-        const data = await tidalApi?.GET(`/searchResults`, { params: { query: { 'filter[query]': encodeURIComponent(query), countryCode: "US", include: ["artists", "artists.profileArt", "artists.albums", "albums.artists", "albums.coverArt", "artists.albums.coverArt"] } } });
+        const data = await getTidalAPI().GET(`/searchResults`, { params: { query: { 'filter[query]': encodeURIComponent(query), countryCode: "US", include: ["artists", "artists.profileArt", "artists.albums", "albums.artists", "albums.coverArt", "artists.albums.coverArt"] } } });
         const artistData = data?.data
         if (artistData?.included && artistData?.included.length > 0) {
             return artistData;
@@ -277,7 +281,7 @@ interface ExtendedTrack extends TidalTrack {
 async function getAlbumById(tidalId: string) {
     await refreshApi(); // /albums/${tidalId}?countryCode=US&include=coverArt&include=artists&include=items
     try {
-        const data = await tidalApi?.GET(`/albums/{id}`, { params: { path: { id: tidalId }, query: { countryCode: "US", include: ["coverArt", "artists", "items", "providers", "genres", "items.artists"] } } });
+        const data = await getTidalAPI().GET(`/albums/{id}`, { params: { path: { id: tidalId }, query: { countryCode: "US", include: ["coverArt", "artists", "items", "providers", "genres", "items.artists"] } } });
         const albumData = data?.data;
         if (albumData && albumData.data) {
             const included = albumData.included;
@@ -308,7 +312,7 @@ async function getAlbumById(tidalId: string) {
 async function getTrackById(tidalId: string) {
     await refreshApi(); ///tracks/${tidalId}?countryCode=US&include=album&include=artists
     try {
-        const data = await tidalApi.GET(`/tracks/{id}`, { params: { path: { id: tidalId }, query: { countryCode: "US", include: ["album", "artists"] } } });
+        const data = await getTidalAPI().GET(`/tracks/{id}`, { params: { path: { id: tidalId }, query: { countryCode: "US", include: ["album", "artists"] } } });
         if (data.data) {
             return JSON.parse(JSON.stringify(data.data)) as typeof data.data;
         } else {
@@ -324,7 +328,7 @@ async function getArtistById(tidalId: string) {
     // /artists/${tidalId}?countryCode=US&include=artists&include=artists.profileArt&include=artists.albums&include=albums.artists&include=albums.coverArt&include=artists.albums.coverArt
     // "artists", "artists.profileArt", "artists.albums", "albums.artists", "albums.coverArt", "artists.albums.coverArt"
     try {
-        const data = await tidalApi.GET(`/artists/{id}`, { params: { path: { id: tidalId }, query: { countryCode: "US", include: ["profileArt", "albums", "tracks"], collapseBy: 'NONE' } } });
+        const data = await getTidalAPI().GET(`/artists/{id}`, { params: { path: { id: tidalId }, query: { countryCode: "US", include: ["profileArt", "albums", "tracks"], collapseBy: 'NONE' } } });
         if (data.data) {
             return JSON.parse(JSON.stringify(data.data)) as typeof data.data;
         } else {
@@ -342,7 +346,7 @@ type TidalArtistData = NonNullable<TidalArtistReponse["data"]>
 async function getArtistAlbums(artistId: string, offset?: string | null | number, limit?: string | null | number) {
     await refreshApi(); // /artists/${artistId}/relationships/albums?countryCode=US&include=albums&include=albums.coverArt&include=albums.artists&include=albums.items&include=albums.providers${(offset && offset != 0) ? `&page[cursor]=${offset}` : ''}
     try {
-        const data = await tidalApi.GET(`/artists/{id}`, { params: { path: { id: artistId }, query: { countryCode: "US", include: ["albums", "albums.coverArt", "albums.artists", "albums.items", "albums.providers", "albums.genres", "albums.items.artists"], page: offset || undefined } } });
+        const data = await getTidalAPI().GET(`/artists/{id}`, { params: { path: { id: artistId }, query: { countryCode: "US", include: ["albums", "albums.coverArt", "albums.artists", "albums.items", "albums.providers", "albums.genres", "albums.items.artists"], page: offset || undefined } } });
         if (data.data) {
             return JSON.parse(JSON.stringify(data)) as typeof data;
         } else {
