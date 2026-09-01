@@ -46,7 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (!artist) {
             return res.status(404).json({ error: "Artist not found" } as SAMBLApiError);
         }
-        const formattedArtist = sourceProvider.formatArtistObject(artist);
+        const formattedArtist = sourceProvider.formatArtistObject(sourceProvider.formatArtistLookupData(artist));
         const providerUrl = formattedArtist.url  || sourceProvider.createUrl("artist", parsed_id) || null;
         if (!providerUrl) {
             return res.status(400).json({ error: "Provider id invalid or missing" } as SAMBLApiError);
