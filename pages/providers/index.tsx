@@ -100,8 +100,8 @@ export default function ProvidersPage({ providers }: { providers: providerRow[] 
     return (
         <>
             <SAMBLHead
-                title={`SAMBL • Providers"`}
-                fullTitle={`Supported Providers & Capabilities"`}
+                title={`SAMBL • Providers`}
+                fullTitle={`Supported Providers & Capabilities`}
             />
             <h1>Supported Providers & Capabilities</h1>
             <div id="contentContainer">
