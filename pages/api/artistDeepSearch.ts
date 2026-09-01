@@ -150,7 +150,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
         }
         if (useUPCs) {
-            stages.start('Lookup provider UPCs', sourceProvider.namespace);
+            stages.start('Lookup provider UPCs', 'musicbrainz');
             for (const album of albumData) {
                 if (album.upc) {
                     const upc = album.upc;
