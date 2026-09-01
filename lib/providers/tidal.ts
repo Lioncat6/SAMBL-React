@@ -318,7 +318,7 @@ async function getTrackById(tidalId: string) {
     }
 }
 
-async function getArtistById(tidalId: string) {
+async function getArtistById(tidalId: string): Promise<TidalArtistData | null> {
     // /artists/${tidalId}?countryCode=US&include=artists&include=artists.profileArt&include=artists.albums&include=albums.artists&include=albums.coverArt&include=artists.albums.coverArt
     // "artists", "artists.profileArt", "artists.albums", "albums.artists", "albums.coverArt", "artists.albums.coverArt"
     try {
@@ -331,6 +331,7 @@ async function getArtistById(tidalId: string) {
     } catch (error) {
         err.handleError("Error fetching artist by ID:", error);
     }
+    return null
 }
 
 type _GetArtist = () => ReturnType<typeof tidalApi.GET<"/artists/{id}", { params }>>;
@@ -514,7 +515,7 @@ function formatArtistSearchData(rawData: TidalSearchResultsData | TidalArtistDat
     const artworks = included.filter(obj => obj.type === "artworks");
     const artworkMap = Object.fromEntries(artworks.map(a => [a.id, a]));
 
-    if (rawData.data?.type == "artists") {
+    if ('type' in rawData.data && rawData.data.type == "artists") {
         artists.push(rawData.data as ExtendedArtist);
     }
 
