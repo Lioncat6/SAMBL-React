@@ -125,9 +125,7 @@ export default function Seed({ data, error, timings }: { data?: AlbumStack | nul
                 <br />
                 <div id="contentContainer" >
                     <div id="albumContainer" className={styles.albumContainer}>
-                        <div className={styles.trackBg} style={{ "--background-image": `url(${aggregatedAlbum.imageUrl})` } as React.CSSProperties} >
-                            <TrackMenuInner data={data} refresh={() => { }} isStandalone={true} />
-                        </div>
+                        <TrackMenuInner data={data} refresh={() => { }} isStandalone={true} />
                     </div>
                 </div>
             </div>
