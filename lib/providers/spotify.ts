@@ -56,6 +56,9 @@ async function getAlternateAccessToken() {
 	const response = await fetch(redirectUri?.replace('CLIENTID', clientId), {
 		"headers": headers
 	});
+	if (!response.ok) {
+		throw new Error(`Failed to fetch alternate spotify access token: ${response.status} ${response.statusText}`);
+	}
 	data = await response.json()
 	} catch (error){
 		err.handleError("Error fetching alternate spotify access token", error)
