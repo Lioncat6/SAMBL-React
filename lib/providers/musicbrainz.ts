@@ -111,6 +111,7 @@ async function getIdsBySpotifyUrls(spotifyUrls: string[], type: IRelationType = 
 async function getIdsByUrlQuery(query: RegexArtistUrlQuery, type: IRelationType = 'artist', inc: RelationsIncludes[] = ["artist-rels"]): Promise<UrlMBIDDict | null> {
 	const entityType = type;
 	try {
+		console.log(`url:${(new RegExp(query.fullQuery)).toString()}`)
 		const data = await mbApi.search("url", {query: `url:${(new RegExp(query.fullQuery)).toString()}`, inc, limit: 100})
 		if (data["url-count"] === 0) {
 			return null; // No artist found

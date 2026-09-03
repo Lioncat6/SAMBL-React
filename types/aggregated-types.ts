@@ -30,6 +30,9 @@ export class AlbumStack {
     albumIssues: AlbumIssue[];
     albums: AlbumMatch[];
     aggregated: AggregatedAlbum;
+    // sourceAlbum: AlbumObject;
+    // targetAlbum?: AlbumObject;
+    // providerAlbums?: AlbumObject[]
 }
 
 export class AlbumMatch {
