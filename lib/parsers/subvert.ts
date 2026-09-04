@@ -9,7 +9,7 @@ function createUrl(type: UrlType, id: string, mbTypes?: number[]): ExternalUrlDa
         "label": []
     }
     const idArray = id.split("/");
-    let url = `https://www.subvert.fm/${idArray[0]}/${type == 'track' ? 'tracks/': ''}${idArray[1]}`
+    let url = `https://www.subvert.fm/${idArray[0]}/${type == 'track' ? 'tracks/': ''}${idArray[1]}${idArray[2] ? `/${idArray[2]}` : ''}`;
     if (type == "artist" || type == "label") {
         url = `https://www.subvert.fm/${id}`
     }
