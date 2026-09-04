@@ -412,6 +412,7 @@ function Icon({ source }: { source: ProviderNamespace }) {
 			{source === "qobuz" && <img className={styles.qobuzIcon} title={displayName} src="../assets/images/Qobuz_icon.svg" />}
 			{source === "discogs" && <img className={styles.discogsIcon} title={displayName} src="../assets/images/Discogs_icon.svg" />}
 			{source === "volumo" && <img className={styles.volumoIcon} title={displayName} src="../assets/images/Volumo_icon.svg" />}
+			{source === "subvert" && <img className={styles.subvertIcon} title={displayName} src="../assets/images/Subvert_logo.svg" />}
 		</>
 	);
 }
