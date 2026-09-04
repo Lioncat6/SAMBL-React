@@ -6,7 +6,7 @@ import { ProviderDisplay } from "../types/component-types";
 import { ProviderNamespace } from "../types/provider-types";
 import clientProviders from "../utils/clientProviders";
 
-let providerArray = clientProviders.getDisplayProviders();
+let providerArray = clientProviders.GetDisplayProviders();
 
 //Remove disabled providers
 providerArray = providerArray.filter((provider) => (!clientProviders.isDisabled(provider)));

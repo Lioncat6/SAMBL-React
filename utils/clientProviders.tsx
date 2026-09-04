@@ -2,7 +2,7 @@ import { Provider, ProviderNamespace } from "../types/provider-types";
 import text from "./text";
 import { FaSpotify, FaDeezer, FaSoundcloud, FaQuestion } from "react-icons/fa6";
 import { SiTidal, SiBandcamp, SiApplemusic, SiNaver, SiDiscogs, SiMusicbrainz } from "react-icons/si";
-import { TbVinyl } from "react-icons/tb";
+import { TbCircleDashedLetterS, TbVinyl } from "react-icons/tb";
 import { PiLetterCircleVFill } from "react-icons/pi";
 import { ProviderDisplay } from "../types/component-types";
 import { JSX } from "react/jsx-runtime";
@@ -14,16 +14,17 @@ function isDisabled(provider: Provider): boolean {
 
 function getDisplayName(provider: ProviderNamespace | Provider): string {
     const namespace = typeof provider == "string" ? provider : provider.namespace;
-    return getDisplayProviders().find((p) => p.namespace == namespace)?.name ?? text.capitalizeFirst(namespace);
+    return GetDisplayProviders().find((p) => p.namespace == namespace)?.name ?? text.capitalizeFirst(namespace);
 }
 
 function getDisplayIcon(provider: ProviderNamespace | Provider): JSX.Element {
     const namespace = typeof provider == "string" ? provider : provider.namespace;
-    return getDisplayProviders().find((p) => p.namespace == namespace)?.icon ?? <FaQuestion />;
+    return GetDisplayProviders().find((p) => p.namespace == namespace)?.icon ?? <FaQuestion />;
 }
 
-function getDisplayProviders() {
+function GetDisplayProviders() {
     let providerArray: ProviderDisplay[] = [
+        { name: 'MusicBrainz', namespace:'musicbrainz', icon: <SiMusicbrainz />, hide: true},
         { name: "Spotify", namespace: "spotify", icon: <FaSpotify /> },
         { name: "Apple Music", namespace: "applemusic", icon: <SiApplemusic /> },
         { name: "Deezer", namespace: "deezer", icon: <FaDeezer /> },
@@ -33,8 +34,8 @@ function getDisplayProviders() {
         { name: "Naver VIBE", namespace: "naver", icon: <SiNaver />},
         { name: "Qobuz", namespace: "qobuz", icon: <TbVinyl />},
         { name: 'Discogs', namespace: "discogs", icon: <SiDiscogs /> },
-        { name: 'Volumo', namespace: "volumo", icon: <PiLetterCircleVFill  /> },
-        { name: 'MusicBrainz', namespace:'musicbrainz', icon: <SiMusicbrainz />, hide: true}
+        { name: 'Volumo', namespace: "volumo", icon: <PiLetterCircleVFill /> },
+        { name: 'Subvert', namespace: "subvert", icon: <TbCircleDashedLetterS /> }
     ];
     return providerArray;
 }
@@ -43,7 +44,7 @@ const clientProviders = {
     isDisabled,
     getDisplayName,
     getDisplayIcon,
-    getDisplayProviders
+    GetDisplayProviders
 }
 
 export default clientProviders;

@@ -3,7 +3,7 @@ import { DeepSearchData } from "../types/api-types";
 import { DeepSearchSelection } from "../types/component-types";
 import { ArtistObject, PartialArtistObject } from "../types/provider-types";
 import albumStack from "./albumStack";
-import clientProviders from "./clientProviders";
+import ClientProviders from "./clientProviders";
 import text from "./text";
 
 function encode(str: string) {
@@ -95,7 +95,7 @@ function buildDeepSearchEditNote(data: DeepSearchSelection): string {
         `${data.data.albums.map(generateAlbumCredits).filter((text) => text != undefined)
             .join("%0A ")}%0A%0A` +
         `'''Selected Artist:''' ''${artist.name}'' | ${artist.url.url} %0A` +
-        `'''Source Artist ''(${clientProviders.getDisplayName(sourceArtist.provider)})'':''' ''${sourceArtist.name}'' | ${sourceArtist.url.url}%0A` +
+        `'''Source Artist ''(${ClientProviders.getDisplayName(sourceArtist.provider)})'':''' ''${sourceArtist.name}'' | ${sourceArtist.url.url}%0A` +
         `'''Name Similarity:''' ${text.truncateToTwo(artist.nameSimilarity * 100)}%%0A` +
         `'''Method:''' ${getMethod()}%0A` +
         `${artist.mostCommonMBID ? `'''Most Common MBID:''' ${isMostCommon() ? "Yes" : "Tie"} | ''${artist.occurrences} Occurrences''%0A` : ""}` +
