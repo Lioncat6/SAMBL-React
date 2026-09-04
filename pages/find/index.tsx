@@ -230,7 +230,6 @@ export default function Find() {
 			/>
 			<SearchBox type="find" />
 			<div id="contentContainer">
-				<div id="loadingMsg" />
 				{results.length > 0 && <ItemList type={"mixed"} items={results} />}
 			</div>
 		</>

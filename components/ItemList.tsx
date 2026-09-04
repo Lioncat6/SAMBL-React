@@ -1,6 +1,6 @@
 import styles from "../styles/itemList.module.css";
 import Link from "next/link";
-import React, { useEffect, useState, memo, JSX } from "react";
+import React, { useEffect, useState, memo, JSX, Provider } from "react";
 import { SAMBLSettingsContext, useSettings } from "./SettingsContext";
 import dynamic from "next/dynamic";
 import { useExport as useExportState } from "./ExportState";
@@ -17,17 +17,26 @@ import editNoteBuilder from "../utils/editNoteBuilder";
 import { IoFilter } from "react-icons/io5";
 import { DisplayAlbum, FilterData } from "../types/component-types";
 import seeders from "../lib/seeders/seeders";
-import { AggregatedAlbum, AggregatedArtist } from "../types/aggregated-types";
+import { AggregatedAlbum, AggregatedArtist, AlbumStack } from "../types/aggregated-types";
 import filters from "../lib/filters";
 import ExportMenuPopup from "./Popups/ExportMenu";
 import TrackMenuPopup from "./Popups/TrackMenu";
 import FilterMenuPopup from "./Popups/FilterMenu";
 import toasts from "../utils/toasts";
-import { AlbumObject, ArtistObject, ExtendedTrackObject, ObjectType, ProviderNamespace, TrackObject } from "../types/provider-types";
+import { AlbumObject, ArtistObject, ExtendedTrackObject, ObjectType, PartialArtistObject, ProviderNamespace, TrackObject } from "../types/provider-types";
 import { MdAlbum, MdAudiotrack, MdPerson } from "react-icons/md";
+import { SAMBLAPIResponse } from "../types/api-types";
+import { SAMBLArtistIcon } from "./icons";
+import albumStack from "../utils/albumStack";
+import clientProviders from "../utils/clientProviders";
 
 function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRCs: boolean) => void }) {
-	const { id, url, releaseDate, mbAlbum, trackCount, status, mbid, albumIssues, provider, artistMBID, aggregatedTracks, albumTracks, albumArtists } = item;
+	const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(item)
+	const sourceArtist = item.aggregated?.sourceArtist;
+	const { status, albumIssues } = item;
+	const { id, url, releaseDate, trackCount, mbid, provider, albumArtists } = aggregatedAlbum;
+	const albumTracks = sourceAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
+	const aggregatedTracksList = aggregatedAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -65,8 +74,8 @@ function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRC
 
 	return (
 		<div className={styles.iconContainer}>
-			{albumIssues.includes("noUPC") && <span className={styles.upcIcon}title="This release is missing a UPC/Barcode!">UPC</span>}
-			{albumIssues.includes("UPCDiff") && <span className={styles.upcDiff}title="This release has the wrong barcode for this album!">UPC<FaNotEqual /></span>}
+			{albumIssues.includes("noUPC") && <span className={styles.upcIcon} title="This release is missing a UPC/Barcode!">UPC</span>}
+			{albumIssues.includes("UPCDiff") && <span className={styles.upcDiff} title="This release has the wrong barcode for this album!">UPC<FaNotEqual /></span>}
 			{albumIssues.includes("missingISRCs") && (
 				<a
 					className={status === "green" ? styles.isrcTextAvaliable : styles.isrcText}
@@ -76,7 +85,7 @@ function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRC
 					ISRC
 				</a>
 			)}
-			{albumIssues.includes("ISRCDiff") && <span className={styles.upcDiff}title="This release has the wrong ISRCs for this album!">ISRC<FaNotEqual /></span>}
+			{albumIssues.includes("ISRCDiff") && <span className={styles.upcDiff} title="This release has the wrong ISRCs for this album!">ISRC<FaNotEqual /></span>}
 			{albumIssues.includes("noCover") && (
 				<a
 					className={status === "green" ? styles.coverArtMissingAvaliable : styles.coverArtMissing}
@@ -87,7 +96,7 @@ function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRC
 				/>
 			)}
 			{albumIssues.includes("trackDiff") && (
-				<div className={styles.numDiff} title={`This release has a differing track count! [SP: ${trackCount} MB: ${mbAlbum?.trackCount}]`}>
+				<div className={styles.numDiff} title={`This release has a differing track count! [SP: ${trackCount} MB: ${targetAlbum?.trackCount}]`}>
 					#
 				</div>
 			)}
@@ -95,9 +104,9 @@ function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRC
 				<a
 					className={`${styles.dateMissing} ${status === "green" ? styles.dateMissingAvaliable : ""}`}
 					href={
-						status === "green"
+						(status === "green" && sourceArtist?.mbid)
 							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${releaseDate?.split("-")[0]}&events.0.date.month=${releaseDate?.split("-")[1]}&events.0.date.day=${releaseDate?.split("-")[2]
-							}&edit_note=${encodeURIComponent(editNoteBuilder.buildEditNote(`Release Date`, provider, url.url, `https://musicbrainz.org/artist/${artistMBID}`))}`
+							}&edit_note=${encodeURIComponent(editNoteBuilder.buildEditNote(`Release Date`, provider, url.url, `https://musicbrainz.org/artist/${sourceArtist.mbid}`))}`
 							: undefined
 					}
 					title={status === "green" ? "This release is missing a release date!\n[Click to Fix]" : "This release is missing a release date!"}
@@ -105,14 +114,14 @@ function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRC
 					rel={status === "green" ? "noopener" : undefined}
 				></a>
 			)}
-			{albumIssues.includes("dateDiff") && <div className={styles.dateDiff} title={`This release has a differing release date! [SP: ${releaseDate} MB: ${mbAlbum?.releaseDate}]\n(This may indicate that you have to split a release.)`} />}
+			{albumIssues.includes("dateDiff") && <div className={styles.dateDiff} title={`This release has a differing release date! [SP: ${releaseDate} MB: ${targetAlbum?.releaseDate}]\n(This may indicate that you have to split a release.)`} />}
 		</div>
 	);
 }
 
 function ActionButtons({ item }: { item: DisplayAlbum }) {
 	const { settings } = useSettings() as SAMBLSettingsContext;
-	const { url, upc, provider } = item;
+	const { url, upc, provider } = item.aggregated;
 	const [collapsed, setCollapsed] = useState(true);
 	function toggleState() {
 		setCollapsed(!collapsed);
@@ -130,7 +139,7 @@ function ActionButtons({ item }: { item: DisplayAlbum }) {
 					{seeders.getAllSeeders().map((seeder, index) => {
 						if (settings?.enabledSeeders.includes(seeder.namespace) && seeder.providers.includes(provider)) {
 							return (
-								<a key={index} className={styles[`${seeder.namespace}Button`]} href={seeder.buildUrl(url.url, upc)} target="_blank" rel="noopener noreferrer">
+								<a key={index} className={`${styles[`${seeder.namespace}Button`]} ${styles.seederButton}`} href={seeder.buildUrl(url.url, upc)} target="_blank" rel="noopener noreferrer">
 									<div>{seeder.displayName}</div>
 								</a>
 							)
@@ -148,7 +157,7 @@ function SelectionButtons({ item }) {
 		<>
 			<ExportMenuPopup
 				button={
-					<a className={styles.exportButton}>
+					<a className={styles.seederButton}>
 						<div>Export</div>
 					</a>
 				}
@@ -161,38 +170,9 @@ function SelectionButtons({ item }) {
 const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; selecting?: boolean; onUpdate?: (updatedItem: DisplayAlbum) => void }) => {
 	const [isLoading, setIsLoading] = useState(false);
 	const exportState = useExportState()?.exportState;
-
-	let toastProperties: ToastOptions = {
-		position: "top-left",
-		autoClose: 5000,
-		hideProgressBar: false,
-		closeOnClick: false,
-		pauseOnHover: true,
-		draggable: true,
-		progress: undefined,
-
-		transition: Flip,
-	};
-	async function dispError(message, type = "warn") {
-		if (type === "error") {
-			toast.error(message, toastProperties);
-		} else {
-			toast.warn(message, toastProperties);
-		}
-	}
-	async function dispPromise(promise: Promise<any>, message: string): Promise<any> {
-		return toast
-			.promise(
-				promise,
-				{
-					pending: message,
-					error: "Data not found!",
-				},
-				toastProperties
-			)
-			.finally(() => { });
-	}
-
+	const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(item)
+	const { searchReason } = item;
+	const { status, albumIssues } = item;
 	const {
 		provider,
 		id,
@@ -204,32 +184,37 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 		releaseDate,
 		trackCount,
 		albumType,
-		status,
-		mbAlbum,
-		albumTracks,
 		mbid,
-		artistMBID,
-		artistID,
-		albumIssues,
-		searchReason,
-	} = item;
+	} = item.aggregated;
+	const albumTracks = item.aggregated?.mediums.flatMap((medium) => medium.tracks) || [];
+	const sourceArtist = item.aggregated?.sourceArtist;
 
 	async function refreshData(fetchISRCs = false) {
 		setIsLoading(true);
-		const response = await dispPromise(fetch(`/api/compareSingleAlbum?url=${url.url}&mbid=${artistMBID}&artist_id=${artistID}${fetchISRCs ? '&fetchISRCs' : ""}`), "Refreshing album...");
-		setIsLoading(false);
-		if (response.ok) {
-			const updatedItem = await response.json();
-			if (onUpdate) onUpdate(updatedItem);
-		} else {
-			dispError("Failed to refresh album data!", "error");
+		try {
+			const response = await toasts.dispPromise(fetch(`/api/compareSingleAlbum?url=${url.url}&mbid=${sourceArtist?.mbid}&artist_id=${sourceArtist?.id}${fetchISRCs ? '&fetchISRCs' : ""}`), "Refreshing album...", "Failed to fetch album");
+			setIsLoading(false);
+			if (response.ok) {
+				const apiResponse = await response.json() as SAMBLAPIResponse<AlbumStack>;
+				const album = apiResponse.data
+				if (onUpdate && album) onUpdate(album as DisplayAlbum);
+			} else {
+				try {
+					const apiResponse = await response.json() as SAMBLAPIResponse<AlbumStack>;
+					toasts.error("Failed to refresh album data!", apiResponse.error?.error);
+				} catch {
+					toasts.error("Failed to refresh album data!", `Failed to refresh album data: ${response.status} ${response.statusText}`);
+				}
+			}
+		} catch (e) {
+			toasts.error("Failed to refresh album data!", e);
 		}
 	}
 
-	const sourceTrackString = trackCount && trackCount > 1 ? `${trackCount} Tracks` : trackCount == 1 ? "1 Track": "? Tracks";
+	const sourceTrackString = trackCount && trackCount > 1 ? `${trackCount} Tracks` : trackCount == 1 ? "1 Track" : "? Tracks";
 
-	const mbTrackString = mbAlbum?.albumTracks.map((track) => track.name).join(",");
-	const mbISRCString = mbAlbum?.albumTracks.map((track) => track.isrcs.join(",")).join(",");
+	const mbTrackString = targetAlbum?.mediums.flatMap((medium) => medium.tracks).map((track) => track.name).join(",");
+	const mbISRCString = targetAlbum?.mediums.flatMap((medium) => medium.tracks).map((track) => track.isrcs.join(",")).join(",");
 	const trackISRCString = albumTracks.map((track) => track.isrcs.join(",")).join(",");
 
 	function getTracksWithoutISRCs(): string {
@@ -270,15 +255,15 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 		"data-track-count": trackCount,
 		"data-album-type": albumType,
 		"data-status": status,
-		"data-mb-track-count": mbAlbum?.trackCount,
-		"data-mb-release-date": mbAlbum?.releaseDate,
+		"data-mb-track-count": targetAlbum?.trackCount,
+		"data-mb-release-date": targetAlbum?.releaseDate,
 		"data-mbid": mbid,
 		"data-album-issues": albumIssues,
 		"data-track-names": mbTrackString,
 		"data-track-isrcs": mbISRCString,
 		"data-isrcs": trackISRCString,
 		"data-tracks-without-isrcs": getTracksWithoutISRCs(),
-		"data-barcode": mbAlbum?.upc || "",
+		"data-barcode": targetAlbum?.upc || "",
 	};
 
 	return (
@@ -303,8 +288,8 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 						<a href={url.url} target="_blank" rel="noopener noreferrer">
 							{name}
 						</a>
-						{mbAlbum?.url && (
-							<a href={mbAlbum.url.url} target="_blank" rel="noopener noreferrer">
+						{targetAlbum?.url && (
+							<a href={targetAlbum.url.url} target="_blank" rel="noopener noreferrer">
 								<img
 									className={styles.albumMB}
 									src={status === "green" ? "../assets/images/MusicBrainz_logo_icon.svg" : "../assets/images/MB_Error.svg"}
@@ -326,9 +311,7 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 								<a href={artist.url.url} target="_blank" rel="noopener noreferrer" className={styles.artistLink}>
 									{artist.name}
 								</a>
-								<a href={`../newartist?provider_id=${artist.id}&provider=${artist.provider}`} target="_blank" rel="noopener noreferrer">
-									<img className={styles.SAMBLicon} src="../assets/images/favicon.svg" alt="SAMBL" />
-								</a>
+								<SAMBLArtistIcon artist={artist} />
 							</span>
 						))}
 					</div>
@@ -341,8 +324,8 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 									releaseDate,
 									albumType && text.capitalizeFirst(albumType),
 								])}
-								{} •{" "}
-								{albumTracks.length > 0 || mbAlbum?.albumTracks && mbAlbum?.albumTracks?.length > 0
+								{ } •{" "}
+								{albumTracks.length > 0 || targetAlbum?.mediums && targetAlbum?.mediums?.length > 0
 									?
 									<span className={`${styles.hasTracks} ${searchReason == "track" ? styles.trackHighlight : ""}`} title={"Click to view tracks"}>
 										<PiPlaylistBold /> {sourceTrackString}
@@ -388,7 +371,7 @@ function ViewButton({ item }) {
 	);
 }
 
-function ArtistItem({ item }: { item: AggregatedArtist}) {
+function ArtistItem({ item }: { item: AggregatedArtist }) {
 	return (
 		<div className={styles.listItem} style={{ '--background-image': `url('${item.bannerUrl || item.imageUrl || ""}')` } as React.CSSProperties}>
 			{item.imageUrl && (
@@ -413,21 +396,23 @@ function ArtistItem({ item }: { item: AggregatedArtist}) {
 	);
 }
 
-function Icon({ source }: {source: ProviderNamespace}) {
+function Icon({ source }: { source: ProviderNamespace }) {
+	const displayName = clientProviders.getDisplayName(source);
 	return (
 		<>
-			{source === "spotify" && <img className={styles.spotifyIcon} title={"Spotify"} src="../assets/images/Spotify_icon.svg" />}
-			{source === "musicbrainz" && <img className={styles.mbIcon} title={"MusicBrainz"} src="../assets/images/MusicBrainz_logo_icon.svg" />}
-			{source === "deezer" && <FaDeezer title={"Deezer"} className={styles.deezerIcon} />}
-			{source === "musixmatch" && <img className={styles.musixMatchIcon} title={"Musixmatch"} src="../assets/images/Musixmatch_logo_icon_only.svg" />}
-			{source === "tidal" && <SiTidal title={"Tidal"} className={styles.tidalIcon} />}
-			{source === "applemusic" && <SiApplemusic title={"Apple Music"} className={styles.applemusicIcon} />}
-			{source === "soundcloud" && <FaSoundcloud title={"Soundcloud"} className={styles.soundcloudIcon} />}
-			{source === "bandcamp" && <FaBandcamp title={"Bandcamp"} className={styles.soundcloudIcon} />}
-			{source === "naver" && <img className={styles.naverIcon} title={"Naver"} src="../assets/images/Naver_icon.svg" />}
-			{source === "qobuz" && <img className={styles.qobuzIcon} title={"Qobuz"} src="../assets/images/Qobuz_icon.svg" />}
-			{source === "discogs" && <img className={styles.discogsIcon} title={"Discogs"} src="../assets/images/Discogs_icon.svg" />}
-			{source === "volumo" && <img className={styles.volumoIcon} title={"Volumo"} src="../assets/images/Volumo_icon.svg" />}
+			{source === "spotify" && <img className={styles.spotifyIcon} title={displayName} src="../assets/images/Spotify_icon.svg" />}
+			{source === "musicbrainz" && <img className={styles.mbIcon} title={displayName} src="../assets/images/MusicBrainz_logo_icon.svg" />}
+			{source === "deezer" && <FaDeezer title={displayName} className={styles.deezerIcon} />}
+			{source === "musixmatch" && <img className={styles.musixMatchIcon} title={displayName} src="../assets/images/Musixmatch_logo_icon_only.svg" />}
+			{source === "tidal" && <SiTidal title={displayName} className={styles.tidalIcon} />}
+			{source === "applemusic" && <SiApplemusic title={displayName} className={styles.applemusicIcon} />}
+			{source === "soundcloud" && <FaSoundcloud title={displayName} className={styles.soundcloudIcon} />}
+			{source === "bandcamp" && <FaBandcamp title={displayName} className={styles.soundcloudIcon} />}
+			{source === "naver" && <img className={styles.naverIcon} title={displayName} src="../assets/images/Naver_icon.svg" />}
+			{source === "qobuz" && <img className={styles.qobuzIcon} title={displayName} src="../assets/images/Qobuz_icon.svg" />}
+			{source === "discogs" && <img className={styles.discogsIcon} title={displayName} src="../assets/images/Discogs_icon.svg" />}
+			{source === "volumo" && <img className={styles.volumoIcon} title={displayName} src="../assets/images/Volumo_icon.svg" />}
+			{source === "subvert" && <img className={styles.subvertIcon} title={displayName} src="../assets/images/Subvert_logo.svg" />}
 		</>
 	);
 }
@@ -451,8 +436,8 @@ function getItemIcon(type: ObjectType) {
 	switch (type) {
 		case "artist":
 		case "partialArtist":
-			return<MdPerson title={"Artist"} />;
-		case "album": 
+			return <MdPerson title={"Artist"} />;
+		case "album":
 			return <MdAlbum title={"Album"} />;
 		case "track":
 			return <MdAudiotrack title={"Track"} />;
@@ -473,16 +458,14 @@ function GenericItem({ item }: { item: AlbumObject | ExtendedTrackObject | Artis
 		"duration" in item && item.duration ? text.formatMS(item.duration) : null,
 		"relevance" in item && item.relevance ? item.relevance : null,
 	]
-	const artists = "albumArtists" in item ? item.albumArtists : "trackArtists" in item ? item.trackArtists: type == "artist" ? [item] : null;
+	const artists = "albumArtists" in item ? item.albumArtists : "trackArtists" in item ? item.trackArtists : type == "artist" ? [item] : null;
 	let artistString = artists?.map((artist, index) => (
 		<span key={index}>
 			{index > 0 && ", "}
 			<a href={artist.url.url} target="_blank" rel="noopener noreferrer" className={styles.artists}>
 				{artist.name}
 			</a>
-			<a href={`../newartist?provider_id=${artist.id}&provider=${artist.provider}`} target="_blank" rel="noopener noreferrer">
-				<img className={styles.SAMBLicon} src="../assets/images/favicon.svg" alt="SAMBL" />
-			</a>
+			<SAMBLArtistIcon artist={artist} />
 		</span>
 	));
 	let infoString = Array.isArray(info) ? info.filter((item) => item != null && item != "").join(" • ") : "";
@@ -665,10 +648,10 @@ function SearchContainer({ onSearch, currentFilter, setFilter, refresh }) {
 
 export type listType = "album" | "loadingAlbum" | "artist" | "mixed"
 
-export function ItemList(props: { items: AggregatedAlbum[], type: "album", text?: string, refresh: () => void }): JSX.Element;
+export function ItemList(props: { items: DisplayAlbum[], type: "album", text?: string, refresh: () => void }): JSX.Element;
 export function ItemList(props: { items: any[], type: listType, text?: string, refresh?: () => void }): JSX.Element;
 
-export default function ItemList({ items, type, text, refresh, viewItem }: { items: any[], type: listType, text?: string, refresh?: () => void, viewItem?: string | null }) {
+export default function ItemList({ items, type, text, refresh, viewItem }: { items: DisplayAlbum[] | any[], type: listType, text?: string, refresh?: () => void, viewItem?: string | null }) {
 	const { settings } = useSettings() as SAMBLSettingsContext;
 	const [searchQuery, setSearchQuery] = useState(""); // State for search query
 	const [filteredItems, setFilteredItems] = useState(items || []); // State for filtered items
@@ -676,21 +659,21 @@ export default function ItemList({ items, type, text, refresh, viewItem }: { ite
 	const [hasOpenedItem, setHasOpenedItem] = useState(false);
 	function getSavedFilter(): Partial<FilterData> {
 		let filter: Partial<FilterData> = {};
-		if (settings.saveFilter){
+		if (settings.saveFilter) {
 			filter.filters = settings.currentFilter?.filters || filters.getDefaultOptions().filters;
 		}
-		if (settings.saveSort){
+		if (settings.saveSort) {
 			filter.sort = settings.currentFilter?.sort || filters.getDefaultOptions().sort;
 			filter.ascending = settings.currentFilter?.ascending || filters.getDefaultOptions().ascending;
 		}
 		return filter;
 	}
-	const [filter, setFilter] = useState({... getSavedFilter(), ...filters.getDefaultOptions()});
+	const [filter, setFilter] = useState({ ...getSavedFilter(), ...filters.getDefaultOptions() });
 	useEffect(() => {
-		setFilter({ ...filters.getDefaultOptions(),... getSavedFilter()}); //Settings isn't always loaded right away
+		setFilter({ ...filters.getDefaultOptions(), ...getSavedFilter() }); //Settings isn't always loaded right away
 	}, [settings]);
 	const setAllItems = useExportState()?.setAllItems;
-	
+
 
 	useEffect(() => {
 		setCurrentItems(items || []);
@@ -700,10 +683,11 @@ export default function ItemList({ items, type, text, refresh, viewItem }: { ite
 		if (type !== "album") {
 			return;
 		}
+
 		items = items as DisplayAlbum[];
 
-
 		let updatedItems = currentItems as DisplayAlbum[];
+
 
 		updatedItems = filters.filterItems(updatedItems, filter)
 		updatedItems = filters.searchItems(updatedItems, searchQuery)
@@ -723,21 +707,21 @@ export default function ItemList({ items, type, text, refresh, viewItem }: { ite
 		}
 		let updatedItems = currentItems as DisplayAlbum[];
 		updatedItems.forEach((item) => {
-			if (item.id == viewItem){
+			if (item.aggregated.id == viewItem) {
 				item.viewingAlbum = true;
 				setHasOpenedItem(false)
 			}
 		})
 		setFilteredItems(updatedItems)
-	},[viewItem, currentItems])
-	
+	}, [viewItem, currentItems])
+
 	let itemArray: any = [];
 	if (type != "album" && type != "loadingAlbum") {
 		itemArray = Array.isArray(currentItems) ? currentItems : Object.values(currentItems);
 	}
 
 	const handleItemUpdate = (updatedItem: DisplayAlbum) => {
-		setCurrentItems((prev) => prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)));
+		setCurrentItems((prev) => prev.map((item) => (item.aggregated.id === updatedItem.aggregated.id ? updatedItem : item)));
 	};
 	return (
 		<div className={styles.listWrapper}>

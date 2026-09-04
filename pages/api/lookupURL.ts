@@ -8,6 +8,7 @@ import { URLLookupData } from "../../types/api-types";
 import { SAMBLApiError } from "../../types/api-types";
 import { IRecording } from "musicbrainz-api";
 import parsers from "../../lib/parsers/parsers";
+import objectUtils from "../../utils/objectUtils";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
@@ -84,16 +85,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
         }
 
-        function deduplicate<T extends GenericObject>(a: T[]): T[] {
-            var seen = {};
-            return a.filter(function(item) {
-                return seen.hasOwnProperty(item.id || '') ? false : (seen[item.id || ''] = true);
-            });
-        }
-
-        albums = deduplicate(albums);
-        tracks = deduplicate(tracks);
-        artists = deduplicate(artists);
+        albums = objectUtils.deduplicate(albums);
+        tracks = objectUtils.deduplicate(tracks);
+        artists = objectUtils.deduplicate(artists);
         const lookupData: URLLookupData = {
             albums,
             tracks,

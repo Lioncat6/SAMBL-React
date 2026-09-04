@@ -1,7 +1,7 @@
 // Some code usage from https://github.com/kellnerd/harmony/blob/main/providers/Discogs
 // Liscense: MIT
 
-import { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities, LabelObject } from "../../types/provider-types";
+import { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities, LabelObject, MediumObject } from "../../types/provider-types";
 import logger from "../../utils/logger";
 import text from "../../utils/text";
 import withCache from "../../utils/cache";
@@ -12,6 +12,7 @@ import { create } from "node:domain";
 import { release } from "node:os";
 import { get } from "node:http";
 import { AlbumIssues } from "../issues";
+import medium from "../../utils/medium";
 const namespace = "discogs";
 
 const err = new ErrorHandler(namespace);
@@ -432,7 +433,7 @@ function formatAlbumObject(album: PartialDiscogsRelease | GetReleaseResponse | S
 			trackCount: null,
 			albumType: null,
 			upc: null,
-			albumTracks: [],
+			mediums: [],
 			labels: null,
 			copyrights: null,
 			genres: null
@@ -456,7 +457,7 @@ function formatAlbumObject(album: PartialDiscogsRelease | GetReleaseResponse | S
 			labels: getAlbumLabels(fullalbum.labels),
 			copyrights: null,
 			genres: fullalbum.genres || null,
-			albumTracks: fullalbum.tracklist.map(track => formatTrackObject({ ...track, album: fullalbum })) || []
+			mediums: medium.convertTrackList(fullalbum.tracklist.map(track => formatTrackObject({ ...track, album: fullalbum })), 'Digital Media')
 		}
 	} else {
 		const fullalbum = album as PartialDiscogsSearchResult;
@@ -474,7 +475,7 @@ function formatAlbumObject(album: PartialDiscogsRelease | GetReleaseResponse | S
 			trackCount: null,
 			albumType: getAlbumType(fullalbum.formats),
 			upc: findSearchResultBarcode(fullalbum.barcode),
-			albumTracks: [],
+			mediums: [],
 			labels: getReleaseLabels(fullalbum),
 			copyrights: null,
 			genres: fullalbum.genre || null
@@ -558,7 +559,7 @@ const discogs: FullProvider = {
 	getAlbumByUPC: withCache(getAlbumByUPC, { ttl: 60 * 30, namespace: namespace }),
 	searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30, namespace: namespace }),
 	getAlbumById: withCache(getAlbumById, { ttl: 60 * 30, namespace: namespace }),
-	getTrackById: withCache(getTrackById, { ttl: 60 * 30, namespace: namespace }),
+	// getTrackById: withCache(getTrackById, { ttl: 60 * 30, namespace: namespace }),
 	getArtistById: withCache(getArtistById, { ttl: 60 * 30, namespace: namespace }),
 	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 60, namespace: namespace }), //Fetching artist albums is more expensive, so cache for longer
 	formatArtistSearchData,

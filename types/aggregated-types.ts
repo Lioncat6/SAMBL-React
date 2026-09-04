@@ -1,4 +1,4 @@
-import { ExtendedAlbumObject, TrackObject, ArtistObject, AlbumObject } from "./provider-types";
+import { ExtendedAlbumObject, TrackObject, ArtistObject, AlbumObject, LabelObject, MediumObject, PartialArtistObject } from "./provider-types";
 
 export type AlbumIssue = 'noUPC' | 'UPCDiff' | 'missingISRCs' | 'ISRCDiff' | 'trackDiff' | 'noDate' | 'dateDiff' | 'noCover';
 export type AlbumStatus = 'green' | 'orange' | 'blue' | 'red';
@@ -7,26 +7,52 @@ export type TrackStatus = 'green' | 'orange' | 'blue' | 'grey'; // Track count m
 
 export type TrackIssue = 'noISRC' | 'ISRCDiff' | 'noDuration' | "artistDiff"
 
+/**
+ * source - Selected source provider
+ * 
+ * provider - Supplimental provider data (For pulling links and filling data gaps)
+ * 
+ * target - Target provider existing data (Usually MusicBrainz)
+ */
+export type AlbumMatchType = 'source' | 'provider' | 'target'
+
 export class AggregatedArtist extends ArtistObject {
     mbid?: string | null;
 }
 
-export class AggregatedAlbum extends AlbumObject{
+
+export class AggregatedLabel extends LabelObject {
+    mbid?: string | null;
+}
+
+export class AlbumStack {
     status: AlbumStatus;
     albumIssues: AlbumIssue[];
-    mbid: string | null;
-    artistID: string | null;
-    artistMBID: string | null;
-    mbAlbum: AlbumObject | null;
-    aggregatedTracks: AggregatedTrack[];
+    albums: AlbumMatch[];
+    aggregated: AggregatedAlbum;
+    // sourceAlbum: AlbumObject;
+    // targetAlbum?: AlbumObject;
+    // providerAlbums?: AlbumObject[]
+}
+
+export class AlbumMatch {
+    type: AlbumMatchType;
+    album: AlbumObject
+}
+
+export class AggregatedAlbum extends AlbumObject{
+    mediums: AggregatedMedium[];
+    sourceArtist: PartialArtistObject | null;
+}
+
+export class AggregatedMedium extends MediumObject {
+    override tracks: AggregatedTrack[]
 }
 
 export class AggregatedTrack extends TrackObject {
+    // sourceArtist: PartialArtistObject | null;
     status: TrackStatus;
     trackIssues: TrackIssue[];
-    mbid: string | null;
-    artistMBID: string | null;
-    mbTrack: TrackObject | null;
 }
 
 export class BasicTrack {
@@ -34,17 +60,8 @@ export class BasicTrack {
     isrcs: string[];
 }
 
-export class AggregatedAlbumData {
-    albumData: AggregatedAlbum[];
-    statusText: string;
-    green: number;
-    orange: number;
-    red: number;
-    total: number;
-}
-
 export class AggregatedData {
-    albumData: AggregatedAlbum[]
+    albumData: AlbumStack[]
     statusText: string
     green: number
     orange: number

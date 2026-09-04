@@ -19,3 +19,49 @@
     border-color: var(--foreground-secondary);
     color: var(--background-primary);
 }
+
+.searchButton,
+.findButton,
+.lookupButton,
+.actionButton,
+.seedButton {
+	color: #fff;
+	border: none;
+	padding: 10px 20px;
+	font-size: 16px;
+	border-radius: 5px;
+	cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.searchButton {
+	background-color: #0074d9;
+}
+
+.findButton {
+	background-color: cadetblue;
+}
+
+.lookupButton {
+	background-color: #28a745;
+}
+
+.searchButton:hover {
+	background-color: #0056b3;
+}
+
+.findButton:hover {
+	background-color: rgb(78, 131, 133);
+}
+
+.lookupButton:hover {
+	background-color: #218838;
+}
+
+.seedButton {
+    background-color: #0081c7;
+}
+
+.seedButton:hover {
+    background-color: #006297;
+}

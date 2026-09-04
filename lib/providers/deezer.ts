@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities, LabelObject } from "../../types/provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, AlbumData, PartialArtistObject, FullProvider, RawAlbumData, Capabilities, LabelObject, MediumObject } from "../../types/provider-types";
 import logger from "../../utils/logger";
 import text from "../../utils/text";
 import withCache from "../../utils/cache";
@@ -249,7 +249,7 @@ function formatAlbumObject(album: DeezerAlbum): AlbumObject {
 		trackCount: album.nb_tracks || null,
 		albumType: album.record_type,
 		upc: album.upc || null,
-		albumTracks: getAlbumTracks(album),
+		mediums: getAlbumMediums(album),
 		type: "album",
 		labels: album.label ? [formatLabelObject(album.label)] : null,
 		copyrights: null,
@@ -271,17 +271,35 @@ export type DeezerTrackWithTrackNumber = DeezerTrack & {
 	trackNumber?: number;
 }
 
-function getAlbumTracks(album: DeezerAlbum) {
+function getAlbumMediums(album: DeezerAlbum): MediumObject[] {
+	let mediums: MediumObject[] = [];
+	let medium: MediumObject = {
+		number: 1,
+		format: 'Digital Media',
+		tracks: []
+	};
 	let tracks = album.tracks?.data as DeezerTrackWithTrackNumber[];
 	if (tracks) {
-		for (let track in tracks) {
-			tracks[track].trackNumber = parseInt(track) + 1;
+		for (let trackNumber in tracks) {
+			let track = tracks[trackNumber];
+			if (!tracks[trackNumber].trackNumber) {
+				tracks[trackNumber].trackNumber = parseInt(trackNumber) + 1; //TODO: Deezer track position can be assumed, needs to be verified
+			}
+			if (track.disk_number && track.disk_number !=medium.number) {
+				mediums.push(medium);
+				medium = {
+					number: track.disk_number,
+					format: 'Digital Media',
+					tracks: []
+				};
+			}
+			medium.tracks.push(formatTrackObject(track));
 		}
-		let newTracks = tracks.map(formatTrackObject);
-		tracks.sort((a, b) => (a.trackNumber || 0) - (b.trackNumber || 0));
-		return newTracks;
 	}
-	return [];
+	if (medium.tracks.length > 0) {
+		mediums.push(medium);
+	}
+	return mediums;
 }
 
 function formatTrackObject(track: DeezerTrackWithTrackNumber): TrackObject {

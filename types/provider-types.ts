@@ -1,12 +1,16 @@
 import { ArtistIncludes, IArtist, IBrowseReleasesResult, ICoversInfo, IRecording, IRecordingList, IRelation, IRelease, IReleaseList, IUrl, IUrlLookupResult, RecordingIncludes, RelationsIncludes, ReleaseIncludes, UrlIncludes } from "musicbrainz-api";
 import { CacheOptions } from "../utils/cache";
 import { AggregatedAlbum } from "./aggregated-types";
+import { ReleaseLanguage, ReleaseScript } from "../utils/scriptAndLanguage";
 
 export type ProviderNamespace = FullProviderNamespace | "musixmatch"
 
-export type FullProviderNamespace = "spotify" | "tidal" | "deezer" | "musicbrainz" | "soundcloud" | "bandcamp" | "applemusic" | "naver" | "qobuz" | "discogs" | "volumo";
+export type FullProviderNamespace = "spotify" | "tidal" | "deezer" | "musicbrainz" | "soundcloud" | "bandcamp" | "applemusic" | "naver" | "qobuz" | "discogs" | "volumo" | "subvert";
 
 export type ObjectType = "partialArtist" | "artist" | "album" | "track" | "label"
+
+/** Incomplete Format List */
+export type MediumFormat = "Digital Media" | "CD" | "Vinyl" | "Cassette"
 
 export class GenericObject {
     provider: ProviderNamespace;
@@ -14,6 +18,7 @@ export class GenericObject {
     name: string;
     url: ExternalUrlData | null;
     type: ObjectType
+    mbid?: string | null;
 }
 
 export class ImageObject extends GenericObject {
@@ -55,11 +60,13 @@ export class AlbumObject extends ImageObject {
     trackCount: number | null;
     albumType: string | null;
     upc: string | null;
-    albumTracks: TrackObject[];
+    mediums: MediumObject[];
     labels: LabelObject[] | null;
     copyrights: string[] | null;
     genres: string[] | null;
     type: "album";
+    script?: ReleaseScript;
+    language?: ReleaseLanguage
 };
 
 export class LabelObject extends GenericObject {
@@ -94,8 +101,22 @@ export class ExtendedAlbumObject extends AlbumObject {
     externalUrls: string[] | null;
     hasImage: boolean;
     albumArtists: ArtistObject[];
-    override albumTracks: ExtendedTrackObject[];
+    override mediums: ExtendedMediumObject[];
 };
+
+export class MediumObject {
+    /**
+     * Medium format, if unspecified, assumed to be "Digital Media"
+     */
+    format?: MediumFormat | null;
+    name?: string | null;
+    tracks: TrackObject[];
+    number: number | null;
+}
+
+export class ExtendedMediumObject extends MediumObject {
+    tracks: ExtendedTrackObject[];
+}
 
 export class TrackObject extends ImageObject {
     provider: ProviderNamespace;
@@ -125,6 +146,7 @@ export class PagingData {
     count: number | null;
     current: string | number | null;
     next: string | null;
+    max?: number | null;
 }
 
 export class RawAlbumData extends PagingData {
@@ -179,7 +201,7 @@ export class FullProvider extends Provider {
     getAlbumByUPC?: (upc: string, options?: CacheOptions) => Promise<AlbumObject[] | null>;
     searchByArtistName: (query: string, options?: CacheOptions) => Promise<any | null>;
     getAlbumById: (id: string, options?: CacheOptions) => Promise<any | null>;
-    getTrackById: (id: string, options?: CacheOptions) => Promise<any | null>;
+    getTrackById?: (id: string, options?: CacheOptions) => Promise<any | null>;
     getArtistById: (id: string, options?: CacheOptions) => Promise<any | null>;
     getArtistAlbums: (id: string, offset?: string | number, limit?: number, options?: CacheOptions) => Promise<any | null>;
     formatArtistSearchData: (rawData: any) => any[];

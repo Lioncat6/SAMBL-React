@@ -500,6 +500,7 @@
 .artists,
 .releaseDate,
 .barcode,
+.albumType,
 .alb,
 .genres {
   text-align: left;
@@ -555,6 +556,7 @@
   text-overflow: ellipsis;
   color: var(--foreground-secondary);
   font-size: small;
+  text-align: left;
 }
 
 .trackInfo {
@@ -563,6 +565,7 @@
   margin-left: 4px;
   width: 100%;
   overflow: hidden;
+  text-align: left;
 }
 
 .trackTopRow {
@@ -643,12 +646,6 @@
   flex-shrink: 0;
   display: flex;
   align-items: center;
-}
-
-.SAMBLicon {
-  width: 12px;
-  height: 16px;
-  vertical-align: middle;
 }
 
 .selectBox {
@@ -1078,4 +1075,25 @@
   text-overflow: ellipsis;
   width: -webkit-fill-available;
   width: -moz-available;
+}
+
+.langIcons {
+  text-align: left;
+}
+
+.langIcon {
+  display: inline-block;
+  margin-right: 5px;
+  border-radius: 5px;
+  padding: 2px;
+  font-size: smaller;
+  color: var(--foreground-secondary);
+  font-weight: bold;
+  font-size: large;
+  font-family: monospace;
+  background-color: var(--background-secondary);
+}
+
+.langIcon.hasName {
+  cursor: help;
 }

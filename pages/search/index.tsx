@@ -8,6 +8,7 @@ import ErrorPage from "../../components/ErrorPage";
 import SAMBLHead from "../../components/SAMBLHead";
 import text from "../../utils/text";
 import { ProviderNamespace } from "../../types/provider-types";
+import clientProviders from "../../utils/clientProviders";
 
 async function getItems(query, provider) {
     const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/searchArtists?query=${query}&provider=${provider}`);
@@ -18,7 +19,6 @@ async function getItems(query, provider) {
         let errorData: null | SAMBLApiError = null
         try {
             errorData = await response.json() as SAMBLApiError
-            console.log(errorData);
         } catch {}
         throw new Error(`Error fetching artist data: ${errorData?.details ? errorData?.details : errorData?.error ? errorData?.error : response.statusText}`);
     }
@@ -59,7 +59,7 @@ export default function search({ items, error, provider }: {items?: [], error?:S
                 title = {`SAMBL • Results for "${query}"`}
                 fullTitle={`Search results for "${query}"`}
                 description={text.infoToString([
-                    provider && text.capitalizeFirst(provider),
+                    provider && clientProviders.getDisplayName(provider),
                     `${items.length} results for "${query}"`
                 ])}
             />

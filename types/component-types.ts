@@ -1,15 +1,31 @@
-import { ArtistObject, ExternalUrlData, ProviderNamespace, UrlData, UrlType } from "./provider-types";
-import { AggregatedAlbum, AggregatedArtist, AggregatedTrack } from "./aggregated-types";
+import { AlbumObject, ArtistObject, ExternalUrlData, MediumObject, ProviderNamespace, UrlData, UrlType } from "./provider-types";
+import { AggregatedAlbum, AggregatedArtist, AggregatedTrack, AlbumStack, AlbumMatch } from "./aggregated-types";
 import { JSX } from "react";
 import { SeederNamespace } from "./seeder-types";
 import { DeepSearchData } from "./api-types";
 
 export type searchReason = "artist" | "title";
 export type albumSearchReason = searchReason | "track";
-export class DisplayAlbum extends AggregatedAlbum {
+
+export class DisplayAlbumStack extends AlbumStack {
+    albums: DisplayAlbumMatch[];
+}
+
+export class DisplayAlbum extends DisplayAlbumStack {
     searchReason?: albumSearchReason
-    override aggregatedTracks: DisplayTrack[];
     viewingAlbum?: boolean
+}
+
+export class DisplayAlbumMatch extends AlbumMatch {
+    album: DisplayAlbumObject
+}
+
+export class DisplayAlbumObject extends AlbumObject {
+    mediums: DisplayMedium[];
+}
+
+export class DisplayMedium extends MediumObject {
+    override tracks: DisplayTrack[]
 }
 
 export class DisplayTrack extends AggregatedTrack {
@@ -58,15 +74,16 @@ export class ArtistPageData extends AggregatedArtist {
     names?: string[] | null;
     mbData?: ArtistObject | null;
     viewingAlbum?: string | null;
-    viewedAlbum?: AggregatedAlbum | null
+    viewedAlbum?: AlbumStack | null
 }
 
-export type SearchBoxType = "search" | "find";
+export type SearchBoxType = "search" | "find" | "lookup";
 
 export class ProviderDisplay {
     name: string;
     namespace: ProviderNamespace;
-    icon: JSX.Element;
+    icon?: JSX.Element;
+    hide?: boolean
 }
 export interface SAMBLSettings {
     enabledSeeders: SeederNamespace[];

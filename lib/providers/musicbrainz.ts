@@ -1,8 +1,9 @@
-import { MusicBrainzApi, CoverArtArchiveApi, IRelation, IArtist, IBrowseReleasesQuery, IRelease, IRecording, ICoversInfo, IReleaseList, IUrlLookupResult, IUrl, IBrowseReleasesResult, IArtistList, IArtistMatch, ITrack, UrlIncludes, ReleaseIncludes, RecordingIncludes, IEntity, ITypedEntity, RelationsIncludes, ILabel, ILabelInfo } from "musicbrainz-api";
-import { UrlMBIDDict, ArtistObject, PartialArtistObject, ExtendedAlbumObject, MusicBrainzProvider, ExtendedAlbumData, ExtendedTrackObject, RegexArtistUrlQuery, IdMBIDDict, Capabilities, ExternalUrlData, IRelationType, LabelObject } from "../../types/provider-types";
+import { MusicBrainzApi, CoverArtArchiveApi, IRelation, IArtist, IBrowseReleasesQuery, IRelease, IRecording, ICoversInfo, IReleaseList, IUrlLookupResult, IUrl, IBrowseReleasesResult, IArtistList, IArtistMatch, ITrack, UrlIncludes, ReleaseIncludes, RecordingIncludes, IEntity, ITypedEntity, RelationsIncludes, ILabel, ILabelInfo, IMedium } from "musicbrainz-api";
+import { UrlMBIDDict, ArtistObject, PartialArtistObject, ExtendedAlbumObject, MusicBrainzProvider, ExtendedAlbumData, ExtendedTrackObject, RegexArtistUrlQuery, IdMBIDDict, Capabilities, ExternalUrlData, IRelationType, LabelObject, MediumObject, ExtendedMediumObject } from "../../types/provider-types";
 import withCache from "../../utils/cache";
 import ErrorHandler from "../../utils/errorHandler";
 import parsers from "../parsers/parsers";
+import medium from "../../utils/medium";
 const namespace = "musicbrainz";
 
 const err = new ErrorHandler(namespace);
@@ -110,6 +111,7 @@ async function getIdsBySpotifyUrls(spotifyUrls: string[], type: IRelationType = 
 async function getIdsByUrlQuery(query: RegexArtistUrlQuery, type: IRelationType = 'artist', inc: RelationsIncludes[] = ["artist-rels"]): Promise<UrlMBIDDict | null> {
 	const entityType = type;
 	try {
+		console.log(`url:${(new RegExp(query.fullQuery)).toString()}`)
 		const data = await mbApi.search("url", {query: `url:${(new RegExp(query.fullQuery)).toString()}`, inc, limit: 100})
 		if (data["url-count"] === 0) {
 			return null; // No artist found
@@ -354,7 +356,7 @@ function formatAlbumObject(album: IRelease): ExtendedAlbumObject {
 		upc: album.barcode || null,
 		trackCount: trackCount,
 		albumType: album["release-group"] ? album["release-group"]["primary-type"] : null,
-		albumTracks: ( album.media && album.media.length > 0 ) ? album.media.flatMap(medium => medium.tracks?.map(track => formatTrackObject(track))).filter((track) => track != null) : [],
+		mediums: getReleaseMediums(album.media),
 		externalUrls: album.relations ? album.relations.filter(rel => rel.url && rel.url?.resource)?.map(rel => rel.url?.resource).filter(url => typeof url == 'string') : [],
 		hasImage: album["cover-art-archive"]?.artwork,
 		genres: album.genres ? album.genres.map(genre => genre.name) : null,
@@ -372,6 +374,20 @@ function formatLabelObject(label: ILabelInfo): LabelObject {
 		name: label.label?.name || "",
 		url: label.label?.id ? createUrl('label', label.label.id) : null,
 	}
+}
+
+function getReleaseMediums(mediums: IMedium[]): ExtendedMediumObject[] {
+	let formattedMediums: ExtendedMediumObject[] = [];
+	mediums.forEach(medium => {
+		if ("tracks" in medium && medium.tracks) {
+			formattedMediums.push({
+				number: medium.position,
+				name: medium.title.length > 0 ? medium.title : undefined,
+				tracks: medium.tracks.map(formatTrackObject)
+			})
+		}
+	})
+	return formattedMediums;
 }
 
 function formatTrackObject(track: IRecording | ITrack): ExtendedTrackObject {

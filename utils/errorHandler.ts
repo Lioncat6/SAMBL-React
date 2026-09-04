@@ -14,19 +14,20 @@ class ErrorHandler {
     handleError(
         message: string,
         error?: Error,
-        code?: string | number,
-        throwError: boolean = true,
-        ErrorType: typeof Error = Error
+        response?: Response,
+        responseText?: string, //TODO: Determine this in this function; Might require async
+        throwError: boolean = true
     ): void {
-        const errorMessage = (error?.message ? `${message} | ${error.message}` : message || null)?.replace(/\[\w+]:/, "");
+        let errorMessage = (error?.message ? `${message} | ${error.message}` : message || null)?.replace(/\[\w+]:/, "");
+        if (response && !response.ok) errorMessage += ` / ${response.status}${responseText && ` - ${responseText}`}`
         if (message.includes("ETIMEDOUT") || message.includes("ECONNRESET")) {
 
         }
         const logMessage = `[${this.namespace}]: ${errorMessage || "Internal Server Error"}`;
         logger.error(logMessage);
         if (error) logger.error(error);
-        const err = new ErrorType(logMessage) as ErrorWithCode;
-        if (code) err.code = code;
+        const err = new Error(logMessage) as ErrorWithCode;
+        if (response) err.code = response.status;
         if (throwError) throw err;
     }
 }

@@ -22,9 +22,9 @@ function normalizeText(text: string | number): string {
  *
  * @param {string} text The text to capitalize.
  */
-function capitalizeFirstLetter(text: string | number): string {
+function capitalizeFirstLetter(text: string | number, enforceLowercase = true): string {
 	if (typeof text !== "string") text = String(text);
-	return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+	return text.charAt(0).toUpperCase() + (enforceLowercase ? text.slice(1).toLowerCase() : text.slice(1));
 }
 
 /**
@@ -72,8 +72,8 @@ function formatDate(dateStr: string): string | null {
  * @returns {number} The time in milliseconds since the Unix epoch.
  */
 function getIntTime(dateStr: string | null): number {
-    const date = new Date(dateStr || "");
-    return isNaN(date.getTime()) ? 0 : date.getTime();
+	const date = new Date(dateStr || "");
+	return isNaN(date.getTime()) ? 0 : date.getTime();
 }
 
 /**
@@ -82,7 +82,7 @@ function getIntTime(dateStr: string | null): number {
  * @param date2 b
  * @returns {number} The result of the date comparison.
  */
-function compareDates(date1: string, date2: string, ascending: boolean = false): number  {
+function compareDates(date1: string, date2: string, ascending: boolean = false): number {
 	const intTime1 = getIntTime(date1);
 	const intTime2 = getIntTime(date2);
 	return ascending ? intTime1 - intTime2 : intTime2 - intTime1;
@@ -108,7 +108,7 @@ function formatDuration(duration: string): string {
  * @param {string} duration The ISO 8601 duration string to format.
  * @returns {number} The raw ms value.
  */
-function formatDurationMS(duration:string): number | null {
+function formatDurationMS(duration: string): number | null {
 	const match = /^PT(?:(\d+)M)?(?:(\d+)S)?$/.exec(duration);
 	if (!match) return null;
 	const minutes = parseInt(match[1] || "0", 10);
@@ -122,7 +122,7 @@ function formatDurationMS(duration:string): number | null {
  * @param {string | number} code input code
  * @returns {number}
  */
-function removeLeadingZeros(code: number|string): number {
+function removeLeadingZeros(code: number | string): number {
 	const num = Number(code)
 	return num;
 }
@@ -140,7 +140,7 @@ function handleCopy(text: string, all: boolean = false): void {
 			tempInput.value = text;
 			document.body.appendChild(tempInput);
 			tempInput.select();
-			tempInput.setSelectionRange(0, tempInput.value.length-1);
+			tempInput.setSelectionRange(0, tempInput.value.length - 1);
 			document.execCommand('copy');
 			tempInput.remove();
 			toasts.info(`Copied ${all ? "All Properties" : "Property"} to Clipboard`);
@@ -148,7 +148,7 @@ function handleCopy(text: string, all: boolean = false): void {
 			console.error("Clipboard API not supported. Try using https or a different browser.");
 			toasts.error("Unable to copy to clipboard!");
 		}
-		
+
 		return;
 	}
 	if (text.length > 0) {
@@ -166,7 +166,7 @@ function trimUrl(url: string): string {
 	return url.replace(/\/+$/, "");
 }
 
-function getColorEmoji(color:AlbumStatus, circle=false) {
+function getColorEmoji(color: AlbumStatus, circle = false) {
 	const emojis: Record<AlbumStatus, string> = {
 		"red": "🔴",
 		"blue": "🔵",
@@ -179,7 +179,7 @@ function getColorEmoji(color:AlbumStatus, circle=false) {
 		"orange": "🟧",
 		"green": "🟩"
 	}
-	return circle ? emojis[color]: squareEmojis[color];
+	return circle ? emojis[color] : squareEmojis[color];
 }
 
 /**
@@ -187,8 +187,8 @@ function getColorEmoji(color:AlbumStatus, circle=false) {
  * @param info Info array
  * @returns Formatted info string
  */
-function infoToString(info: (string|null|undefined)[]){
-	const string = info.filter((s) => s!=null && s!=undefined && s.length > 0).join(" • ");
+function infoToString(info: (string | null | undefined)[]) {
+	const string = info.filter((s) => s != null && s != undefined && s.length > 0).join(" • ");
 	return string.length > 0 ? string : null;
 }
 
@@ -238,6 +238,53 @@ function parseDuration(duration: string): number {
 	return ms;
 }
 
+// Mostly canibalized from https://github.com/kellnerd/harmony/blob/main/utils/gtin.ts
+/**
+ * 
+ * @param upc UPC / GTIN / Barcode to check validity of
+ * @returns True if valid
+ */
+function validateUPC(upc: string | number): boolean {
+	const gtinFormat = /^\d+$/;
+	const gtinLengths = [8, 12, 13, 14];
+	/** Calculates the checksum of the given (numeric) GTIN string, regardless of its length. */
+	function checksum(gtin: string) {
+		const length = gtin.length;
+
+		return gtin.split('')
+			.map((digit) => Number(digit))
+			// checksum factors alternate between 1 and 3, starting with 1 for the last digit
+			.reduce((checksum, digit, index) => (checksum + digit * ((length - index) % 2 ? 1 : 3)), 0);
+	}
+	/** Asserts that the given GTIN has an accepted format/length and a valid check digit. */
+	function ensureValidGTIN(gtin: string | number): void {
+		gtin = gtin.toString();
+
+		if (!gtin.length) {
+			throw new TypeError('GTIN is empty');
+		}
+
+		if (!gtinFormat.test(gtin)) {
+			throw new TypeError(`GTIN '${gtin}' contains invalid non-numeric characters`);
+		}
+
+		if (!gtinLengths.includes(gtin.length)) {
+			throw new TypeError(`GTIN '${gtin}' has an invalid length`);
+		}
+
+		// the checksum of the whole code (including the check digit) has to be a multiple of 10
+		if (checksum(gtin) % 10 !== 0) {
+			throw new TypeError(`Checksum of GTIN '${gtin}' is invalid`);
+		}
+	}
+	try {
+		ensureValidGTIN(upc);
+	} catch {
+		return false;
+	}
+	return true;
+}
+
 /**
  * Utility object for text formatting.
  *
@@ -262,7 +309,8 @@ const text = {
 	displayDuration,
 	parseDuration,
 	compareDates,
-	getIntTime
+	getIntTime,
+	validateUPC
 };
 
 export default text;

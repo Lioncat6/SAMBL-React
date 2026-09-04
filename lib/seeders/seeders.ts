@@ -1,15 +1,17 @@
 import met from "./met";
 import harmony from "./harmony";
 import atisket from "./atisket";
+import yambs from "./yambs";
+import sambl from "./sambl";
 import { Seeder, SeederNamespace } from "../../types/seeder-types";
 import { ProviderNamespace } from "../../types/provider-types";
-import yambs from "./yambs";
 
 export const seederList: Seeder[] = [
     met,
     harmony,
     atisket,
-    yambs
+    yambs,
+    sambl
 ];
 
 function getSeeder(namespace: SeederNamespace, providers?: ProviderNamespace[]): Seeder | null {

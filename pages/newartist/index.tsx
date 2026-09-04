@@ -7,6 +7,7 @@ import ErrorPage from "../../components/ErrorPage";
 import { SAMBLApiError, ArtistData } from "../../types/api-types";
 import SAMBLHead from "../../components/SAMBLHead";
 import text from "../../utils/text";
+import clientProviders from "../../utils/clientProviders";
 
 async function fetchArtistData(id: string, provider: ProviderNamespace) {
     const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?provider_id=${id}&provider=${provider}&mbData`);
@@ -90,7 +91,7 @@ export default function NewArtist({ artist, error }: { artist?: ArtistPageData, 
                 fullTitle={`New Artist • ${artist.name}`}
                 image={artist.imageUrl}
                 description={text.infoToString([
-                    text.capitalizeFirst(artist.provider),
+                    clientProviders.getDisplayName(artist.provider),
                     artist.info,
                     artist.relevance,
                 ])}

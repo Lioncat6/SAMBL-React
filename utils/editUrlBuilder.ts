@@ -1,6 +1,5 @@
-import { DeepSearchData } from "../types/api-types";
 import { DeepSearchSelection } from "../types/component-types";
-import { ArtistObject, PartialArtistObject } from "../types/provider-types";
+import { PartialArtistObject } from "../types/provider-types";
 import editNoteBuilder from "./editNoteBuilder";
 
 function buildAddArtistEditUrl(artist: PartialArtistObject): string{

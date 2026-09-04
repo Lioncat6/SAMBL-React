@@ -44,13 +44,7 @@ export default async function handler(req, res) {
             return res.status(404).json({ error: "Album not found!" } as SAMBLApiError);
         }
         let formattedAlbum = sourceProvider.formatAlbumObject(results)
-        let upcs = formattedAlbum.upc ? [formattedAlbum.upc]: null;
-        if (upcs == null) {
-            return res.status(404).json({ error: "Album not found!" } as SAMBLApiError);
-        }
-        // if (upcs == -1) {
-        //     return res.status(200).json({ upcs: [] });
-        // }
+        let upcs = formattedAlbum.upc ? [formattedAlbum.upc]: [];
         res.status(200).json({ upcs } as UPCData);
     } catch (error) {
         logger.error("Error in formatAlbumObject API:", error);

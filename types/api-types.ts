@@ -1,11 +1,11 @@
-import { AggregatedAlbum, AggregatedArtist } from "./aggregated-types"
+import { AggregatedAlbum, AggregatedArtist, AlbumStack } from "./aggregated-types"
 import { AlbumObject, ArtistObject, ExtendedAlbumObject, ExtendedTrackObject, PartialArtistObject, ProviderNamespace, TrackObject } from "./provider-types"
 
 export type DeepSearchMethod = "most_common" | "name_similarity"
 export class DeepSearchData {
     provider: ProviderNamespace
     mbArtists: DeepSearchArtist[]
-    albums: AggregatedAlbum[]
+    albums: AlbumStack[]
     sourceArtist: ArtistObject
 }
 
@@ -64,8 +64,21 @@ export class UPCData {
     upcs: string[]
 }
 
-export class ReleaseCountData { 
+export class ReleaseCountData {
     releaseCount: number
     ownCount: number
     featuredCount?: number | null
+}
+
+export interface APITimingStage { name: string, duration: number, provider?: ProviderNamespace, subStages?: APITimingStage[] } 
+
+export class APITimingData {
+    totalDuration: number;
+    stages: APITimingStage[]
+}
+
+export class SAMBLAPIResponse<T> {
+    error?: SAMBLApiError
+    data?: T
+    timings: APITimingData
 }

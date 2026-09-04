@@ -295,11 +295,7 @@
   margin-left: auto;
 }
 
-.metButton,
-.atisketButton,
-.harmonyButton,
-.exportButton,
-.yambsButton {
+.seederButton {
   position: relative;
   margin-top: 14px;
   margin-right: 5px;
@@ -572,12 +568,6 @@
     var(--skeleton) 75%
   );
   background-size: 200% 100%;
-}
-
-.SAMBLicon {
-  width: 12px;
-  height: 16px;
-  vertical-align: middle;
 }
 
 .artistLink {

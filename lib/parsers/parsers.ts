@@ -10,6 +10,7 @@ import naver from "./naver";
 import qobuz from "./qobuz";
 import soundcloud from "./soundcloud";
 import spotify from "./spotify";
+import subvert from "./subvert";
 import tidal from "./tidal";
 import volumo from "./volumo";
 
@@ -25,7 +26,8 @@ const parserList: Record<ProviderNamespace, UrlParser> ={
     "naver": naver,
     "qobuz": qobuz,
     "discogs": discogs,
-    "volumo": volumo
+    "volumo": volumo,
+    "subvert": subvert
 }
 
 function getParser(provider: ProviderNamespace): UrlParser {

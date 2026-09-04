@@ -1,5 +1,7 @@
-import { albumSearchReason, DisplayAlbum, FilterData, listFilter, listFilterOption, listSort, listSortOption } from "../types/component-types"
-import { AlbumStatus } from "../types/aggregated-types";
+import { albumSearchReason, DisplayAlbum, DisplayTrack, FilterData, listFilter, listFilterOption, listSort, listSortOption } from "../types/component-types"
+import { AggregatedAlbum, AlbumStatus } from "../types/aggregated-types";
+import { AlbumObject } from "../types/provider-types";
+import albumStack from "../utils/albumStack";
 
 const listFilterOptions: listFilterOption[] = [
     { id: 1, name: 'Green', key: 'showGreen', default: true },
@@ -35,13 +37,13 @@ const FilterFunctions: Record<listFilter, (items: DisplayAlbum[]) => DisplayAlbu
         return items.filter((item) => item.status != "red")
     },
     'showVarious': (items) => {
-        return items.filter((item) => item.albumArtists.some((artist) => !variousArtistsList.includes(artist.name)))
+        return items.filter((item) => item.aggregated.albumArtists.some((artist) => !variousArtistsList.includes(artist.name)))
     },
     'onlyIssues': (items) => {
         return items.filter((item) => item.albumIssues.length > 0)
     },
     'featuredAlbums': (items) => {
-        return items.filter((item) => (item.artistID && !item.albumArtists.map((artist) => artist.id).includes(item.artistID)))
+        return items.filter((item) => (item.aggregated.sourceArtist?.id && !item.aggregated.albumArtists.map((artist) => artist.id).includes(item.aggregated.sourceArtist.id)))
     }
 }
 
@@ -54,13 +56,13 @@ const statusSortOrder: AlbumStatus[] = ["red", "orange", "blue", "green"]
 
 const SortFunctions: Record<listSort, (items: DisplayAlbum[], ascending: boolean) => DisplayAlbum[]> = {
     'count': (items, ascending) => {
-        return items.sort((a, b) => ascending ? (a.trackCount || 0) - (b.trackCount || 0) : (b.trackCount || 0) - (a.trackCount || 0))
+        return items.sort((a, b) => ascending ? (a.aggregated.trackCount || 0) - (b.aggregated.trackCount || 0) : (b.aggregated.trackCount || 0) - (a.aggregated.trackCount || 0))
     },
     'date': (items, ascending) => {
-        return items.sort((a, b) => ascending ? (getIntTime(a.releaseDate)) - (getIntTime(b.releaseDate)) : (getIntTime(b.releaseDate)) - (getIntTime(a.releaseDate)))
+        return items.sort((a, b) => ascending ? (getIntTime(a.aggregated.releaseDate)) - (getIntTime(b.aggregated.releaseDate)) : (getIntTime(b.aggregated.releaseDate)) - (getIntTime(a.aggregated.releaseDate)))
     },
     'name': (items, ascending) => {
-        return items.sort((a, b) => ascending ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name))
+        return items.sort((a, b) => ascending ? a.aggregated.name.localeCompare(b.aggregated.name) : b.aggregated.name.localeCompare(a.aggregated.name))
     },
     'status': (items, ascending) => {
         return items.sort((a, b) => {
@@ -89,10 +91,10 @@ function searchItems(items: DisplayAlbum[], query: string): DisplayAlbum[] {
         const lowerCaseQuery = query.toLowerCase().trim();
         updatedItems = updatedItems
             .map((item) => {
-                const matchesTitle = item.name.toLowerCase().includes(lowerCaseQuery);
+                const matchesTitle = item.aggregated.name.toLowerCase().includes(lowerCaseQuery);
                 let matchesArtist: boolean = false;
-                if (!matchesTitle && item.artistNames) {
-                    let artistArray = Array.isArray(item.artistNames) ? item.artistNames : [item.artistNames]
+                if (!matchesTitle && item.aggregated.artistNames) {
+                    let artistArray = Array.isArray(item.aggregated.artistNames) ? item.aggregated.artistNames : [item.aggregated.artistNames]
                     matchesArtist = artistArray.some((artist) => 
                         artist.toLocaleLowerCase().includes(lowerCaseQuery)
                     )
@@ -101,10 +103,13 @@ function searchItems(items: DisplayAlbum[], query: string): DisplayAlbum[] {
                 let matchingTracks: number[] = []
                 // If we can't find a title or artist match
                 if (!(matchesTitle || matchesArtist)) {
-                    const useAggregatedTracks = item.aggregatedTracks?.length > 0
-                    const useMBTracks = item.mbAlbum?.albumTracks?.length == item.trackCount
-                    const mbTracks = item.mbAlbum?.albumTracks
-                    let itemTracks = useAggregatedTracks ? item.aggregatedTracks : useMBTracks ? mbTracks : item.albumTracks
+                    const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(item)
+                    const aggregatedTracks = item.aggregated.mediums.flatMap((medium) => medium.tracks);
+                    const sourceTracks = sourceAlbum?.mediums.flatMap((medium) => medium.tracks) || [];
+                    const useAggregatedTracks = aggregatedTracks.length > 0
+                    const useMBTracks = targetAlbum?.mediums.flatMap((medium) => medium.tracks)?.length == item.aggregated.trackCount
+                    const mbTracks = targetAlbum?.mediums.flatMap((medium) => medium.tracks)
+                    let itemTracks = useAggregatedTracks ? aggregatedTracks : useMBTracks ? mbTracks : sourceTracks as DisplayTrack[]
                     itemTracks?.forEach((track) => {
                         if (track.name?.toLocaleLowerCase().includes(lowerCaseQuery)) {
                             matchesTrack = true;
@@ -114,7 +119,7 @@ function searchItems(items: DisplayAlbum[], query: string): DisplayAlbum[] {
                     })
                     // Tell tracks to highlight
                     if (useAggregatedTracks && matchesTrack && matchingTracks.length > 0) {
-                        item.aggregatedTracks.forEach((track) => {
+                        (aggregatedTracks as DisplayTrack[])?.forEach((track) => {
                             if (track.trackNumber && matchingTracks.includes(track.trackNumber)) {
                                 track.highlight = true;
                                 track.searchReason = "title";

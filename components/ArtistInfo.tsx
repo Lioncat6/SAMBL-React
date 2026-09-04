@@ -1,174 +1,60 @@
-import styles from "../styles/artistInfo.module.css";
-import { FaSpotify, FaDeezer, FaBandcamp, FaSoundcloud  } from "react-icons/fa6";
+import styles from "../styles/artistInfo.module.scss";
+import { FaSpotify, FaDeezer, FaBandcamp, FaSoundcloud } from "react-icons/fa6";
 import { SiTidal, SiBandcamp, SiApplemusic } from "react-icons/si";
 import { LuImageUp } from "react-icons/lu";
 import editNoteBuilder from "../utils/editNoteBuilder";
 import { ArtistPageData } from "../types/component-types";
+import clientProviders from "../utils/clientProviders";
+import { ProviderNamespace } from "../types/provider-types";
 
-function SpotifyUrlContainer({ id, url }) {
+function Icon({ source }: { source: ProviderNamespace }) {
+	const displayName = clientProviders.getDisplayName(source);
+	const iconStyles = `${styles.urlIcon}${styles[source] ? ` ${styles[source]}` : ''}`;
 	return (
-		<div className={styles.spURLContainer}>
-			<a id="spURL" target="_blank" href={url || "https://open.spotify.com/artist/" + id}>
-				<img alt="Spotify Icon" className={styles.spIcon} src="../assets/images/Spotify_icon.svg" />
-			</a>
-		</div>
+		<>
+			{source === "spotify" && <img className={iconStyles} title={displayName} src="../assets/images/Spotify_icon.svg" />}
+			{source === "musicbrainz" && <img className={iconStyles} title={displayName} src="../assets/images/MusicBrainz_logo.svg" />}
+			{source === "deezer" && <FaDeezer title={displayName} className={iconStyles} />}
+			{source === "musixmatch" && <img className={iconStyles} title={displayName} src="../assets/images/Musixmatch_logo_icon_only.svg" />}
+			{source === "tidal" && <SiTidal title={displayName} className={iconStyles} />}
+			{source === "applemusic" && <SiApplemusic title={displayName} className={iconStyles} />}
+			{source === "soundcloud" && <FaSoundcloud title={displayName} className={iconStyles} />}
+			{source === "bandcamp" && <SiBandcamp title={displayName} className={iconStyles} />}
+			{source === "naver" && <img className={iconStyles} title={displayName} src="../assets/images/Naver_icon.svg" />}
+			{source === "qobuz" && <img className={iconStyles} title={displayName} src="../assets/images/Qobuz_icon.svg" />}
+			{source === "discogs" && <img className={iconStyles} title={displayName} src="../assets/images/Discogs_icon.svg" />}
+			{source === "volumo" && <img className={iconStyles} title={displayName} src="../assets/images/Volumo_icon.svg" />}
+			{source === "subvert" && <img className={iconStyles} title={displayName} src="../assets/images/Subvert_logo.svg" />}
+		</>
 	);
 }
 
-function TidalUrlContainer({ id, url }) {
+function UrlContainer({ provider, url }: { provider: ProviderNamespace; url: string }) {
 	return (
-		<div className={styles.tidalURLContainer}>
-			<a id="tidalURL" target="_blank" href={url ||"https://tidal.com/artist/" + id}>
-				<div className={styles.iconWrapper}>
-					<SiTidal className={styles.tidalIcon} />
-				</div>
+		<div className={`${styles.urlContainer}${styles[provider] ? ` ${styles[provider]}` : ''}`}>
+			<a id="providerURL" target="_blank" href={url}>
+				<Icon source={provider} />
 			</a>
 		</div>
-	);
+	)
 }
 
-function DeezerUrlContainer({ id, url }) {
-	return (
-		<div className={styles.deezerURLContainer}>
-			<a id="deezerUrl" target="_blank" href={url || "https://www.deezer.com/artist/" + id}>
-				<img alt="Deezer Icon" className={styles.deezerIcon} src="../assets/images/Deezer_icon.svg" />
-			</a>
-		</div>
-	);
-}
-
-function BandcampUrlContainer({ id, url }) {
-	return (
-		<div className={styles.bandcampURLContainer}>
-			<a id="bandcampURL" target="_blank" href={url || `https://${id}.bandcamp.com`}>
-				<div className={styles.iconWrapper}>
-					<SiBandcamp className={styles.bandcampIcon} />
-				</div>
-			</a>
-		</div>
-	);
-}
-
-function SoundcloudUrlContainer({ url }) {
-	return (
-		<div className={styles.soundcloudUrlContainer}>
-			<a id="bandcampURL" target="_blank" href={url}>
-				<div className={styles.iconWrapper}>
-					<FaSoundcloud className={styles.FaSoundcloud} />
-				</div>
-			</a>
-		</div>
-	);
-}
-
-function AppleMusicUrlContainer({ url }) {
-	return (
-		<div className={styles.applemusicURLContainer}>
-			<a id="applemusicURL" target="_blank" href={url}>
-				<div className={styles.iconWrapper}>
-					<SiApplemusic className={styles.applemusicIcon} />
-				</div>
-			</a>
-		</div>
-	);
-}
-
-function NaverUrlContainer({ id, url }) {
-	return (
-		<div className={styles.naverUrlContainer}>
-			<a id="spURL" target="_blank" href={url || "https://vibe.naver.com/artist/" + id}>
-				<img alt="Naver Icon" className={styles.spIcon} src="../assets/images/Naver_icon.svg" />
-			</a>
-		</div>
-	);
-}
-
-function QobuzUrlContainer({ id, url }) {
-	return (
-		<div className={styles.qobuzUrlContainer}>
-			<a id="spURL" target="_blank" href={url || "https://play.qobuz.com/artist/" + id}>
-				<img alt="Qobuz Icon" className={styles.spIcon} src="../assets/images/Qobuz_icon.svg" />
-			</a>
-		</div>
-	);
-}
-
-function DiscogsUrlContainer({ id, url }) {
-	return (
-		<div className={styles.discogsUrlContainer}>
-			<a id="discogsURL" target="_blank" href={url || "https://www.discogs.com/artist/" + id}>
-				<img alt="Discogs Icon" className={styles.discogsIcon} src="../assets/images/Discogs_icon.svg" />
-			</a>
-		</div>
-	);
-}
-
-function VolumoUrlContainer({ id, url }) {
-	return (
-		<div className={styles.volumoUrlContainer}>
-			<a id="volumoURL" target="_blank" href={url || "https://www.volumo.com/artist/" + id}>
-				<img alt="Volumo Icon" className={styles.volumoIcon} src="../assets/images/Volumo_icon.svg" />
-			</a>
-		</div>
-	);
-}
-
-function UrlContainer({ id, provider, url }: { id?: string | number; provider: string; url?: string }) {
-	id = id?.toString();
-	switch (provider) {
-		case "spotify":
-			return <SpotifyUrlContainer url={url} id={id} />;
-		case "tidal":
-			return <TidalUrlContainer url={url} id={id} />;
-		case "deezer":
-			return <DeezerUrlContainer url={url} id={id} />;
-		case "musicbrainz":
-			return <MusicBrainzUrlContainer url={url} id={id} />;
-		case "bandcamp":
-			return <BandcampUrlContainer url={url} id={id} />;
-		case "soundcloud":
-			return <SoundcloudUrlContainer url={url} />;
-		case "applemusic":
-			return <AppleMusicUrlContainer url={url} />;
-		case "naver":
-			return <NaverUrlContainer url={url} id={id} />;
-		case "qobuz":
-			return <QobuzUrlContainer url={url} id={id} />;
-		case "discogs":
-			return <DiscogsUrlContainer url={url} id={id} />;
-		case "volumo":
-			return <VolumoUrlContainer url={url} id={id} />;
-		default:
-			return null;
-	}
-}
-
-function MusicBrainzUrlContainer({ url, id }: { url?: string; id?: string }) {
-	return (
-		<div className={styles.mbURLContainer}>
-			<a id="mbURL" target="_blank" href={url || id ? "https://musicbrainz.org/artist/" + id : ""}>
-				<img alt="MusicBrainz Icon" className={styles.mbIcon} src="../assets/images/MusicBrainz_Logo.svg" />
-			</a>
-		</div>
-	);
-}
-
-function UrlIcons({ artist }: { artist: ArtistPageData}) {
+function UrlIcons({ artist }: { artist: ArtistPageData }) {
 	return (
 		<>
 			{artist.urls ?
 				artist.urls.map((url) =>
 					<UrlContainer url={url} provider={artist.provider} />
-				) 
+				)
 				:
 				<UrlContainer url={artist.url.url} provider={artist.provider} />
 			}
-			{artist.mbid && <MusicBrainzUrlContainer id={artist.mbid} />}
+			{artist.mbid && <UrlContainer url={`https://musicbrainz.org/artist/${artist.mbid}`} provider="musicbrainz" />}
 		</>
 	);
 }
 
-function ImageContainer({ artist }: { artist: ArtistPageData}) {
+function ImageContainer({ artist }: { artist: ArtistPageData }) {
 	const { mbid, imageUrl, name } = artist;
 	if (!imageUrl) return null;
 	let editNote = editNoteBuilder.buildEditNote('Artist image', artist.provider, imageUrl, artist.url.url);
@@ -180,10 +66,10 @@ function ImageContainer({ artist }: { artist: ArtistPageData}) {
 					<img id="artistImage" alt={`Artist image for ${name}`} className={styles.artistImage} src={imageUrl} />
 				</a>
 
-				{mbid &&<div className={styles.imageOverlay}>
+				{mbid && <div className={styles.imageOverlay}>
 					<span className={styles.overlayText}></span>
 
-						<a href={importUrl} target="_blank"><div className={styles.importIcon} title="Import Artist Image to MusicBrainz"><LuImageUp /></div></a>
+					<a href={importUrl} target="_blank"><div className={styles.importIcon} title="Import Artist Image to MusicBrainz"><LuImageUp /></div></a>
 
 				</div>}
 			</div>
@@ -191,7 +77,7 @@ function ImageContainer({ artist }: { artist: ArtistPageData}) {
 	)
 }
 
-function PopularityContainer({ artist }: { artist: ArtistPageData}) {
+function PopularityContainer({ artist }: { artist: ArtistPageData }) {
 	if (artist.popularity != null) {
 		return (
 			<div id="artistPopularityContainer" className={styles.artistPopularityContainer} title={'Popularity: ' + artist.popularity + '%'}>
@@ -205,7 +91,7 @@ function PopularityContainer({ artist }: { artist: ArtistPageData}) {
 	return null;
 }
 
-function FollowerContainer({ artist }: { artist: ArtistPageData}) {
+function FollowerContainer({ artist }: { artist: ArtistPageData }) {
 	if (artist.followers != null && !Number.isNaN(artist.followers)) {
 		return (
 			<h2 id="artistFollowerCount" className={styles.artistFollowerCount}>{artist.followers} Followers</h2>
@@ -214,7 +100,7 @@ function FollowerContainer({ artist }: { artist: ArtistPageData}) {
 	return null;
 }
 
-function GenresContainer({ artist }: { artist: ArtistPageData}) {
+function GenresContainer({ artist }: { artist: ArtistPageData }) {
 	if (artist.genres != null) {
 		return (
 			<div id="artistGenres" className={styles.artistGenres}>{artist.genres.join(", ")}</div>
@@ -223,11 +109,11 @@ function GenresContainer({ artist }: { artist: ArtistPageData}) {
 	return null;
 }
 
-export default function ArtistInfo({ artist }: { artist: ArtistPageData}) {
+export default function ArtistInfo({ artist }: { artist: ArtistPageData }) {
 	return (
 		<>
 			<div id="artistPageContainer" className={styles.artistPageContainer} style={{ "--background-image": `url('${artist.bannerUrl || ""}')` } as React.CSSProperties}>
-				<ImageContainer artist={artist}/>
+				<ImageContainer artist={artist} />
 				<div id="artistTextContainer" className={styles.artistTextContainer}>
 					<div className={styles.nameContainer}>
 						<h1 id="artistName" className={styles.artistName}>{artist.name}</h1>
