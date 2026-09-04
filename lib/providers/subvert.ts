@@ -333,11 +333,11 @@ function formatAlbumObject(rawData: SubvertSearchResultWithArtist | SubvertAlbum
     } else {
         const album = rawData as SubvertTrack;
         return {
-            id: album.id,
+            id: `track:${album.id}`,
             provider: namespace,
             type: 'album',
             name: album.name,
-            url: createUrl('album', `${album.artists[0].slug}/${album.slug}`),
+            url: createUrl('track', `${album.artists[0].slug}/${album.slug}`),
             imageUrl: createSubvertImage(album.coverImageId),
             imageUrlSmall: createSubvertImage(album.coverImageId, true),
             releaseDate: text.formatDate(album.releaseDate),
