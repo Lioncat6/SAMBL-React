@@ -267,7 +267,7 @@ function formatAlbumGetData(rawData: SubvertSearchResults): RawAlbumData {
 
 async function getAlbumById(id: string): Promise<SubvertAlbum | SubvertTrack | null> {
     try {
-        if (id.includes(":track:")) return await getTrackById(id);
+        if (id.includes("track:")) return await getTrackById(id);
         if (id.includes(":")){
             const resolvedId = await cachedResolvedSlug(id, 'album');
             if (resolvedId){
@@ -291,7 +291,7 @@ function formatAlbumObject(rawData: SubvertSearchResultWithArtist | SubvertAlbum
         let tracks = isRelease ? album.metadata.tracks || [] : [album];
 
         return {
-            id: album.id,
+            id: isRelease ? album.id: `track:${album.id}`,
             provider: namespace,
             type: 'album',
             name: album.name,
@@ -489,12 +489,13 @@ function formatPartialArtistObject(rawData: SubvertArtistProfile | SubvertAlbumA
 
 async function getTrackById(id: string): Promise<SubvertTrack | null> {
     try {
-        if (id.includes(":")){
+        if (id.includes(":track:")){
             const resolvedId = await cachedResolvedSlug(id, 'track');
             if (resolvedId){
                 id = resolvedId
             }
         }
+        id = id.replace("track:", "");
         const data = await subvertFetch(`track/${id}`);
         if (data && typeof data == "object" &&  "slug" in data) {
             return data as SubvertTrack;
