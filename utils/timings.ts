@@ -42,17 +42,23 @@ interface PartialStage {
     name: string
     start: number
     provider?: ProviderNamespace
+    uuid: string
 }
 
 class SingleStage {
     name: string
-    stagesEnd: (name: string) => void
-    constructor(name: string, end: (name: string) => void) {
+    uuid: string
+    stagesEnd: (identifier: string) => void
+    constructor(name: string, uuid: string, end: (name: string) => void) {
         this.name = name;
+        this.uuid = uuid;
         this.stagesEnd = end;
     }
+    /**
+     * Safely end the stage; Uses a UUID instead of a name identifier to support identical stage names
+     */
     end() {
-        this.stagesEnd(this.name);
+        this.stagesEnd(this.uuid);
     }
     //TODO: startSubstage
 }
@@ -69,25 +75,26 @@ export class Stages {
     }
 
     start(name: string, provider?: ProviderNamespace) {
-        this.partialStages.push({ name, start: Date.now(), provider })
-        return new SingleStage(name, this.end.bind(this));
+        const uuid = crypto.randomUUID()
+        this.partialStages.push({ name, start: Date.now(), provider, uuid})
+        return new SingleStage(name, uuid, this.end.bind(this));
     }
 
-    end(name: string) {
-        const ps = this.partialStages.find((stage) => stage.name == name)
-        if (!ps) throw new Error(`Unknown timing stage name '${name}'`)
+    end(identifier: string) {
+        const ps = this.partialStages.find((stage) => stage.uuid == identifier || stage.name == identifier)
+        if (!ps) throw new Error(`Unknown timing stage identifier '${identifier}'`)
         this.partialStages.filter((item) => item != ps);
         this.stages.push({
-            name: name,
+            name: ps.name,
             duration: Date.now() - ps.start,
             provider: ps.provider
         })
     }
 
     async await<T>(name: string, promise: Promise<T>, provider?: ProviderNamespace): Promise<Awaited<T>> {
-        this.start(name, provider)
+        const stage = this.start(name, provider)
         const result = await promise;
-        this.end(name);
+        stage.end();
         return result;
     }
 
