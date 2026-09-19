@@ -69,3 +69,9 @@ export class AggregatedData {
     red: number
     total: number
 }
+
+export class RawAggregateData {
+    sourceAlbums: AlbumObject[]
+    targetAlbums: ExtendedAlbumObject[]
+    targetFeaturedAlbums: ExtendedAlbumObject[]
+}

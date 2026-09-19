@@ -7,7 +7,7 @@ import { useRouter } from "next/router";
 import { SAMBLSettingsContext, useSettings } from "../../components/SettingsContext";
 import processData from "../../utils/processAlbumData";
 import { AlbumData, AlbumObject, ArtistObject, ExtendedAlbumData, ExtendedAlbumObject, ProviderNamespace } from "../../types/provider-types";
-import { SAMBLApiError, ArtistData, ReleaseCountData } from "../../types/api-types"
+import { SAMBLApiError, ArtistData, ReleaseCountData, SAMBLAPIResponse } from "../../types/api-types"
 import { ArtistPageData, DisplayAlbum, SAMBLError } from "../../types/component-types";
 import ErrorPage from "../../components/ErrorPage";
 import { AggregatedAlbum, AggregatedData, AlbumStack } from "../../types/aggregated-types";
@@ -405,7 +405,9 @@ export default function Artist({ artist, error }: { artist: ArtistPageData, erro
 				try {
 					const response = await fetch(`/api/compareArtistAlbums?provider_id=${pId}&provider=${provider}&mbid=${mbid}&quick${bypassCache ? "&forceRefresh" : ""}`);
 					if (response.ok) {
-						return await response.json() as AggregatedData;
+						const rawData = await response.json() as SAMBLAPIResponse<AggregatedData>;
+						if (!rawData.data) throw new Error("Server returned no data!");
+						return rawData.data
 					} else {
 						throw new Error("Failed to fetch artist albums");
 					}
