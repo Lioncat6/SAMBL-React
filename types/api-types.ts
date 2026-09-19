@@ -1,3 +1,4 @@
+import { ReleaseLanguage, ReleaseScript } from "../utils/scriptAndLanguage"
 import { AggregatedAlbum, AggregatedArtist, AlbumStack } from "./aggregated-types"
 import { AlbumObject, ArtistObject, ExtendedAlbumObject, ExtendedTrackObject, PartialArtistObject, ProviderNamespace, TrackObject } from "./provider-types"
 
@@ -62,6 +63,11 @@ export class ISRCData {
 
 export class UPCData {
     upcs: string[]
+}
+
+export class LangData {
+    script: ReleaseScript | null
+    language: ReleaseLanguage | null
 }
 
 export class ReleaseCountData {
