@@ -377,6 +377,9 @@ function formatLabelObject(label: ILabelInfo): LabelObject {
 }
 
 function getReleaseMediums(mediums: IMedium[]): ExtendedMediumObject[] {
+	if (!mediums || mediums.length === 0) {
+		return [];
+	}
 	let formattedMediums: ExtendedMediumObject[] = [];
 	mediums.forEach(medium => {
 		if ("tracks" in medium && medium.tracks) {
