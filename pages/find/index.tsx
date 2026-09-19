@@ -6,7 +6,7 @@ import Head from "next/head";
 import SearchBox from "../../components/SearchBox";
 import { FaWindowRestore } from "react-icons/fa6";
 import toasts from "../../utils/toasts";
-import { FindData, ISRCData, UPCData, URLLookupData } from "../../types/api-types";
+import { FindData, ISRCData, SAMBLAPIResponse, UPCData, URLLookupData } from "../../types/api-types";
 import normalizeVars from "../../utils/normalizeVars";
 import { AlbumObject, ArtistObject, TrackObject } from "../../types/provider-types";
 import parsers from "../../lib/parsers/parsers";
@@ -16,7 +16,9 @@ async function serverFind(query, type) {
 	try {
 		const response = await fetch(`/api/find?query=${query}&type=${type}`)
 		if (response.ok) {
-			return await response.json() as FindData;
+			const data = await response.json() as SAMBLAPIResponse<FindData>;
+			if (!data.data) throw new Error("Server returned no data!");
+			return data.data;
 		} else {
 			throw new Error((await response.json()).error || response.statusText);
 		}

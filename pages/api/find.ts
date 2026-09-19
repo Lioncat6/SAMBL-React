@@ -1,23 +1,14 @@
 import logger from "../../utils/logger";
-import { FindData, SAMBLApiError } from "../../types/api-types";
-import { AlbumObject, TrackObject } from "../../types/provider-types";
+import { FindData, SAMBLApiError, SAMBLAPIResponse } from "../../types/api-types";
+import { AlbumObject, ProviderWithCapabilities, TrackObject } from "../../types/provider-types";
 import { NextApiRequest, NextApiResponse } from "next";
 import providers from "../../lib/providers/providers";
 import normalizeVars from "../../utils/normalizeVars";
-function createDataObject(source, imageUrl, title, artists, info, link, extraInfo = null) {
-	return {
-		source: source,
-		imageUrl: imageUrl,
-		title: title,
-		artists: artists,
-		info: info.filter((element) => element),
-		link: link,
-		extraInfo: extraInfo,
-	};
-}
+import { Stages } from "../../utils/timings";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 	try {
+		const stages = new Stages()
 		const { query, type } = normalizeVars(req.query);
 		if (!query) {
 			return res.status(400).json({ error: "Parameter `query` is required" });
@@ -31,35 +22,49 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 		if (type.toLocaleLowerCase() == "upc") {
 			let albums: AlbumObject[] = []
 			const providerList = providers.getAllProviders(["getAlbumByUPC"]);
+			const fetches: Promise<void>[] = [];
 			for (const provider of providerList){
-				try {
-					const rawData = await provider.getAlbumByUPC(query)
-					if (rawData) rawData.forEach((album) => albums.push(album))
-				} catch (error) {
-					logger.error(error)
-					issues.push(<SAMBLApiError>{provider: provider.namespace, error: error.message || error.toString()})
+				async function albumFetch(query: string, provider: ProviderWithCapabilities<"getAlbumByUPC"[]>) {
+					const stage = stages.start('Fetch album by UPC', provider.namespace);
+					try {
+						const rawData = await provider.getAlbumByUPC(query)
+						if (rawData) rawData.forEach((album) => albums.push(album))
+					} catch (error) {
+						logger.error(error)
+						issues.push(<SAMBLApiError>{provider: provider.namespace, error: error.message || error.toString()})
+					}
+					stage.end();
 				}
+				fetches.push(albumFetch(query, provider))
 			}
-			return res.status(200).json({type: "UPC", data: albums, issues} as FindData)
+			await Promise.all(fetches);
+			return res.status(200).json({data: {type: "UPC", data: albums, issues}, timings: stages.finish()} as SAMBLAPIResponse<FindData>)
 
 		} else if (type.toLocaleLowerCase() == "isrc") {
 			let tracks: TrackObject[] = []
 			const providerList = providers.getAllProviders(["getTrackByISRC"]);
+			const fetches: Promise<void>[] = [];
 			for (const provider of providerList){
-				try {
-					const rawData = await provider.getTrackByISRC(query)
-					if (rawData) rawData.forEach((track) => tracks.push(track))
-				} catch (error) {
-					logger.error(error)
-					issues.push(<SAMBLApiError>{provider: provider.namespace, error: error.message || error.toString()})
+				async function trackFetch(query: string, provider: ProviderWithCapabilities<"getTrackByISRC"[]>) {
+					const stage = stages.start('Fetch track by ISRC', provider.namespace);
+					try {
+						const rawData = await provider.getTrackByISRC(query)
+						if (rawData) rawData.forEach((track) => tracks.push(track))
+					} catch (error) {
+						logger.error(error)
+						issues.push(<SAMBLApiError>{provider: provider.namespace, error: error.message || error.toString()})
+					}
+					stage.end()
 				}
+				fetches.push(trackFetch(query, provider))
 			}			
-			return res.status(200).json({type: "UPC", data: tracks, issues} as FindData)
+			await Promise.all(fetches);
+			return res.status(200).json({data: {type: "ISRC", data: tracks, issues}, timings: stages.finish()} as SAMBLAPIResponse<FindData>)
 		} else {
-			return res.status(400).json({ error: "Invalid query type!" } as SAMBLApiError);
+			return res.status(400).json({error:{ error: "Invalid query type!" }} as SAMBLAPIResponse<FindData>);
 		}
 	} catch (error) {
 		logger.error("Error in find API", error);
-		res.status(500).json({ error: "Internal Server Error", details: error.message } as SAMBLApiError);
+		res.status(500).json({error:{ error: "Internal Server Error", details: error.message }} as SAMBLAPIResponse<FindData>);
 	}
 }
