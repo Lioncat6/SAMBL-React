@@ -12,6 +12,8 @@ const {createUrl, parseUrl} = parsers.getParser(namespace);
 
 const coverArtArchiveApiClient = new CoverArtArchiveApi();
 const mbApi = new MusicBrainzApi({
+	baseUrl: process.env.MUSICBRAINZ_BASE_URL || "https://musicbrainz.org",
+	disableRateLimiting: process.env.MUSICBRAINZ_DISABLE_RATE_LIMIT === "1",
 	appName: process.env.REACT_APP_NAME,
 	appVersion: process.env.REACT_APP_VERSION,
 	appContactInfo: process.env.CONTACT_INFO,
