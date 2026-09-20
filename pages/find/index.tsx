@@ -20,7 +20,7 @@ async function serverFind(query, type) {
 			if (!data.data) throw new Error("Server returned no data!");
 			return data.data;
 		} else {
-			throw new Error((await response.json()).error || response.statusText);
+			throw new Error((await response.json()).error?.error || response.statusText);
 		}
 	} catch (error) {
 		throw new Error(error)
