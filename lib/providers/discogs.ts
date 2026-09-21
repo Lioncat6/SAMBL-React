@@ -511,6 +511,7 @@ async function getAlbumById(albumId: string): Promise<GetReleaseResponse | null>
 		const data = await discogsDB.getRelease(albumId);
 		return data.data;
 	} catch (error) {
+		if (error.toString().includes('Album not found.')) return null;
 		err.handleError("Error fetching album by ID:", error);
 		return null;
 	}
