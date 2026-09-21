@@ -5,6 +5,9 @@ import { Stages } from "./timings";
 type SAMBLAPIResponseWithoutTimings<T> = Omit<SAMBLAPIResponse<T>, "timings">
 
 function SAMBLResponse<T extends SAMBLAPIData | never = never>(res: NextApiResponse, code: number, response: SAMBLAPIResponseWithoutTimings<T>, stages: Stages) {
+    if (response.error) {
+        response.error = {...response.error, code: code}
+    }
     return res.status(code).json({...response, timings: stages.finish()} as SAMBLAPIResponse<T>);
 }
 
