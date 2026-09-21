@@ -112,7 +112,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         artistData[artist.url.url].mbid = urlResults[artist.url.url] || null;
                     }
                 }
-                api.response<ArtistSearchData>(200, artistData);
+                api.response<ArtistSearchData>(200, {data: artistData});
             }
         }
         stages.start('Search target for artist', 'musicbrainz')
@@ -123,7 +123,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 artistData[artist.url.url].mbid = mbids[artist.url.url] || mbids[artist.url + "/"] || null
             }
         }
-        return api.response<ArtistSearchData>(200, artistData);
+        return api.response<ArtistSearchData>(200, {data: artistData});
     } catch (error) {
         logger.error("Error in searchArtists API:", error);
         api.response(500, { error: { error: "Internal Server Error", details: error.message } });
