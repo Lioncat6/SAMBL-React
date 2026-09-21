@@ -5,12 +5,16 @@ import text from "../../utils/text";
 import bcApi from "bandcamp-scraper";
 import parsers from "../parsers/parsers";
 import medium from "../../utils/medium";
+import SAMBLUserAgent from "../../utils/userAgent";
 
 const namespace = "bandcamp";
 
-const {createUrl, parseUrl} = parsers.getParser(namespace);
+const { createUrl, parseUrl } = parsers.getParser(namespace);
 
 const err = new ErrorHandler(namespace);
+
+const cookie = process.env.BANDCAMP_COOKIE ?? "client_id=SAMBL";
+const userAgent = SAMBLUserAgent();
 
 class bandcampId {
 	artist: string
@@ -19,14 +23,14 @@ class bandcampId {
 }
 
 function parseId(id: string | null): bandcampId {
-	if (id && parseUrl(id)){
+	if (id && parseUrl(id)) {
 		id = parseUrl(id)?.id || null
 	}
 	if (!id) {
 		throw new Error("Invalid entity id!")
 	}
 	const idArray = id.split("/");
-	if (idArray.length != 3){
+	if (idArray.length != 3) {
 		throw new Error("Invalid entity id!")
 	}
 	const bcId = {
@@ -37,17 +41,17 @@ function parseId(id: string | null): bandcampId {
 	return bcId;
 }
 
-function createId(bcId: bandcampId){
+function createId(bcId: bandcampId) {
 	return `${bcId.artist}/${bcId.type}/${bcId.id}`
 }
 
-function searchAsync(params) {
+function searchAsync(params: { query: string, page: number }) {
 	return new Promise((resolve, reject) => {
 		try {
 			bcApi.search(params, (error, searchResults) => {
 				if (error) reject(error);
 				else resolve(searchResults);
-			});
+			}, cookie, userAgent);
 		} catch (err) {
 			reject(err);
 		}
@@ -57,10 +61,10 @@ function searchAsync(params) {
 function getArtistByIdAsync(id: string) {
 	return new Promise((resolve, reject) => {
 		try {
-			bcApi.getArtistInfo(createUrl('artist', id), (error, artistData) => {
+			bcApi.getArtistInfo(createUrl('artist', id).url, (error, artistData) => {
 				if (error) reject(error);
 				else resolve(artistData);
-			});
+			}, cookie, userAgent);
 		} catch (err) {
 			reject(err);
 		}
@@ -73,7 +77,7 @@ async function getAlbumUrlsAsync(artistUrl: string) {
 			bcApi.getAlbumUrls(artistUrl, (error, albumData) => {
 				if (error) reject(error);
 				else resolve(albumData);
-			});
+			}, cookie, userAgent);
 		} catch (err) {
 			reject(err);
 		}
@@ -86,7 +90,7 @@ async function getAlbumInfoAsync(albumUrl: string) {
 			bcApi.getAlbumInfo(albumUrl, (error, albumData) => {
 				if (error) reject(error);
 				else resolve(albumData);
-			});
+			}, cookie, userAgent);
 		} catch (err) {
 			reject(err);
 		}
@@ -99,7 +103,7 @@ async function getTrackInfoAsync(trackUrl: string) {
 			bcApi.getTrackInfo(trackUrl, (error, trackData) => {
 				if (error) reject(error);
 				else resolve(trackData);
-			});
+			}, cookie, userAgent);
 		} catch (err) {
 			reject(err);
 		}
@@ -155,7 +159,7 @@ function getTrackISRCs(track): string[] | null {
 	return null;
 }
 
-async function searchByArtistName(artistName) {
+async function searchByArtistName(artistName: string) {
 	try {
 		const data = await searchAsync({ query: artistName, page: 1 });
 		if (data) {
@@ -194,16 +198,16 @@ function formatArtistLookupData(rawData) {
 	return rawData;
 }
 
-function getTags(rawData){
+function getTags(rawData) {
 	let tags: (string | null | undefined)[] = [];
 	rawData.tags?.forEach(tag => {
-		if (tag.name){
+		if (tag.name) {
 			tags.push(tag.name);
 		} else {
 			tags.push(tag);
 		}
 	});
-	return tags.filter(tag => tag!= null && tag!=undefined);
+	return tags.filter(tag => tag != null && tag != undefined);
 }
 
 function formatArtistObject(rawData): ArtistObject {
@@ -271,7 +275,7 @@ function getLabels(album): LabelObject[] | null {
 		provider: namespace,
 		name: album.pageData?.albumRelease?.[0]?.recordLabel?.name,
 		url: null,
-		id: null,	
+		id: null,
 		type: 'label'
 	}]
 }
@@ -283,7 +287,7 @@ function formatAlbumObject(album): AlbumObject {
 	if (!album.artist) {
 		album.artist = bcId.artist;
 	}
-	if (isTrack){
+	if (isTrack) {
 		albumType = "single";
 	}
 	let imageUrl =
@@ -314,7 +318,7 @@ function formatAlbumObject(album): AlbumObject {
 		releaseDate: text.formatDate(
 			album.releaseDate || album.raw?.current?.release_date
 		),
-		trackCount: album.numTracks ? album.numTracks:  album.tracks?.length ? album.tracks?.length : isTrack ? 1: null,
+		trackCount: album.numTracks ? album.numTracks : album.tracks?.length ? album.tracks?.length : isTrack ? 1 : null,
 		albumType: albumType,
 		upc: album.raw?.current?.upc || null,
 		mediums: medium.convertTrackList(getAlbumTracks(album), 'Digital Media'),
@@ -334,7 +338,7 @@ function getAlbumTracks(album): TrackObject[] {
 			let currentTrack = album.tracks[trackNumber];
 			const url = trackinfo.url || currentTrack.url
 			const urlInfo = parseUrl(url)
-			trackinfo.url = (urlInfo?.type && urlInfo.id) ? createUrl(urlInfo?.type, urlInfo.id).url: null;
+			trackinfo.url = (urlInfo?.type && urlInfo.id) ? createUrl(urlInfo?.type, urlInfo.id).url : null;
 			trackinfo.id = urlInfo?.id
 			if (!trackinfo.artist) {
 				trackinfo.artist = album.artist;
@@ -380,8 +384,8 @@ function getAlbumTracks(album): TrackObject[] {
 	return tracks;
 }
 
-function createImageUrl(artId, size = 0){
-	return artId ? `https://f4.bcbits.com/img/a${artId}_${size}.png`: null
+function createImageUrl(artId, size = 0) {
+	return artId ? `https://f4.bcbits.com/img/a${artId}_${size}.png` : null
 }
 
 function formatTrackObject(track): ExtendedTrackObject {
@@ -397,13 +401,13 @@ function formatTrackObject(track): ExtendedTrackObject {
 		name: track.title,
 		url: createUrl("track", id || ""),
 		imageUrl: track.imageUrl || createImageUrl(rawTrack?.art_id) || null,
-		imageUrlSmall: track.imageUrlSmall || createImageUrl(rawTrack?.art_id, 3)|| null,
+		imageUrlSmall: track.imageUrlSmall || createImageUrl(rawTrack?.art_id, 3) || null,
 		trackArtists: [formatPartialArtistObject(track)],
-		artistNames: artistName ? [artistName]: [],
+		artistNames: artistName ? [artistName] : [],
 		albumName: track.albumName || null,
-		releaseDate: track.releaseDate || rawTrack?.album_release_date ? text.formatDate(rawTrack?.album_release_date) : rawTrack?.current.publish_date ? text.formatDate(rawTrack.current.publish_date): null,
+		releaseDate: track.releaseDate || rawTrack?.album_release_date ? text.formatDate(rawTrack?.album_release_date) : rawTrack?.current.publish_date ? text.formatDate(rawTrack.current.publish_date) : null,
 		trackNumber: track.track_num || rawTrack?.current.track_number || null,
-		duration: track.duration*1000  || trackInfo?.duration*1000 || null,
+		duration: track.duration * 1000 || trackInfo?.duration * 1000 || null,
 		isrcs: track.isrc ? [track.isrc] : rawTrack?.current.isrc ? [rawTrack.current.isrc] : [],
 		type: "track",
 		extraInfo: {
@@ -415,7 +419,7 @@ function formatTrackObject(track): ExtendedTrackObject {
 			minimumPrice: rawTrack?.current.minimum_price || null,
 			lyrics: rawTrack?.current.lyrics || null,
 			isPaid: !(trackInfo?.has_free_download || trackInfo?.free_album_download) && rawTrack?.current.minimum_price > 0
- 		}
+		}
 	};
 }
 
@@ -444,19 +448,19 @@ function getArtistUrl(artist) {
 init();
 
 const capabilities: Capabilities = {
-  isrcs: {
-	availability: "sometimes",
-	presence: "onTrackRefresh"
-  },
-  upcs: {
-	availability: "sometimes",
-	presence: "onAlbumRefresh"
-  }
+	isrcs: {
+		availability: "sometimes",
+		presence: "onTrackRefresh"
+	},
+	upcs: {
+		availability: "sometimes",
+		presence: "onAlbumRefresh"
+	}
 }
 
 const bandcamp: FullProvider = {
 	namespace,
-	config: {capabilities},
+	config: { capabilities },
 	searchByArtistName: withCache(searchByArtistName, { ttl: 60 * 30, namespace: namespace }),
 	getArtistAlbums: withCache(getArtistAlbums, { ttl: 60 * 30, namespace: namespace }),
 	getAlbumById: withCache(getAlbumById, { ttl: 60 * 30, namespace: namespace }),
