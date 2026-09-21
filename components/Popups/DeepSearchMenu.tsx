@@ -11,6 +11,7 @@ import { MdLocationSearching } from "react-icons/md";
 import { Checkbox, Field, Fieldset, Input, Label, Legend, Radio, RadioGroup, Transition } from "@headlessui/react";
 import { PiSealWarningFill } from "react-icons/pi";
 import text from "../../utils/text";
+import { SAMBLFetch } from "../../utils/clientAPIHandler";
 
 
 
@@ -28,16 +29,9 @@ function DeepSearchMenu({ close, data }: { close?: () => void, data: ArtistObjec
         setSelected(null);
         toasts.warn("Please double check deep searches before submitting edits!")
         try {
-            const response = await toasts.dispPromise(fetch(`/api/artistDeepSearch?url=${encodeURIComponent(url)}&count=${albums}&searchURLs=${searchURLs}&searchUPCs=${searchUPCs}&trackArtists=${trackArtists}`), "Running Deep Search...", "Deep Search failed!");
-            if (response.ok) {
-                let data = await response.json() as SAMBLAPIResponse<DeepSearchData>;
-                if (!data.data) toasts.error("Server returned no data!");
-                setDsData(data.data || null);
-            } else {
-                toasts.error((await response.json() as SAMBLAPIResponse<never>).error?.error || response.statusText);
-            }
+            const [data, timings] = await toasts.dispPromise(SAMBLFetch<DeepSearchData>(`/api/artistDeepSearch?url=${encodeURIComponent(url)}&count=${albums}&searchURLs=${searchURLs}&searchUPCs=${searchUPCs}&trackArtists=${trackArtists}`), "Running Deep Search...", "Deep Search failed!");
+            setDsData(data);
         } catch (error) {
-            console.error(error);
             toasts.error(error.message);
         }
     }

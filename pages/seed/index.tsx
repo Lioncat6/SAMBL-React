@@ -14,6 +14,7 @@ import styles from "../../styles/Seed.module.css";
 import { ActionButton } from "../../components/buttons";
 import { ReleaseSeedButton } from "../../components/ReleaseSeed";
 import albumStack from "../../utils/albumStack";
+import { SAMBLFetch } from "../../utils/clientAPIHandler";
 
 
 async function getAlbum(url?: string, provider?: ProviderNamespace, artistId?: string, albumId?: string): Promise<AlbumStack | null> {
@@ -22,21 +23,12 @@ async function getAlbum(url?: string, provider?: ProviderNamespace, artistId?: s
     if (url) {
         apiUrl = `http://localhost:${process.env.PORT || 3000}/api/compareSingleAlbum?url=${url}&fetchISRCs&resolveArtists&detectLanguage`;
     }
-    const response = await fetch(apiUrl);
-    if (response.ok) {
-        const data = await response.json() as SAMBLAPIResponse<AlbumStack>;
-        return data.data || null;
-    } else {
-        let errorMessage = "";
-        try {
-            const errorJson = (await response.json() as SAMBLAPIResponse<AlbumStack>).error;
-            errorMessage = errorJson?.details ?? errorJson?.error ?? response.statusText;
-        } catch {
-            errorMessage = response.statusText;
-        }
-        throw new Error(`Failed to fetch album data: ${errorMessage}`);
+    try {
+        const [data, timings] = await SAMBLFetch<AlbumStack>(apiUrl);
+        return data;
+    } catch (error) {
+        throw new Error(`Failed to fetch album data: ${error}`);
     }
-
 }
 
 export async function getServerSideProps(context) {

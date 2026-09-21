@@ -10,20 +10,12 @@ import providers from "../../lib/providers/providers";
 import { AggregatedData, RawAggregateData } from "../../types/aggregated-types";
 import { Stages } from "../../utils/timings";
 import ServerAPIHandler from "../../utils/serverAPIHandler";
+import { SAMBLFetch } from "../../utils/clientAPIHandler";
 
 // spotifyId - Spotify artist ID
 // mbid - MusicBrainz artist ID. Only neccesary if you want to check if the associated albums are linked to that artist
 // quick - Uses URL matching to check for spotify album links in MusicBrainz. This returns faster, but contains less information, removing the orange album status.
 // full - adds inc parameters to the MusicBrainz query. (Does not affect quick mode)
-
-async function fetchSourceAlbums(providerId, provider, offset = 0, bypassCache = false) {
-	return fetch(`http://localhost:${process.env.PORT || 3000}/api/getArtistAlbums?provider_id=${providerId}&provider=${provider}&offset=${offset}&limit=50${bypassCache ? "&forceRefresh" : ""}`).then((response) => {
-		if (!response.ok) {
-			return response.status;
-		}
-		return response.json();
-	});
-}
 
 async function fetchMbArtistAlbums(mbid, offset = 0, full = false) {
 	return await musicbrainz.getMBArtistAlbums(mbid, offset, 100, full ? ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits", "label-rels", "artist-rels"] : ["url-rels"]);

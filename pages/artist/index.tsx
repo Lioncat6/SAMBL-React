@@ -7,7 +7,7 @@ import { useRouter } from "next/router";
 import { SAMBLSettingsContext, useSettings } from "../../components/SettingsContext";
 import processData from "../../utils/processAlbumData";
 import { AlbumData, AlbumObject, ArtistObject, ExtendedAlbumData, ExtendedAlbumObject, ProviderNamespace } from "../../types/provider-types";
-import { SAMBLApiError, ArtistData, ReleaseCountData, SAMBLAPIResponse } from "../../types/api-types"
+import { SAMBLApiError, ArtistData, ReleaseCountData, SAMBLAPIResponse, ArtistLookupData } from "../../types/api-types"
 import { ArtistPageData, DisplayAlbum, SAMBLError } from "../../types/component-types";
 import ErrorPage from "../../components/ErrorPage";
 import { AggregatedAlbum, AggregatedData, AlbumStack } from "../../types/aggregated-types";
@@ -18,20 +18,14 @@ import SAMBLHead from "../../components/SAMBLHead";
 import parsers from "../../lib/parsers/parsers";
 import albumStack from "../../utils/albumStack";
 import clientProviders from "../../utils/clientProviders";
+import { RawSAMBLFetch, SAMBLFetch } from "../../utils/clientAPIHandler";
 
 async function fetchArtistData(id: string, provider: ProviderNamespace | string) {
-	const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?provider_id=${id}&provider=${provider}&mbData`);
-	if (response.ok) {
-		return await response.json() as ArtistData;
-	} else {
-		let errorMessage = "";
-		try {
-			const errorJson = await response.json() as SAMBLApiError;
-			errorMessage = errorJson.details || errorJson.error;
-		} catch {
-			errorMessage = response.statusText;
-		}
-		throw new Error(`Failed to fetch artist data: ${errorMessage}`);
+	try {
+		const [data, timings] = await SAMBLFetch<ArtistData>(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?provider_id=${id}&provider=${provider}&mbData`);
+		return data;
+	} catch (error) {
+		throw new Error(`Failed to fetch artist data: ${error}`);
 	}
 }
 
@@ -71,9 +65,9 @@ export async function getServerSideProps(context) {
 
 		if (!artist_mbid && provider_id && !noRedirect) {
 			let ids = provider_id ? provider_id : (splitIds && splitIds[0]);
-			const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/lookupArtist?provider_id=${ids}&provider=${provider}`);
-			if (response.ok) {
-				const { mbid: fetchedMBid } = await response.json();
+			const response = await RawSAMBLFetch<ArtistLookupData>(`http://localhost:${process.env.PORT || 3000}/api/lookupArtist?provider_id=${ids}&provider=${provider}`);
+			if (response.data) {
+				const { mbid: fetchedMBid } = response.data
 				if (fetchedMBid) {
 					let destination = `/artist?provider_id=${ids}&provider=${provider}&artist_mbid=${fetchedMBid}`;
 					if (!spid && splitIds && splitIds?.length > 1) {
@@ -100,13 +94,11 @@ export async function getServerSideProps(context) {
 
 		async function getViewedAlbum(): Promise<AlbumStack | null> {
 			if (viewingAlbum) {
-				const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/compareSingleAlbum?provider_id=${viewingAlbum}&provider=${provider}`);
-				if (response.ok) {
-					try {
-						return (await response.json()) as AlbumStack
-					} catch {
-						return null;
-					}
+				try {
+					const [data, timings] = await SAMBLFetch<AlbumStack>(`http://localhost:${process.env.PORT || 3000}/api/compareSingleAlbum?provider_id=${viewingAlbum}&provider=${provider}`);
+					return data;
+				} catch {
+					return null;
 				}
 			}
 			return null
@@ -160,7 +152,7 @@ export async function getServerSideProps(context) {
 				mbids: [...new Set(artistMBIDs)],
 				provider: provider as ProviderNamespace || "spotify",
 				mbid: artist_mbid || null,
-				url: createUrl( "artist", mostPopularArtist?.id || ""),
+				url: createUrl("artist", mostPopularArtist?.id || ""),
 				relevance: mostPopularArtist?.relevance || "",
 				info: mostPopularArtist?.info || "",
 				mbData: mbArtist,
@@ -215,39 +207,19 @@ export async function getServerSideProps(context) {
 }
 
 async function fetchSourceAlbums(providerId: string, provider: ProviderNamespace, offset: string | number = 0, bypassCache = false) {
-	return fetch(`/api/getArtistAlbums?provider_id=${providerId}&provider=${provider}&offset=${offset}&limit=50${bypassCache ? "&forceRefresh" : ""}`).then(async (response) => {
-		if (!response.ok) {
-			return response.status;
-		}
-		return await response.json() as AlbumData;
-	});
+	return await RawSAMBLFetch<AlbumData>(`/api/getArtistAlbums?provider_id=${providerId}&provider=${provider}&offset=${offset}&limit=50${bypassCache ? "&forceRefresh" : ""}`)
 }
 
-async function fetchMbArtistAlbums(mbid, offset = 0, bypassCache = false) {
-	return fetch(`/api/getMusicBrainzAlbums?mbid=${mbid}&offset=${offset}&limit=100${bypassCache ? "&forceRefresh" : ""}`).then(async (response) => {
-		if (!response.ok) {
-			return response.status;
-		}
-		return await response.json() as ExtendedAlbumData;
-	});
+async function fetchTargetArtistAlbums(mbid, offset = 0, bypassCache = false) {
+	return await RawSAMBLFetch<ExtendedAlbumData>(`/api/getMusicBrainzAlbums?mbid=${mbid}&offset=${offset}&limit=100${bypassCache ? "&forceRefresh" : ""}`)
 }
 
-async function fetchMbArtistFeaturedAlbums(mbid, offset = 0, bypassCache = false) {
-	return fetch(`/api/getMusicBrainzFeaturedAlbums?mbid=${mbid}&offset=${offset}&limit=100${bypassCache ? "&forceRefresh" : ""}`).then(async (response) => {
-		if (!response.ok) {
-			return response.status;
-		}
-		return await response.json() as ExtendedAlbumData;
-	});
+async function fetchTargetArtistFeaturedAlbums(mbid, offset = 0, bypassCache = false) {
+	return await RawSAMBLFetch<ExtendedAlbumData>(`/api/getMusicBrainzFeaturedAlbums?mbid=${mbid}&offset=${offset}&limit=100${bypassCache ? "&forceRefresh" : ""}`)
 }
 
-async function fetchArtistReleaseCount(mbid) {
-	const response = await fetch(`/api/getArtistReleaseCount?mbid=${mbid}&featured`);
-	if (response.ok) {
-		return await response.json() as ReleaseCountData;
-	} else {
-		return response.status;
-	}
+async function fetchArtistReleaseCount(mbid: string) {
+	return await RawSAMBLFetch<ReleaseCountData>(`/api/getArtistReleaseCount?mbid=${mbid}&featured`);
 }
 
 let loadArtistAlbums: ((bypassCache: boolean) => Promise<void>) | null = null;
@@ -314,14 +286,15 @@ export default function Artist({ artist, error }: { artist: ArtistPageData, erro
 				let fetchedAlbums = 0;
 				while (offset != null) {
 					try {
-						const data = await fetchSourceAlbums(pid, provider, offset, bypassCache);
-						if (typeof data === "number") {
-							if (data === 404) {
+						const rawData = await fetchSourceAlbums(pid, provider, offset, bypassCache);
+						if (rawData.error || !rawData.data) {
+							if (rawData.error?.code === 404) {
 								toasts.error(`Artist ID ${pid} not found!`);
 								return;
 							}
-							throw new Error(`Error fetching provider albums: ${data}`);
+							throw new Error(`Error fetching provider albums: ${rawData.error?.error || "Server returned no data!"}`);
 						}
+						const data = rawData.data;
 						sourceAlbums.current = [...sourceAlbums.current, ...data.albums];
 						fetchedAlbums += data.albums.length;
 						currentAlbumCount = data.count || 0;
@@ -348,14 +321,15 @@ export default function Artist({ artist, error }: { artist: ArtistPageData, erro
 			let attempts = 0;
 			while (offset < mbAlbumCount || mbAlbumCount == -1) {
 				try {
-					const data = await fetchMbArtistAlbums(artist.mbid, offset, bypassCache);
-					if (typeof data == "number") {
-						if (data == 404) {
-							toasts.error("MBID not found!");
+					const rawData = await fetchTargetArtistAlbums(artist.mbid, offset, bypassCache);
+					if (rawData.error || !rawData.data) {
+						if (rawData.error?.code === 404) {
+							toasts.error(`Artist MBID ${artist.mbid} not found!`);
 							return;
 						}
-						throw new Error(`Error fetching MusicBrainz albums: ${data}`);
+						throw new Error(`Error fetching MusicBrainz albums: ${rawData.error?.error || "Server returned no data!"}`);
 					}
+					const data = rawData.data;
 					mbAlbums.current = [...mbAlbums.current, ...data.albums];
 					mbAlbumCount = data.count || 0;
 					offset = mbAlbums.current.length;
@@ -376,14 +350,15 @@ export default function Artist({ artist, error }: { artist: ArtistPageData, erro
 			let attempts = 0;
 			while (offset < mbFeaturedAlbumCount || mbFeaturedAlbumCount == -1) {
 				try {
-					const data = await fetchMbArtistFeaturedAlbums(artist.mbid, offset, bypassCache);
-					if (typeof data == "number") {
-						if (data == 404) {
-							toasts.error("MBID not found!");
+					const rawData = await fetchTargetArtistFeaturedAlbums(artist.mbid, offset, bypassCache);
+					if (rawData.error || !rawData.data) {
+						if (rawData.error?.code === 404) {
+							toasts.error(`Artist MBID ${artist.mbid} not found!`);
 							return;
 						}
-						throw new Error(`Error fetching MusicBrainz Featured albums: ${data}`);
+						throw new Error(`Error fetching MusicBrainz Featured albums: ${rawData.error?.error || "Server returned no data!"}`);
 					}
+					const data = rawData.data;
 					mbFeaturedAlbums.current = [...mbFeaturedAlbums.current, ...data.albums];
 					mbFeaturedAlbumCount = data.count || 0;
 					offset = mbFeaturedAlbums.current.length;
@@ -399,18 +374,12 @@ export default function Artist({ artist, error }: { artist: ArtistPageData, erro
 			}
 		}
 
-		async function quickFetchAlbums(pId, provider, mbid, bypassCache = false) {
+		async function quickFetchAlbums(pId: string, provider: string, mbid: string, bypassCache = false) {
 			let attempts = 0;
 			while (attempts < 3) {
 				try {
-					const response = await fetch(`/api/compareArtistAlbums?provider_id=${pId}&provider=${provider}&mbid=${mbid}&quick${bypassCache ? "&forceRefresh" : ""}`);
-					if (response.ok) {
-						const rawData = await response.json() as SAMBLAPIResponse<AggregatedData>;
-						if (!rawData.data) throw new Error("Server returned no data!");
-						return rawData.data
-					} else {
-						throw new Error("Failed to fetch artist albums");
-					}
+					const [data, timings] = await SAMBLFetch<AggregatedData>(`/api/compareArtistAlbums?provider_id=${pId}&provider=${provider}&mbid=${mbid}&quick${bypassCache ? "&forceRefresh" : ""}`)
+					return data;
 				} catch (error) {
 					attempts++;
 					if (attempts >= 3) {
@@ -434,12 +403,13 @@ export default function Artist({ artist, error }: { artist: ArtistPageData, erro
 			}
 			if (artist.mbid && settings?.quickFetchThreshold > 0) {
 				try {
-					const releaseCount = await fetchArtistReleaseCount(artist.mbid);
-					if (typeof releaseCount != "number" && releaseCount.releaseCount > settings?.quickFetchThreshold) {
+					const rawData = await fetchArtistReleaseCount(artist.mbid);
+
+					if (rawData.data && rawData.data.releaseCount > settings?.quickFetchThreshold) {
 						setIsQuickFetched(true);
 						return true;
-					} else if (typeof releaseCount == "number") {
-						toasts.error("Failed to fetch artist release count!");
+					} else if (rawData.error) {
+						toasts.error("Failed to fetch artist release count!", rawData.error);
 					}
 				} catch (e) {
 					console.error(e);
@@ -471,6 +441,9 @@ export default function Artist({ artist, error }: { artist: ArtistPageData, erro
 
 			let data: AggregatedData;
 			if (didQuickFetch) {
+				if (!artist.mbid) {
+					throw new Error('Artist MBID is missing, yet for some reason, we are trying to quick fetch. Something has gone seriously wrong and you should realistically never be seeing this.')
+				}
 				data = await toasts.dispPromise(quickFetchAlbums(providerIds[0], artist.provider, artist.mbid, bypassCache), "Quick Fetching albums...", "Failed to quick fetch albums!");
 			} else {
 				data = processData(sourceAlbums.current, [], [...mbAlbums.current, ...mbFeaturedAlbums.current], artist.provider, artist);
@@ -504,10 +477,10 @@ export default function Artist({ artist, error }: { artist: ArtistPageData, erro
 						image={sourceAlbum.imageUrl}
 						description={text.infoToString([
 							`${text.getColorEmoji(artist.viewedAlbum?.status)}|${sourceAlbum.name}`,
-							`${sourceAlbum.albumType ? `${text.capitalizeFirst(sourceAlbum.albumType)} - `: ""}${clientProviders.getDisplayName(sourceAlbum.provider)}`,
-							sourceAlbum.upc ? `Barcode: ${sourceAlbum.upc}`: null,
-							sourceAlbum.trackCount ? `${sourceAlbum.trackCount} tracks`: null,
-							sourceAlbum.releaseDate	
+							`${sourceAlbum.albumType ? `${text.capitalizeFirst(sourceAlbum.albumType)} - ` : ""}${clientProviders.getDisplayName(sourceAlbum.provider)}`,
+							sourceAlbum.upc ? `Barcode: ${sourceAlbum.upc}` : null,
+							sourceAlbum.trackCount ? `${sourceAlbum.trackCount} tracks` : null,
+							sourceAlbum.releaseDate
 						])}
 
 					/>

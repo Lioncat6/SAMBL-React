@@ -6,10 +6,11 @@ import { SAMBLSettingsContext, useSettings } from "./SettingsContext";
 import styles from "../styles/SearchBox.module.css";
 import { SearchBoxType } from "../types/component-types";
 import toasts from "../utils/toasts";
-import { ArtistLookupData, SAMBLApiError } from "../types/api-types";
+import { ArtistLookupData, SAMBLApiError, SAMBLAPIResponse } from "../types/api-types";
 import { PiBoatDuotone } from "react-icons/pi";
 import parsers from "../lib/parsers/parsers";
 import { ActionButton } from "./buttons";
+import { SAMBLFetch } from "../utils/clientAPIHandler";
 function SearchBox() {
 	const [loadingState, setLoadingState] = useState(false);
 	const [inputValue, setInputValue] = useState("");
@@ -45,18 +46,17 @@ function SearchBox() {
 		}
 	}
 
-	async function checkArtist(url) {
-		const response = await fetch(`/api/lookupArtist?url=${encodeURIComponent(url)}`);
-		if (response.ok) {
-			const { mbid, provider, provider_id } = await response.json() as ArtistLookupData;
+	async function checkArtist(url: string) {
+		try {
+			const [data, timings] = await SAMBLFetch<ArtistLookupData>(`/api/lookupArtist?url=${encodeURIComponent(url)}`);
+			const {mbid, provider, provider_id } = data;
 			if (mbid) {
 				router.push(`/artist?provider_id=${provider_id}&provider=${provider}&artist_mbid=${mbid}`);
 			} else {
 				router.push(`/newartist?provider_id=${provider_id}&provider=${provider}`);
 			}
-		} else {
-			let body = await response.json() as SAMBLApiError;
-			toasts.error(body.error || "An error occured while looking up this URL!");
+		} catch (error) {
+			toasts.error("An error occured while looking up this URL!", error);
 		}
 	}
 

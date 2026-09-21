@@ -29,6 +29,7 @@ import { SAMBLAPIResponse } from "../types/api-types";
 import { SAMBLArtistIcon } from "./icons";
 import albumStack from "../utils/albumStack";
 import clientProviders from "../utils/clientProviders";
+import { RawSAMBLFetch } from "../utils/clientAPIHandler";
 
 function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRCs: boolean) => void }) {
 	const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(item)
@@ -192,19 +193,13 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 	async function refreshData(fetchISRCs = false) {
 		setIsLoading(true);
 		try {
-			const response = await toasts.dispPromise(fetch(`/api/compareSingleAlbum?url=${url.url}&mbid=${sourceArtist?.mbid}&artist_id=${sourceArtist?.id}${fetchISRCs ? '&fetchISRCs' : ""}`), "Refreshing album...", "Failed to fetch album");
+			const response = await toasts.dispPromise(RawSAMBLFetch<AlbumStack>(`/api/compareSingleAlbum?url=${url.url}&mbid=${sourceArtist?.mbid}&artist_id=${sourceArtist?.id}${fetchISRCs ? '&fetchISRCs' : ""}`), "Refreshing album...", "Failed to fetch album");
 			setIsLoading(false);
-			if (response.ok) {
-				const apiResponse = await response.json() as SAMBLAPIResponse<AlbumStack>;
-				const album = apiResponse.data
+			if (response.data) {
+				const album = response.data
 				if (onUpdate && album) onUpdate(album as DisplayAlbum);
 			} else {
-				try {
-					const apiResponse = await response.json() as SAMBLAPIResponse<AlbumStack>;
-					toasts.error("Failed to refresh album data!", apiResponse.error?.error);
-				} catch {
-					toasts.error("Failed to refresh album data!", `Failed to refresh album data: ${response.status} ${response.statusText}`);
-				}
+				toasts.error("Failed to refresh album data!", response.error?.error);
 			}
 		} catch (e) {
 			toasts.error("Failed to refresh album data!", e);

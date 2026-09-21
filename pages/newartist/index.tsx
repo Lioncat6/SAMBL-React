@@ -4,24 +4,18 @@ import Head from "next/head";
 import { ProviderNamespace } from "../../types/provider-types";
 import { ArtistPageData, SAMBLError } from "../../types/component-types";
 import ErrorPage from "../../components/ErrorPage";
-import { SAMBLApiError, ArtistData } from "../../types/api-types";
+import { SAMBLApiError, ArtistData, ArtistLookupData } from "../../types/api-types";
 import SAMBLHead from "../../components/SAMBLHead";
 import text from "../../utils/text";
 import clientProviders from "../../utils/clientProviders";
+import { RawSAMBLFetch, SAMBLFetch } from "../../utils/clientAPIHandler";
 
 async function fetchArtistData(id: string, provider: ProviderNamespace) {
-    const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?provider_id=${id}&provider=${provider}&mbData`);
-    if (response.ok) {
-        return await response.json() as ArtistData;
-    } else {
-        let errorMessage = "";
-        try {
-            const errorJson = await response.json() as SAMBLApiError;
-            errorMessage = errorJson.details || errorJson.error;
-        } catch {
-            errorMessage = response.statusText;
-        }
-        throw new Error(`Failed to fetch artist data: ${errorMessage}`);
+    try { 
+        const [data, timings] = await SAMBLFetch<ArtistData>(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?provider_id=${id}&provider=${provider}&mbData`);
+        return data;
+    } catch (error) {
+       throw new Error(`Failed to fetch artist data: ${error}`);
     }
 }
 
@@ -35,9 +29,9 @@ export async function getServerSideProps(context) {
         if (pid) provider_id = pid;
         const noRedirect = Object.prototype.hasOwnProperty.call(context.query, "noRedirect");
         if (!noRedirect){
-            const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/lookupArtist?provider_id=${provider_id}&provider=${provider}`);
-            if (response.ok) {
-                const { mbid } = await response.json();
+            const response = await RawSAMBLFetch<ArtistLookupData>(`http://localhost:${process.env.PORT || 3000}/api/lookupArtist?provider_id=${provider_id}&provider=${provider}`)
+            if (response.data) {
+                const { mbid } = response.data;
                 if (mbid) {
                     return {
                         redirect: {
