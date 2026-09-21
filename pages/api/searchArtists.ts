@@ -98,7 +98,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             artistData[formattedArtist.url.url] = formattedArtist;
         }
         if (artists.length == 0) {
-            return api.response<ArtistSearchData>(200, {})
+            return api.response<ArtistSearchData>(200, {data: {}})
         }
         let regexProvider = provider ? providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject", "buildUrlSearchQuery"]) : false;
         if (regexProvider) {
@@ -112,7 +112,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         artistData[artist.url.url].mbid = urlResults[artist.url.url] || null;
                     }
                 }
-                api.response<ArtistSearchData>(200, {data: artistData});
+                return api.response<ArtistSearchData>(200, {data: artistData});
             }
         }
         stages.start('Search target for artist', 'musicbrainz')
@@ -126,6 +126,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return api.response<ArtistSearchData>(200, {data: artistData});
     } catch (error) {
         logger.error("Error in searchArtists API:", error);
-        api.response(500, { error: { error: "Internal Server Error", details: error.message } });
+        return api.response(500, { error: { error: "Internal Server Error", details: error.message } });
     }
 }

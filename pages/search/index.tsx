@@ -19,7 +19,7 @@ async function getItems(query: string, provider: string) {
         const [data, timings] = await SAMBLFetch<ArtistSearchData>(`http://localhost:${process.env.PORT || 3000}/api/searchArtists?query=${query}&provider=${provider}`);
         return data;
     } catch (error) {
-        throw new Error(`Error fetching artist data:${error}`);
+        throw new Error(`Error fetching artist data: ${error}`);
     }
 }
 
