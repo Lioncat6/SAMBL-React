@@ -123,6 +123,7 @@ async function getArtistById(discogsId: string): Promise<GetArtistResponse | nul
 		const data = await discogsDB.getArtist(discogsId);
 		return data.data;
 	} catch (error) {
+		if (error.toString().includes('Artist not found.')) return null;
 		err.handleError("Error fetching artist by ID:", error);
 		return null;
 	}
