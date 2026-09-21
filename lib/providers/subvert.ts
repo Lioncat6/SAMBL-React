@@ -381,7 +381,6 @@ interface SubvertAlbumTrackWithArtist extends SubvertAlbumTrack {
 }
 
 function formatTrackObject(rawData: SubvertSearchAlbumTrackWithArtistPosition | SubvertAlbumTrackWithArtistPosition | SubvertTrack | SubvertSearchResultWithArtist): TrackObject {
-    console.log(rawData)
     if ("trackNumber" in rawData){
         if ("isrc" in rawData){
             const trackPosition = rawData as SubvertAlbumTrackWithArtistPosition;
