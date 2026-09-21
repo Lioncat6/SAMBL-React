@@ -11,10 +11,11 @@ import { CurlMultiImpl, CurlSession, req } from 'curl-cffi';
 import { SubvertAlbum, SubvertAlbumArtist, SubvertAlbumTrack, SubvertAlbumTrackPosition, SubvertArtistProfile, SubvertLabelOnRelease, SubvertSearchAlbumTrack, SubvertSearchAlbumTrackPosition, SubvertSearchResult, SubvertSearchResults, SubvertTrack } from "./lib/subvert-types";
 import { AlbumIssues } from "../issues";
 import medium from "../../utils/medium";
+import SAMBLUserAgent from "../../utils/userAgent";
 
 //Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0
 const baseUserAgent = "Mozilla/";
-const userAgent = `${baseUserAgent} (SAMBL - Streaming Artist MusicBrainz Lookup | ${process.env.NEXT_PUBLIC_URL || "https://sambl.lioncat6.com"}${process.env.CONTACT_INFO ? ` | ${process.env.CONTACT_INFO}` : ""})`;
+const userAgent = `${baseUserAgent} ${SAMBLUserAgent()}`;
 
 const { parseUrl, createUrl } = parsers.getParser(namespace);
 
