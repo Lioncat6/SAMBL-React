@@ -1,6 +1,6 @@
 import { ReleaseLanguage, ReleaseScript } from "../utils/scriptAndLanguage"
-import { AggregatedAlbum, AggregatedArtist, AlbumStack } from "./aggregated-types"
-import { AlbumObject, ArtistObject, ExtendedAlbumObject, ExtendedTrackObject, PartialArtistObject, ProviderNamespace, TrackObject } from "./provider-types"
+import { AggregatedAlbum, AggregatedArtist, AggregatedData, AlbumStack, RawAggregateData } from "./aggregated-types"
+import { AlbumData, AlbumObject, ArtistObject, ExtendedAlbumData, ExtendedAlbumObject, ExtendedTrackObject, PartialArtistObject, ProviderNamespace, TrackObject } from "./provider-types"
 
 export type DeepSearchMethod = "most_common" | "name_similarity"
 export class DeepSearchData {
@@ -76,7 +76,7 @@ export class ReleaseCountData {
     featuredCount?: number | null
 }
 
-export interface APITimingStage { name: string, duration: number, provider?: ProviderNamespace, subStages?: APITimingStage[] } 
+export interface APITimingStage { name: string, duration: number, provider?: ProviderNamespace, subStages?: APITimingStage[] }
 
 export class APITimingData {
     totalDuration: number;
@@ -88,3 +88,25 @@ export class SAMBLAPIResponse<T> {
     data?: T
     timings: APITimingData
 }
+
+export type SingleAlbumData = AlbumStack;
+
+export type PingPongData = "Pong";
+
+export type SAMBLAPIData =
+    UPCData |
+    ISRCData |
+    FindData |
+    LangData |
+    SingleAlbumData |
+    RawAggregateData |
+    AggregatedData |
+    DeepSearchData |
+    AlbumData |
+    ArtistData |
+    ReleaseCountData |
+    ExtendedAlbumData |
+    ArtistLookupData |
+    URLLookupData |
+    PingPongData |
+    ArtistSearchData

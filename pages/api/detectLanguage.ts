@@ -3,15 +3,19 @@ import normalizeVars from "../../utils/normalizeVars";
 import scriptAndLanguage from "../../utils/scriptAndLanguage";
 import { LangData, SAMBLAPIResponse } from "../../types/api-types";
 import { Stages } from "../../utils/timings";
+import ServerAPIHandler from "../../utils/serverAPIHandler";
+import logger from "../../utils/logger";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     var { text } = normalizeVars(req.query);
     var { threshold } = normalizeVars(req.query);
-    const cleanThreshold = !Number.isNaN(Number(threshold)) ? Number(threshold): undefined
+    const cleanThreshold = !Number.isNaN(Number(threshold)) ? Number(threshold) : undefined
+    const stages = new Stages()
+    const api = new ServerAPIHandler('detectLanguage', res, stages, ['text']);
     try {
-        const stages = new Stages()
-        return res.status(200).json({data: {language: scriptAndLanguage.detectLanguage(text||"", cleanThreshold), script: scriptAndLanguage.detectScript(text||"")}, timings: stages.finish()} as SAMBLAPIResponse<LangData>)
-    } catch (e) {
-        return res.status(500).json({error: {error: "Failed to detect language", details: e}} as SAMBLAPIResponse<LangData>)
+        return api.response<LangData>(200, { data: { language: scriptAndLanguage.detectLanguage(text || "", cleanThreshold), script: scriptAndLanguage.detectScript(text || "") } })
+    } catch (error) {
+        logger.error("Error in detectLanguage API", error);
+        return api.response<LangData>(500, { error: { error: "Failed to detect language", details: error } });
     }
 }

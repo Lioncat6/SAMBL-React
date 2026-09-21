@@ -1,36 +1,44 @@
 import musicbrainz from "../../lib/providers/musicbrainz";
 import logger from "../../utils/logger";
 import normalizeVars
- from "../../utils/normalizeVars";
+    from "../../utils/normalizeVars";
 import { NextApiRequest, NextApiResponse } from "next";
 import { ReleaseCountData, SAMBLApiError } from "../../types/api-types";
+import { Stages } from "../../utils/timings";
+import ServerAPIHandler from "../../utils/serverAPIHandler";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    const stages = new Stages();
+    const api = new ServerAPIHandler('getArtistReleaseCount', res, stages, ['mbid', 'featured'])
     try {
         const { mbid } = normalizeVars(req.query);
         const featured = Object.prototype.hasOwnProperty.call(req.query, "featured");
 
         if (!mbid || !musicbrainz.validateMBID(mbid)) {
-            return res.status(400).json({ error: "Parameter `mbid` is missing or malformed" } as SAMBLApiError);
+            return api.response(400, { error: { error: "Parameter `mbid` is missing or malformed" } });
         }
 
+        stages.start('Get target artist release count', 'musicbrainz');
         let ownCount = await musicbrainz.getArtistReleaseCount(mbid);
+        stages.end('Get target artist release count');
         let releaseCount = ownCount;
         if (releaseCount === null || ownCount == null) {
-            return res.status(404).json({ error: "Artist not found" } as SAMBLApiError);
+            return api.response(404, { error: { error: "Artist not found" } });
         }
         let featuredCount: number | null = 0;
         if (featured) {
-            featuredCount = await musicbrainz.getArtistFeaturedReleaseCount(mbid); 
+            stages.start('Get target artist featured release count', 'musicbrainz');
+            featuredCount = await musicbrainz.getArtistFeaturedReleaseCount(mbid);
+            stages.end('Get target artist featured release count');
             if (featuredCount === null) {
-                return res.status(404).json({ error: "Artist not found" } as SAMBLApiError);
+                return api.response(404, { error: { error: "Artist not found" } });
             }
             releaseCount += featuredCount;
         }
 
-        return res.status(200).json(<ReleaseCountData>{ releaseCount, ownCount, featuredCount });
+        return api.response<ReleaseCountData>(200, { data: { releaseCount, ownCount, featuredCount } });
     } catch (error) {
         logger.error("Error in getArtistReleaseCount API", error);
-        return res.status(500).json({ error: "Internal Server Error", details: error.message } as SAMBLApiError);
+        return api.response(500, { error: { error: "Internal Server Error", details: error.message } });
     }
 }

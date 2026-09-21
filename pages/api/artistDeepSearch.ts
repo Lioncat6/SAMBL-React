@@ -12,18 +12,20 @@ import text from "../../utils/text";
 import parsers from "../../lib/parsers/parsers";
 import medium from "../../utils/medium";
 import { Stages } from "../../utils/timings";
+import ServerAPIHandler from "../../utils/serverAPIHandler";
 
 //TODO: Implement URL based deep search as a preliminary check before checking UPCs
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const stages = new Stages()
+    const api = new ServerAPIHandler('artistDeepSearch', res, stages, ['provider_id', 'provider', 'url', 'count', 'searchURLs', 'searchUPCs', 'trackArtists'])
     try {
         let { provider_id, provider, url, count, searchURLs, searchUPCs, trackArtists } = normalizeVars(req.query);
 
         if (!provider_id && !url) {
-            return res.status(400).json({ error: { error: "Parameter `id` or `url` is required" }, timings: stages.finish() } as SAMBLAPIResponse<DeepSearchData>);
+            return api.response(400, { error: { error: "Parameter `provider_id` or `url` is required", parameters: ['provider_id', 'url'] } });
         }
         if (provider_id && !provider) {
-            return res.status(400).json({ error: { error: "Parameter `provider` is required when using `provider_id`" }, timings: stages.finish() } as SAMBLAPIResponse<DeepSearchData>);
+            return api.response(400, { error: { error: "Parameter `provider` is required when using `provider_id`", parameters: ['provider'] } });
         }
         const albumCount = count && Number.parseInt(count) || 5;
         let parsed_id: string | null;
@@ -31,14 +33,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (url) {
             let urlInfo = providers.getUrlInfo(url);
             if (!urlInfo) {
-                return res.status(404).json({ error: { error: "Invalid provider URL" }, timings: stages.finish() } as SAMBLAPIResponse<DeepSearchData>);
+                return api.response(404, { error: { error: "Invalid provider URL" } });
             }
             if (urlInfo.type !== "artist") {
-                return res.status(400).json({ error: { error: `Invalid URL type. Expected an artist URL.` }, timings: stages.finish() } as SAMBLAPIResponse<DeepSearchData>);
+                return api.response(400, { error: { error: `Invalid URL type. Expected an artist URL.` } });
             }
             parsed_id = urlInfo.id;
             if (!parsed_id) {
-                return res.status(500).json({ error: { error: "Failed to extract provider id from URL" }, timings: stages.finish() } as SAMBLAPIResponse<DeepSearchData>);
+                return api.response(500, { error: { error: "Failed to extract provider id from URL" } });
             }
             provider = urlInfo.provider;
             sourceProvider = providers.parseProvider(urlInfo.provider, ["getAlbumById", "formatAlbumObject", "getArtistAlbums", "getArtistById", "formatAlbumGetData", "formatAlbumObject", "formatArtistObject", "formatArtistLookupData"]);
@@ -46,14 +48,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             sourceProvider = providers.parseProvider(provider, ["getAlbumById", "formatAlbumObject", "getArtistAlbums", "getArtistById", "formatAlbumGetData", "formatAlbumObject", "formatArtistObject", "formatArtistLookupData"]);
             parsed_id = provider_id
         } else {
-            return res.status(400).json({ error: { error: "Parameters `provider_id` and `provider` are required when not using `url`" }, timings: stages.finish() } as SAMBLAPIResponse<DeepSearchData>);
+            return api.response(400, { error: { error: "Parameters `provider_id` and `provider` are required when not using `url`", parameters: ['provider_id', 'provider'] } });
         }
         if (!sourceProvider) {
-            return res.status(400).json({ error: { error: `Provider \`${provider}\` does not support this operation` }, timings: stages.finish() } as SAMBLAPIResponse<DeepSearchData>);
+            return api.response(400, { error: { error: `Provider \`${provider}\` does not support this operation` } });
         }
         let artistInfo = await stages.await('Get artist info', sourceProvider.getArtistById(parsed_id), sourceProvider.namespace);
         if (artistInfo == null) {
-            return res.status(404).json({ error: { error: "Artist not found!" }, timings: stages.finish() } as SAMBLAPIResponse<DeepSearchData>);
+            return api.response(404, { error: { error: "Artist not found!" } });
         }
 
         let useUPCs = !(searchUPCs == "false");
@@ -66,7 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         //TODO: Implement paging here (in case people want to just check the whole discography for some reason)
         let data = sourceProvider.formatAlbumGetData(results);
         if (data == null) {
-            return res.status(404).json({ error: { error: "Artist albums not found!" }, timings: stages.finish() } as SAMBLAPIResponse<DeepSearchData>);
+            return api.response(404, { error: { error: "Artist albums not found!" } });
         }
         let albumData: AlbumObject[] = data?.albums?.map(album => sourceProvider.formatAlbumObject(album)) || [];
         let upcs = albumData.map(album => album.upc).filter(upc => upc);
@@ -250,9 +252,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             sourceArtist: formattedArtistInfo
         };
 
-        res.status(200).json({ data: dsData, timings: stages.finish() } as SAMBLAPIResponse<DeepSearchData>);
+        api.response<DeepSearchData>(200, { data: dsData });
     } catch (error) {
         logger.error("Error in artistDeepSearch API:", error);
-        res.status(500).json({ error: { error: "Internal Server Error", details: error.message }, timings: stages.finish() } as SAMBLAPIResponse<DeepSearchData>);
+        api.response(500, { error: { error: "Internal Server Error", details: error.message } });
     }
 }

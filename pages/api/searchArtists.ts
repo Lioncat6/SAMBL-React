@@ -6,6 +6,8 @@ import normalizeVars from "../../utils/normalizeVars";
 import { ArtistSearchData } from "../../types/api-types";
 import { SAMBLApiError } from "../../types/api-types";
 import { ArtistObject } from "../../types/provider-types";
+import { Stages } from "../../utils/timings";
+import ServerAPIHandler from "../../utils/serverAPIHandler";
 
 /**
  * @swagger
@@ -74,16 +76,20 @@ import { ArtistObject } from "../../types/provider-types";
  */
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    const stages = new Stages();
+    const api = new ServerAPIHandler('searchArtists', res, stages, ['query', 'provider']);
     try {
         const { query, provider } = normalizeVars(req.query);
         if (!query) {
-            return res.status(400).json({ error: "Parameter `query` is required" } as SAMBLApiError);
+            return api.response(400, { error: { error: "Parameter `query` is required", parameters: ['query'] } });
         }
         let sourceProvider = provider ? providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject"]) : false;
         if (!sourceProvider) {
-            return res.status(400).json({ error: `Provider \`${provider}\` does not support this operation` } as SAMBLApiError);
+            return api.response(400, { error: { error: `Provider \`${provider}\` does not support this operation` } });
         }
+        stages.start('Search source for artist', sourceProvider.namespace);
         let results = await sourceProvider.searchByArtistName(query);
+        stages.end('Search source for artist');
         let artists: ArtistObject[] = [];
         let artistData: ArtistSearchData = {};
         for (let artist of sourceProvider.formatArtistSearchData(results)) {
@@ -92,30 +98,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             artistData[formattedArtist.url.url] = formattedArtist;
         }
         if (artists.length == 0) {
-            return res.status(200).json({})
+            return api.response<ArtistSearchData>(200, {})
         }
         let regexProvider = provider ? providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject", "buildUrlSearchQuery"]) : false;
         if (regexProvider) {
             let urlQuery = regexProvider.buildUrlSearchQuery("artist", artists.map((artist) => artist.url.url));
-            if (urlQuery){
+            if (urlQuery) {
+                stages.start('Regex search target for artist', 'musicbrainz')
                 const urlResults = await musicbrainz.getIdsByUrlQuery(urlQuery);
-                if (urlResults){
+                stages.end('Regex search target for artist')
+                if (urlResults) {
                     for (let artist of artists) {
                         artistData[artist.url.url].mbid = urlResults[artist.url.url] || null;
                     }
                 }
-                res.status(200).json(artistData);
+                api.response<ArtistSearchData>(200, artistData);
             }
         }
+        stages.start('Search target for artist', 'musicbrainz')
         let mbids = await musicbrainz.getIdsByExternalUrls(artists.map((artist) => artist.url.url));
+        stages.end('Search target for artist');
         if (mbids) {
             for (let artist of artists) {
                 artistData[artist.url.url].mbid = mbids[artist.url.url] || mbids[artist.url + "/"] || null
             }
         }
-        return res.status(200).json(artistData);
+        return api.response<ArtistSearchData>(200, artistData);
     } catch (error) {
         logger.error("Error in searchArtists API:", error);
-        res.status(500).json({ error: "Internal Server Error", details: error.message } as SAMBLApiError);
+        api.response(500, { error: { error: "Internal Server Error", details: error.message } });
     }
 }

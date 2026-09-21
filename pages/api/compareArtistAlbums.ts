@@ -9,6 +9,7 @@ import { SAMBLAPIResponse } from "../../types/api-types";
 import providers from "../../lib/providers/providers";
 import { AggregatedData, RawAggregateData } from "../../types/aggregated-types";
 import { Stages } from "../../utils/timings";
+import ServerAPIHandler from "../../utils/serverAPIHandler";
 
 // spotifyId - Spotify artist ID
 // mbid - MusicBrainz artist ID. Only neccesary if you want to check if the associated albums are linked to that artist
@@ -209,6 +210,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 	}
 
 	const stages = new Stages()
+	const api = new ServerAPIHandler('compareArtistAlbums', res, stages, ['provider_id', 'provider', 'mbid', 'quick', 'full', 'raw']);
 	try {
 		var { provider_id, provider, mbid } = normalizeVars(req.query);
 		// Check for 'quick' or 'full' in the query string
@@ -216,17 +218,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 		const full = Object.prototype.hasOwnProperty.call(req.query, "full");
 		const raw = Object.prototype.hasOwnProperty.call(req.query, "raw");
 		if (!provider_id || !provider) {
-			return res.status(400).json({ error: { error: "Parameters `provider_id` and `provider` are required!" }, timings: stages.finish() } as SAMBLAPIResponse<AggregatedData>);
+			return api.response(400, { error: { error: "Parameters `provider_id` and `provider` are required!", parameters: ['provider_id', 'provider'] } });
 		}
 
 		if ((mbid && !musicbrainz.validateMBID(mbid)) || (!quick && !mbid)) {
-			return res.status(400).json({ error: { error: "Parameter `mbid` is missing or malformed" }, timings: stages.finish() } as SAMBLAPIResponse<AggregatedData>);
+			return api.response(400, { error: { error: "Parameter `mbid` is missing or malformed!", parameters: ['mbid'] } });
 		}
 
 		const sourceProvider = providers.parseProvider(provider, ["getArtistAlbums", "formatAlbumGetData", "formatAlbumObject"])
 
 		if (!sourceProvider) {
-			return res.status(400).json({ error: `Provider ${provider} doesn't support this operation!` })
+			return api.response(400, { error: { error: `Provider ${provider} doesn't support this operation!` } });
 		}
 
 		if (quick) {
@@ -238,18 +240,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 			stages.end("Fetching target albums")
 		} else {
 			if (!mbid) {
-				return res.status(400).json({ error: { error: "Parameter `mbid` is required when not using `quick`" }, timings: stages.finish() } as SAMBLAPIResponse<AggregatedData>);
+				return api.response(400, { error: { error: "Parameter `mbid` is required when not using `quick`", parameters: ['mbid'] } })
 			}
 			await Promise.all([fetchProviderAlbums([provider_id], sourceProvider), fetchMusicbrainzArtistAlbums(mbid, full), fetchMusicBrainzFeaturedAlbums(mbid, full)]);
 		}
 		if (raw) {
-			return res.status(200).json({ data: { sourceAlbums: sourceAlbums, targetAlbums: mbAlbums, targetFeaturedAlbums: mbFeaturedAlbums }, timings: stages.finish() } as SAMBLAPIResponse<RawAggregateData>);
+			return api.response<RawAggregateData>(200, { data: { sourceAlbums: sourceAlbums, targetAlbums: mbAlbums, targetFeaturedAlbums: mbFeaturedAlbums } })
 		}
-		logger.debug("Processing data");
+		stages.start('Process album data')
 		let data = processData(sourceAlbums, undefined, [...mbAlbums, ...mbFeaturedAlbums], sourceProvider.namespace, null, quick, full);
-		res.status(200).json({ data, timings: stages.finish() } as SAMBLAPIResponse<AggregatedData>);
+		stages.end('Process album data')
+		api.response<AggregatedData>(200, { data })
 	} catch (error) {
 		logger.error("Error in CompareArtistAlbums API", error);
-		res.status(500).json({ error: { error: "Internal Server Error", details: error.message }, timings: stages.finish() } as SAMBLAPIResponse<AggregatedData>);
+		api.response(500, { error: { error: "Internal Server Error", details: error.message } });
 	}
 }
