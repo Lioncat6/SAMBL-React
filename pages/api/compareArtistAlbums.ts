@@ -2,7 +2,7 @@ import musicbrainz from "../../lib/providers/musicbrainz";
 import processData from "../../utils/processAlbumData";
 import logger from "../../utils/logger";
 import { NextApiRequest, NextApiResponse } from "next";
-import { AlbumData, AlbumObject, ExtendedAlbumObject, ProviderWithCapabilities, RawAlbumData } from "../../types/provider-types";
+import { AlbumData, AlbumObject, ArtistObject, ExtendedAlbumObject, ProviderWithCapabilities, RawAlbumData } from "../../types/provider-types";
 import { IUrl } from "musicbrainz-api";
 import normalizeVars from "../../utils/normalizeVars";
 import { SAMBLAPIResponse } from "../../types/api-types";
@@ -217,10 +217,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 			return api.response(400, { error: { error: "Parameter `mbid` is missing or malformed!", parameters: ['mbid'] } });
 		}
 
-		const sourceProvider = providers.parseProvider(provider, ["getArtistAlbums", "formatAlbumGetData", "formatAlbumObject"])
+		const sourceProvider = providers.parseProvider(provider, ["getArtistAlbums", "formatAlbumGetData", "formatAlbumObject", "getArtistById", "formatArtistObject"])
 
 		if (!sourceProvider) {
 			return api.response(400, { error: { error: `Provider ${provider} doesn't support this operation!` } });
+		}
+
+		let sourceArtist: ArtistObject | null = null;
+
+		stages.start("Get source artist by ID", sourceProvider.namespace);
+		const rawArtist = await sourceProvider.getArtistById(provider_id);
+		stages.end("Get source artist by ID");
+		if (rawArtist) {
+			sourceArtist = sourceProvider.formatArtistObject(rawArtist)
+		} else {
+			return api.response(404, {error: {error: "Artist not found", provider: sourceProvider.namespace}})
 		}
 
 		if (quick) {
@@ -240,7 +251,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 			return api.response<RawAggregateData>(200, { data: { sourceAlbums: sourceAlbums, targetAlbums: mbAlbums, targetFeaturedAlbums: mbFeaturedAlbums } })
 		}
 		stages.start('Process album data')
-		let data = processData(sourceAlbums, undefined, [...mbAlbums, ...mbFeaturedAlbums], sourceProvider.namespace, null, quick, full);
+		let data = processData(sourceAlbums, undefined, [...mbAlbums, ...mbFeaturedAlbums], sourceProvider.namespace, sourceArtist, quick, full);
 		stages.end('Process album data')
 		api.response<AggregatedData>(200, { data })
 	} catch (error) {
