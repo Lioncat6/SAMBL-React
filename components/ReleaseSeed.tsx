@@ -1,14 +1,13 @@
 import { useRef } from "react";
 import seed from "../utils/seed";
-import { AggregatedAlbum, AlbumStack } from "../types/aggregated-types";
+import { AlbumStack } from "../types/aggregated-types";
 import { ActionButton } from "./buttons";
-import { AlbumObject } from "../types/provider-types";
 import { useSettingsOrDefaults } from "./SettingsContext";
 
-export function ReleaseSeedButton({ data }: { data?: AlbumStack }) {
+export function ReleaseSeedButton({ data, orgin }: { data?: AlbumStack, orgin: string }) {
 	const { settings } = useSettingsOrDefaults();
 	if (!data) return;
-	const seedData = seed.buildSeed(data);
+	const seedData = seed.buildSeed(data, orgin);
 	function preferArray<T>(maybeArray: T | T[]) {
 		if (!Array.isArray(maybeArray)) return [maybeArray];
 		return maybeArray;

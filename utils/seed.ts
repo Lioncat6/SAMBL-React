@@ -69,7 +69,7 @@ export function flatten(record: Record<string, any>, preservedKeys: string[] = [
 	return flatRecord;
 }
 
-function buildSeed(stack: AlbumStack) {
+function buildSeed(stack: AlbumStack, orgin: string) {
     const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(stack)
 
     const seed: ReleaseSeed = {
@@ -84,23 +84,23 @@ function buildSeed(stack: AlbumStack) {
         status: "Official", //TODO: Determine release status
         type: convertReleaseGroupType(aggregatedAlbum.albumType),
         packaging: undefined, //TODO: Determine packaging
-        mediums: (aggregatedAlbum.mediums.length > 0 ? aggregatedAlbum.mediums : sourceAlbum?.mediums || []).map<MediumSeed>((medium) => ({
-            format: medium.format || undefined,
-            name: medium.name || undefined,
+        mediums: (aggregatedAlbum.mediums.length > 0 ? aggregatedAlbum.mediums : sourceAlbum?.mediums ?? []).map<MediumSeed>((medium) => ({
+            format: medium.format ?? undefined,
+            name: medium.name ?? undefined,
             track: medium.tracks.map<TrackSeed>((track) => ({
                 name: track.name,
                 artist_credit: convertArtistCredit(track.trackArtists as PartialArtistObject[]),
                 number: track.trackNumber?.toString(),
-                length: track.duration || undefined,
-                recording: track.mbid || undefined,
+                length: track.duration ?? undefined,
+                recording: track.mbid ?? undefined,
             })),
         })),
         language: aggregatedAlbum.language?.code,
         script: aggregatedAlbum.script?.code,
         urls: convertUrls(aggregatedAlbum.url),
-        annotation: undefined, //TODO: Add detail text to albums,
+        annotation: aggregatedAlbum.copyrights ? 'Copyright: '+aggregatedAlbum.copyrights?.join('%0A'): undefined, //TODO: Add detail text to albums,
         edit_note: editNoteBuilder.buildSeedReleaseEditNote(aggregatedAlbum),
-        redirect_uri: undefined //TODO: Release Actions,
+        redirect_uri: orgin+"&showActions",
     };
     return flatten(seed);
 }

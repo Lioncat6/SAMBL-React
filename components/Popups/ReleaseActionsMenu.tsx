@@ -34,7 +34,7 @@ function ReleaseActionsMenu({ close, data }: { close?: () => void, data: AlbumSt
                     type="link"
                     href={isrcSeedUrl}
                     disabled={!isrcSeedUrl}
-                    title={`Submit ISRCs from ${sourceAlbum?.provider ? clientProviders.getDisplayName(sourceAlbum?.provider): 'Unknown'} to ${targetAlbum?.provider ? clientProviders.getDisplayName(targetAlbum?.provider): 'Unknown'} with MagicISRC`}
+                    title={isrcSeedUrl ? `Submit ISRCs from ${sourceAlbum?.provider ? clientProviders.getDisplayName(sourceAlbum?.provider): 'Unknown'} to ${targetAlbum?.provider ? clientProviders.getDisplayName(targetAlbum?.provider): 'Unknown'} with MagicISRC`: 'This release has no ISRCs'}
                 >
                     <FiGlobe /> Submit ISRCs
                 </PopupActionButton>
@@ -66,9 +66,9 @@ function ReleaseActionsMenu({ close, data }: { close?: () => void, data: AlbumSt
     )
 }
 
-export default function ReleaseActionsPopup({ data, button }: { data: AlbumStack, button?: JSX.Element }) {
+export default function ReleaseActionsPopup({ data, button, open }: { data: AlbumStack, button?: JSX.Element, open?: boolean }) {
     return (
-        <Popup button={button}>
+        <Popup button={button} open={open}>
             <ReleaseActionsMenu data={data} />
         </Popup>
     );

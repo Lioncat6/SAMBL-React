@@ -16,9 +16,12 @@ import { ReleaseSeedButton } from "../../components/ReleaseSeed";
 import albumStack from "../../utils/albumStack";
 import { SAMBLFetch } from "../../utils/clientAPIHandler";
 import ReleaseActionsPopup from "../../components/Popups/ReleaseActionsMenu";
+import { GetServerSidePropsContext } from "next";
+import normalizeVars from "../../utils/normalizeVars";
+import { hostname } from "node:os";
 
 
-async function getAlbum(url?: string, provider?: ProviderNamespace, artistId?: string, albumId?: string): Promise<AlbumStack | null> {
+async function getAlbum(url?: string, provider?: string, artistId?: string, albumId?: string): Promise<AlbumStack | null> {
     // provider_id, provider, url, mbid, artist_id
     let apiUrl = `/api/compareSingleAlbum?artist_id=${artistId}&provider_id=${albumId}&provider=${provider}&fetchISRCs&resolveArtists&detectLanguage`;
     if (url) {
@@ -32,9 +35,10 @@ async function getAlbum(url?: string, provider?: ProviderNamespace, artistId?: s
     }
 }
 
-export async function getServerSideProps(context) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
     try {
-        let { url, provider, artistId, albumId } = context.query;
+        let { req } = context;
+        let { url, provider, artistId, albumId } = normalizeVars(context.query);
         let fetchCall: Promise<AlbumStack | null> | null = null;
         if (url) {
             fetchCall = getAlbum(url);
@@ -49,13 +53,13 @@ export async function getServerSideProps(context) {
                 message: "Missing required parameters. Please provide either a URL or artistId, albumId, and provider."
             }
             return {
-                props: { error: samblError }
+                props: { error: samblError, hostName: req.headers.host }
             };
         }
         try {
             const albumData = await fetchCall;
             return {
-                props: { data: albumData },
+                props: { data: albumData, hostName: req.headers.host },
             };
         } catch (error) {
             const samblError: SAMBLError = {
@@ -63,7 +67,7 @@ export async function getServerSideProps(context) {
                 message: String(error)
             }
             return {
-                props: { error: samblError }
+                props: { error: samblError, hostName: req.headers.host }
             };
         }
         return { data: null }
@@ -78,7 +82,7 @@ export async function getServerSideProps(context) {
     }
 }
 
-export default function Seed({ data, error, timings }: { data?: AlbumStack | null, error?: SAMBLError, timings?: APITimingData }) {
+export default function Seed({ data, error, hostName, timings }: { data?: AlbumStack | null, error?: SAMBLError, hostName?: string, timings?: APITimingData }) {
     if (error || data == undefined && data !== null) {
         return (
             <ErrorPage error={error || null} />
@@ -86,6 +90,8 @@ export default function Seed({ data, error, timings }: { data?: AlbumStack | nul
     }
     const router = useRouter();
     const { query } = router.query;
+
+    const showActions = Object.prototype.hasOwnProperty.call(router.query, "showActions");
     if (data == null) {
         return (
             <>
@@ -114,9 +120,9 @@ export default function Seed({ data, error, timings }: { data?: AlbumStack | nul
                 <h1 className={styles.seedTitle} id="searchFor">Seed Release</h1>
             </div> */}
                 <SearchBox type="lookup" />
-                <ReleaseSeedButton data={data} />
+                <ReleaseSeedButton data={data} orgin={`https://${hostName ?? process.env.NEXT_PUBLIC_URL?.replaceAll(/https|http|[\:\/]/g , '')}${router.asPath}`}/>
                 {targetAlbum &&
-                    <ReleaseActionsPopup data={data} button={<ActionButton type="releaseActions"/>}/>
+                    <ReleaseActionsPopup data={data} button={<ActionButton type="releaseActions"/>} open={showActions}/>
                 }
                 <br />
                 <div id="contentContainer" >

@@ -66,7 +66,7 @@ function buildCoverArtSeedUrl(data: AlbumStack, orgin: string, targetBaseUrl: st
     return baseUrl.toString().replace(/%250A/g, '%0A');
 }
 
-function buildArtistImageSeedUrl(artist: ArtistObject, targetBaseUrl): string | null {
+function buildArtistImageSeedUrl(artist: ArtistObject, targetBaseUrl: string): string | null {
     const { mbid, imageUrl, imageUrlSmall } = artist;
     const sourceImage = imageUrl ?? imageUrlSmall;
     if (!mbid || !sourceImage) return null;
