@@ -1,7 +1,7 @@
 import styles from "../styles/itemList.module.css";
 import Link from "next/link";
 import React, { useEffect, useState, memo, JSX, Provider } from "react";
-import { SAMBLSettingsContext, useSettings } from "./SettingsContext";
+import { SAMBLSettingsContext, useSettings, useSettingsOrDefaults } from "./SettingsContext";
 import dynamic from "next/dynamic";
 import { useExport as useExportState } from "./ExportState";
 import { List, RowComponentProps } from "react-window";
@@ -30,8 +30,10 @@ import { SAMBLArtistIcon } from "./icons";
 import albumStack from "../utils/albumStack";
 import clientProviders from "../utils/clientProviders";
 import { RawSAMBLFetch } from "../utils/clientAPIHandler";
+import editUrlBuilder from "../utils/editUrlBuilder";
 
 function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRCs: boolean) => void }) {
+	const {settings} = useSettingsOrDefaults();
 	const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(item)
 	const sourceArtist = item.aggregated?.sourceArtist;
 	const { status, albumIssues } = item;
@@ -48,18 +50,9 @@ function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRC
 				refresh(true);
 			} else {
 				setIsSubmitting(false);
-				if (albumTracks.some((track) => track.isrcs.length >= 1)) {
-					const edit_note = editNoteBuilder.buildEditNote("ISRCs", provider, url.url, albumArtists[0]?.url.url);
-					let params = "?"
-					albumTracks.forEach((track) => {
-						if (track.isrcs.length >= 1) {
-							params += `isrc${track.trackNumber}=${track.isrcs[0]}&`
-						}
-					})
-					params += "mbid=" + mbid
-					params += "&edit-note=" + edit_note;
-					const ISRCurl = "https://magicisrc.kepstin.ca/" + params;
-					window.open(ISRCurl, "_blank");
+				const isrcSeedUrl = editUrlBuilder.buildISRCEditUrl(item);
+				if (isrcSeedUrl) {
+					window.open(isrcSeedUrl, "_blank");
 				} else {
 					toasts.info("No ISRCs Found")
 				}
@@ -90,14 +83,14 @@ function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRC
 			{albumIssues.includes("noCover") && (
 				<a
 					className={status === "green" ? styles.coverArtMissingAvaliable : styles.coverArtMissing}
-					href={status === "green" ? `https://musicbrainz.org/release/${mbid}/cover-art` : undefined}
+					href={status === "green" ? `https://${settings.targetBaseUrl}/release/${mbid}/cover-art` : undefined}
 					target={status === "green" ? "_blank" : undefined}
 					rel={status === "green" ? "noopener" : undefined}
 					title={status === "green" ? "This release is missing cover art! [Click to Fix]" : "This release is missing cover art!"}
 				/>
 			)}
 			{albumIssues.includes("trackDiff") && (
-				<div className={styles.numDiff} title={`This release has a differing track count! [SP: ${trackCount} MB: ${targetAlbum?.trackCount}]`}>
+				<div className={styles.numDiff} title={`This release has a differing track count! [${clientProviders.getDisplayName(provider)}: ${trackCount} MB: ${targetAlbum?.trackCount}]`}>
 					#
 				</div>
 			)}
@@ -106,8 +99,8 @@ function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRC
 					className={`${styles.dateMissing} ${status === "green" ? styles.dateMissingAvaliable : ""}`}
 					href={
 						(status === "green" && sourceArtist?.mbid)
-							? `https://musicbrainz.org/release/${mbid}/edit?events.0.date.year=${releaseDate?.split("-")[0]}&events.0.date.month=${releaseDate?.split("-")[1]}&events.0.date.day=${releaseDate?.split("-")[2]
-							}&edit_note=${encodeURIComponent(editNoteBuilder.buildEditNote(`Release Date`, provider, url.url, `https://musicbrainz.org/artist/${sourceArtist.mbid}`))}`
+							? `https://${settings.targetBaseUrl}/release/${mbid}/edit?events.0.date.year=${releaseDate?.split("-")[0]}&events.0.date.month=${releaseDate?.split("-")[1]}&events.0.date.day=${releaseDate?.split("-")[2]
+							}&edit_note=${encodeURIComponent(editNoteBuilder.buildEditNote(`Release Date`, provider, url.url, `https://${settings.targetBaseUrl}/artist/${sourceArtist.mbid}`))}`
 							: undefined
 					}
 					title={status === "green" ? "This release is missing a release date!\n[Click to Fix]" : "This release is missing a release date!"}
@@ -115,7 +108,7 @@ function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRC
 					rel={status === "green" ? "noopener" : undefined}
 				></a>
 			)}
-			{albumIssues.includes("dateDiff") && <div className={styles.dateDiff} title={`This release has a differing release date! [SP: ${releaseDate} MB: ${targetAlbum?.releaseDate}]\n(This may indicate that you have to split a release.)`} />}
+			{albumIssues.includes("dateDiff") && <div className={styles.dateDiff} title={`This release has a differing release date! [${clientProviders.getDisplayName(provider)}: ${releaseDate} MB: ${targetAlbum?.releaseDate}]\n(This may indicate that you have to split a release.)`} />}
 		</div>
 	);
 }

@@ -6,7 +6,8 @@ import albumStack from "./albumStack";
 import clientProviders from "./clientProviders";
 import text from "./text";
 
-function encode(str: string) {
+function encode(str: string, encodeString = true) {
+    if (!encodeString) return str
     return encodeURIComponent(str).replace(/%250A/g, '%0A');
 }
 
@@ -19,7 +20,7 @@ function encode(str: string) {
  * @param {string} artistUrl The URL of the artist's page.
  * @returns {string} The formatted edit note string.
  */
-function buildEditNote(edit: string, provider: string, sourceUrl: string, artistUrl: string, pageUrl: string | null = null): string {
+function buildEditNote(edit: string, provider: string, sourceUrl: string, artistUrl: string, pageUrl: string | null = null, encodeString = true): string {
     return encode(
         `${edit} imported from ''SAMBL''%0A` +
         `'''Provider:''' ${provider}%0A` +
@@ -27,7 +28,7 @@ function buildEditNote(edit: string, provider: string, sourceUrl: string, artist
         `'''Artist:''' ${artistUrl}%0A` +
         (pageUrl ? `'''SAMBL URL:''' ${pageUrl}%0A` : '') +
         `%0A` +
-        `'''SAMBL ${process.env.NEXT_PUBLIC_VERSION}''': ${process.env.NEXT_PUBLIC_URL || "https://sambl.lioncat6.com"} | https://github.com/lioncat6/SAMBL-React`
+        `'''SAMBL ${process.env.NEXT_PUBLIC_VERSION}''': ${process.env.NEXT_PUBLIC_URL || "https://sambl.lioncat6.com"} | https://github.com/lioncat6/SAMBL-React`, encodeString
     );
 }
 
@@ -109,7 +110,7 @@ function buildSeedReleaseEditNote(data: AggregatedAlbum): string {
         `'''Source:''' ${data.url.url}\n` +
         (data.sourceArtist && `'''Artist:''' ${data.sourceArtist?.name || "Unknown"} | ${data.sourceArtist?.url.url || "Unknown"}\n\n`) +
         `'''SAMBL ${process.env.NEXT_PUBLIC_VERSION}''': ${process.env.NEXT_PUBLIC_URL || "https://sambl.lioncat6.com"} | https://github.com/lioncat6/SAMBL-React`
-    ;
+        ;
 }
 
 const editNoteBuilder = {

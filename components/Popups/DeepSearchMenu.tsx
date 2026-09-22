@@ -8,14 +8,17 @@ import Popup from "../Popup";
 import styles from "../../styles/popups.module.css"
 import { FaSearch } from "react-icons/fa";
 import { MdLocationSearching } from "react-icons/md";
-import { Checkbox, Field, Fieldset, Input, Label, Legend, Radio, RadioGroup, Transition } from "@headlessui/react";
+import { Button, Checkbox, Field, Fieldset, Input, Label, Legend, Radio, RadioGroup, Transition } from "@headlessui/react";
 import { PiSealWarningFill } from "react-icons/pi";
 import text from "../../utils/text";
 import { SAMBLFetch } from "../../utils/clientAPIHandler";
+import { PopupActionButton } from "../buttons";
+import { useSettingsOrDefaults } from "../SettingsContext";
 
 
 
 function DeepSearchMenu({ close, data }: { close?: () => void, data: ArtistObject }) {
+    const { settings } = useSettingsOrDefaults();
     const artist = data;
     const [dsData, setDsData] = useState(null as null | DeepSearchData)
     const [albums, setAlbums] = useState(5);
@@ -49,7 +52,7 @@ function DeepSearchMenu({ close, data }: { close?: () => void, data: ArtistObjec
         }
     }
 
-    function seedUrl() {        
+    function seedUrl() {
         if (!selectedArtist || !dsData) return;
         const artist = dsData.mbArtists.find((artist) => artist.id == selectedArtist);
         if (!artist) return;
@@ -59,7 +62,7 @@ function DeepSearchMenu({ close, data }: { close?: () => void, data: ArtistObjec
             mbid: selectedArtist,
             trackArtists: trackArtists
         }
-        const editUrl = editUrlBuilder.buildDeepSearchEditUrl(selection);
+        const editUrl = editUrlBuilder.buildDeepSearchEditUrl(selection, settings.targetBaseUrl);
         window.open(editUrl, "_blank");
     }
 
@@ -159,26 +162,24 @@ function DeepSearchMenu({ close, data }: { close?: () => void, data: ArtistObjec
             </div>
             <div className={styles.actions}>
                 {selectedArtist &&
-                    <button
-                        className={`${styles.button} ${warning && styles.warning}`}
-                        onClick={() => { seedUrl() }}
-                        title={warning ? warning : undefined}
+                    <PopupActionButton
+                        warning={!!warning}
+                        onClick={seedUrl}
+                        title={warning}
                     >
                         {warning && <><PiSealWarningFill /> </>}
                         Seed URL
-                    </button>}
-                <button
-                    className={styles.button}
+                    </PopupActionButton>}
+                <PopupActionButton
                     onClick={() => { deepSearch(artist.url.url) }}
                 >
                     <MdLocationSearching /> Run Search
-                </button>
-                <button
-                    className={styles.button}
-                    onClick={() => { close && close() }}
+                </PopupActionButton>
+                <PopupActionButton
+                    onClick={close}
                 >
                     Close
-                </button>
+                </PopupActionButton>
             </div>
         </>
     );

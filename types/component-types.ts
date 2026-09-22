@@ -93,7 +93,9 @@ export interface SAMBLSettings {
     currentProvider: ProviderNamespace | null;
     saveFilter: boolean
     saveSort: boolean
-    currentFilter: Partial<FilterData> | null
+    currentFilter: Partial<FilterData> | null;
+    targetBaseUrl: string;
+    enableCoverArtSeeding: boolean;
 }
 
 export class UrlParser {

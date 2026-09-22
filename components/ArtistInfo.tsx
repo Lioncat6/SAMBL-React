@@ -6,6 +6,8 @@ import editNoteBuilder from "../utils/editNoteBuilder";
 import { ArtistPageData } from "../types/component-types";
 import clientProviders from "../utils/clientProviders";
 import { ProviderNamespace } from "../types/provider-types";
+import { useSettingsOrDefaults } from "./SettingsContext";
+import editUrlBuilder from "../utils/editUrlBuilder";
 
 function Icon({ source }: { source: ProviderNamespace }) {
 	const displayName = clientProviders.getDisplayName(source);
@@ -40,6 +42,7 @@ function UrlContainer({ provider, url }: { provider: ProviderNamespace; url: str
 }
 
 function UrlIcons({ artist }: { artist: ArtistPageData }) {
+	const { settings } = useSettingsOrDefaults();
 	return (
 		<>
 			{artist.urls ?
@@ -49,16 +52,16 @@ function UrlIcons({ artist }: { artist: ArtistPageData }) {
 				:
 				<UrlContainer url={artist.url.url} provider={artist.provider} />
 			}
-			{artist.mbid && <UrlContainer url={`https://musicbrainz.org/artist/${artist.mbid}`} provider="musicbrainz" />}
+			{artist.mbid && <UrlContainer url={`https://${settings.targetBaseUrl}/artist/${artist.mbid}`} provider="musicbrainz" />}
 		</>
 	);
 }
 
 function ImageContainer({ artist }: { artist: ArtistPageData }) {
-	const { mbid, imageUrl, name } = artist;
+	const { settings } = useSettingsOrDefaults();
+	const { imageUrl, name } = artist;
 	if (!imageUrl) return null;
-	let editNote = editNoteBuilder.buildEditNote('Artist image', artist.provider, imageUrl, artist.url.url);
-	let importUrl = `https://musicbrainz.org/artist/${mbid}/edit?edit-artist.url.0.text=https://web.archive.org/web/0/${imageUrl}&edit-artist.url.0.link_type_id=173&edit-artist.edit_note=${editNote}`
+	let importUrl = editUrlBuilder.buildArtistImageSeedUrl(artist, settings.targetBaseUrl);
 	return (
 		<div id="artistImageContainer" className={styles.artistImageContainer}>
 			<div className={styles.imageWrapper}>
@@ -66,7 +69,7 @@ function ImageContainer({ artist }: { artist: ArtistPageData }) {
 					<img id="artistImage" alt={`Artist image for ${name}`} className={styles.artistImage} src={imageUrl} />
 				</a>
 
-				{mbid && <div className={styles.imageOverlay}>
+				{importUrl && <div className={styles.imageOverlay}>
 					<span className={styles.overlayText}></span>
 
 					<a href={importUrl} target="_blank"><div className={styles.importIcon} title="Import Artist Image to MusicBrainz"><LuImageUp /></div></a>

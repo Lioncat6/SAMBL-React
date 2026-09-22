@@ -1,5 +1,5 @@
 import ArtistInfo from "../../components/ArtistInfo";
-import AddButtons from "../../components/buttons";
+import { AddButtons } from "../../components/buttons";
 import Head from "next/head";
 import { ProviderNamespace } from "../../types/provider-types";
 import { ArtistPageData, SAMBLError } from "../../types/component-types";

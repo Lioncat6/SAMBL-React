@@ -3,8 +3,10 @@ import seed from "../utils/seed";
 import { AggregatedAlbum, AlbumStack } from "../types/aggregated-types";
 import { ActionButton } from "./buttons";
 import { AlbumObject } from "../types/provider-types";
+import { useSettingsOrDefaults } from "./SettingsContext";
 
 export function ReleaseSeedButton({ data }: { data?: AlbumStack }) {
+	const { settings } = useSettingsOrDefaults();
 	if (!data) return;
 	const seedData = seed.buildSeed(data);
 	function preferArray<T>(maybeArray: T | T[]) {
@@ -21,7 +23,7 @@ export function ReleaseSeedButton({ data }: { data?: AlbumStack }) {
 		<>
 			<form
 				ref={seedFormRef}
-				action={`https://musicbrainz.org/release/add`} //TODO: Multi-server support
+				action={`https://${settings.targetBaseUrl}/release/add`} //TODO: Multi-server support
 				method='post'
 				target={'_blank'}
 				name={'SeedButtonForm'}
