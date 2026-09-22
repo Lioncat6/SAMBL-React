@@ -73,7 +73,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 					console.error("Error fetching albums:", error);
 				}
 				if (attempts > 3) {
-					logger.error("Failed to fetch Spotify albums");
+					logger.error("Failed to fetch Source Provider albums");
 					break;
 				}
 			}
