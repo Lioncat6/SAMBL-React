@@ -139,7 +139,7 @@ export default function Find() {
 						} else if (mbidPattern.test(query) || spfPattern.test(query)) {
 							toasts.warn("Please enter a full URL for the MBID or Spotify ID!");
 						} else {
-							toasts.warn("Invalid input format. Please enter a valid ISRC, MBID, Barcode, or Spotify link.");
+							toasts.warn("Invalid input format. Please enter a valid ISRC, MBID, Barcode, or Provider link.");
 						}
 					} catch (error) {
 						toasts.error(`An error occurred while searching: ${error}`, error);
