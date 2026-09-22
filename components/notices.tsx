@@ -6,6 +6,7 @@ import { JSX, useState } from "react";
 import { FaXmark } from "react-icons/fa6";
 import { Transition } from "@headlessui/react";
 import editUrlBuilder from "../utils/editUrlBuilder";
+import { useSettingsOrDefaults } from "./SettingsContext";
 
 function NoticeBox({ color, text, button}: {color: string, text: string, button?: JSX.Element | null}) {
 	const [visible, setVisible] = useState(true);
@@ -37,6 +38,7 @@ function NoticeBox({ color, text, button}: {color: string, text: string, button?
 }
 
 function NoMBIDNotice({data}: {data?: ArtistPageData | null}) {
+	const { settings } = useSettingsOrDefaults();
 	if (!data) {
 		return (
 			<NoticeBox color="red"
@@ -51,7 +53,7 @@ function NoMBIDNotice({data}: {data?: ArtistPageData | null}) {
 			button={
 				<a
 					className={styles.addToMBButton}
-					href={editUrlBuilder.buildAddArtistEditUrl(data)}
+					href={editUrlBuilder.buildAddArtistEditUrl(data, settings.targetBaseUrl)}
 					target="_blank"
 					rel="noopener noreferrer"
 				>
