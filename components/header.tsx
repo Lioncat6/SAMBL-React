@@ -24,7 +24,7 @@ export default function Header() {
 				<ProviderPill />
 				<Link className={styles.samblWrapper} href="/">
 					<div className={styles.imagewrapper}>
-						<img src="assets/images/favicon.svg" alt="SAMBL Logo" className={styles.logo} />
+						<img src="/assets/images/favicon.svg" alt="SAMBL Logo" className={styles.logo} />
 					</div>
 				</Link>
 				<div className={styles.textwrapper}>
