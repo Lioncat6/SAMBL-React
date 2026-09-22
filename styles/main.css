@@ -135,6 +135,9 @@ hr {
 	width: 80%;
 	opacity: 50%;
 	margin: 10px 0;
+	align-self: start;
+	left: 10%;
+	position: relative;
 }
 
 a {

@@ -4,10 +4,15 @@ import { Button } from "@headlessui/react";
 import editUrlBuilder from "../utils/editUrlBuilder";
 import { ArtistObject } from "../types/provider-types";
 import DeepSearchMenuPopup from "./Popups/DeepSearchMenu";
-import { FaMagnifyingGlass, FaSeedling } from "react-icons/fa6";
+import { FaLink, FaMagnifyingGlass, FaSeedling } from "react-icons/fa6";
+import { AlbumStack } from "../types/aggregated-types";
+import albumStack from "../utils/albumStack";
+import { HTMLAttributeAnchorTarget, JSX } from "react";
+import { useSettingsOrDefaults } from "./SettingsContext";
 
-export default function AddButtons({ artist }: { artist: ArtistObject }) {
-	let addUrl = editUrlBuilder.buildAddArtistEditUrl(artist);
+export function AddButtons({ artist }: { artist: ArtistObject }) {
+	const { settings } = useSettingsOrDefaults();
+	let addUrl = editUrlBuilder.buildAddArtistEditUrl(artist, settings.targetBaseUrl);
 	return (
 		<>
 			<a
@@ -48,36 +53,45 @@ function SeedButtonInner() {
 	)
 }
 
-export function ActionButton({ type, onClick, isLoading, data }: { type: "lookup" | "find" | "search" | "seed", onClick: () => void, isLoading?: boolean, data?: any }) {
+function ReleaseActionsButtonInner() {
+	return <><FaLink /> Release Actions</>
+}
+
+export function ActionButton({ type, onClick, isLoading, data }: { type: "lookup" | "find" | "search" | "seed" | "releaseActions", onClick?: () => void, isLoading?: boolean, data?: any }) {
 	let buttonContent = <>Enter</>;
-	let className = styles.actionButton;
+	let buttonStyles = styles.actionButton;
 	let buttonId = "actionButton";
 
 	switch (type) {
 		case "lookup":
 			buttonContent = <LookupButtonInner />;
-			className = styles.lookupButton;
+			buttonStyles = styles.lookupButton;
 			buttonId = "lookupButton";
 			break;
 		case "find":
 			buttonContent = <FindButtonInner />;
-			className = styles.findButton;
+			buttonStyles = styles.findButton;
 			buttonId = "findButton";
 			break;
 		case "search":
 			buttonContent = <SearchButtonInner />;
-			className = styles.searchButton;
+			buttonStyles = styles.searchButton;
 			buttonId = "searchEnter";
 			break;
 		case "seed":
 			buttonContent = <SeedButtonInner />;
-			className = styles.seedButton;
+			buttonStyles = styles.seedButton;
 			buttonId = "seedButton";
 			break;
+		case "releaseActions":
+			buttonContent = <ReleaseActionsButtonInner />;
+			buttonStyles = styles.releaseActionsButton;
+			buttonId = "releaseActionsButton"
+			break
 	}
 
 	return (
-		<button type="button" className={className} id={buttonId} onClick={onClick}>
+		<button type="button" className={`${buttonStyles ? `${buttonStyles} ` : ''}${styles.actionButton}`} id={buttonId} onClick={onClick}>
 			{isLoading ? (
 				<div className="lds-ellipsis">
 					<div></div>
@@ -90,4 +104,32 @@ export function ActionButton({ type, onClick, isLoading, data }: { type: "lookup
 			)}
 		</button>
 	);
+}
+
+
+export function PopupActionButton({ children, type = "button", onClick, href, target = "_blank", disabled = false, warning = false, title }: { children: React.ReactNode, type?: "link" | "button", onClick?: () => void, disabled?: boolean, warning?: boolean, href?: URL | string | null, target?: HTMLAttributeAnchorTarget, title?: string | null }) {
+	const classes = `${styles.popupActionButton}${disabled ? ` ${styles.disabled}` : ''}${warning ? ` ${styles.warning}` : ''}`
+	return (
+		<>
+			{type == "link" ?
+				<a
+					className={classes}
+					title={title ?? undefined}
+					onClick={onClick}
+					href={href?.toString()}
+					target={target}
+				>
+					{children}
+				</a> :
+				<button
+					className={classes}
+					title={title ?? undefined}
+					onClick={onClick}
+					disabled={disabled}
+				>
+					{children}
+				</button>
+			}
+		</>
+	)
 }

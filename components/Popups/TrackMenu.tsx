@@ -38,7 +38,7 @@ function copyLink(id) {
 	text.handleCopy(url);
 }
 
-function AlbumDetails({ data, isStandalone }: { data: AlbumStack, isStandalone?: boolean }) {
+export function AlbumDetails({ data, isStandalone }: { data: AlbumStack, isStandalone?: boolean }) {
 	const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(data)
 	const { status, albumIssues } = data;
 	const {
