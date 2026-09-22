@@ -9,22 +9,23 @@ import SAMBLHead from "../../components/SAMBLHead";
 import text from "../../utils/text";
 import { ProviderNamespace } from "../../types/provider-types";
 import { AggregatedAlbum, AlbumStack } from "../../types/aggregated-types";
-import { TrackMenu, TrackMenuInner } from "../../components/Popups/TrackMenu";
+import TrackMenuPopup, { TrackMenu, TrackMenuInner } from "../../components/Popups/TrackMenu";
 import styles from "../../styles/Seed.module.css";
 import { ActionButton } from "../../components/buttons";
 import { ReleaseSeedButton } from "../../components/ReleaseSeed";
 import albumStack from "../../utils/albumStack";
 import { SAMBLFetch } from "../../utils/clientAPIHandler";
+import ReleaseActionsPopup from "../../components/Popups/ReleaseActionsMenu";
 
 
 async function getAlbum(url?: string, provider?: ProviderNamespace, artistId?: string, albumId?: string): Promise<AlbumStack | null> {
     // provider_id, provider, url, mbid, artist_id
-    let apiUrl = `http://localhost:${process.env.PORT || 3000}/api/compareSingleAlbum?artist_id=${artistId}&provider_id=${albumId}&provider=${provider}&fetchISRCs&resolveArtists&detectLanguage`;
+    let apiUrl = `/api/compareSingleAlbum?artist_id=${artistId}&provider_id=${albumId}&provider=${provider}&fetchISRCs&resolveArtists&detectLanguage`;
     if (url) {
-        apiUrl = `http://localhost:${process.env.PORT || 3000}/api/compareSingleAlbum?url=${url}&fetchISRCs&resolveArtists&detectLanguage`;
+        apiUrl = `/api/compareSingleAlbum?url=${url}&fetchISRCs&resolveArtists&detectLanguage`;
     }
     try {
-        const [data, timings] = await SAMBLFetch<AlbumStack>(apiUrl);
+        const [data, timings] = await SAMBLFetch<AlbumStack>(apiUrl, true);
         return data;
     } catch (error) {
         throw new Error(`Failed to fetch album data: ${error}`);
@@ -114,6 +115,9 @@ export default function Seed({ data, error, timings }: { data?: AlbumStack | nul
             </div> */}
                 <SearchBox type="lookup" />
                 <ReleaseSeedButton data={data} />
+                {targetAlbum &&
+                    <ReleaseActionsPopup data={data} button={<ActionButton type="releaseActions"/>}/>
+                }
                 <br />
                 <div id="contentContainer" >
                     <div id="albumContainer" className={styles.albumContainer}>

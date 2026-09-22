@@ -22,7 +22,7 @@ import { RawSAMBLFetch, SAMBLFetch } from "../../utils/clientAPIHandler";
 
 async function fetchArtistData(id: string, provider: ProviderNamespace | string) {
 	try {
-		const [data, timings] = await SAMBLFetch<ArtistData>(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?provider_id=${id}&provider=${provider}&mbData`);
+		const [data, timings] = await SAMBLFetch<ArtistData>(`/api/getArtistInfo?provider_id=${id}&provider=${provider}&mbData`, true);
 		return data;
 	} catch (error) {
 		throw new Error(`Failed to fetch artist data: ${error}`);
@@ -65,7 +65,7 @@ export async function getServerSideProps(context) {
 
 		if (!artist_mbid && provider_id && !noRedirect) {
 			let ids = provider_id ? provider_id : (splitIds && splitIds[0]);
-			const response = await RawSAMBLFetch<ArtistLookupData>(`http://localhost:${process.env.PORT || 3000}/api/lookupArtist?provider_id=${ids}&provider=${provider}`);
+			const response = await RawSAMBLFetch<ArtistLookupData>(`/api/lookupArtist?provider_id=${ids}&provider=${provider}`, true);
 			if (response.data) {
 				const { mbid: fetchedMBid } = response.data
 				if (fetchedMBid) {
@@ -95,7 +95,7 @@ export async function getServerSideProps(context) {
 		async function getViewedAlbum(): Promise<AlbumStack | null> {
 			if (viewingAlbum) {
 				try {
-					const [data, timings] = await SAMBLFetch<AlbumStack>(`http://localhost:${process.env.PORT || 3000}/api/compareSingleAlbum?provider_id=${viewingAlbum}&provider=${provider}`);
+					const [data, timings] = await SAMBLFetch<AlbumStack>(`/api/compareSingleAlbum?provider_id=${viewingAlbum}&provider=${provider}`, true);
 					return data;
 				} catch {
 					return null;

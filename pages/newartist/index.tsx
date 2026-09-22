@@ -12,7 +12,7 @@ import { RawSAMBLFetch, SAMBLFetch } from "../../utils/clientAPIHandler";
 
 async function fetchArtistData(id: string, provider: ProviderNamespace) {
     try { 
-        const [data, timings] = await SAMBLFetch<ArtistData>(`http://localhost:${process.env.PORT || 3000}/api/getArtistInfo?provider_id=${id}&provider=${provider}&mbData`);
+        const [data, timings] = await SAMBLFetch<ArtistData>(`/api/getArtistInfo?provider_id=${id}&provider=${provider}&mbData`, true);
         return data;
     } catch (error) {
        throw new Error(`Failed to fetch artist data: ${error}`);
@@ -29,7 +29,7 @@ export async function getServerSideProps(context) {
         if (pid) provider_id = pid;
         const noRedirect = Object.prototype.hasOwnProperty.call(context.query, "noRedirect");
         if (!noRedirect){
-            const response = await RawSAMBLFetch<ArtistLookupData>(`http://localhost:${process.env.PORT || 3000}/api/lookupArtist?provider_id=${provider_id}&provider=${provider}`)
+            const response = await RawSAMBLFetch<ArtistLookupData>(`/api/lookupArtist?provider_id=${provider_id}&provider=${provider}`, true)
             if (response.data) {
                 const { mbid } = response.data;
                 if (mbid) {

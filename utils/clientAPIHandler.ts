@@ -22,9 +22,9 @@
 import { APITimingData, SAMBLAPIResponse } from "../types/api-types";
 
 
-export async function SAMBLFetch<T>(path: URL | string): Promise<[T, APITimingData | null]> {
+export async function SAMBLFetch<T>(path: URL | string, isSSR = false): Promise<[T, APITimingData | null]> {
     try {
-        const response = await fetch(path)
+        const response = await fetch(`${isSSR ? `http://localhost:${process.env.PORT || 3000}` : ''}${path.toString()}`)
         if (response.ok) {
             const data = await response.json() as SAMBLAPIResponse<T>
             if (!data.data) throw new Error("Server returned no data");
@@ -35,17 +35,17 @@ export async function SAMBLFetch<T>(path: URL | string): Promise<[T, APITimingDa
                 if (data.error?.error) {
                     throw new Error(`Recieved error from server: (${response.status}) ${data.error.error}${data.error.details ? ` | ${data.error.details}` : ''}`)
                 }
-            } catch {}
+            } catch { }
             throw new Error(`Recieved unknown error from server: ${response.status} - ${response.statusText}`)
         }
-    } catch (error){
+    } catch (error) {
         throw new Error(`Error occured while fetching data from server: ${error}`)
     }
 }
 
-export async function RawSAMBLFetch<T>(path: URL | string): Promise<SAMBLAPIResponse<T>> {
+export async function RawSAMBLFetch<T>(path: URL | string, isSSR = false): Promise<SAMBLAPIResponse<T>> {
     try {
-        const response = await fetch(path)
+        const response = await fetch(`${isSSR ? `http://localhost:${process.env.PORT || 3000}` : ''}${path.toString()}`)
         if (response.ok) {
             const data = await response.json() as SAMBLAPIResponse<T>
             return data;
@@ -55,10 +55,10 @@ export async function RawSAMBLFetch<T>(path: URL | string): Promise<SAMBLAPIResp
                 if (data.error?.error) {
                     return data;
                 }
-            } catch {}
+            } catch { }
             throw new Error(`Recieved unknown error from server: ${response.status} - ${response.statusText}`)
         }
-    } catch (error){
+    } catch (error) {
         throw new Error(`Error occured while fetching data from server: ${error}`)
     }
 }

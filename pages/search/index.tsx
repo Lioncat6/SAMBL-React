@@ -16,7 +16,7 @@ import { redirect } from "next/dist/server/api-utils";
 
 async function getItems(query: string, provider: string) {
     try {
-        const [data, timings] = await SAMBLFetch<ArtistSearchData>(`http://localhost:${process.env.PORT || 3000}/api/searchArtists?query=${query}&provider=${provider}`);
+        const [data, timings] = await SAMBLFetch<ArtistSearchData>(`/api/searchArtists?query=${query}&provider=${provider}`, true);
         return data;
     } catch (error) {
         throw new Error(`Error fetching artist data: ${error}`);
