@@ -19,7 +19,7 @@ const userAgent = `${baseUserAgent} ${SAMBLUserAgent()}`;
 
 const { parseUrl, createUrl } = parsers.getParser(namespace);
 
-const reqSession=new CurlSession({impl:new CurlMultiImpl()})
+const reqSession = new CurlSession({ impl: new CurlMultiImpl() })
 
 async function subvertFetch(path: string, body?: {}): Promise<unknown | null> {
     const apiBaseUrl = 'https://www.subvert.fm/api/';
@@ -88,7 +88,7 @@ async function subvertFetch(path: string, body?: {}): Promise<unknown | null> {
     }
 }
 
-async function resolveSlug(slug: string, type: 'artist'|'album'|'track'): Promise<string | null> {
+async function resolveSlug(slug: string, type: 'artist' | 'album' | 'track'): Promise<string | null> {
     let url = `https://www.subvert.fm/${slug.replace(":", "/")}`;
     if (type == 'track') {
         const chunks = slug.split(':');
@@ -116,10 +116,10 @@ async function resolveSlug(slug: string, type: 'artist'|'album'|'track'): Promis
             'timeout': 20000
         }
     )
-    if (response.status == 200){
+    if (response.status == 200) {
         const jsonRegex = /<script id="__NEXT_DATA__" type="application\/json">(.*)<\/script>/
         const match = jsonRegex.exec(response.data);
-        if (match){
+        if (match) {
             try {
                 const jsonData = JSON.parse(match[1]);
                 const entityID = jsonData?.props?.pageProps?.dehydratedState?.queries?.[0]?.state?.data?.id || jsonData?.props?.pageProps?.release?.id || jsonData?.props?.pageProps?.track?.id;
@@ -134,7 +134,7 @@ async function resolveSlug(slug: string, type: 'artist'|'album'|'track'): Promis
         } else {
             err.handleError(`Failed to locate next.js page props`);
         }
-    }  else if (response.status == 404) {
+    } else if (response.status == 404) {
         return null;
     } else {
         err.handleError(`Failed to resolve slug: ${response.status} - ${response.text}`);
@@ -142,7 +142,7 @@ async function resolveSlug(slug: string, type: 'artist'|'album'|'track'): Promis
     return null;
 }
 
-const cachedResolvedSlug = withCache(resolveSlug, {namespace, ttl: 60 * 120})
+const cachedResolvedSlug = withCache(resolveSlug, { namespace, ttl: 60 * 120 })
 
 async function searchByArtistName(query: string): Promise<any | null> {
     try {
@@ -162,14 +162,14 @@ function formatArtistSearchData(rawData: SubvertSearchResults): SubvertSearchRes
 
 async function getArtistById(id: string): Promise<SubvertArtistProfile | null> {
     try {
-        if (id.includes(":") || id.length != 25){
+        if (id.includes(":") || id.length != 25) {
             const resolvedId = await cachedResolvedSlug(id, 'artist');
-            if (resolvedId){
+            if (resolvedId) {
                 id = resolvedId;
             }
         }
         const data = await subvertFetch(`artist/${id}`);
-        if (data && typeof data == "object"){
+        if (data && typeof data == "object") {
             return data as SubvertArtistProfile;
         }
     } catch (error) {
@@ -262,21 +262,21 @@ function formatAlbumGetData(rawData: SubvertSearchResults): RawAlbumData {
         albums,
         count: rawData.meta.totalCount,
         current: rawData.meta.offset,
-        next: rawData.meta.hasMore ? String(Number(rawData.meta.offset + rawData.results.length)) : null 
+        next: rawData.meta.hasMore ? String(Number(rawData.meta.offset + rawData.results.length)) : null
     }
 }
 
 async function getAlbumById(id: string): Promise<SubvertAlbum | SubvertTrack | null> {
     try {
         if (id.includes("track:")) return await getTrackById(id);
-        if (id.includes(":")){
+        if (id.includes(":")) {
             const resolvedId = await cachedResolvedSlug(id, 'album');
-            if (resolvedId){
+            if (resolvedId) {
                 id = resolvedId
             }
         }
         const data = await subvertFetch(`release/${id}`);
-        if (data && typeof data == "object" &&  "slug" in data) {
+        if (data && typeof data == "object" && "slug" in data) {
             return data as SubvertAlbum;
         }
     } catch (error) {
@@ -292,7 +292,7 @@ function formatAlbumObject(rawData: SubvertSearchResultWithArtist | SubvertAlbum
         let tracks = isRelease ? album.metadata.tracks || [] : [album];
 
         return {
-            id: isRelease ? album.id: `track:${album.id}`,
+            id: isRelease ? album.id : `track:${album.id}`,
             provider: namespace,
             type: 'album',
             name: album.name,
@@ -324,7 +324,7 @@ function formatAlbumObject(rawData: SubvertSearchResultWithArtist | SubvertAlbum
             albumType: album.releaseType,
             upc: album.productIdUpcEan ?? null,
             labels: album.labelsOnReleases.map(formatLabelObject),
-            copyrights: album.license ? [album.license]: null,
+            copyrights: album.license ? [album.license] : null,
             genres: album.genres,
             albumArtists: album.artists.map(formatPartialArtistObject),
             artistNames: album.artists.map((artist) => artist.name),
@@ -341,11 +341,11 @@ function formatAlbumObject(rawData: SubvertSearchResultWithArtist | SubvertAlbum
             url: createUrl('album', `${album.artists[0].slug}/tracks/${album.slug}`),
             imageUrl: createSubvertImage(album.coverImageId),
             imageUrlSmall: createSubvertImage(album.coverImageId, true),
-            releaseDate: text.formatDate(album.releaseDate),
+            releaseDate: album.releaseDate ? text.formatDate(album.releaseDate) : null,
             albumType: "Single",
             upc: null,
             labels: album.labelsOnTracks.map(formatLabelObject),
-            copyrights: album.license ? [album.license]: null,
+            copyrights: album.license ? [album.license] : null,
             genres: album.genres,
             albumArtists: album.artists.map(formatPartialArtistObject),
             artistNames: album.artists.map((artist) => artist.name),
@@ -382,8 +382,8 @@ interface SubvertAlbumTrackWithArtist extends SubvertAlbumTrack {
 }
 
 function formatTrackObject(rawData: SubvertSearchAlbumTrackWithArtistPosition | SubvertAlbumTrackWithArtistPosition | SubvertTrack | SubvertSearchResultWithArtist): TrackObject {
-    if ("trackNumber" in rawData){
-        if ("isrc" in rawData){
+    if ("trackNumber" in rawData) {
+        if ("isrc" in rawData) {
             const trackPosition = rawData as SubvertAlbumTrackWithArtistPosition;
             const track = trackPosition.track;
             return {
@@ -391,7 +391,7 @@ function formatTrackObject(rawData: SubvertSearchAlbumTrackWithArtistPosition | 
                 id: track.id,
                 name: track.name,
                 url: createUrl('track', `${track.artist?.slug}/${track.slug}`),
-                duration: track.duration ? track.duration * 1000: null,
+                duration: track.duration ? track.duration * 1000 : null,
                 albumName: null,
                 releaseDate: text.formatDate(track.releaseDate),
                 trackArtists: track.artist ? [formatPartialArtistObject(track.artist)] : [],
@@ -410,7 +410,7 @@ function formatTrackObject(rawData: SubvertSearchAlbumTrackWithArtistPosition | 
                 id: track.id,
                 name: track.name,
                 url: createUrl('track', `${track.artist?.slug}/${track.slug}`),
-                duration: track.duration ? track.duration * 1000: null,
+                duration: track.duration ? track.duration * 1000 : null,
                 trackArtists: track.artist ? [formatPartialArtistObject(track.artist)] : [],
                 albumName: null,
                 releaseDate: null,
@@ -429,7 +429,7 @@ function formatTrackObject(rawData: SubvertSearchAlbumTrackWithArtistPosition | 
             id: track.id,
             name: track.name,
             url: createUrl('track', `${track.artist?.slug}/${track.slug}`),
-            duration: track.metadata?.duration ? track.metadata.duration * 1000: null,
+            duration: track.metadata?.duration ? track.metadata.duration * 1000 : null,
             trackArtists: track.artist ? [formatPartialArtistObject(track.artist)] : [],
             albumName: null,
             releaseDate: null,
@@ -462,7 +462,7 @@ function formatTrackObject(rawData: SubvertSearchAlbumTrackWithArtistPosition | 
 }
 
 function formatPartialArtistObject(rawData: SubvertArtistProfile | SubvertAlbumArtist): PartialArtistObject {
-    if ("description" in rawData){
+    if ("description" in rawData) {
         const artist = rawData as SubvertArtistProfile;
         return {
             type: 'partialArtist',
@@ -489,15 +489,15 @@ function formatPartialArtistObject(rawData: SubvertArtistProfile | SubvertAlbumA
 
 async function getTrackById(id: string): Promise<SubvertTrack | null> {
     try {
-        if (id.includes(":track:")){
+        if (id.includes(":track:")) {
             const resolvedId = await cachedResolvedSlug(id, 'track');
-            if (resolvedId){
+            if (resolvedId) {
                 id = resolvedId
             }
         }
         id = id.replace("track:", "");
         const data = await subvertFetch(`track/${id}`);
-        if (data && typeof data == "object" &&  "slug" in data) {
+        if (data && typeof data == "object" && "slug" in data) {
             return data as SubvertTrack;
         }
     } catch (error) {

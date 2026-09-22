@@ -1,5 +1,5 @@
 export interface SubvertAlbumRoot {
-    
+
 }
 
 export interface SubvertSearchAlbum {
@@ -30,8 +30,8 @@ export interface SubvertGenre {
   name: string
 }
 
-export interface SubvertTrackCount {  
-    tracks: number
+export interface SubvertTrackCount {
+  tracks: number
 }
 
 export interface SubvertSearchAlbumArtist {
@@ -89,7 +89,7 @@ export interface SubvertAlbumArtist extends SubvertSearchAlbumArtist {
 }
 
 export interface SubvertTrackPosition {
-    trackNumber: number
+  trackNumber: number
 }
 
 export interface SubvertAlbumTrackPosition extends SubvertTrackPosition {
@@ -158,8 +158,8 @@ export interface VariantMetadata {
 }
 
 export interface SubvertAudioMeta {
-    fileSize: number
-    createdAt: string
+  fileSize: number
+  createdAt: string
 }
 
 export interface SubvertPagination {
@@ -283,9 +283,9 @@ export interface SubvertTrack {
   genres: string[]
   credits: SubvertCredit[]
   links: SubvertLink[]
-  releaseDate: any
-  isrc: string
-  iswc: string
+  releaseDate: string | null
+  isrc: string | null
+  iswc: string | null
   publisher: any
   license: string
   priceCents: number
