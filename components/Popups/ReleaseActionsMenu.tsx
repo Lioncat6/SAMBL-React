@@ -35,7 +35,7 @@ function ReleaseActionsMenu({ close, data }: { close?: () => void, data: AlbumSt
                 <FaLink /> Release Actions{" "}
             </div>
             <div className={styles.content}>
-                <AlbumDetails data={data} />
+                {/* <AlbumDetails data={data} /> */}
                 <PopupActionButton
                     type="link"
                     href={isrcSeedUrl}
