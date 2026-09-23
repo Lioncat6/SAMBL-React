@@ -23,42 +23,37 @@ import { APITimingData, SAMBLAPIResponse } from "../types/api-types";
 
 
 export async function SAMBLFetch<T>(path: URL | string, isSSR = false): Promise<[T, APITimingData | null]> {
-    try {
-        const response = await fetch(`${isSSR ? `http://localhost:${process.env.PORT || 3000}` : ''}${path.toString()}`)
-        if (response.ok) {
-            const data = await response.json() as SAMBLAPIResponse<T>
-            if (!data.data) throw new Error("Server returned no data");
-            return [data.data, data.timings ?? null];
-        } else {
-            try {
-                const data = await response.json() as SAMBLAPIResponse<never>
-                if (data.error?.error) {
-                    throw new Error(`Recieved error from server: (${response.status}) ${data.error.error}${data.error.details ? ` | ${data.error.details}` : ''}`)
-                }
-            } catch { }
-            throw new Error(`Recieved unknown error from server: ${response.status} - ${response.statusText}`)
+    const response = await fetch(`${isSSR ? `http://localhost:${process.env.PORT || 3000}` : ''}${path.toString()}`).catch(
+        (error) => {
+            throw new Error(`Error occured while fetching data from server: ${error}`)
+        })
+    if (response.ok) {
+        const data = await response.json() as SAMBLAPIResponse<T>
+        if (!data.data) throw new Error("Server returned no data");
+        return [data.data, data.timings ?? null];
+    } else {
+        const data = await response.json().catch(() => null) as SAMBLAPIResponse<never>
+        console.log(data.error?.error)
+        if (data.error?.error) {
+            throw new Error(`Recieved error from server: (${response.status}) ${data.error.error}${data.error.details ? ` | ${data.error.details}` : ''}`)
         }
-    } catch (error) {
-        throw new Error(`Error occured while fetching data from server: ${error}`)
+        throw new Error(`Recieved unknown error from server: ${response.status} - ${response.statusText}`)
     }
 }
 
 export async function RawSAMBLFetch<T>(path: URL | string, isSSR = false): Promise<SAMBLAPIResponse<T>> {
-    try {
-        const response = await fetch(`${isSSR ? `http://localhost:${process.env.PORT || 3000}` : ''}${path.toString()}`)
-        if (response.ok) {
-            const data = await response.json() as SAMBLAPIResponse<T>
+    const response = await fetch(`${isSSR ? `http://localhost:${process.env.PORT || 3000}` : ''}${path.toString()}`).catch(
+        (error) => {
+            throw new Error(`Error occured while fetching data from server: ${error}`)
+        })
+    if (response.ok) {
+        const data = await response.json() as SAMBLAPIResponse<T>
+        return data;
+    } else {
+        const data = await response.json().catch(() => null) as SAMBLAPIResponse<never>
+        if (data.error?.error) {
             return data;
-        } else {
-            try {
-                const data = await response.json() as SAMBLAPIResponse<never>
-                if (data.error?.error) {
-                    return data;
-                }
-            } catch { }
-            throw new Error(`Recieved unknown error from server: ${response.status} - ${response.statusText}`)
         }
-    } catch (error) {
-        throw new Error(`Error occured while fetching data from server: ${error}`)
+        throw new Error(`Recieved unknown error from server: ${response.status} - ${response.statusText}`)
     }
 }

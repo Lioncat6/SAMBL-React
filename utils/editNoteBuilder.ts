@@ -108,7 +108,7 @@ function buildSeedReleaseEditNote(data: AggregatedAlbum): string {
     return `Release seeded from ''SAMBL''\n` +
         `'''Provider:''' ${data.provider}\n` +
         `'''Source:''' ${data.url.url}\n` +
-        (data.sourceArtist && `'''Artist:''' ${data.sourceArtist?.name || "Unknown"} | ${data.sourceArtist?.url.url || "Unknown"}\n\n`) +
+        (data.sourceArtist ? `'''Artist:''' ${data.sourceArtist?.name || "Unknown"} | ${data.sourceArtist?.url.url || "Unknown"}\n\n` : null) +
         `'''SAMBL ${process.env.NEXT_PUBLIC_VERSION}''': ${process.env.NEXT_PUBLIC_URL || "https://sambl.lioncat6.com"} | https://github.com/lioncat6/SAMBL-React`
         ;
 }
