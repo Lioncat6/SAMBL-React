@@ -105,4 +105,35 @@
     background-color: transparent;
     border: 1px solid var(--foreground-tertiary);
     cursor: not-allowed;
+    color: var(--foreground-tertiary)
+}
+
+.popupActionButton.compact.disabled {
+    border: none;
+}
+
+.popupActionButton.compact.disabled .compactButtonInner {
+    border: 1px solid var(--foreground-tertiary);
+    color: var(--foreground-tertiary)
+}
+
+.compact {
+  padding: 4px;
+  border: none;
+}
+
+.compact:hover {
+    border: none;
+}
+
+.compactButtonInner {
+  border: 1px solid var(--foreground-secondary);
+  border-radius: 5px;
+  color: var(--foreground-primary);
+  transition: all 0.2s ease-in-out;
+  padding: 5px;
+}
+
+.compact:hover  {
+    border: 1px solid var(--foreground-tertiary);
 }

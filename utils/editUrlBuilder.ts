@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useSettings, useSettingsOrDefaults } from "../components/SettingsContext";
-import { AlbumStack } from "../types/aggregated-types";
+import { AggregatedAlbum, AggregatedTrack, AlbumStack } from "../types/aggregated-types";
 import { DeepSearchSelection } from "../types/component-types";
-import { ArtistObject, PartialArtistObject, ProviderNamespace } from "../types/provider-types";
+import { ArtistObject, PartialArtistObject, ProviderNamespace, TrackObject } from "../types/provider-types";
 import albumStack from "./albumStack";
 import editNoteBuilder from "./editNoteBuilder";
 
@@ -79,12 +79,27 @@ function buildArtistImageSeedUrl(artist: ArtistObject, targetBaseUrl: string): s
     return baseUrl.toString().replace(/%250A/g, '%0A');
 }
 
+function buildRecordingUrlSeedUrl(recording: TrackObject, album: AlbumStack, targetBaseUrl: string): string | null {
+    const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(album);
+    const {mbid, url, provider} = recording;
+    if (!mbid || !url || url.mbTypes.length == 0 || !targetAlbum) return null;
+    const baseUrl = new URL(`https://${targetBaseUrl}/recording/${mbid}/edit`);
+    let editNode = editNoteBuilder.buildRecordingSeedEditNote(provider, aggregatedAlbum.name, targetAlbum.url.url, aggregatedAlbum.url.url, false);
+    for (const typeIndex in url.mbTypes) {
+        baseUrl.searchParams.append(`edit-recording.url.${typeIndex}.text`, url.url)
+        baseUrl.searchParams.append(`edit-recording.url.${typeIndex}.link_type_id`, url.mbTypes[typeIndex].toString())
+    }
+    baseUrl.searchParams.append('edit-recording.edit_note', editNode)
+    return baseUrl.toString().replace(/%250A/g, '%0A');
+}
+
 const editUrlBuilder = {
     buildAddArtistEditUrl,
     buildDeepSearchEditUrl,
     buildISRCEditUrl,
     buildCoverArtSeedUrl,
-    buildArtistImageSeedUrl
+    buildArtistImageSeedUrl,
+    buildRecordingUrlSeedUrl
 }
 
 export default editUrlBuilder;

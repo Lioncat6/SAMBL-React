@@ -107,8 +107,9 @@ export function ActionButton({ type, onClick, isLoading, data }: { type: "lookup
 }
 
 
-export function PopupActionButton({ children, type = "button", onClick, href, target = "_blank", disabled = false, warning = false, title }: { children: React.ReactNode, type?: "link" | "button", onClick?: () => void, disabled?: boolean, warning?: boolean, href?: URL | string | null, target?: HTMLAttributeAnchorTarget, title?: string | null }) {
-	const classes = `${styles.popupActionButton}${disabled ? ` ${styles.disabled}` : ''}${warning ? ` ${styles.warning}` : ''}`
+export function PopupActionButton({ children, type = "button", style = "normal", onClick, href, target = "_blank", disabled = false, warning = false, title }: { children: React.ReactNode, type?: "link" | "button", style?: "normal"| "compact", onClick?: () => void, disabled?: boolean, warning?: boolean, href?: URL | string | null, target?: HTMLAttributeAnchorTarget, title?: string | null }) {
+	const classes = `${styles.popupActionButton}${disabled ? ` ${styles.disabled}` : ''}${warning ? ` ${styles.warning}` : ''}${style =="compact" ? ` ${styles.compact}` : ''}`
+	const buttonChildren = style == "normal" ? children : <span className={styles.compactButtonInner}>{children}</span>;
 	return (
 		<>
 			{type == "link" ?
@@ -119,7 +120,7 @@ export function PopupActionButton({ children, type = "button", onClick, href, ta
 					href={href?.toString()}
 					target={target}
 				>
-					{children}
+					{buttonChildren}
 				</a> :
 				<button
 					className={classes}
@@ -127,7 +128,7 @@ export function PopupActionButton({ children, type = "button", onClick, href, ta
 					onClick={onClick}
 					disabled={disabled}
 				>
-					{children}
+					{buttonChildren}
 				</button>
 			}
 		</>

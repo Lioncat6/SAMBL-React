@@ -1,7 +1,7 @@
 import { AggregatedAlbum, AggregatedArtist, AlbumStack } from "../types/aggregated-types";
 import { DeepSearchData } from "../types/api-types";
 import { DeepSearchSelection } from "../types/component-types";
-import { ArtistObject, PartialArtistObject } from "../types/provider-types";
+import { ArtistObject, PartialArtistObject, ProviderNamespace } from "../types/provider-types";
 import albumStack from "./albumStack";
 import clientProviders from "./clientProviders";
 import text from "./text";
@@ -113,10 +113,20 @@ function buildSeedReleaseEditNote(data: AggregatedAlbum): string {
         ;
 }
 
+function buildRecordingSeedEditNote(provider: ProviderNamespace, albumName: string, targetUrl: string, sourceUrl: string, encodeString = true): string {
+    return encode( 
+        `Recording URLs matched while importing release from ''SAMBL''%0A`+
+        `'''Provider:''' ${clientProviders.getDisplayName(provider)} (${sourceUrl})%0A`+
+        `'''Release:''' ${albumName} (${targetUrl})%0A%0A`+
+        `'''SAMBL ${process.env.NEXT_PUBLIC_VERSION}''': ${process.env.NEXT_PUBLIC_URL || "https://sambl.lioncat6.com"} | https://github.com/lioncat6/SAMBL-React`
+    , encodeString);
+}
+
 const editNoteBuilder = {
     buildEditNote,
     buildDeepSearchEditNote,
     buildSeedReleaseEditNote,
+    buildRecordingSeedEditNote
 }
 
 export default editNoteBuilder;

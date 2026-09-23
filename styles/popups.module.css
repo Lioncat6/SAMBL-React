@@ -129,10 +129,11 @@
 
 .content {
   margin-top: 20px;
-  margin-bottom: 20px;
+  /* margin-bottom: 20px; */
   overflow-y: scroll;
   position: relative;
   z-index: 1;
+  padding-bottom: 10px;
 }
 
 .configureMenu,
@@ -581,7 +582,8 @@
 }
 
 .trackContainer,
-.sourceArtist {
+.sourceArtist,
+.miniTrackContainer {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -590,8 +592,13 @@
   position: relative;
 }
 
+.miniTrackContainer > * {
+  z-index: 1;
+}
+
 .trackContainer::before,
-.sourceArtist::before {
+.sourceArtist::before,
+.miniTrackContainer::before {
   content: "";
   background-color: var(--background-secondary);
   position: absolute;
@@ -602,6 +609,25 @@
   border-radius: 8px;
   z-index: -1;
   opacity: 20%;
+}
+
+.miniTrackTitle {
+  margin-left: 5px;
+  align-items: center;
+  width: 100%;
+  display: flex;
+  overflow: hidden;
+}
+
+.miniTrackContainer::before {
+
+  z-index: 0;
+  background-color: var(--background-secondary);
+}
+
+.linkImportButton > a {
+  text-wrap: nowrap;
+  margin: 0;
 }
 
 .trackButtonContainer {

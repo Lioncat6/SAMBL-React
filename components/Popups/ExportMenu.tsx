@@ -4,6 +4,7 @@ import { FaCopy, FaChevronDown, FaChevronRight } from "react-icons/fa6";
 import { TbTableExport } from "react-icons/tb";
 import text from "../../utils/text";
 import Popup from "../Popup";
+import { PopupActionButton } from "../buttons";
 
 function CopyButton({ value }) {
 
@@ -95,14 +96,13 @@ function ExportMenu({ data, close }: { data: JSON, close?: () => void }) {
 				})}
 			</div>
 			<div className={styles.actions}>
-				<button
-					className={styles.button}
+				<PopupActionButton
 					onClick={() => {
 						text.copy(JSON.stringify(data, null, 2), true);
 					}}
 				>
 					<FaCopy /> Copy All
-				</button>
+				</PopupActionButton>
 			</div>
 		</>
 	);

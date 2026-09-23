@@ -14,6 +14,7 @@ import parsers from "../../lib/parsers/parsers";
 import { SAMBLArtistIcon } from "../icons";
 import albumStack from "../../utils/albumStack";
 import clientProviders from "../../utils/clientProviders";
+import { PopupActionButton } from "../buttons";
 
 function MbUrlIcon({ status, url, styleClass, isAlbum = true }: { status: AlbumStatus | TrackStatus, url: string | null, styleClass: string, isAlbum?: boolean }) {
 	return (
@@ -116,10 +117,10 @@ export function AlbumDetails({ data, isStandalone }: { data: AlbumStack, isStand
 				{(language || script) &&
 					<div className={styles.langIcons}>
 						{(language) &&
-							<div className={`${styles.langIcon}${language.name ? ` ${styles.hasName}`: ``}`} title={language.name}>{language.code.toUpperCase()}</div>
+							<div className={`${styles.langIcon}${language.name ? ` ${styles.hasName}` : ``}`} title={language.name}>{language.code.toUpperCase()}</div>
 						}
 						{(script) &&
-							<div className={`${styles.langIcon}${script.name ? ` ${styles.hasName}`: ``}`} title={script.name}>{script.code.toLocaleLowerCase()}</div>
+							<div className={`${styles.langIcon}${script.name ? ` ${styles.hasName}` : ``}`} title={script.name}>{script.code.toLocaleLowerCase()}</div>
 						}
 					</div>
 				}
@@ -174,7 +175,7 @@ function TrackItem({ index, track, album, isrcSource, highlight, isStandalone }:
 
 	if ((track as AggregatedTrack).mbid !== undefined) {
 		mbid = (track as AggregatedTrack).mbid || null;
-		mbUrl = track.mbid ? mbParser.createUrl('track', track.mbid).url: null;
+		mbUrl = track.mbid ? mbParser.createUrl('track', track.mbid).url : null;
 		status = (track as AggregatedTrack).status;
 		trackIssues = (track as AggregatedTrack).trackIssues;
 	}
@@ -344,9 +345,11 @@ export function TrackMenu({ data, refresh, close }: { data: AlbumStack, refresh:
 			</div>
 			<TrackMenuInner data={data} refresh={refresh} />
 			<div className={styles.actions}>
-				<button className={styles.button} onClick={close}>
+				<PopupActionButton
+					onClick={close}
+				>
 					Close
-				</button>
+				</PopupActionButton>
 			</div>
 
 		</>
