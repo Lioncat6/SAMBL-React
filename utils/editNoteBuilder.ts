@@ -112,7 +112,7 @@ function buildSeedReleaseEditNote(data: AggregatedAlbum): string {
     return `Release seeded from ''SAMBL''\n` +
         `'''Provider:''' ${data.provider}\n` +
         `'''Source:''' ${data.url.url}\n` +
-        (data.sourceArtist ? `'''Artist:''' ${data.sourceArtist?.name || "Unknown"} | ${data.sourceArtist?.url.url || "Unknown"}\n\n` : null) +
+        (data.sourceArtist ? `'''Artist:''' ${data.sourceArtist?.name || "Unknown"} | ${data.sourceArtist?.url.url || "Unknown"}\n\n` : "") +
         SAMBLFooter()
         ;
 }
