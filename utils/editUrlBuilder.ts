@@ -21,7 +21,7 @@ function buildDeepSearchEditUrl(data: DeepSearchSelection, targetBaseUrl: string
     data.data.sourceArtist.url.mbTypes.forEach((type, index) => {
         urls = urls + `&edit-artist.url.${index}.text=${data.data.sourceArtist.url.url}&edit-artist.url.${index}.link_type_id=${type}`
     })
-    return `https://${targetBaseUrl}artist/${data.mbid}/edit?${urls}&edit-artist.edit_note=${editNote}`
+    return `https://${targetBaseUrl}/artist/${data.mbid}/edit?${urls}&edit-artist.edit_note=${editNote}`
 }
 
 function buildISRCEditUrl(data: AlbumStack): string | null {

@@ -11,6 +11,10 @@ function encode(str: string, encodeString = true) {
     return encodeURIComponent(str).replace(/%250A/g, '%0A');
 }
 
+function SAMBLFooter(): string {
+    return `'''SAMBL ${process.env.NEXT_PUBLIC_VERSION}''': ${process.env.NEXT_PUBLIC_URL || "https://sambl.lioncat6.com"} | https://github.com/lioncat6/SAMBL-React`;
+}
+
 /**
  * Generate Edit note String
  *
@@ -28,7 +32,7 @@ function buildEditNote(edit: string, provider: string, sourceUrl: string, artist
         `'''Artist:''' ${artistUrl}%0A` +
         (pageUrl ? `'''SAMBL URL:''' ${pageUrl}%0A` : '') +
         `%0A` +
-        `'''SAMBL ${process.env.NEXT_PUBLIC_VERSION}''': ${process.env.NEXT_PUBLIC_URL || "https://sambl.lioncat6.com"} | https://github.com/lioncat6/SAMBL-React`, encodeString
+        SAMBLFooter(), encodeString
     );
 }
 
@@ -100,7 +104,7 @@ function buildDeepSearchEditNote(data: DeepSearchSelection): string {
         `'''Name Similarity:''' ${text.truncateToTwo(artist.nameSimilarity * 100)}%%0A` +
         `'''Method:''' ${getMethod()}%0A` +
         `${artist.mostCommonMBID ? `'''Most Common MBID:''' ${isMostCommon() ? "Yes" : "Tie"} | ''${artist.occurrences} Occurrences''%0A` : ""}` +
-        `%0A'''SAMBL ${process.env.NEXT_PUBLIC_VERSION}''': ${process.env.NEXT_PUBLIC_URL || "https://sambl.lioncat6.com"} | https://github.com/lioncat6/SAMBL-React`
+        `%0A${SAMBLFooter()}`
     );
 }
 
@@ -109,7 +113,7 @@ function buildSeedReleaseEditNote(data: AggregatedAlbum): string {
         `'''Provider:''' ${data.provider}\n` +
         `'''Source:''' ${data.url.url}\n` +
         (data.sourceArtist ? `'''Artist:''' ${data.sourceArtist?.name || "Unknown"} | ${data.sourceArtist?.url.url || "Unknown"}\n\n` : null) +
-        `'''SAMBL ${process.env.NEXT_PUBLIC_VERSION}''': ${process.env.NEXT_PUBLIC_URL || "https://sambl.lioncat6.com"} | https://github.com/lioncat6/SAMBL-React`
+        SAMBLFooter()
         ;
 }
 
@@ -118,7 +122,7 @@ function buildRecordingSeedEditNote(provider: ProviderNamespace, albumName: stri
         `Recording URLs matched while importing release from ''SAMBL''%0A`+
         `'''Provider:''' ${clientProviders.getDisplayName(provider)} (${sourceUrl})%0A`+
         `'''Release:''' ${albumName} (${targetUrl})%0A%0A`+
-        `'''SAMBL ${process.env.NEXT_PUBLIC_VERSION}''': ${process.env.NEXT_PUBLIC_URL || "https://sambl.lioncat6.com"} | https://github.com/lioncat6/SAMBL-React`
+        SAMBLFooter()
     , encodeString);
 }
 

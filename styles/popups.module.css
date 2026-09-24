@@ -617,6 +617,7 @@
   width: 100%;
   display: flex;
   overflow: hidden;
+  font-weight: bold;
 }
 
 .miniTrackContainer::before {
