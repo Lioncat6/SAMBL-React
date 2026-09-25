@@ -39,7 +39,7 @@ function NoticeBox({ color, text, button}: {color: string, text: string, button?
 
 function NoMBIDNotice({data}: {data?: ArtistPageData | null}) {
 	const { settings } = useSettingsOrDefaults();
-	if (!data) {
+	if (!data?.id) {
 		return (
 			<NoticeBox color="red"
 			text={`This artist is not in MusicBrainz`} />
@@ -102,12 +102,29 @@ function AIArtistNotice() {
 	);
 }
 
-export default function Notice({ data, type }: {data?: null | ArtistPageData, type:  "noMBID" | "quickFetched" | "aiArtist"}) {
+function OnHarmonyNotice({url}: {url: string}) {
+	return (
+		<NoticeBox
+			color="purple"
+			text={`This provider is avalible on Harmony`}
+			button={
+				<a href={url} rel="noopener" target="_blank" className={styles.addToMBButton}>
+					Lookup on Harmony
+				</a>
+			}
+		/>
+	);
+}
+
+export default function Notice({ data, type }: {data?: any, type:  "noMBID" | "quickFetched" | "aiArtist" | "onHarmony"}): JSX.Element | null {
 	if (type === "noMBID") {
 		return <NoMBIDNotice data={data} />;
 	} else if (type === "quickFetched") {
 		return <QuickFetchedNotice />;
 	} else if (type === "aiArtist") {
 		return <AIArtistNotice />;
+	} else if (type === "onHarmony") {
+		return <OnHarmonyNotice url={data} />
 	}
+	return null;
 }

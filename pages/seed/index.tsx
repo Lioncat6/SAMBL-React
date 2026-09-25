@@ -19,6 +19,8 @@ import ReleaseActionsPopup from "../../components/Popups/ReleaseActionsMenu";
 import { GetServerSidePropsContext } from "next";
 import normalizeVars from "../../utils/normalizeVars";
 import { hostname } from "node:os";
+import harmony from "../../lib/seeders/harmony";
+import Notice from "../../components/notices";
 
 
 async function getAlbum(url?: string, provider?: string, artistId?: string, albumId?: string): Promise<AlbumStack | null> {
@@ -107,6 +109,7 @@ export default function Seed({ data, error, hostName, timings }: { data?: AlbumS
         )
     }
     const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(data)
+    const harmonyProviders = harmony.providers;
     return (
         <>
             <div className={styles.seedPageContainer} style={{ "--background-image": `url('${aggregatedAlbum.imageUrl || ""}')` } as React.CSSProperties}>
@@ -119,6 +122,7 @@ export default function Seed({ data, error, hostName, timings }: { data?: AlbumS
                 {/* <div className="titleContainer">
                 <h1 className={styles.seedTitle} id="searchFor">Seed Release</h1>
             </div> */}
+                {harmonyProviders.includes(aggregatedAlbum.provider) && <Notice type={"onHarmony"} data={harmony.buildUrl(aggregatedAlbum.url.url, aggregatedAlbum.upc)}/>}
                 <SearchBox type="lookup" />
                 <ReleaseSeedButton data={data} orgin={`https://${hostName ?? process.env.NEXT_PUBLIC_URL?.replaceAll(/https|http|[\:\/]/g , '')}${router.asPath}`}/>
                 {targetAlbum &&
