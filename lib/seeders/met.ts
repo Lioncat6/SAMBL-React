@@ -17,7 +17,7 @@ const met: Seeder = {
     namespace: "met",
     displayName: "MET",
     providers: ["spotify", "applemusic", "deezer", "tidal", "musicbrainz", "qobuz"],
-    isDefault: true,
+    isDefault: false,
     buildUrl: buildUrl,
 };
 

@@ -19,6 +19,7 @@ Streaming Artist MusicBrainz Lookup
 | Naver VIBE | ❌️ | ❌️ | ✅ | ✅ | ✅ |
 | Discogs | ❌️ | ✅ | ✅ | ✅ | ✅ |
 | Volumo | ❌️ | ✅ | ✅ | ✅ | ✅ |
+| Subvert | ❌️ | ❌️ | ✅ | ✅ | ✅ |
 
 ### MetaBrainz Thread:
 
@@ -45,7 +46,10 @@ SOUNDCLOUD_OAUTH_TOKEN=<Soundcloud Oath Token>
 NEXT_PUBLIC_DISABLED_PROVIDERS=<Providers to disable>
 DISCOGS_CONSUMER_KEY=<Discogs Consumer Key>
 DISCOGS_CONSUMER_SECRET=<Discogs Consumer Secret>
-APPLEMUSIC_TOKEN=<Token Regex>
+APPLEMUSIC_TOKEN=<Token Regex> [optional]
+MUSICBRAINZ_DISABLE_RATE_LIMIT=<1 or 0> [optional]
+MUSICBRAINZ_BASE_URL=https://musicbrainz.org [optional]
+BANDCAMP_COOKIE=<string> [optional]
 ```
 * The Spotify Redirect URI does not need to be a valid URL, but must match your Spotify developer application
 * The contact email is for MusicBrainz's api requirements
@@ -67,19 +71,19 @@ Generation of the API docs should be automated with a swagger UI at some point, 
 | Naver VIBE | naver |
 | Discogs | discogs |
 | Volumo | volumo |
+| Subvert | subvert |
 
 
-### Supported API endpoints
-These API endpoints will be kept stable for public use.
+### API endpoints
 
 The API root is `/api/` (Ex: `https://sambl.lioncat6.com/api/find`)
 
-#### `/find`
+ `/find`
 - `query` (string) **[Required]**
 - `type` (string) **[Required]** — value must be either `UPC` or `ISRC`
   - Looks up tracks or albums by barcode (UPC) or ISRC across Spotify, MusicBrainz, Deezer, Tidal and (ISRC only) MusixMatch.
 
-#### `/compareArtistAlbums` (beta)
+`/compareArtistAlbums` (beta)
 - `provider_id` (string) **[Required]** — provider-specific artist id (e.g. Spotify artist id)
 - `provider` (string) **[Required]** — provider namespace (e.g. `spotify`, `tidal`, `deezer`)
 - `mbid` (string) — MusicBrainz artist id (required unless the `quick` flag is present)
@@ -88,16 +92,11 @@ The API root is `/api/` (Ex: `https://sambl.lioncat6.com/api/find`)
 - `raw` (flag) — when present returns raw source and MB album arrays instead of processed results
   - Notes: `mbid` is validated; if `mbid` is missing and `quick` is not present the request will be rejected (400).
 
-#### `/compareSingleAlbum`
+`/compareSingleAlbum`
 - `provider_id` (string) OR `url` (string) **[One required]**
   - If you supply `provider_id` you must also supply `provider` (namespace). If you supply `url`, the provider is inferred.
 - `provider` (string) — required when using `provider_id`
 - `mbid` (string) — optional MusicBrainz artist id used to disambiguate when searching MusicBrainz by artist+title
-
----
-
-### Unsupported API endpoints
-These endpoints are used internally by SAMBL and are publicly accessible but they may change unexpectedly.
 
 - `/getArtistAlbums`
   - `provider_id` (string) **[Required]**
@@ -158,6 +157,3 @@ These endpoints are used internally by SAMBL and are publicly accessible but the
 
 - `/ping`
   - Health check endpoint; returns `{ message: "Pong" }`.
-
-
-See each endpoint's source in [`/pages/api/`](pages/api/) for full implementation details and any provider-specific behavior.

@@ -6,63 +6,31 @@ import Head from "next/head";
 import SearchBox from "../../components/SearchBox";
 import { FaWindowRestore } from "react-icons/fa6";
 import toasts from "../../utils/toasts";
-import { FindData, ISRCData, UPCData, URLLookupData } from "../../types/api-types";
+import { FindData, ISRCData, SAMBLAPIResponse, UPCData, URLLookupData } from "../../types/api-types";
 import normalizeVars from "../../utils/normalizeVars";
 import { AlbumObject, ArtistObject, TrackObject } from "../../types/provider-types";
 import parsers from "../../lib/parsers/parsers";
 import SAMBLHead from "../../components/SAMBLHead";
+import { SAMBLFetch } from "../../utils/clientAPIHandler";
 
-async function serverFind(query, type) {
-	try {
-		const response = await fetch(`/api/find?query=${query}&type=${type}`)
-		if (response.ok) {
-			return await response.json() as FindData;
-		} else {
-			throw new Error((await response.json()).error || response.statusText);
-		}
-	} catch (error) {
-		throw new Error(error)
-	}
-
+async function serverFind(query: string, type: "UPC" | "ISRC") {
+	const [data, timings] = await SAMBLFetch<FindData>(`/api/find?query=${query}&type=${type}`);
+	return data;
 }
 
-async function getISRCFromURL(url) {
-	try {
-		const response = await fetch(`/api/getTrackISRCs?url=${encodeURIComponent(url)}`)
-		if (response.ok) {
-			return await response.json() as ISRCData;
-		} else {
-			throw new Error((await response.json()).error || response.statusText);
-		}
-	} catch (error) {
-		throw new Error(error)
-	}
+async function getISRCFromURL(url: string) {
+	const [data, timings] = await SAMBLFetch<ISRCData>(`/api/getTrackISRCs?url=${encodeURIComponent(url)}`);
+	return data;
 }
 
-async function getUPCFromURL(url) {
-	try {
-		const response = await fetch(`/api/getAlbumUPCs?url=${encodeURIComponent(url)}`)
-		if (response.ok) {
-			return await response.json() as UPCData;
-		} else {
-			throw new Error((await response.json()).error || response.statusText);
-		}
-	} catch (error) {
-		throw new Error(error)
-	}
+async function getUPCFromURL(url: string) {
+	const [data, timings] = await SAMBLFetch<UPCData>(`/api/getAlbumUPCs?url=${encodeURIComponent(url)}`);
+	return data;
 }
 
 async function lookupUrl(url: string) {
-	try {
-		const response = await fetch(`/api/lookupURL?url=${encodeURIComponent(url)}`)
-		if (response.ok) {
-			return await response.json() as URLLookupData;
-		} else {
-			throw new Error((await response.json()).error || response.statusText);
-		}
-	} catch (error) {
-		throw new Error(error)
-	}
+	const [data, timings] = await SAMBLFetch<URLLookupData>(`/api/lookupURL?url=${encodeURIComponent(url)}`);
+	return data;
 }
 
 export default function Find() {
@@ -137,7 +105,7 @@ export default function Find() {
 						const urlPattern = /^(https?|http):\/\/[^\s/$.?#].[^\s]*$/i;
 						if (isrcPattern.test(query)) {
 							const matchedQuery = query.match(isrcPattern)?.[0];
-							handleResults(await toasts.dispPromise(serverFind(matchedQuery, "ISRC"), "Finding by ISRC...", "Error finding by ISRC!"));
+							handleResults(await toasts.dispPromise(serverFind(matchedQuery ?? "", "ISRC"), "Finding by ISRC...", "Error finding by ISRC!"));
 						} else if (urlPattern.test(query)) {
 							const data = parsers.getUrlInfo(query);
 							if (index != queries.length - 1 && (data?.type === "track" || data?.type === "album")) {
@@ -167,11 +135,11 @@ export default function Find() {
 							}
 						} else if (upcPattern.test(query)) {
 							const matchedQuery = query.match(upcPattern)?.[0];
-							handleResults(await toasts.dispPromise(serverFind(matchedQuery, "UPC"), "Finding by Barcode...", "Error finding by Barcode!"));
+							handleResults(await toasts.dispPromise(serverFind(matchedQuery ?? "", "UPC"), "Finding by Barcode...", "Error finding by Barcode!"));
 						} else if (mbidPattern.test(query) || spfPattern.test(query)) {
 							toasts.warn("Please enter a full URL for the MBID or Spotify ID!");
 						} else {
-							toasts.warn("Invalid input format. Please enter a valid ISRC, MBID, Barcode, or Spotify link.");
+							toasts.warn("Invalid input format. Please enter a valid ISRC, MBID, Barcode, or Provider link.");
 						}
 					} catch (error) {
 						toasts.error(`An error occurred while searching: ${error}`, error);
@@ -230,7 +198,6 @@ export default function Find() {
 			/>
 			<SearchBox type="find" />
 			<div id="contentContainer">
-				<div id="loadingMsg" />
 				{results.length > 0 && <ItemList type={"mixed"} items={results} />}
 			</div>
 		</>

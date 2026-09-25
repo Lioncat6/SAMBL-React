@@ -64,6 +64,10 @@
     border-color: rgba(255, 115, 0, 0.7);
 }
 
+.boxBorder.purple {
+    border-color: rgb(128, 68, 143);
+}
+
 .dismiss {
     /* position: absolute; */
     right: 10px;

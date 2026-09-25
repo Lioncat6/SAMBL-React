@@ -129,45 +129,11 @@
 
 .content {
   margin-top: 20px;
-  margin-bottom: 20px;
+  /* margin-bottom: 20px; */
   overflow-y: scroll;
   position: relative;
   z-index: 1;
-}
-/* 
-.actions .button {
-    padding: 10px 20px;
-    background-color: #0070f3;
-    color: var(--background);
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-} */
-
-.actions .button {
-  padding: 10px;
-  border: 1px solid var(--foreground-primary);
-  border-radius: 20px;
-  margin-top: 12px;
-  width: 100%;
-  display: block;
-  background: transparent;
-  color: var(--foreground-primary);
-  transition: all 0.2s ease-in-out;
-  position: relative;
-  z-index: 1;
-  cursor: pointer;
-}
-
-.actions .button:hover {
-  background-color: transparent;
-  border: 1px solid var(--foreground-tertiary);
-}
-
-.button.warning {
-  border-color: var(--status-red);
-  color: var(--status-red);
+  padding-bottom: 10px;
 }
 
 .configureMenu,
@@ -500,6 +466,7 @@
 .artists,
 .releaseDate,
 .barcode,
+.albumType,
 .alb,
 .genres {
   text-align: left;
@@ -555,6 +522,7 @@
   text-overflow: ellipsis;
   color: var(--foreground-secondary);
   font-size: small;
+  text-align: left;
 }
 
 .trackInfo {
@@ -563,6 +531,7 @@
   margin-left: 4px;
   width: 100%;
   overflow: hidden;
+  text-align: left;
 }
 
 .trackTopRow {
@@ -613,7 +582,8 @@
 }
 
 .trackContainer,
-.sourceArtist {
+.sourceArtist,
+.miniTrackContainer {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -622,8 +592,13 @@
   position: relative;
 }
 
+.miniTrackContainer > * {
+  z-index: 1;
+}
+
 .trackContainer::before,
-.sourceArtist::before {
+.sourceArtist::before,
+.miniTrackContainer::before {
   content: "";
   background-color: var(--background-secondary);
   position: absolute;
@@ -636,6 +611,26 @@
   opacity: 20%;
 }
 
+.miniTrackTitle {
+  margin-left: 5px;
+  align-items: center;
+  width: 100%;
+  display: flex;
+  overflow: hidden;
+  font-weight: bold;
+}
+
+.miniTrackContainer::before {
+
+  z-index: 0;
+  background-color: var(--background-secondary);
+}
+
+.linkImportButton > a {
+  text-wrap: nowrap;
+  margin: 0;
+}
+
 .trackButtonContainer {
   white-space: nowrap;
   overflow: hidden;
@@ -643,12 +638,6 @@
   flex-shrink: 0;
   display: flex;
   align-items: center;
-}
-
-.SAMBLicon {
-  width: 12px;
-  height: 16px;
-  vertical-align: middle;
 }
 
 .selectBox {
@@ -1078,4 +1067,35 @@
   text-overflow: ellipsis;
   width: -webkit-fill-available;
   width: -moz-available;
+}
+
+.langIcons {
+  text-align: left;
+}
+
+.langIcon {
+  display: inline-block;
+  margin-right: 5px;
+  border-radius: 5px;
+  padding: 2px;
+  font-size: smaller;
+  color: var(--foreground-secondary);
+  font-weight: bold;
+  font-size: large;
+  font-family: monospace;
+  background-color: var(--background-secondary);
+}
+
+.langIcon.hasName {
+  cursor: help;
+}
+
+.actionRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actionRow > * {
+  width: auto;
 }

@@ -1,6 +1,6 @@
 import withCache from "../../utils/cache";
 import ErrorHandler from "../../utils/errorHandler";
-import { AlbumObject, ArtistObject, FullProvider, LabelObject, PartialArtistObject, RawAlbumData, RegexArtistUrlQuery, TrackObject, UrlType } from "../../types/provider-types";
+import { AlbumObject, ArtistObject, FullProvider, LabelObject, MediumObject, PartialArtistObject, RawAlbumData, RegexArtistUrlQuery, TrackObject, UrlType } from "../../types/provider-types";
 import { URL } from "url";
 import parsers from "../../lib/parsers/parsers";
 
@@ -341,7 +341,7 @@ function formatAlbumObject(album: Resource<AlbumAttributes>): AlbumObject {
 				? "Ep"
 				: "Album",
 		upc: album.attributes.upc || null,
-		albumTracks: album.relationships.tracks?.data.map(formatTrackObject) || [],
+		mediums: getAlbumMediums(album.relationships.tracks?.data),
 		provider: namespace,
 		genres: album.attributes.genreNames,
 		labels: createLabels(album.attributes.recordLabel),
@@ -359,6 +359,35 @@ function createLabels(label: string | null | undefined): [LabelObject] | null {
 		id: null,
 		type: 'label'
 	}]
+}
+
+function getAlbumMediums(tracks: Resource<SongAttributes>[] | undefined): MediumObject[] {
+	if (!tracks || tracks.length == 0) return [];
+	let mediums: MediumObject[] = []
+	if (tracks) {
+		let medium: MediumObject = {
+			format: 'Digital Media',
+			number: 1,
+			tracks: []
+		}
+		
+		tracks.forEach((track) => {
+			if (track.attributes.discNumber && track.attributes.discNumber != medium.number) {
+				mediums.push(medium);
+				medium = {
+					format: 'Digital Media',
+					number: track.attributes.discNumber,
+					tracks: []
+				}
+			}
+			medium.tracks.push(formatTrackObject(track));
+		});
+		if (medium.tracks.length > 0) {
+			mediums.push(medium);
+		}
+		return mediums;
+	}
+	return []
 }
 
 function formatTrackObject(track: Resource<SongAttributes>): TrackObject {

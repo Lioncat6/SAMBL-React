@@ -1,0 +1,44 @@
+.tableValue {
+  cursor: help;
+  text-wrap: nowrap;
+  .always {
+    color: var(--pa-always-primary);
+  }
+
+  .alwaysPassive {
+    color: var(--pa-always-secondary);
+  }
+
+  .never {
+    color: var(--pa-never-primary);
+  }
+
+  .neverPassive {
+    color: var(--pa-never-secondary);
+  }
+
+  .sometimes {
+    color: var(--pa-sometimes-primary);
+  }
+
+  .refresh {
+    color: var(--pa-refresh-primary);
+  }
+}
+
+.table {
+    display: block;
+    overflow: auto;
+    width: 100%;
+    height: 100%;
+}
+
+.tableContainer {
+  background: var(--background-secondary);
+  border-radius: 10px;
+  padding: 2px;
+  height: min-content;
+  max-height: 70%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}

@@ -2,25 +2,30 @@ import musicbrainz from "../../lib/providers/musicbrainz";
 import providers from "../../lib/providers/providers";
 import logger from "../../utils/logger";
 import { AlbumObject, ArtistObject, ExtendedAlbumObject, PartialArtistObject, ProviderWithCapabilities, UrlMBIDDict } from "../../types/provider-types";
-import { DeepSearchArtist, DeepSearchData, DeepSearchMethod, SAMBLApiError } from "../../types/api-types"
+import { DeepSearchArtist, DeepSearchData, DeepSearchMethod, SAMBLApiError, SAMBLAPIResponse } from "../../types/api-types"
 import { IArtist } from "musicbrainz-api";
 import { NextApiRequest, NextApiResponse } from "next";
-import stringSimilarity  from 'string-similarity';
+import stringSimilarity from 'string-similarity';
 import normalizeVars from "../../utils/normalizeVars";
 import processAlbumData from "../../utils/processAlbumData";
 import text from "../../utils/text";
 import parsers from "../../lib/parsers/parsers";
+import medium from "../../utils/medium";
+import { Stages } from "../../utils/timings";
+import ServerAPIHandler from "../../utils/serverAPIHandler";
 
 //TODO: Implement URL based deep search as a preliminary check before checking UPCs
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {;
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    const stages = new Stages()
+    const api = new ServerAPIHandler('artistDeepSearch', res, stages, ['provider_id', 'provider', 'url', 'count', 'searchURLs', 'searchUPCs', 'trackArtists'])
     try {
         let { provider_id, provider, url, count, searchURLs, searchUPCs, trackArtists } = normalizeVars(req.query);
 
         if (!provider_id && !url) {
-            return res.status(400).json({ error: "Parameter `id` or `url` is required" } as SAMBLApiError);
+            return api.response(400, { error: { error: "Parameter `provider_id` or `url` is required", parameters: ['provider_id', 'url'] } });
         }
         if (provider_id && !provider) {
-            return res.status(400).json({ error: "Parameter `provider` is required when using `provider_id`" } as SAMBLApiError);
+            return api.response(400, { error: { error: "Parameter `provider` is required when using `provider_id`", parameters: ['provider'] } });
         }
         const albumCount = count && Number.parseInt(count) || 5;
         let parsed_id: string | null;
@@ -28,14 +33,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (url) {
             let urlInfo = providers.getUrlInfo(url);
             if (!urlInfo) {
-                return res.status(404).json({ error: "Invalid provider URL" } as SAMBLApiError);
+                return api.response(404, { error: { error: "Invalid provider URL" } });
             }
             if (urlInfo.type !== "artist") {
-                return res.status(400).json({ error: `Invalid URL type. Expected an artist URL.` } as SAMBLApiError);
+                return api.response(400, { error: { error: `Invalid URL type. Expected an artist URL.` } });
             }
             parsed_id = urlInfo.id;
             if (!parsed_id) {
-                return res.status(500).json({ error: "Failed to extract provider id from URL" } as SAMBLApiError);
+                return api.response(500, { error: { error: "Failed to extract provider id from URL" } });
             }
             provider = urlInfo.provider;
             sourceProvider = providers.parseProvider(urlInfo.provider, ["getAlbumById", "formatAlbumObject", "getArtistAlbums", "getArtistById", "formatAlbumGetData", "formatAlbumObject", "formatArtistObject", "formatArtistLookupData"]);
@@ -43,14 +48,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             sourceProvider = providers.parseProvider(provider, ["getAlbumById", "formatAlbumObject", "getArtistAlbums", "getArtistById", "formatAlbumGetData", "formatAlbumObject", "formatArtistObject", "formatArtistLookupData"]);
             parsed_id = provider_id
         } else {
-            return res.status(400).json({ error: "Parameters `provider_id` and `provider` are required when not using `url`" } as SAMBLApiError);
+            return api.response(400, { error: { error: "Parameters `provider_id` and `provider` are required when not using `url`", parameters: ['provider_id', 'provider'] } });
         }
         if (!sourceProvider) {
-            return res.status(400).json({ error: `Provider \`${provider}\` does not support this operation` } as SAMBLApiError);
+            return api.response(400, { error: { error: `Provider \`${provider}\` does not support this operation` } });
         }
-        let artistInfo = await sourceProvider.getArtistById(parsed_id);
+        let artistInfo = await stages.await('Get artist info', sourceProvider.getArtistById(parsed_id), sourceProvider.namespace);
         if (artistInfo == null) {
-            return res.status(404).json({ error: "Artist not found!" } as SAMBLApiError);
+            return api.response(404, { error: { error: "Artist not found!" } });
         }
 
         let useUPCs = !(searchUPCs == "false");
@@ -59,18 +64,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         let formattedArtistInfo = sourceProvider.formatArtistObject(sourceProvider.formatArtistLookupData(artistInfo));
         let artistName = formattedArtistInfo.name;
-        let results = await sourceProvider.getArtistAlbums(parsed_id);
+        let results = await stages.await('Get artist albums', sourceProvider.getArtistAlbums(parsed_id), sourceProvider.namespace);
         //TODO: Implement paging here (in case people want to just check the whole discography for some reason)
         let data = sourceProvider.formatAlbumGetData(results);
         if (data == null) {
-            return res.status(404).json({ error: "Artist albums not found!" } as SAMBLApiError);
+            return api.response(404, { error: { error: "Artist albums not found!" } });
         }
         let albumData: AlbumObject[] = data?.albums?.map(album => sourceProvider.formatAlbumObject(album)) || [];
         let upcs = albumData.map(album => album.upc).filter(upc => upc);
         if (albumData.some((album) => album.upc && album.upc?.length > 0)) {
             upcs = albumData.map(album => album.upc);
-        } else {  
-            const albums = [ ...albumData];
+        } else {
+            stages.start('Fetch album UPCs', sourceProvider.namespace);
+            const albums = [...albumData];
             albumData.length = 0;
             for (let i = 0; i < albums.length && i < albumCount; i++) {
                 let album = albums[i]
@@ -79,6 +85,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 albumData.push(fullAlbum);
             }
             upcs = albumData.map(album => album.upc);
+            stages.end('Fetch album UPCs')
         }
         upcs = albumData.map(album => album.upc).filter(upc => upc);
         let mbAlbums: ExtendedAlbumObject[] = [];
@@ -90,6 +97,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
         let albumMBIDs: string[] = [];
         if (useURLs) {
+            stages.start('Lookup provider URLs', 'musicbrainz');
             const regexProvider = providers.parseProvider(sourceProvider, ['buildUrlSearchQuery'])
             const parser = parsers.getParser(sourceProvider.namespace);
             let urlResults: UrlMBIDDict | null = null;
@@ -115,7 +123,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             } else {
                 urlResults = await musicbrainz.getIdsByExternalUrls(albumData.map((album) => album.url.url), 'release', ["release-rels", "artist-rels", "url-rels"]);
             }
+            stages.end('Lookup provider URLs');
             if (urlResults) {
+                stages.start('Get full MusicBrainz album data from URLs', 'musicbrainz')
                 for (const urlOrId of Object.keys(urlResults)) {
                     const mbid = urlResults[urlOrId]!;
                     albumMBIDs.push(mbid);
@@ -130,30 +140,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     formattedAlbum.albumArtists.forEach((artist) => {
                         artistArray.push(artist);
                         artists.push(artist);
-                    })  
+                    })
                     if (useTrackArtists) {
-                        formattedAlbum.albumTracks.forEach((track) => track.trackArtists.forEach((artist) => {
+                        formattedAlbum.mediums.flatMap(medium => medium.tracks).forEach((track) => track.trackArtists.forEach((artist) => {
                             artistArray.push(artist);
                             artists.push(artist);
                         }))
                     }
                 }
+                stages.end('Get full MusicBrainz album data from URLs')
             }
         }
-        if (useUPCs){
+        if (useUPCs) {
+            stages.start('Lookup provider UPCs', 'musicbrainz');
             for (const album of albumData) {
                 if (album.upc) {
                     const upc = album.upc;
                     const mbMatch = await musicbrainz.getAlbumByUPC(upc);
-                    if (mbMatch && mbMatch.length > 0){
+                    if (mbMatch && mbMatch.length > 0) {
                         if (!upcArtistArray.has(upc)) {
                             upcArtistArray.set(upc, []);
                         }
                         const artistArray = upcArtistArray.get(upc)!;
                         for (const release of mbMatch) {
-                            if (!albumMBIDs.includes(release.id)){
+                            if (!albumMBIDs.includes(release.id)) {
                                 let formattedAlbum = release;
-                                if (useTrackArtists){
+                                if (useTrackArtists) {
                                     const fullAlbum = await musicbrainz.getAlbumByMBID(release.id, ['artist-credits', 'recordings']);
                                     formattedAlbum = musicbrainz.formatAlbumObject(fullAlbum);
                                 }
@@ -161,8 +173,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                                 formattedAlbum.albumArtists.forEach((artist) => {
                                     artistArray.push(artist);
                                     artists.push(artist);
-                                })  
-                                formattedAlbum.albumTracks.forEach((track) => track.trackArtists.forEach((artist) => {
+                                })
+                                formattedAlbum.mediums.flatMap(medium => medium.tracks).forEach((track) => track.trackArtists.forEach((artist) => {
                                     artistArray.push(artist);
                                     artists.push(artist);
                                 }))
@@ -171,8 +183,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     }
                 }
             }
+            stages.end('Lookup provider UPCs');
         }
-        const mbidCounts = artists.reduce((acc: {[mbid: string]: {count: number, artist: IArtist}}, artist) => {
+        const mbidCounts = artists.reduce((acc: { [mbid: string]: { count: number, artist: IArtist } }, artist) => {
             acc[artist.id] = acc[artist.id] || { count: 0, artist };
             acc[artist.id].count += 1;
             return acc;
@@ -203,11 +216,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         //     mostCommonArtist = mostCommonArtists[0]; // single artist
         // }
 
-        function getSimilarity(name: string){
+        function getSimilarity(name: string) {
             return stringSimilarity.compareTwoStrings(text.normalizeText(artistName), text.normalizeText(name));
         }
 
-        const formattedAlbumData = processAlbumData(albumData, mbAlbums, undefined, undefined, sourceProvider.namespace);
+        const formattedAlbumData = processAlbumData(albumData, [], mbAlbums, sourceProvider.namespace, formattedArtistInfo);
 
         let finalArtists: DeepSearchArtist[] = []
 
@@ -232,16 +245,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         finalArtists = [...topArtists, ...remainingArtists];
 
-        const dsData: DeepSearchData = { 
-            provider: sourceProvider.namespace, 
+        const dsData: DeepSearchData = {
+            provider: sourceProvider.namespace,
             mbArtists: finalArtists,
             albums: formattedAlbumData.albumData,
             sourceArtist: formattedArtistInfo
         };
 
-        res.status(200).json(dsData);
+        api.response<DeepSearchData>(200, { data: dsData });
     } catch (error) {
         logger.error("Error in artistDeepSearch API:", error);
-        res.status(500).json({ error: "Internal Server Error", details: error.message } as SAMBLApiError);
+        api.response(500, { error: { error: "Internal Server Error", details: error.message } });
     }
 }

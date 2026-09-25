@@ -42,46 +42,6 @@
     animation: overlayFade 0.5s forwards;
 }
 
-/* Provider color definitions */
-
-.spotify {
-    color: var(--spotify-green);
-}
-
-.itunes {
-    color: var(--itunes-red);
-}
-
-.tidal {
-    color: var(--tidal-black);
-}
-
-.deezer {
-    color: var(--deezer-purple);
-}
-
-.bandcamp {
-    color: var(--bandcamp-blue);
-}
-
-.soundcloud {
-    color: var(--soundcloud-orange);
-}
-
-.applemusic {
-    color: var(--applemusic-red);
-}
-
-.naver {
-    color: var(--naver-green)
-}
-.qobuz {
-    color: var(--qobuz-black);
-}
-.volumo {
-    color: var(--volumo-green);
-}
-
 /* Makes it where you only have to define the color with the provider namespace */
 .provider:not(.selected):not(:hover) {
     color: var(--foreground-primary) !important;

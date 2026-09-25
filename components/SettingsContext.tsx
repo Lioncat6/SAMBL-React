@@ -10,7 +10,10 @@ const defaultSettings: SAMBLSettings = {
     currentProvider: "spotify",
     saveSort: false,
     saveFilter: false,
-    currentFilter: null
+    currentFilter: null,
+    targetBaseUrl: "musicbrainz.org",
+    enableCoverArtSeeding: false,
+    enableBulkUrlImport: false
 };
 
 export interface SAMBLSettingsContext {
@@ -49,4 +52,20 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
 export function useSettings() {
     return useContext(SettingsContext);
+}
+
+/**
+ * Only use when values are needed immediately
+ * @returns Default SAMBLSettingsContext
+ */
+export function useSettingsOrDefaults(): SAMBLSettingsContext {
+    const context = useContext(SettingsContext);
+    if (!context) {
+        return {
+            settings: defaultSettings,
+            updateSettings: () => {},
+            loading: false,
+        };
+    }
+    return context;
 }

@@ -2,25 +2,20 @@ import musicbrainz from "../../lib/providers/musicbrainz";
 import processData from "../../utils/processAlbumData";
 import logger from "../../utils/logger";
 import { NextApiRequest, NextApiResponse } from "next";
-import { AlbumData, AlbumObject, ExtendedAlbumObject, ProviderWithCapabilities, RawAlbumData } from "../../types/provider-types";
+import { AlbumData, AlbumObject, ArtistObject, ExtendedAlbumObject, ProviderWithCapabilities, RawAlbumData } from "../../types/provider-types";
 import { IUrl } from "musicbrainz-api";
 import normalizeVars from "../../utils/normalizeVars";
-import { SAMBLApiError } from "../../types/api-types";
+import { SAMBLAPIResponse } from "../../types/api-types";
 import providers from "../../lib/providers/providers";
+import { AggregatedData, RawAggregateData } from "../../types/aggregated-types";
+import { Stages } from "../../utils/timings";
+import ServerAPIHandler from "../../utils/serverAPIHandler";
+import { SAMBLFetch } from "../../utils/clientAPIHandler";
 
 // spotifyId - Spotify artist ID
 // mbid - MusicBrainz artist ID. Only neccesary if you want to check if the associated albums are linked to that artist
 // quick - Uses URL matching to check for spotify album links in MusicBrainz. This returns faster, but contains less information, removing the orange album status.
 // full - adds inc parameters to the MusicBrainz query. (Does not affect quick mode)
-
-async function fetchSourceAlbums(providerId, provider, offset = 0, bypassCache = false) {
-	return fetch(`http://localhost:${process.env.PORT || 3000}/api/getArtistAlbums?provider_id=${providerId}&provider=${provider}&offset=${offset}&limit=50${bypassCache ? "&forceRefresh" : ""}`).then((response) => {
-		if (!response.ok) {
-			return response.status;
-		}
-		return response.json();
-	});
-}
 
 async function fetchMbArtistAlbums(mbid, offset = 0, full = false) {
 	return await musicbrainz.getMBArtistAlbums(mbid, offset, 100, full ? ["url-rels", "recordings", "isrcs", "recording-level-rels", "artist-credits", "label-rels", "artist-rels"] : ["url-rels"]);
@@ -78,7 +73,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 					console.error("Error fetching albums:", error);
 				}
 				if (attempts > 3) {
-					logger.error("Failed to fetch Spotify albums");
+					logger.error("Failed to fetch Source Provider albums");
 					break;
 				}
 			}
@@ -206,6 +201,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 		}
 	}
 
+	const stages = new Stages()
+	const api = new ServerAPIHandler('compareArtistAlbums', res, stages, ['provider_id', 'provider', 'mbid', 'quick', 'full', 'raw']);
 	try {
 		var { provider_id, provider, mbid } = normalizeVars(req.query);
 		// Check for 'quick' or 'full' in the query string
@@ -213,36 +210,52 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 		const full = Object.prototype.hasOwnProperty.call(req.query, "full");
 		const raw = Object.prototype.hasOwnProperty.call(req.query, "raw");
 		if (!provider_id || !provider) {
-			return res.status(400).json({ error: "Parameters `provider_id` and `provider` are required!" } as SAMBLApiError);
+			return api.response(400, { error: { error: "Parameters `provider_id` and `provider` are required!", parameters: ['provider_id', 'provider'] } });
 		}
 
 		if ((mbid && !musicbrainz.validateMBID(mbid)) || (!quick && !mbid)) {
-			return res.status(400).json({ error: "Parameter `mbid` is missing or malformed" } as SAMBLApiError);
+			return api.response(400, { error: { error: "Parameter `mbid` is missing or malformed!", parameters: ['mbid'] } });
 		}
 
-		const sourceProvider = providers.parseProvider(provider, ["getArtistAlbums", "formatAlbumGetData", "formatAlbumObject"])
+		const sourceProvider = providers.parseProvider(provider, ["getArtistAlbums", "formatAlbumGetData", "formatAlbumObject", "getArtistById", "formatArtistObject"])
 
 		if (!sourceProvider) {
-			return res.status(400).json({ error: `Provider ${provider} doesn't support this operation!` })
+			return api.response(400, { error: { error: `Provider ${provider} doesn't support this operation!` } });
+		}
+
+		let sourceArtist: ArtistObject | null = null;
+
+		stages.start("Get source artist by ID", sourceProvider.namespace);
+		const rawArtist = await sourceProvider.getArtistById(provider_id);
+		stages.end("Get source artist by ID");
+		if (rawArtist) {
+			sourceArtist = sourceProvider.formatArtistObject(rawArtist)
+		} else {
+			return api.response(404, {error: {error: "Artist not found", provider: sourceProvider.namespace}})
 		}
 
 		if (quick) {
+			stages.start("Fetching source albums", sourceProvider.namespace)
 			await fetchProviderAlbums([provider_id], sourceProvider);
+			stages.end("Fetching source albums")
+			stages.start("Fetching target albums", 'musicbrainz')
 			await fetchMusicBrainzAlbumsBySourceUrls(getSourceAlbumUrls().map((url) => url.url));
+			stages.end("Fetching target albums")
 		} else {
 			if (!mbid) {
-				return res.status(400).json({ error: "Parameter `mbid` is required when not using `quick`" } as SAMBLApiError);
+				return api.response(400, { error: { error: "Parameter `mbid` is required when not using `quick`", parameters: ['mbid'] } })
 			}
 			await Promise.all([fetchProviderAlbums([provider_id], sourceProvider), fetchMusicbrainzArtistAlbums(mbid, full), fetchMusicBrainzFeaturedAlbums(mbid, full)]);
 		}
 		if (raw) {
-			return res.status(200).json({ sourceAlbums: sourceAlbums, mbAlbums: mbAlbums, mbFeaturedAlbums: mbFeaturedAlbums });
+			return api.response<RawAggregateData>(200, { data: { sourceAlbums: sourceAlbums, targetAlbums: mbAlbums, targetFeaturedAlbums: mbFeaturedAlbums } })
 		}
-		logger.debug("Processing data");
-		let data = await processData(sourceAlbums, [...mbAlbums, ...mbFeaturedAlbums], mbid, provider_id, sourceProvider.namespace, quick, full);
-		res.status(200).json(data);
+		stages.start('Process album data')
+		let data = processData(sourceAlbums, undefined, [...mbAlbums, ...mbFeaturedAlbums], sourceProvider.namespace, sourceArtist, quick, full);
+		stages.end('Process album data')
+		api.response<AggregatedData>(200, { data })
 	} catch (error) {
 		logger.error("Error in CompareArtistAlbums API", error);
-		res.status(500).json({ error: "Internal Server Error", details: error.message } as SAMBLApiError);
+		api.response(500, { error: { error: "Internal Server Error", details: error.message } });
 	}
 }

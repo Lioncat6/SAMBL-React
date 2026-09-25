@@ -15,29 +15,3 @@
 .findBox {
 	height: 20px;
 }
-
-.searchButton,
-.findButton {
-	color: #fff;
-	border: none;
-	padding: 10px 20px;
-	font-size: 16px;
-	border-radius: 5px;
-	cursor: pointer;
-}
-
-.searchButton {
-	background-color: #0074d9;
-}
-
-.findButton {
-	background-color: cadetblue;
-}
-
-.searchButton:hover {
-	background-color: #0056b3;
-}
-
-.findButton:hover {
-	background-color: rgb(78, 131, 133);
-}

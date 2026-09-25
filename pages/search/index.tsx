@@ -8,27 +8,34 @@ import ErrorPage from "../../components/ErrorPage";
 import SAMBLHead from "../../components/SAMBLHead";
 import text from "../../utils/text";
 import { ProviderNamespace } from "../../types/provider-types";
+import clientProviders from "../../utils/clientProviders";
+import { SAMBLFetch } from "../../utils/clientAPIHandler";
+import { GetServerSidePropsContext } from "next";
+import normalizeVars from "../../utils/normalizeVars";
+import { redirect } from "next/dist/server/api-utils";
 
-async function getItems(query, provider) {
-    const response = await fetch(`http://localhost:${process.env.PORT || 3000}/api/searchArtists?query=${query}&provider=${provider}`);
-    if (response.ok) {
-        const data = await response.json() as ArtistSearchData;
+async function getItems(query: string, provider: string) {
+    try {
+        const [data, timings] = await SAMBLFetch<ArtistSearchData>(`/api/searchArtists?query=${query}&provider=${provider}`, true);
         return data;
-    } else {
-        let errorData: null | SAMBLApiError = null
-        try {
-            errorData = await response.json() as SAMBLApiError
-            console.log(errorData);
-        } catch {}
-        throw new Error(`Error fetching artist data: ${errorData?.details ? errorData?.details : errorData?.error ? errorData?.error : response.statusText}`);
+    } catch (error) {
+        throw new Error(`Error fetching artist data: ${error}`);
     }
 }
 
-export async function getServerSideProps(context) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
     try {
-        let { query, provider } = context.query;
+        let { query, provider } = normalizeVars(context.query);
         if (!provider) {
             provider = context.req.cookies?.provider || "spotify";
+        }
+        if (!query) {
+            return {
+                redirect: {
+                    destination: `/`,
+                    permanent: true,
+                },
+            }
         }
         const items = await getItems(query, provider);
         return {
@@ -45,7 +52,7 @@ export async function getServerSideProps(context) {
     }
 }
 
-export default function search({ items, error, provider }: {items?: [], error?:SAMBLError, provider?: ProviderNamespace}) {
+export default function search({ items, error, provider }: { items?: [], error?: SAMBLError, provider?: ProviderNamespace }) {
     if (error || !items) {
         return (
             <ErrorPage error={error || null} />
@@ -56,10 +63,10 @@ export default function search({ items, error, provider }: {items?: [], error?:S
     return (
         <>
             <SAMBLHead
-                title = {`SAMBL • Results for "${query}"`}
+                title={`SAMBL • Results for "${query}"`}
                 fullTitle={`Search results for "${query}"`}
                 description={text.infoToString([
-                    provider && text.capitalizeFirst(provider),
+                    provider && clientProviders.getDisplayName(provider),
                     `${items.length} results for "${query}"`
                 ])}
             />

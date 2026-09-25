@@ -1,5 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { SAMBLApiError } from "../../types/api-types";
+import { PingPongData, SAMBLApiError } from "../../types/api-types";
+import { Stages } from '../../utils/timings';
+import ServerAPIHandler from '../../utils/serverAPIHandler';
 /**
  * @swagger
  * /api/ping:
@@ -33,10 +35,12 @@ import { SAMBLApiError } from "../../types/api-types";
  *                   type: string
  *                   example: Error details
  */
-export default async function handler(req:NextApiRequest, res:NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    const stages = new Stages();
+    const api = new ServerAPIHandler('ping', res, stages);
     try {
-        res.status(200).json({message: "Pong"});
-	} catch (error) {
-        res.status(500).json({ error: "Internal Server Error", details: error.message } as SAMBLApiError);
+        api.response<PingPongData>(200, { data: "Pong" });
+    } catch (error) {
+        api.response(500, { error: { error: "Internal Server Error", details: error.message } });
     }
 }

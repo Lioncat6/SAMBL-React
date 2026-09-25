@@ -19,3 +19,122 @@
     border-color: var(--foreground-secondary);
     color: var(--background-primary);
 }
+
+.actionButton {
+	color: #fff;
+	border: none;
+	padding: 10px 20px;
+	font-size: 16px;
+	border-radius: 5px;
+	cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.searchButton {
+	background-color: #0074d9;
+}
+
+.findButton {
+	background-color: cadetblue;
+}
+
+.lookupButton {
+	background-color: #28a745;
+}
+
+.searchButton:hover {
+	background-color: #0056b3;
+}
+
+.findButton:hover {
+	background-color: rgb(78, 131, 133);
+}
+
+.lookupButton:hover {
+	background-color: #218838;
+}
+
+.seedButton {
+    background-color: #0081c7;
+}
+
+.seedButton:hover {
+    background-color: #006297;
+}
+
+.releaseActionsButton {
+    background-color: #eba000;
+}
+
+.releaseActionsButton:hover {
+    background-color: #c78800;
+}
+
+.popupActionButton {
+  padding: 10px;
+  border: 1px solid var(--foreground-primary);
+  border-radius: 20px;
+  margin-top: 12px;
+  width: -webkit-fill-available;
+  width: -moz-available;
+  display: block;
+  background: transparent;
+  color: var(--foreground-primary);
+  transition: all 0.2s ease-in-out;
+  position: relative;
+  z-index: 1;
+  cursor: pointer;
+  /* Anchor element overrides */
+  text-align: center;
+  font-weight: normal;
+  font-size: smaller;
+}
+
+.popupActionButton:hover:not(.compact)  {
+  background-color: transparent;
+  border: 1px solid var(--foreground-tertiary);
+  text-decoration: none;
+}
+
+.popupActionButton.warning {
+  border-color: var(--status-red);
+  color: var(--status-red);
+}
+
+.popupActionButton.disabled {
+    background-color: transparent;
+    border: 1px solid var(--foreground-tertiary);
+    cursor: not-allowed;
+    color: var(--foreground-tertiary)
+}
+
+.popupActionButton.compact.disabled {
+    border: none;
+}
+
+.popupActionButton.compact.disabled .compactButtonInner {
+    border: 1px solid var(--foreground-tertiary);
+    color: var(--foreground-tertiary)
+}
+
+.compact {
+  padding: 4px;
+  border: none;
+}
+
+.compact:hover {
+    border: none;
+    text-decoration: none;
+}
+
+.compactButtonInner {
+  border: 1px solid var(--foreground-secondary);
+  border-radius: 5px;
+  color: var(--foreground-primary);
+  transition: all 0.2s ease-in-out;
+  padding: 5px;
+}
+
+.compact:hover .compactButtonInner {
+    border: 1px solid var(--foreground-tertiary);
+}

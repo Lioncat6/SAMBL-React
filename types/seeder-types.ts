@@ -1,5 +1,5 @@
 import { ProviderNamespace } from "./provider-types";
-export type SeederNamespace = "met" | "harmony" | "atisket" | "yambs";
+export type SeederNamespace = "met" | "harmony" | "atisket" | "yambs" | "sambl";
 
 export class Seeder {
     namespace: SeederNamespace;

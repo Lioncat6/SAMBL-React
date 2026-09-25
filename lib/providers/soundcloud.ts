@@ -19,6 +19,7 @@ import Soundcloud, {
   SoundcloudPlaylist
 } from 'soundcloud.ts'
 import parsers from '../parsers/parsers'
+import medium from '../../utils/medium'
 
 const namespace = 'soundcloud'
 
@@ -29,13 +30,19 @@ const { parseUrl, createUrl } = parsers.getParser(namespace);
 const soundcloudClientId: string = process.env.SOUNDCLOUD_CLIENT_ID ?? ''
 const soundcloudOauthToken: string = process.env.SOUNDCLOUD_OAUTH_TOKEN ?? ''
 
-if (!soundcloudClientId || !soundcloudOauthToken) {
-  throw new Error(
-    'TIDAL_CLIENT_ID and SOUNDCLOUD_OAUTH_TOKEN must be set in environment variables.'
-  )
-}
+let scApi: Soundcloud | null = null;
 
-const scApi = new Soundcloud(soundcloudClientId, soundcloudOauthToken)
+function getSoundcloudAPI() {
+  if (!scApi) {
+    if (!soundcloudClientId || !soundcloudOauthToken) {
+      throw new Error(
+        'SOUNDCLOUD_CLIENT_ID and SOUNDCLOUD_OAUTH_TOKEN must be set in environment variables.'
+      )
+    }
+    scApi = new Soundcloud(soundcloudClientId, soundcloudOauthToken)
+  }
+  return scApi
+}
 
 function correctId(rawId: string | number, correctType: 'artist' | 'track' | 'album' = 'artist'): string {
   let prefix = ""
@@ -65,7 +72,7 @@ async function resolveExternalId(id: string): Promise<string> {
     return id;
   } else {
     try {
-      const resolved = await scApi.resolve.get(id.startsWith('https://soundcloud.com/') ? id : `https://soundcloud.com/${id}`)
+      const resolved = await getSoundcloudAPI().resolve.get(id.startsWith('https://soundcloud.com/') ? id : `https://soundcloud.com/${id}`)
       if (resolved) {
         return resolved.toString();
       } else {
@@ -87,7 +94,7 @@ function getReleaseDate(entity) {
 async function searchByArtistName(artistName: string) {
   try {
     // Fetch artist data
-    const data = await scApi.users.search({ q: artistName })
+    const data = await getSoundcloudAPI().users.search({ q: artistName })
     return data
   } catch (error) {
     err.handleError('Error searching for artist:', error)
@@ -96,7 +103,7 @@ async function searchByArtistName(artistName: string) {
 
 async function getArtistById(id: string) {
   try {
-    const data = await scApi.users.get(cleanId(correctId(await resolveExternalId(id), 'artist')))
+    const data = await getSoundcloudAPI().users.get(cleanId(correctId(await resolveExternalId(id), 'artist')))
     return data
   } catch (error) {
     err.handleError('Error fetching artist:', error)
@@ -148,8 +155,8 @@ function formatArtistObject(rawObject: SoundcloudUser): ArtistObject {
 
 async function getArtistAlbums(artistId: string | number, offset: string | number, limit: number) {
   try {
-    let artistPlaylists = await scApi.users.playlists(cleanId(correctId(artistId, "artist")))
-    // let artistTracks = await scApi.users.tracks(correctId(artistId))
+    let artistPlaylists = await getSoundcloudAPI().users.playlists(cleanId(correctId(artistId, "artist")))
+    // let artistTracks = await getSoundcloudAPI().users.tracks(correctId(artistId))
     return { artistTracks: [], artistPlaylists: artistPlaylists }
   } catch (error) {
     err.handleError('Failed to fetch artist albums', error)
@@ -260,7 +267,7 @@ function formatAlbumObject(rawAlbum: SoundcloudPlaylist | SoundcloudTrack): Albu
     trackCount: 'track_count' in rawAlbum && rawAlbum.track_count || 1,
     albumType: 'set_type' in rawAlbum && rawAlbum.set_type || 'single',
     upc: getUPCFromAlbum(rawAlbum),
-    albumTracks: tracks,
+    mediums: medium.convertTrackList(tracks, 'Digital Media'),
     genres: getGenresFromAlbum(rawAlbum),
     copyrights: getCopyrightsFromAlbum(rawAlbum),
     labels: getLabelsFromAlbum(rawAlbum),
@@ -273,20 +280,25 @@ interface SoundcloudTrackWithAlbumInfo extends SoundcloudTrack {
   track_number?: number;
 }
 
-function getAlbumTracks(album) {
-  let tracks = album.tracks
-  if (tracks) {
+interface SoundcloudPlaylistWithAlbumInfo extends SoundcloudPlaylist {
+  albumName?: string;
+  track_number?: number;
+}
+
+function getAlbumTracks(album: SoundcloudPlaylist | SoundcloudTrack): TrackObject[] {
+  if ("tracks" in album && album.tracks) {
+    let tracks = album.tracks;
+    let newTracks: SoundcloudTrackWithAlbumInfo[] = tracks;
     for (let trackNumber = 0; trackNumber < tracks.length; trackNumber++) {
-      tracks[trackNumber].albumName = album.title
-      tracks[trackNumber].track_number = trackNumber + 1
+      newTracks[trackNumber].albumName = album.title
+      newTracks[trackNumber].track_number = trackNumber + 1
     }
-    tracks = tracks.map(formatTrackObject)
-    return tracks
+    return newTracks.map(formatTrackObject)
   } else if (album.title) {
-    album.albumName = album.title
-    album.track_number = 1
-    tracks = [formatTrackObject(album)]
-    return tracks
+    let newTrack: SoundcloudPlaylistWithAlbumInfo = album as SoundcloudPlaylistWithAlbumInfo;
+    newTrack.albumName = album.title
+    newTrack.track_number = 1
+    return [formatTrackObject(newTrack)]
   }
   return []
 }
@@ -305,7 +317,8 @@ function getAlbumUPCs(album) {
   return upc ? [upc] : []
 }
 
-function formatTrackObject(track: SoundcloudTrackWithAlbumInfo): TrackObject {
+function formatTrackObject(track: SoundcloudTrackWithAlbumInfo | SoundcloudPlaylistWithAlbumInfo): TrackObject {
+  let publisherMetadata = "publisher_metadata" in track ? track.publisher_metadata : null
   return {
     provider: namespace,
     id: track.urn || `soundcloud:track:${track.id}`,
@@ -313,14 +326,14 @@ function formatTrackObject(track: SoundcloudTrackWithAlbumInfo): TrackObject {
     url: track.permalink_url?.split('?')[0] ? createUrl("track", track.permalink_url?.split('?')[0]): null,
     imageUrl: getLargeImage(track.artwork_url),
     imageUrlSmall: getSmallImage(track.artwork_url),
-    albumName: track.albumName || track.publisher_metadata.album_title || track.publisher_metadata.release_title || null,
+    albumName: track.albumName || publisherMetadata?.album_title || publisherMetadata?.release_title || null,
     trackArtists: track.user ? [formatPartialArtistObject(track.user)] : [],
     artistNames: [track.user?.username],
     duration: track.duration,
     trackNumber: track.track_number || null,
     releaseDate: getReleaseDate(track),
-    isrcs: track.publisher_metadata?.isrc
-      ? [track.publisher_metadata?.isrc]
+    isrcs: publisherMetadata?.isrc
+      ? [publisherMetadata?.isrc]
       : [],
     type: "track"
   }
@@ -344,7 +357,7 @@ function formatPartialArtistObject(
 
 async function getTrackById(id: string): Promise<SoundcloudTrack | null> {
   try {
-    const track = await scApi.tracks.get(id)
+    const track = await getSoundcloudAPI().tracks.get(id)
     return track
   } catch (error) {
     err.handleError('Failed to get track by id', error)
@@ -358,9 +371,9 @@ async function getAlbumById(
   try {
     let album: null | SoundcloudTrack | SoundcloudPlaylist = null
     if (id.includes('/set') || id.includes(':playlist:')) {
-      album = await scApi.playlists.get(id)
+      album = await getSoundcloudAPI().playlists.get(id)
     } else {
-      album = await scApi.tracks.get(id)
+      album = await getSoundcloudAPI().tracks.get(id)
     }
     return album
   } catch (error) {

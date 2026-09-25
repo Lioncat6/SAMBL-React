@@ -4,29 +4,33 @@ import { ProviderWithCapabilities } from "../../types/provider-types";
 import { NextApiRequest, NextApiResponse } from "next";
 import normalizeVars from "../../utils/normalizeVars";
 import { ISRCData, SAMBLApiError } from "../../types/api-types";
+import { Stages } from "../../utils/timings";
+import ServerAPIHandler from "../../utils/serverAPIHandler";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    const stages = new Stages();
+    const api = new ServerAPIHandler('getTrackISRCs', res, stages, ['provider_id', 'provider', 'url'])
     try {
         let { provider_id, provider, url } = normalizeVars(req.query);
         if (!provider_id && !url) {
-            return res.status(400).json({ error: "Parameter `id` or `url` is required" } as SAMBLApiError);
+            return api.response(400, { error: { error: "Parameter `provider_id` or `url` is required", parameters: ['provider_id', 'url'] } });
         }
         if (provider_id && !provider) {
-            return res.status(400).json({ error: "Parameter `provider` is required when using `id`" } as SAMBLApiError);
+            return api.response(400, { error: { error: "Parameter `provider` is required when using `id`", parameters: ['provider'] } });
         }
         let sourceProvider: ProviderWithCapabilities<["getTrackById", "formatTrackObject"]> | false | null = null;
         let parsed_id: string | null;
         if (url) {
             let urlInfo = providers.getUrlInfo(url);
             if (!urlInfo) {
-                return res.status(404).json({ error: "Invalid provider URL" } as SAMBLApiError);
+                return api.response(404, { error: { error: "Invalid provider URL" } });
             }
             if (urlInfo.type !== "track") {
-                return res.status(400).json({ error: `Invalid URL type. Expected a track URL.` } as SAMBLApiError);
+                return api.response(400, { error: { error: `Invalid URL type. Expected a track URL.` } });
             }
             parsed_id = urlInfo.id;
             if (!parsed_id) {
-                return res.status(500).json({ error: "Failed to extract provider id from URL" } as SAMBLApiError);
+                return api.response(500, { error: { error: "Failed to extract provider id from URL" } });
             }
             provider = urlInfo.provider;
             sourceProvider = providers.parseProvider(urlInfo.provider, ["getTrackById", "formatTrackObject"]);
@@ -34,22 +38,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             sourceProvider = providers.parseProvider(provider, ["getTrackById", "formatTrackObject"]);
             parsed_id = provider_id
         } else {
-            return res.status(400).json({ error: "Parameters `provider_id` and `provider` are required when not using `url`" } as SAMBLApiError);
+            return api.response(400, { error: { error: "Parameters `provider_id` and `provider` are required when not using `url`", parameters: ['provider_id', 'provider'] } });
         }
         if (!sourceProvider) {
-            return res.status(400).json({ error: `Provider \`${provider}\` does not support this operation` } as SAMBLApiError);
+            return api.response(400, { error: { error: `Provider \`${provider}\` does not support this operation` } });
         }
+        stages.start('Get track by ID', sourceProvider.namespace);
         let results = await sourceProvider.getTrackById(parsed_id);
+        stages.end('Get track by ID');
         if (!results) {
-            return res.status(404).json({ error: "Track not found!" } as SAMBLApiError);
+            return api.response(404, { error: { error: "Track not found!", provider: sourceProvider.namespace } });
         }
         let isrcs = sourceProvider.formatTrackObject(results).isrcs;
         if (isrcs == null) {
-            return res.status(404).json({ error: "Track not found!" } as SAMBLApiError);
+            return api.response(404, { error: { error: "No ISRCs found!", provider: sourceProvider.namespace } });
         }
-        res.status(200).json({ isrcs } as ISRCData);
+        api.response<ISRCData>(200, { data: { isrcs } });
     } catch (error) {
         logger.error("Error in formatTrackObject API:", error);
-        res.status(500).json({ error: "Internal Server Error", details: error.message } as SAMBLApiError);
+        api.response(500, { error: { error: "Internal Server Error", details: error.message } });
     }
 }

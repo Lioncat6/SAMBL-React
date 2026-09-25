@@ -6,6 +6,7 @@ import { JSX, useState } from "react";
 import { FaXmark } from "react-icons/fa6";
 import { Transition } from "@headlessui/react";
 import editUrlBuilder from "../utils/editUrlBuilder";
+import { useSettingsOrDefaults } from "./SettingsContext";
 
 function NoticeBox({ color, text, button}: {color: string, text: string, button?: JSX.Element | null}) {
 	const [visible, setVisible] = useState(true);
@@ -37,7 +38,8 @@ function NoticeBox({ color, text, button}: {color: string, text: string, button?
 }
 
 function NoMBIDNotice({data}: {data?: ArtistPageData | null}) {
-	if (!data) {
+	const { settings } = useSettingsOrDefaults();
+	if (!data?.id) {
 		return (
 			<NoticeBox color="red"
 			text={`This artist is not in MusicBrainz`} />
@@ -51,7 +53,7 @@ function NoMBIDNotice({data}: {data?: ArtistPageData | null}) {
 			button={
 				<a
 					className={styles.addToMBButton}
-					href={editUrlBuilder.buildAddArtistEditUrl(data)}
+					href={editUrlBuilder.buildAddArtistEditUrl(data, settings.targetBaseUrl)}
 					target="_blank"
 					rel="noopener noreferrer"
 				>
@@ -100,12 +102,29 @@ function AIArtistNotice() {
 	);
 }
 
-export default function Notice({ data, type }: {data?: null | ArtistPageData, type:  "noMBID" | "quickFetched" | "aiArtist"}) {
+function OnHarmonyNotice({url}: {url: string}) {
+	return (
+		<NoticeBox
+			color="purple"
+			text={`This provider is avalible on Harmony`}
+			button={
+				<a href={url} rel="noopener" target="_blank" className={styles.addToMBButton}>
+					Lookup on Harmony
+				</a>
+			}
+		/>
+	);
+}
+
+export default function Notice({ data, type }: {data?: any, type:  "noMBID" | "quickFetched" | "aiArtist" | "onHarmony"}): JSX.Element | null {
 	if (type === "noMBID") {
 		return <NoMBIDNotice data={data} />;
 	} else if (type === "quickFetched") {
 		return <QuickFetchedNotice />;
 	} else if (type === "aiArtist") {
 		return <AIArtistNotice />;
+	} else if (type === "onHarmony") {
+		return <OnHarmonyNotice url={data} />
 	}
+	return null;
 }

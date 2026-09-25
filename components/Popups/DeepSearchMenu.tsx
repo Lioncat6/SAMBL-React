@@ -1,5 +1,5 @@
 import { JSX, useState } from "react";
-import { DeepSearchData } from "../../types/api-types";
+import { DeepSearchData, SAMBLAPIResponse } from "../../types/api-types";
 import { ArtistPageData, DeepSearchSelection } from "../../types/component-types";
 import { ArtistObject } from "../../types/provider-types";
 import editUrlBuilder from "../../utils/editUrlBuilder";
@@ -8,13 +8,17 @@ import Popup from "../Popup";
 import styles from "../../styles/popups.module.css"
 import { FaSearch } from "react-icons/fa";
 import { MdLocationSearching } from "react-icons/md";
-import { Checkbox, Field, Fieldset, Input, Label, Legend, Radio, RadioGroup, Transition } from "@headlessui/react";
+import { Button, Checkbox, Field, Fieldset, Input, Label, Legend, Radio, RadioGroup, Transition } from "@headlessui/react";
 import { PiSealWarningFill } from "react-icons/pi";
 import text from "../../utils/text";
+import { SAMBLFetch } from "../../utils/clientAPIHandler";
+import { PopupActionButton } from "../buttons";
+import { useSettingsOrDefaults } from "../SettingsContext";
 
 
 
 function DeepSearchMenu({ close, data }: { close?: () => void, data: ArtistObject }) {
+    const { settings } = useSettingsOrDefaults();
     const artist = data;
     const [dsData, setDsData] = useState(null as null | DeepSearchData)
     const [albums, setAlbums] = useState(5);
@@ -28,21 +32,9 @@ function DeepSearchMenu({ close, data }: { close?: () => void, data: ArtistObjec
         setSelected(null);
         toasts.warn("Please double check deep searches before submitting edits!")
         try {
-            const response = await toasts.dispPromise(fetch(`/api/artistDeepSearch?url=${encodeURIComponent(url)}&count=${albums}&searchURLs=${searchURLs}&searchUPCs=${searchUPCs}&trackArtists=${trackArtists}`), "Running Deep Search...", "Deep Search failed!");
-            if (response.ok) {
-                let data = await response.json() as DeepSearchData;
-                // let editUrl = editUrlBuilder.buildDeepSearchEditUrl(data);
-                // if (data.nameSimilarity < 0.30) {
-                //     toasts.error(`Artist name too different for match! (${Math.round(data.nameSimilarity * 100)}% - ${data.mbName})`)
-                //     return;
-                // }
-                // window.open(editUrl, "_blank");
-                setDsData(data);
-            } else {
-                toasts.error((await response.json()).error);
-            }
+            const [data, timings] = await toasts.dispPromise(SAMBLFetch<DeepSearchData>(`/api/artistDeepSearch?url=${encodeURIComponent(url)}&count=${albums}&searchURLs=${searchURLs}&searchUPCs=${searchUPCs}&trackArtists=${trackArtists}`), "Running Deep Search...", "Deep Search failed!");
+            setDsData(data);
         } catch (error) {
-            console.error(error);
             toasts.error(error.message);
         }
     }
@@ -60,7 +52,7 @@ function DeepSearchMenu({ close, data }: { close?: () => void, data: ArtistObjec
         }
     }
 
-    function seedUrl() {        
+    function seedUrl() {
         if (!selectedArtist || !dsData) return;
         const artist = dsData.mbArtists.find((artist) => artist.id == selectedArtist);
         if (!artist) return;
@@ -70,7 +62,7 @@ function DeepSearchMenu({ close, data }: { close?: () => void, data: ArtistObjec
             mbid: selectedArtist,
             trackArtists: trackArtists
         }
-        const editUrl = editUrlBuilder.buildDeepSearchEditUrl(selection);
+        const editUrl = editUrlBuilder.buildDeepSearchEditUrl(selection, settings.targetBaseUrl);
         window.open(editUrl, "_blank");
     }
 
@@ -170,26 +162,24 @@ function DeepSearchMenu({ close, data }: { close?: () => void, data: ArtistObjec
             </div>
             <div className={styles.actions}>
                 {selectedArtist &&
-                    <button
-                        className={`${styles.button} ${warning && styles.warning}`}
-                        onClick={() => { seedUrl() }}
-                        title={warning ? warning : undefined}
+                    <PopupActionButton
+                        warning={!!warning}
+                        onClick={seedUrl}
+                        title={warning}
                     >
                         {warning && <><PiSealWarningFill /> </>}
                         Seed URL
-                    </button>}
-                <button
-                    className={styles.button}
+                    </PopupActionButton>}
+                <PopupActionButton
                     onClick={() => { deepSearch(artist.url.url) }}
                 >
                     <MdLocationSearching /> Run Search
-                </button>
-                <button
-                    className={styles.button}
-                    onClick={() => { close && close() }}
+                </PopupActionButton>
+                <PopupActionButton
+                    onClick={close}
                 >
                     Close
-                </button>
+                </PopupActionButton>
             </div>
         </>
     );

@@ -1,12 +1,14 @@
 import { useState, Fragment, JSX } from "react";
 import styles from "../../styles/popups.module.css";
 import { SAMBLSettingsContext, useSettings } from "../SettingsContext";
-import { FaCaretDown, FaGear, FaXmark } from "react-icons/fa6";
+import { FaCaretDown, FaCircleInfo, FaGear, FaXmark } from "react-icons/fa6";
 import seeders from "../../lib/seeders/seeders";
 import Popup from "../Popup";
 import { SAMBLSettings } from "../../types/component-types";
-import { Transition, Listbox, ListboxButton, ListboxOption, ListboxOptions, Label, Button, Input, Field, Fieldset, Checkbox } from "@headlessui/react";
+import { Transition, Listbox, ListboxButton, ListboxOption, ListboxOptions, Label, Input, Field, Fieldset, Checkbox } from "@headlessui/react";
 import { Seeder } from "../../types/seeder-types";
+import { PopupActionButton } from "../buttons";
+import { FiExternalLink } from "react-icons/fi";
 
 function SelectedItem({ item, onRemove }: { item: Seeder, onRemove: (() => void) | false, exclusive?: boolean }) {
     return <div className={styles.selectedItem}><span className={styles.selectedItemName}>{item.displayName}</span>{onRemove && <div className={styles.selectedItemButton} onClick={onRemove}><FaXmark /></div>}</div>;
@@ -20,8 +22,11 @@ function ConfigureMenu({ close }: { close?: () => void }) {
     const [quickFetchThreshold, setQuickFetchThreshold] = useState(settings.quickFetchThreshold);
     const [saveSort, setSaveSort] = useState(settings.saveSort)
     const [saveFilter, setSaveFilter] = useState(settings.saveFilter)
+    const [enableCoverArtSeeding, setEnableCoverArtSeeding] = useState(settings.enableCoverArtSeeding);
+    const [targetBaseUrl, setTargetBaseUrl] = useState(settings.targetBaseUrl);
+    const [enableBulkUrlImport, setEnableBulkUrlImport] = useState(settings.enableBulkUrlImport);
     const saveConfig = () => {
-        const newSettings: Partial<SAMBLSettings> = { enabledSeeders: enabledSeeders.map((seeder) => seeder.namespace), showExport, listVirtualization, quickFetchThreshold, saveSort, saveFilter };
+        const newSettings: Partial<SAMBLSettings> = { enabledSeeders: enabledSeeders.map((seeder) => seeder.namespace), showExport, listVirtualization, quickFetchThreshold, saveSort, saveFilter, enableCoverArtSeeding, targetBaseUrl, enableBulkUrlImport };
         updateSettings(newSettings);
         if (close) close();
     };
@@ -75,6 +80,10 @@ function ConfigureMenu({ close }: { close?: () => void }) {
                             </>
                         )}
                     </Listbox>
+                    <Field className={styles.settingsInputWrapper}>
+                        <Input className={styles.settingsInput} type="text" id="targetBaseUrl" value={targetBaseUrl} onChange={(e) => setTargetBaseUrl(e.target.value)} />
+                        <Label>MusicBrainz base URL</Label>
+                    </Field>
                     <hr/>
                     <Field className={styles.checkboxField}>
                         <Checkbox className={styles.checkboxWrapper} checked={showExport} onChange={setShowExport}>
@@ -87,7 +96,7 @@ function ConfigureMenu({ close }: { close?: () => void }) {
                             <span className={styles.checkbox}></span>
                         </Checkbox>
                         <Label title="Enable list virtualization for artists over a certain amount of albums to speed up filtering. Disable for userscript compatibility." className={styles.info}>
-                            Enable List virtualization
+                            Enable List virtualization <FaCircleInfo />
                         </Label>
                     </Field>
                     <hr/>
@@ -108,17 +117,33 @@ function ConfigureMenu({ close }: { close?: () => void }) {
                         </Checkbox>
                         <Label>Save selected sort option</Label>
                     </Field>
+                    <hr/>
+                    <Field className={styles.checkboxField}>
+                        <Checkbox className={styles.checkboxWrapper} checked={enableCoverArtSeeding} onChange={setEnableCoverArtSeeding}>
+                            <span className={styles.checkbox}></span>
+                        </Checkbox>
+                        <Label title="Requires MB: Enhanced Cover Art Uploads to function" className={styles.info}>
+                            Enable cover art seeding <FaCircleInfo />
+                        </Label> <a title={"Get UserScript"} href={"https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads"} target={"_blank"}><FiExternalLink /></a>
+                    </Field>
+                    <Field className={styles.checkboxField}>
+                        <Checkbox className={styles.checkboxWrapper} checked={enableBulkUrlImport} onChange={setEnableBulkUrlImport}>
+                            <span className={styles.checkbox}></span>
+                        </Checkbox>
+                        <Label title="Requires MusicBrainz: Seed URLs to Release Recordings to function" className={styles.info}>
+                            Enable bulk recording url import <FaCircleInfo />
+                        </Label> <a title={"Get UserScript"} href={"https://greasyfork.org/en/scripts/541101-musicbrainz-seed-urls-to-release-recordings"} target={"_blank"}><FiExternalLink /></a>
+                    </Field> 
                 </Fieldset>
             </div>
             <div className={styles.actions}>
-                <button
-                    className={styles.button}
+                <PopupActionButton
                     onClick={() => {
                         saveConfig();
                     }}
                 >
                     Save
-                </button>
+                </PopupActionButton>
             </div>
         </>
     );
