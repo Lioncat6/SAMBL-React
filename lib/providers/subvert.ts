@@ -19,11 +19,14 @@ const userAgent = `${baseUserAgent} ${SAMBLUserAgent()}`;
 
 const { parseUrl, createUrl } = parsers.getParser(namespace);
 
-const reqSession = new CurlSession({ impl: new CurlMultiImpl() })
+let reqSession: CurlSession | null = null;
 
 async function subvertFetch(path: string, body?: {}): Promise<unknown | null> {
     const apiBaseUrl = 'https://www.subvert.fm/api/';
     const url = `${apiBaseUrl}${path}`;
+    if (!reqSession) {
+        reqSession = new CurlSession({ impl: new CurlMultiImpl() });
+    }
     if (body) {
         const response = await reqSession.post(url,
             body,
@@ -93,6 +96,9 @@ async function resolveSlug(slug: string, type: 'artist' | 'album' | 'track'): Pr
     if (type == 'track') {
         const chunks = slug.split(':');
         url = `https://www.subvert.fm/${chunks[0]}/tracks/${chunks[2]}`;
+    }
+    if (!reqSession) {
+        reqSession = new CurlSession({ impl: new CurlMultiImpl() });
     }
     const response = await reqSession.get(url,
         {
