@@ -74,7 +74,7 @@ function ReleaseActionsMenu({ close, data }: { close?: () => void, data: AlbumSt
                         {tracks.map(track => {
                             const trackUrlSeedUrl = editUrlBuilder.buildRecordingUrlSeedUrl(track, data, settings.targetBaseUrl);
                             return (
-                                <div className={styles.miniTrackContainer}>
+                                <div className={styles.miniTrackContainer} key={track.trackNumber}>
                                     <span className={styles.trackNumber}>{track.trackNumber}</span> <span className={styles.miniTrackTitle}>{track.name}</span>
                                     {trackUrlSeedUrl &&
                                         <div className={styles.linkImportButton}>

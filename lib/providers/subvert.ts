@@ -289,8 +289,15 @@ function formatAlbumObject(rawData: SubvertSearchResultWithArtist | SubvertAlbum
     if ("metadata" in rawData) {
         const isRelease = rawData.type == 'release';
         const album = rawData as SubvertSearchResultWithArtist;
-        let tracks = isRelease ? album.metadata.tracks || [] : [album];
-
+        let tracks: SubvertSearchResultWithArtist[] | SubvertSearchAlbumTrackPosition[]
+        if (isRelease) {
+            tracks = (album.metadata.tracks ?? []);
+            tracks.forEach((track: SubvertSearchAlbumTrackWithArtistPosition) => {
+                track.track.artist = album.artist;
+            })
+        } else {
+            tracks = [album]
+        }
         return {
             id: isRelease ? album.id : `track:${album.id}`,
             provider: namespace,
@@ -312,6 +319,10 @@ function formatAlbumObject(rawData: SubvertSearchResultWithArtist | SubvertAlbum
         }
     } else if ("tracks" in rawData) {
         const album = rawData as SubvertAlbum;
+        const tracks = album.tracks as SubvertAlbumTrackWithArtistPosition[];
+        tracks.forEach((track) =>{
+            track.track.artist = album.artists[0];
+        })
         return {
             id: album.id,
             provider: namespace,
@@ -378,7 +389,7 @@ interface SubvertAlbumTrackWithArtistPosition extends SubvertAlbumTrackPosition 
 }
 
 interface SubvertAlbumTrackWithArtist extends SubvertAlbumTrack {
-    artist?: SubvertArtistProfile
+    artist?: SubvertAlbumArtist
 }
 
 function formatTrackObject(rawData: SubvertSearchAlbumTrackWithArtistPosition | SubvertAlbumTrackWithArtistPosition | SubvertTrack | SubvertSearchResultWithArtist): TrackObject {
