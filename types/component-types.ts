@@ -96,6 +96,7 @@ export interface SAMBLSettings {
     currentFilter: Partial<FilterData> | null;
     targetBaseUrl: string;
     enableCoverArtSeeding: boolean;
+    enableBulkUrlImport: boolean;
 }
 
 export class UrlParser {

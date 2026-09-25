@@ -80,7 +80,7 @@ function buildArtistImageSeedUrl(artist: ArtistObject, targetBaseUrl: string): s
 
 function buildRecordingUrlSeedUrl(recording: TrackObject, album: AlbumStack, targetBaseUrl: string): string | null {
     const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(album);
-    const {mbid, url, provider} = recording;
+    const { mbid, url, provider } = recording;
     if (!mbid || !url || url.mbTypes.length == 0 || !targetAlbum) return null;
     const baseUrl = new URL(`https://${targetBaseUrl}/recording/${mbid}/edit`);
     let editNode = editNoteBuilder.buildRecordingSeedEditNote(provider, aggregatedAlbum.name, targetAlbum.url.url, aggregatedAlbum.url.url, false);
@@ -92,13 +92,53 @@ function buildRecordingUrlSeedUrl(recording: TrackObject, album: AlbumStack, tar
     return baseUrl.toString().replace(/%250A/g, '%0A');
 }
 
+//https://github.com/rinsuki/userscripts/blob/master/scripts/_groups/musicbrainz/mb-seed-urls-to-release-recordings/src/schema.ts
+class mbSeedUrlsToReleaseRecordingsSchema {
+    version: 2 //       \/ Recording ID
+    recordings: Map<string, [{
+        url: string // Something about not having duplicate domanins
+        types: string[]
+        ended?: boolean
+    }]>
+    note: string
+}
+
+function buildBulkRecordingUrlSeedUrl(album: AlbumStack, targetBaseUrl: string): string | null {
+    const urlParam = 'seed-urls-v1';
+    const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(album);
+    const tracks = aggregatedAlbum.mediums.flatMap(medium => medium.tracks);
+    const {mbid} = aggregatedAlbum;
+    if (!targetAlbum || tracks.length == 0 || !mbid) return null;
+    let editNode = editNoteBuilder.buildRecordingSeedEditNote(aggregatedAlbum.provider, aggregatedAlbum.name, targetAlbum.url.url, aggregatedAlbum.url.url, false, '\n');
+    let recordings: mbSeedUrlsToReleaseRecordingsSchema["recordings"] = new Map();
+    for (const track of tracks) {
+        console.log(track)
+        const url = track.url?.url;
+        const types = track.url?.mbTypes;
+        if (types && url && types.length > 0 && track.mbid) {
+            console.log([{url, types: types.map(type => type.toString())}])
+            recordings.set(track.mbid, [{url, types: types.map(type => type.toString())}]);
+        }
+    }
+    console.log(recordings)
+    const seedUrlsHash: mbSeedUrlsToReleaseRecordingsSchema = {
+        version: 2,
+        recordings,
+        note: editNode
+    }
+    const baseUrl = new URL(`https://${targetBaseUrl}/release/${mbid}/edit-relationships`);
+    baseUrl.hash = `${urlParam}=${encodeURIComponent(JSON.stringify({...seedUrlsHash, recordings: Object.fromEntries(recordings)}))}`
+    return baseUrl.toString();
+}
+
 const editUrlBuilder = {
     buildAddArtistEditUrl,
     buildDeepSearchEditUrl,
     buildISRCEditUrl,
     buildCoverArtSeedUrl,
     buildArtistImageSeedUrl,
-    buildRecordingUrlSeedUrl
+    buildRecordingUrlSeedUrl,
+    buildBulkRecordingUrlSeedUrl
 }
 
 export default editUrlBuilder;

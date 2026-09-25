@@ -5,9 +5,10 @@ import { FaCaretDown, FaCircleInfo, FaGear, FaXmark } from "react-icons/fa6";
 import seeders from "../../lib/seeders/seeders";
 import Popup from "../Popup";
 import { SAMBLSettings } from "../../types/component-types";
-import { Transition, Listbox, ListboxButton, ListboxOption, ListboxOptions, Label, Button, Input, Field, Fieldset, Checkbox } from "@headlessui/react";
+import { Transition, Listbox, ListboxButton, ListboxOption, ListboxOptions, Label, Input, Field, Fieldset, Checkbox } from "@headlessui/react";
 import { Seeder } from "../../types/seeder-types";
 import { PopupActionButton } from "../buttons";
+import { FiExternalLink } from "react-icons/fi";
 
 function SelectedItem({ item, onRemove }: { item: Seeder, onRemove: (() => void) | false, exclusive?: boolean }) {
     return <div className={styles.selectedItem}><span className={styles.selectedItemName}>{item.displayName}</span>{onRemove && <div className={styles.selectedItemButton} onClick={onRemove}><FaXmark /></div>}</div>;
@@ -23,8 +24,9 @@ function ConfigureMenu({ close }: { close?: () => void }) {
     const [saveFilter, setSaveFilter] = useState(settings.saveFilter)
     const [enableCoverArtSeeding, setEnableCoverArtSeeding] = useState(settings.enableCoverArtSeeding);
     const [targetBaseUrl, setTargetBaseUrl] = useState(settings.targetBaseUrl);
+    const [enableBulkUrlImport, setEnableBulkUrlImport] = useState(settings.enableBulkUrlImport);
     const saveConfig = () => {
-        const newSettings: Partial<SAMBLSettings> = { enabledSeeders: enabledSeeders.map((seeder) => seeder.namespace), showExport, listVirtualization, quickFetchThreshold, saveSort, saveFilter, enableCoverArtSeeding, targetBaseUrl };
+        const newSettings: Partial<SAMBLSettings> = { enabledSeeders: enabledSeeders.map((seeder) => seeder.namespace), showExport, listVirtualization, quickFetchThreshold, saveSort, saveFilter, enableCoverArtSeeding, targetBaseUrl, enableBulkUrlImport };
         updateSettings(newSettings);
         if (close) close();
     };
@@ -120,10 +122,18 @@ function ConfigureMenu({ close }: { close?: () => void }) {
                         <Checkbox className={styles.checkboxWrapper} checked={enableCoverArtSeeding} onChange={setEnableCoverArtSeeding}>
                             <span className={styles.checkbox}></span>
                         </Checkbox>
-                        <Label title="Requires MB: Enhanced Cover Art Uploads to function. https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads" className={styles.info}>
+                        <Label title="Requires MB: Enhanced Cover Art Uploads to function" className={styles.info}>
                             Enable cover art seeding <FaCircleInfo />
-                        </Label>
+                        </Label> <a title={"Get UserScript"} href={"https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads"} target={"_blank"}><FiExternalLink /></a>
                     </Field>
+                    <Field className={styles.checkboxField}>
+                        <Checkbox className={styles.checkboxWrapper} checked={enableBulkUrlImport} onChange={setEnableBulkUrlImport}>
+                            <span className={styles.checkbox}></span>
+                        </Checkbox>
+                        <Label title="Requires MusicBrainz: Seed URLs to Release Recordings to function" className={styles.info}>
+                            Enable bulk recording url import <FaCircleInfo />
+                        </Label> <a title={"Get UserScript"} href={"https://greasyfork.org/en/scripts/541101-musicbrainz-seed-urls-to-release-recordings"} target={"_blank"}><FiExternalLink /></a>
+                    </Field> 
                 </Fieldset>
             </div>
             <div className={styles.actions}>

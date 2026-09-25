@@ -110,18 +110,18 @@ function buildDeepSearchEditNote(data: DeepSearchSelection): string {
 
 function buildSeedReleaseEditNote(data: AggregatedAlbum): string {
     return `Release seeded from ''SAMBL''\n` +
-        `'''Provider:''' ${data.provider}\n` +
+        `'''Provider:''' ${clientProviders.getDisplayName(data.provider)}\n` +
         `'''Source:''' ${data.url.url}\n` +
         (data.sourceArtist ? `'''Artist:''' ${data.sourceArtist?.name || "Unknown"} | ${data.sourceArtist?.url.url || "Unknown"}\n\n` : "") +
         SAMBLFooter()
         ;
 }
 
-function buildRecordingSeedEditNote(provider: ProviderNamespace, albumName: string, targetUrl: string, sourceUrl: string, encodeString = true): string {
+function buildRecordingSeedEditNote(provider: ProviderNamespace, albumName: string, targetUrl: string, sourceUrl: string, encodeString = true, lineSplit = '%0A'): string {
     return encode( 
-        `Recording URLs matched while importing release from ''SAMBL''%0A`+
-        `'''Provider:''' ${clientProviders.getDisplayName(provider)} (${sourceUrl})%0A`+
-        `'''Release:''' ${albumName} (${targetUrl})%0A%0A`+
+        `Recording URLs matched while importing release from ''SAMBL''${lineSplit}`+
+        `'''Provider:''' ${clientProviders.getDisplayName(provider)} (${sourceUrl})${lineSplit}`+
+        `'''Release:''' ${albumName} (${targetUrl})${lineSplit}${lineSplit}`+
         SAMBLFooter()
     , encodeString);
 }

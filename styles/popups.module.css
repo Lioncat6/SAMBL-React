@@ -1089,3 +1089,13 @@
 .langIcon.hasName {
   cursor: help;
 }
+
+.actionRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actionRow > * {
+  width: auto;
+}

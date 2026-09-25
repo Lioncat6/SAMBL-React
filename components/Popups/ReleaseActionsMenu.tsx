@@ -19,13 +19,15 @@ function ReleaseActionsMenu({ close, data }: { close?: () => void, data: AlbumSt
     const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(data)
     const isrcSeedUrl = editUrlBuilder.buildISRCEditUrl(data);
     const coverArtAddUrl = aggregatedAlbum.mbid ? `https://${settings.targetBaseUrl}/release/${aggregatedAlbum.mbid}/cover-art` : null;
-    const buildCoverArtSeedUrl = editUrlBuilder.buildCoverArtSeedUrl(data, window.location.href, settings.targetBaseUrl);
+    const coverArtSeedUrl = editUrlBuilder.buildCoverArtSeedUrl(data, window.location.href, settings.targetBaseUrl);
     const enableCoverArtSeeding = settings.enableCoverArtSeeding;
+    const enableBulkUrlImport = settings.enableBulkUrlImport
     // const mediums = aggregatedAlbum.mediums.length > 0 ? aggregatedAlbum.mediums : sourceAlbum?.mediums || [];
     const mediums = aggregatedAlbum.mediums;
     const tracks = mediums.flatMap(medium => medium.tracks);
     const tracksAvalible = tracks.length > 0;
     const [tracksExpanded, setTracksExpanded] = useState(false);
+    const bulkTrackUrlSeedUrl = editUrlBuilder.buildBulkRecordingUrlSeedUrl(data, settings.targetBaseUrl);
     return (
         <>
             <div className={styles.trackBg} style={{ "--background-image": `url(${aggregatedAlbum.imageUrl})` } as React.CSSProperties} ></div>
@@ -53,21 +55,32 @@ function ReleaseActionsMenu({ close, data }: { close?: () => void, data: AlbumSt
                 </PopupActionButton>
                 <PopupActionButton
                     type="link"
-                    disabled={!buildCoverArtSeedUrl || !enableCoverArtSeeding}
-                    href={enableCoverArtSeeding ? buildCoverArtSeedUrl : undefined}
-                    title={enableCoverArtSeeding ? `Seed cover art from ${clientProviders.getDisplayName(aggregatedAlbum.provider)} using MB: Enhanced Cover Art Uploads` : 'Enable Cover Art Seeding in the Configure menu to use this!'}
+                    disabled={!coverArtSeedUrl || !enableCoverArtSeeding}
+                    href={enableCoverArtSeeding ? coverArtSeedUrl : undefined}
+                    title={enableCoverArtSeeding ? `Seed cover art from ${clientProviders.getDisplayName(aggregatedAlbum.provider)} using MB: Enhanced Cover Art Uploads` : 'Enable cover art seeding in the Configure menu'}
                 >
                     {clientProviders.getDisplayIcon(aggregatedAlbum.provider)} Import cover art from {clientProviders.getDisplayName(aggregatedAlbum.provider)}
                 </PopupActionButton>
-                <PopupActionButton
-                    type="button"
-                    style="compact"
-                    onClick={() => setTracksExpanded(!tracksExpanded)}
-                    title={tracksAvalible ? tracksExpanded ? "Collapse" : "Expand": "Track aggregation failed!"}
-                    disabled={!tracksAvalible}
-                >
-                    <FaLink /> Import track URLs {tracksExpanded ? <FaChevronRight /> : <FaChevronDown />}
-                </PopupActionButton>
+                <div className={styles.actionRow}>
+                    <PopupActionButton
+                        type="button"
+                        style="compact"
+                        onClick={() => setTracksExpanded(!tracksExpanded)}
+                        title={tracksAvalible ? tracksExpanded ? "Collapse" : "Expand" : "Track aggregation failed!"}
+                        disabled={!tracksAvalible}
+                    >
+                        <FaLink /> Import track URLs {tracksExpanded ? <FaChevronRight /> : <FaChevronDown />}
+                    </PopupActionButton>
+                    <PopupActionButton
+                        type="link"
+                        style="compact"
+                        title={enableBulkUrlImport ? "Bulk import track URLs using MusicBrainz: Seed URLs to Release Recordings": "Enable bulk recording url import in the Configure menu"}
+                        href={bulkTrackUrlSeedUrl}
+                        disabled={!bulkTrackUrlSeedUrl || !enableBulkUrlImport}
+                    >
+                        Bulk import track URLs
+                    </PopupActionButton>
+                </div>
                 {tracksExpanded &&
                     <>
                         <br />

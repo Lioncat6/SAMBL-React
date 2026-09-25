@@ -13,6 +13,7 @@ const defaultSettings: SAMBLSettings = {
     currentFilter: null,
     targetBaseUrl: "musicbrainz.org",
     enableCoverArtSeeding: false,
+    enableBulkUrlImport: false
 };
 
 export interface SAMBLSettingsContext {

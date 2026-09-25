@@ -124,6 +124,7 @@
 
 .compact:hover {
     border: none;
+    text-decoration: none;
 }
 
 .compactButtonInner {
