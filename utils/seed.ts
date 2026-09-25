@@ -98,7 +98,7 @@ function buildSeed(stack: AlbumStack, orgin: string) {
         language: aggregatedAlbum.language?.code,
         script: aggregatedAlbum.script?.code,
         urls: convertUrls(aggregatedAlbum.url),
-        annotation: aggregatedAlbum.copyrights ? 'Copyright: '+aggregatedAlbum.copyrights?.join('%0A'): undefined, //TODO: Add detail text to albums,
+        annotation: (aggregatedAlbum.copyrights && aggregatedAlbum.copyrights.length > 0) ? 'Copyright: '+aggregatedAlbum.copyrights?.join('%0A'): undefined, //TODO: Add detail text to albums,
         edit_note: editNoteBuilder.buildSeedReleaseEditNote(aggregatedAlbum),
         redirect_uri: orgin+"&showActions",
     };
