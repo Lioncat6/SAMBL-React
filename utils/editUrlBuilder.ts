@@ -47,7 +47,6 @@ function buildISRCEditUrl(data: AlbumStack): string | null {
 
 function buildCoverArtSeedUrl(data: AlbumStack, orgin: string, targetBaseUrl: string): string | null {
     const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(data);
-    console.log(aggregatedAlbum.mbid)
     const albumUrlParameter = "x_seed.image.0.url";
     const imageUrlParameter = "x_seed.image.0.url"
     const orginUrlParameter = "x_seed.origin";

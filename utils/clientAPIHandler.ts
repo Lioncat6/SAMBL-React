@@ -33,7 +33,6 @@ export async function SAMBLFetch<T>(path: URL | string, isSSR = false): Promise<
         return [data.data, data.timings ?? null];
     } else {
         const data = await response.json().catch(() => null) as SAMBLAPIResponse<never>
-        console.log(data.error?.error)
         if (data.error?.error) {
             throw new Error(`Recieved error from server: (${response.status}) ${data.error.error}${data.error.details ? ` | ${data.error.details}` : ''}`)
         }

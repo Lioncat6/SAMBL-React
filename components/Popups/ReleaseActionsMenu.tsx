@@ -16,7 +16,6 @@ import { useState } from "react";
 
 function ReleaseActionsMenu({ close, data }: { close?: () => void, data: AlbumStack }) {
     const { settings } = useSettingsOrDefaults();
-    console.log(settings)
     const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(data)
     const isrcSeedUrl = editUrlBuilder.buildISRCEditUrl(data);
     const coverArtAddUrl = aggregatedAlbum.mbid ? `https://${settings.targetBaseUrl}/release/${aggregatedAlbum.mbid}/cover-art` : null;
