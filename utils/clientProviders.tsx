@@ -35,7 +35,7 @@ function GetDisplayProviders() {
         { name: "Qobuz", namespace: "qobuz", icon: <TbVinyl />},
         { name: 'Discogs', namespace: "discogs", icon: <SiDiscogs /> },
         { name: 'Volumo', namespace: "volumo", icon: <PiLetterCircleVFill /> },
-        { name: 'Subvert', namespace: "subvert", icon: <TbCircleDashedLetterS /> }
+        // { name: 'Subvert', namespace: "subvert", icon: <TbCircleDashedLetterS /> }
     ];
     return providerArray;
 }

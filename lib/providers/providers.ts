@@ -13,7 +13,7 @@ import naver from "./naver";
 import qobuz from "./qobuz";
 import discogs from "./discogs";
 import volumo from "./volumo";
-import subvert from "./subvert";
+// import subvert from "./subvert";
 const { isDisabled } = clientProviders;
 
 const providerList = [
@@ -29,7 +29,7 @@ const providerList = [
     qobuz,
     discogs,
     volumo,
-    subvert
+    // subvert
 ];
 
 function getDefaultProvider(): Provider {
