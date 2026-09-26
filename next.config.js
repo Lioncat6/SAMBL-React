@@ -1,5 +1,3 @@
-const { version } = require('./package.json');
-
 module.exports = {
   useFileSystemPublicRoutes: true,
   i18n: {
@@ -10,4 +8,5 @@ module.exports = {
     ignoreBuildErrors: true,
   },
   output: "standalone",
+  serverExternalPackages: ["curl-cffi"],
 }
