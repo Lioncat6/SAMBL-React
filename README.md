@@ -19,6 +19,7 @@ Streaming Artist MusicBrainz Lookup
 | Naver VIBE | ❌️ | ❌️ | ✅ | ✅ | ✅ |
 | Discogs | ❌️ | ✅ | ✅ | ✅ | ✅ |
 | Volumo | ❌️ | ✅ | ✅ | ✅ | ✅ |
+| Subvert | ❌️ | ❌️ | ✅ | ✅ | ✅ |
 
 ### MetaBrainz Thread:
 
@@ -70,7 +71,7 @@ Generation of the API docs should be automated with a swagger UI at some point, 
 | Naver VIBE | naver |
 | Discogs | discogs |
 | Volumo | volumo |
-
+| Subvert | subvert |
 
 ### API endpoints
 

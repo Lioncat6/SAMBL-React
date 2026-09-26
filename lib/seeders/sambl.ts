@@ -11,7 +11,7 @@ function buildUrl(url: string, upc?: string | null): string {
 const sambl: Seeder = {
     namespace: "sambl",
     displayName: "SAMBL",
-    providers: ['soundcloud', 'naver', 'volumo', 'musixmatch'],
+    providers: ['soundcloud', 'naver', 'volumo', 'musixmatch', 'subvert'],
     buildUrl: buildUrl,
     isDefault: true
 };

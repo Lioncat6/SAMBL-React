@@ -26,6 +26,7 @@ function Icon({ source }: { source: ProviderNamespace }) {
 			{source === "qobuz" && <img className={iconStyles} title={displayName} src="../assets/images/Qobuz_icon.svg" />}
 			{source === "discogs" && <img className={iconStyles} title={displayName} src="../assets/images/Discogs_icon.svg" />}
 			{source === "volumo" && <img className={iconStyles} title={displayName} src="../assets/images/Volumo_icon.svg" />}
+			{source === "subvert" && <img className={iconStyles} title={displayName} src="../assets/images/Subvert_logo.svg" />}
 		</>
 	);
 }

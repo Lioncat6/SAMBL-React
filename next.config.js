@@ -7,5 +7,6 @@ module.exports = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  output: "standalone"
+  output: "standalone",
+  serverExternalPackages: ["curl-cffi"],
 }

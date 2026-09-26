@@ -12,6 +12,7 @@ import soundcloud from "./soundcloud";
 import spotify from "./spotify";
 import tidal from "./tidal";
 import volumo from "./volumo";
+import subvert from "./subvert";
 
 const parserList: Record<ProviderNamespace, UrlParser> ={
     "applemusic": applemusic,
@@ -25,7 +26,8 @@ const parserList: Record<ProviderNamespace, UrlParser> ={
     "naver": naver,
     "qobuz": qobuz,
     "discogs": discogs,
-    "volumo": volumo
+    "volumo": volumo,
+    "subvert": subvert
 }
 
 function getParser(provider: ProviderNamespace): UrlParser {
