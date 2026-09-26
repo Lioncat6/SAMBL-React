@@ -32,7 +32,7 @@ async function subvertFetch(path: string, body?: {}): Promise<unknown | null> {
             body,
             {
                 'method': 'POST',
-                'impersonate': 'chrome142',
+                'impersonate': 'chrome146',
                 'headers': {
                     "User-Agent": userAgent,
                     "Accept": "*/*",
@@ -62,7 +62,7 @@ async function subvertFetch(path: string, body?: {}): Promise<unknown | null> {
         const response = await reqSession.get(url,
             {
                 'method': 'GET',
-                'impersonate': 'chrome142',
+                'impersonate': 'chrome146',
                 'headers': {
                     "User-Agent": userAgent,
                     "Accept": "*/*",
@@ -103,7 +103,7 @@ async function resolveSlug(slug: string, type: 'artist' | 'album' | 'track'): Pr
     const response = await reqSession.get(url,
         {
             'method': 'GET',
-            'impersonate': 'chrome142',
+            'impersonate': 'chrome146',
             'headers': {
                 "User-Agent": userAgent,
                 "Accept": "*/*",
