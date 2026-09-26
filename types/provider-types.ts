@@ -5,7 +5,7 @@ import { ReleaseLanguage, ReleaseScript } from "../utils/scriptAndLanguage";
 
 export type ProviderNamespace = FullProviderNamespace | "musixmatch"
 
-export type FullProviderNamespace = "spotify" | "tidal" | "deezer" | "musicbrainz" | "soundcloud" | "bandcamp" | "applemusic" | "naver" | "qobuz" | "discogs" | "volumo" | "subvert";
+export type FullProviderNamespace = "spotify" | "tidal" | "deezer" | "musicbrainz" | "soundcloud" | "bandcamp" | "applemusic" | "naver" | "qobuz" | "discogs" | "volumo";
 
 export type ObjectType = "partialArtist" | "artist" | "album" | "track" | "label"
 
