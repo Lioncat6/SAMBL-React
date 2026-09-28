@@ -1,0 +1,57 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - main    
+      - dev
+  pull_request:
+    branches:
+      - main    
+      - dev
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js for get_version
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Get NPM package version
+        id: get_version
+        run: |
+          BASE_VERSION=$(node -p "require('./package.json').version")
+          
+          if [ "${{ github.ref_name }}" = "dev" ]; then
+            VERSION="${BASE_VERSION}-dev"
+          else
+            VERSION="${BASE_VERSION}"
+          fi
+          
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Got version from package.json: ${VERSION}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/sambl:${{ steps.get_version.outputs.version }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/sambl:${{ github.ref_name == 'main' && 'latest' || github.ref_name }}
+          build-args: |
+            NEXT_PUBLIC_VERSION=${{ steps.get_version.outputs.version }}
