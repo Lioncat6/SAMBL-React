@@ -45,11 +45,11 @@ function buildISRCEditUrl(data: AlbumStack): string | null {
     }
 }
 
-function buildCoverArtSeedUrl(data: AlbumStack, orgin: string, targetBaseUrl: string): string | null {
+function buildCoverArtSeedUrl(data: AlbumStack, origin: string, targetBaseUrl: string): string | null {
     const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(data);
     const albumUrlParameter = "x_seed.image.0.url";
     const imageUrlParameter = "x_seed.image.0.url"
-    const orginUrlParameter = "x_seed.origin";
+    const originUrlParameter = "x_seed.origin";
     const supportedProviders: ProviderNamespace[] = ['applemusic', 'bandcamp', 'deezer', 'discogs', 'musicbrainz', 'qobuz', 'soundcloud', 'spotify', 'tidal'];
     const fallbackImageUrl = aggregatedAlbum.imageUrl ?? aggregatedAlbum.imageUrlSmall;
     if (!aggregatedAlbum.mbid) return null;
@@ -61,7 +61,7 @@ function buildCoverArtSeedUrl(data: AlbumStack, orgin: string, targetBaseUrl: st
     } else {
         return null;
     }
-    baseUrl.searchParams.append(orginUrlParameter, `SAMBL ${process.env.NEXT_PUBLIC_VERSION ? process.env.NEXT_PUBLIC_VERSION : ''} at ${orgin}`);
+    baseUrl.searchParams.append(originUrlParameter, `SAMBL ${process.env.NEXT_PUBLIC_VERSION ? process.env.NEXT_PUBLIC_VERSION : ''} at ${origin}`);
     return baseUrl.toString().replace(/%250A/g, '%0A');
 }
 

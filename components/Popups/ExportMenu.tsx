@@ -1,5 +1,5 @@
 import { useState, JSX } from "react";
-import styles from "../../styles/popups.module.css";
+import styles from "../../styles/popups.module.scss";
 import { FaCopy, FaChevronDown, FaChevronRight } from "react-icons/fa6";
 import { TbTableExport } from "react-icons/tb";
 import text from "../../utils/text";

@@ -34,21 +34,26 @@
 .dialogEnter {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .dialogEnterFrom {
   opacity: 0;
   transform: scale(0.95);
 }
+
 .dialogEnterTo {
   opacity: 1;
   transform: scale(1);
 }
+
 .dialogLeave {
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .dialogLeaveFrom {
   opacity: 1;
   transform: scale(1);
 }
+
 .dialogLeaveTo {
   opacity: 0;
   transform: scale(0.95);
@@ -57,18 +62,23 @@
 .overlayEnter {
   transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .overlayEnterFrom {
   opacity: 0;
 }
+
 .overlayEnterTo {
   opacity: 1;
 }
+
 .overlayLeave {
   transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .overlayLeaveFrom {
   opacity: 1;
 }
+
 .overlayLeaveTo {
   opacity: 0;
 }
@@ -218,8 +228,10 @@
   flex-direction: column;
   width: -webkit-fill-available;
   width: -moz-available;
-  flex: 1 1 0; /* Allow to grow and shrink */
-  min-width: 0; /* Allow ellipsis to work */
+  flex: 1 1 0;
+  /* Allow to grow and shrink */
+  min-width: 0;
+  /* Allow ellipsis to work */
 }
 
 .property {
@@ -325,6 +337,7 @@
   cursor: not-allowed;
   color: var(--foreground-tertiary);
 }
+
 .subPropertyDataKey {
   display: inline;
   color: var(--foreground-secondary);
@@ -335,7 +348,8 @@
   display: flex;
   align-items: center;
   margin-right: 5px;
-  flex-shrink: 0; /* Prevent shrinking */
+  flex-shrink: 0;
+  /* Prevent shrinking */
 }
 
 .subPropertyRow {
@@ -592,7 +606,7 @@
   position: relative;
 }
 
-.miniTrackContainer > * {
+.miniTrackContainer>* {
   z-index: 1;
 }
 
@@ -626,7 +640,7 @@
   background-color: var(--background-secondary);
 }
 
-.linkImportButton > a {
+.linkImportButton>a {
   text-wrap: nowrap;
   margin: 0;
 }
@@ -685,12 +699,14 @@
     opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
     transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .selectOptionsEnterFrom,
 .selectOptionsLeaveTo {
   opacity: 0;
   transform: scale(0.95);
   pointer-events: none;
 }
+
 .selectOptionsEnterTo,
 .selectOptionsLeaveFrom {
   opacity: 1;
@@ -806,7 +822,7 @@
   transform: rotate(-180deg) translateY(-2px);
 }
 
-.exclusiveIcon > svg {
+.exclusiveIcon>svg {
   vertical-align: text-bottom;
 }
 
@@ -820,26 +836,33 @@
   height: 34px;
   border-radius: 10px;
   cursor: help;
+
+  &.red {
+    background-color: var(--status-red);
+  }
+
+  &.green {
+    background-color: var(--status-green);
+  }
+
+  &.orange {
+    background-color: var(--status-orange);
+  }
+
+  &.blue {
+    background-color: var(--status-blue);
+  }
+
+  &.grey {
+    background-color: var(--status-grey);
+  }
 }
 
-.statusPill.red {
-  background-color: var(--status-red);
-}
-
-.statusPill.green {
-  background-color: var(--status-green);
-}
-
-.statusPill.orange {
-  background-color: var(--status-orange);
-}
-
-.statusPill.blue {
-  background-color: var(--status-blue);
-}
-
-.statusPill.grey {
-  background-color: var(--status-grey);
+.statusBar {
+	height: 100%;
+	width: 8px;
+	border-radius: 20px;
+  margin: 0 7px 0 -3px
 }
 
 .noAggregatedTracksWarning {
@@ -899,8 +922,7 @@
     0 0 0 0.07em transparent inset;
   border-radius: 0.2em;
   background:
-    url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xml:space="preserve" fill="white" viewBox="0 0 9 9"><rect x="0" y="4.3" transform="matrix(-0.707 -0.7072 0.7072 -0.707 0.5891 10.4702)" width="4.3" height="1.6" /><rect x="2.2" y="2.9" transform="matrix(-0.7071 0.7071 -0.7071 -0.7071 12.1877 2.9833)" width="6.1" height="1.7" /></svg>')
-      no-repeat center,
+    url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xml:space="preserve" fill="white" viewBox="0 0 9 9"><rect x="0" y="4.3" transform="matrix(-0.707 -0.7072 0.7072 -0.707 0.5891 10.4702)" width="4.3" height="1.6" /><rect x="2.2" y="2.9" transform="matrix(-0.7071 0.7071 -0.7071 -0.7071 12.1877 2.9833)" width="6.1" height="1.7" /></svg>') no-repeat center,
     white;
   background-size: 0;
   will-change: color, border, background, background-size, box-shadow;
@@ -978,8 +1000,7 @@
   color: rgba(255, 255, 255, 0.075);
 }
 
-.checkboxWrapper[data-checked][data-active]:not([data-disabled]).dark
-  .checkbox {
+.checkboxWrapper[data-checked][data-active]:not([data-disabled]).dark .checkbox {
   background-color: #c68035;
   color: rgba(0, 0, 0, 0.275);
 }
@@ -988,10 +1009,12 @@
   transform-origin: top;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .resultsEnterFrom {
   opacity: 0;
   transform: scaleY(0.95);
 }
+
 .resultsEnterTo {
   opacity: 1 !important;
   transform: scaleY(1);
@@ -1096,6 +1119,6 @@
   justify-content: center;
 }
 
-.actionRow > * {
+.actionRow>* {
   width: auto;
 }

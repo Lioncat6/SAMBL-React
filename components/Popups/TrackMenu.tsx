@@ -1,4 +1,4 @@
-import styles from "../../styles/popups.module.css";
+import styles from "../../styles/popups.module.scss";
 import { FaCopy, FaMagnifyingGlass, FaBarcode, FaLink, FaL, FaMusic } from "react-icons/fa6";
 import { MdOutlineAlbum, MdPerson, MdOutlineCalendarMonth, MdOutlineWarningAmber } from "react-icons/md";
 import { AiOutlineFieldNumber } from "react-icons/ai";
@@ -64,6 +64,18 @@ export function AlbumDetails({ data, isStandalone }: { data: AlbumStack, isStand
 
 	const barcode = upc || targetAlbum?.upc || null;
 	const mbBarcode = !upc;
+
+	let pillTooltipText = "This album has no MB release with a matching name, UPC, or URL"
+
+	switch (status) {
+		case "green":
+			pillTooltipText = "This album has a MB release with a matching URL"
+			break;
+		case "orange":
+			pillTooltipText = "This album has a MB release with a matching name but no associated link"
+		case "blue":
+			pillTooltipText = "This album has a MB release with a matching UPC but no associated link"
+	}
 	return (
 		<div className={styles.albumDetails}>
 			{(imageUrlSmall || imageUrl) && (
@@ -73,6 +85,7 @@ export function AlbumDetails({ data, isStandalone }: { data: AlbumStack, isStand
 					</a>
 				</div>
 			)}
+			{ isStandalone && <div className={`${styles.statusBar} ${styles.statusPill} ${styles[status]}`} title={pillTooltipText}></div> }
 			<div className={styles.albumInfo}>
 				<div className={styles.albumTitle}>
 					<a href={url.url} target="_blank" rel="noopener noreferrer">
