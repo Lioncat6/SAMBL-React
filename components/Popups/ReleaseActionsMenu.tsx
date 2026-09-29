@@ -1,7 +1,7 @@
 import { JSX } from "react/jsx-runtime";
 import { AlbumStack } from "../../types/aggregated-types";
 import Popup from "../Popup";
-import styles from "../../styles/popups.module.css"
+import styles from "../../styles/popups.module.scss"
 import { FaChevronDown, FaChevronRight, FaLink } from "react-icons/fa6";
 import albumStack from "../../utils/albumStack";
 import { AlbumDetails } from "./TrackMenu";
@@ -13,21 +13,25 @@ import clientProviders from "../../utils/clientProviders";
 import { SAMBLSettingsContext, useSettings, useSettingsOrDefaults } from "../SettingsContext";
 import medium from "../../utils/medium";
 import { useState } from "react";
+import Notice from "../notices";
+import { ReleaseSeedButton } from "../ReleaseSeed";
 
-function ReleaseActionsMenu({ close, data }: { close?: () => void, data: AlbumStack }) {
+function ReleaseActionsMenu({ close, data, origin }: { close?: () => void, data: AlbumStack, origin: string }) {
     const { settings } = useSettingsOrDefaults();
     const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(data)
+    const { status } = data;
     const isrcSeedUrl = editUrlBuilder.buildISRCEditUrl(data);
     const coverArtAddUrl = aggregatedAlbum.mbid ? `https://${settings.targetBaseUrl}/release/${aggregatedAlbum.mbid}/cover-art` : null;
     const coverArtSeedUrl = editUrlBuilder.buildCoverArtSeedUrl(data, window.location.href, settings.targetBaseUrl);
     const enableCoverArtSeeding = settings.enableCoverArtSeeding;
     const enableBulkUrlImport = settings.enableBulkUrlImport
     // const mediums = aggregatedAlbum.mediums.length > 0 ? aggregatedAlbum.mediums : sourceAlbum?.mediums || [];
-    const mediums = aggregatedAlbum.mediums;
+    const { mediums } = aggregatedAlbum;
     const tracks = mediums.flatMap(medium => medium.tracks);
-    const tracksAvalible = tracks.length > 0;
+    const tracksAvailable = tracks.length > 0;
     const [tracksExpanded, setTracksExpanded] = useState(false);
     const bulkTrackUrlSeedUrl = editUrlBuilder.buildBulkRecordingUrlSeedUrl(data, settings.targetBaseUrl);
+    const notGreen = status != "green";
     return (
         <>
             <div className={styles.trackBg} style={{ "--background-image": `url(${aggregatedAlbum.imageUrl})` } as React.CSSProperties} ></div>
@@ -37,6 +41,8 @@ function ReleaseActionsMenu({ close, data }: { close?: () => void, data: AlbumSt
             </div>
             <div className={styles.content}>
                 {/* <AlbumDetails data={data} /> */}
+                {notGreen && <Notice type={"notGreen"} />}
+                {notGreen && <ReleaseSeedButton data={data} origin={origin} type={"urls"} />}
                 <PopupActionButton
                     type="link"
                     href={isrcSeedUrl}
@@ -66,15 +72,15 @@ function ReleaseActionsMenu({ close, data }: { close?: () => void, data: AlbumSt
                         type="button"
                         style="compact"
                         onClick={() => setTracksExpanded(!tracksExpanded)}
-                        title={tracksAvalible ? tracksExpanded ? "Collapse" : "Expand" : "Track aggregation failed!"}
-                        disabled={!tracksAvalible}
+                        title={tracksAvailable ? tracksExpanded ? "Collapse" : "Expand" : "Track aggregation failed!"}
+                        disabled={!tracksAvailable}
                     >
                         <FaLink /> Import track URLs {tracksExpanded ? <FaChevronRight /> : <FaChevronDown />}
                     </PopupActionButton>
                     <PopupActionButton
                         type="link"
                         style="compact"
-                        title={enableBulkUrlImport ? "Bulk import track URLs using MusicBrainz: Seed URLs to Release Recordings": "Enable bulk recording url import in the Configure menu"}
+                        title={enableBulkUrlImport ? "Bulk import track URLs using MusicBrainz: Seed URLs to Release Recordings" : "Enable bulk recording url import in the Configure menu"}
                         href={bulkTrackUrlSeedUrl}
                         disabled={!bulkTrackUrlSeedUrl || !enableBulkUrlImport}
                     >
@@ -118,10 +124,10 @@ function ReleaseActionsMenu({ close, data }: { close?: () => void, data: AlbumSt
     )
 }
 
-export default function ReleaseActionsPopup({ data, button, open }: { data: AlbumStack, button?: JSX.Element, open?: boolean }) {
+export default function ReleaseActionsPopup({ data, origin, button, open }: { data: AlbumStack, origin: string, button?: JSX.Element, open?: boolean }) {
     return (
         <Popup button={button} open={open}>
-            <ReleaseActionsMenu data={data} />
+            <ReleaseActionsMenu data={data} origin={origin} />
         </Popup>
     );
 }

@@ -1,5 +1,5 @@
 import { useState, Fragment, JSX } from "react";
-import styles from "../../styles/popups.module.css";
+import styles from "../../styles/popups.module.scss";
 import { FaXmark, FaFilter, FaCaretDown } from "react-icons/fa6";
 import { MdDoNotDisturbOnTotalSilence } from "react-icons/md";
 import { TbSortAscending, TbSortDescending } from "react-icons/tb";

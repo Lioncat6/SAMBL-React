@@ -110,6 +110,9 @@ export default function Seed({ data, error, hostName, timings }: { data?: AlbumS
     }
     const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(data)
     const harmonyProviders = harmony.providers;
+
+    const origin = `https://${hostName ?? process.env.NEXT_PUBLIC_URL?.replaceAll(/https|http|[\:\/]/g , '')}${router.asPath}`;
+
     return (
         <>
             <div className={styles.seedPageContainer} style={{ "--background-image": `url('${aggregatedAlbum.imageUrl || ""}')` } as React.CSSProperties}>
@@ -124,9 +127,9 @@ export default function Seed({ data, error, hostName, timings }: { data?: AlbumS
             </div> */}
                 {harmonyProviders.includes(aggregatedAlbum.provider) && <Notice type={"onHarmony"} data={harmony.buildUrl(aggregatedAlbum.url.url, aggregatedAlbum.upc)}/>}
                 <SearchBox type="lookup" />
-                <ReleaseSeedButton data={data} orgin={`https://${hostName ?? process.env.NEXT_PUBLIC_URL?.replaceAll(/https|http|[\:\/]/g , '')}${router.asPath}`}/>
+                <ReleaseSeedButton data={data} origin={origin}/>
                 {targetAlbum &&
-                    <ReleaseActionsPopup data={data} button={<ActionButton type="releaseActions"/>} open={showActions}/>
+                    <ReleaseActionsPopup data={data} button={<ActionButton type="releaseActions"/>} open={showActions} origin={origin}/>
                 }
                 <br />
                 <div id="contentContainer" >

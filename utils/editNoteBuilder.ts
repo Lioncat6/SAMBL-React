@@ -108,8 +108,8 @@ function buildDeepSearchEditNote(data: DeepSearchSelection): string {
     );
 }
 
-function buildSeedReleaseEditNote(data: AggregatedAlbum): string {
-    return `Release seeded from ''SAMBL''\n` +
+function buildSeedReleaseEditNote(data: AggregatedAlbum, action?: string): string {
+    return `${action ?? "Release seeded"} from ''SAMBL''\n` +
         `'''Provider:''' ${clientProviders.getDisplayName(data.provider)}\n` +
         `'''Source:''' ${data.url.url}\n` +
         (data.sourceArtist ? `'''Artist:''' ${data.sourceArtist?.name || "Unknown"} | ${data.sourceArtist?.url.url || "Unknown"}\n\n` : "") +

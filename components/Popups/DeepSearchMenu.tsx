@@ -5,7 +5,7 @@ import { ArtistObject } from "../../types/provider-types";
 import editUrlBuilder from "../../utils/editUrlBuilder";
 import toasts from "../../utils/toasts";
 import Popup from "../Popup";
-import styles from "../../styles/popups.module.css"
+import styles from "../../styles/popups.module.scss"
 import { FaSearch } from "react-icons/fa";
 import { MdLocationSearching } from "react-icons/md";
 import { Button, Checkbox, Field, Fieldset, Input, Label, Legend, Radio, RadioGroup, Transition } from "@headlessui/react";

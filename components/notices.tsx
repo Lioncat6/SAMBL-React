@@ -8,14 +8,14 @@ import { Transition } from "@headlessui/react";
 import editUrlBuilder from "../utils/editUrlBuilder";
 import { useSettingsOrDefaults } from "./SettingsContext";
 
-function NoticeBox({ color, text, button}: {color: string, text: string, button?: JSX.Element | null}) {
+function NoticeBox({ color, text, button }: { color: string, text: string, button?: JSX.Element | null }) {
 	const [visible, setVisible] = useState(true);
-	function dismiss(){
+	function dismiss() {
 		setVisible(false);
 	}
 	return (
 		<>
-			<Transition 
+			<Transition
 				show={visible}
 				// as={Fragment}
 				leave={styles.noticeLeave}
@@ -37,12 +37,12 @@ function NoticeBox({ color, text, button}: {color: string, text: string, button?
 	);
 }
 
-function NoMBIDNotice({data}: {data?: ArtistPageData | null}) {
+function NoMBIDNotice({ data }: { data?: ArtistPageData | null }) {
 	const { settings } = useSettingsOrDefaults();
 	if (!data?.id) {
 		return (
 			<NoticeBox color="red"
-			text={`This artist is not in MusicBrainz`} />
+				text={`This artist is not in MusicBrainz`} />
 		)
 	}
 	const url = data.url || "";
@@ -102,11 +102,11 @@ function AIArtistNotice() {
 	);
 }
 
-function OnHarmonyNotice({url}: {url: string}) {
+function OnHarmonyNotice({ url }: { url: string }) {
 	return (
 		<NoticeBox
 			color="purple"
-			text={`This provider is avalible on Harmony`}
+			text={`This provider is available on Harmony`}
 			button={
 				<a href={url} rel="noopener" target="_blank" className={styles.addToMBButton}>
 					Lookup on Harmony
@@ -116,7 +116,23 @@ function OnHarmonyNotice({url}: {url: string}) {
 	);
 }
 
-export default function Notice({ data, type }: {data?: any, type:  "noMBID" | "quickFetched" | "aiArtist" | "onHarmony"}): JSX.Element | null {
+function NotGreenNotice() {
+	return (
+		<NoticeBox
+			color="orange"
+			text={`This release is not linked with a URL. Please verify it is correct before submitting any additional data`}
+		/>
+	);
+}
+
+type NoticeType =
+	"noMBID" |
+	"quickFetched" |
+	"aiArtist" |
+	"onHarmony" |
+	"notGreen"
+
+export default function Notice({ data, type }: { data?: any, type: NoticeType }): JSX.Element | null {
 	if (type === "noMBID") {
 		return <NoMBIDNotice data={data} />;
 	} else if (type === "quickFetched") {
@@ -125,6 +141,8 @@ export default function Notice({ data, type }: {data?: any, type:  "noMBID" | "q
 		return <AIArtistNotice />;
 	} else if (type === "onHarmony") {
 		return <OnHarmonyNotice url={data} />
+	} else if (type === "notGreen") {
+		return <NotGreenNotice />
 	}
 	return null;
 }

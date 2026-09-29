@@ -1,5 +1,5 @@
 import React, { useState, Fragment, cloneElement, JSX } from "react";
-import styles from "../styles/popups.module.css";
+import styles from "../styles/popups.module.scss";
 import { FaXmark } from "react-icons/fa6";
 import { Dialog, Transition, TransitionChild, DialogPanel } from "@headlessui/react";
 

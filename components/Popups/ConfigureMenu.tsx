@@ -1,5 +1,5 @@
 import { useState, Fragment, JSX } from "react";
-import styles from "../../styles/popups.module.css";
+import styles from "../../styles/popups.module.scss";
 import { SAMBLSettingsContext, useSettings } from "../SettingsContext";
 import { FaCaretDown, FaCircleInfo, FaGear, FaXmark } from "react-icons/fa6";
 import seeders from "../../lib/seeders/seeders";

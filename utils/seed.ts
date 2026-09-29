@@ -51,6 +51,25 @@ function convertLabels(SAMBLLabels: AggregatedLabel[] | null): ReleaseLabelSeed[
 
 }
 
+function convertArtistCredit(artists?: PartialArtistObject[]): ArtistCreditSeed | undefined {
+    if (!artists) return;
+
+    const lastIndex = artists.length - 1;
+    return {
+        names: artists.map<ArtistCreditNameSeed>((artist, index) => {
+            const defaultJoinPhrase = (index !== lastIndex) ? (index === lastIndex - 1 ? ' & ' : ', ') : undefined;
+
+            return {
+                artist: !artist.mbid ? { name: artist.name } : undefined,
+                mbid: artist.mbid || undefined,
+                name: artist.name,
+                join_phrase: defaultJoinPhrase,
+            };
+        }),
+    };
+}
+
+
 export function flatten(record: Record<string, any>, preservedKeys: string[] = []): Record<string, any> {
 	const flatRecord = {};
 
@@ -69,7 +88,8 @@ export function flatten(record: Record<string, any>, preservedKeys: string[] = [
 	return flatRecord;
 }
 
-function buildSeed(stack: AlbumStack, orgin: string) {
+
+function buildSeed(stack: AlbumStack, origin: string) {
     const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(stack)
 
     const seed: ReleaseSeed = {
@@ -100,31 +120,26 @@ function buildSeed(stack: AlbumStack, orgin: string) {
         urls: convertUrls(aggregatedAlbum.url),
         annotation: (aggregatedAlbum.copyrights && aggregatedAlbum.copyrights.length > 0) ? 'Copyright: '+aggregatedAlbum.copyrights?.join('%0A'): undefined, //TODO: Add detail text to albums,
         edit_note: editNoteBuilder.buildSeedReleaseEditNote(aggregatedAlbum),
-        redirect_uri: orgin+"&showActions",
+        redirect_uri: origin+"&showActions",
     };
     return flatten(seed);
 }
 
-function convertArtistCredit(artists?: PartialArtistObject[]): ArtistCreditSeed | undefined {
-    if (!artists) return;
 
-    const lastIndex = artists.length - 1;
-    return {
-        names: artists.map<ArtistCreditNameSeed>((artist, index) => {
-            const defaultJoinPhrase = (index !== lastIndex) ? (index === lastIndex - 1 ? ' & ' : ', ') : undefined;
+function seedUrls(stack: AlbumStack, origin: string) {
+    const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(stack)
 
-            return {
-                artist: !artist.mbid ? { name: artist.name } : undefined,
-                mbid: artist.mbid || undefined,
-                name: artist.name,
-                join_phrase: defaultJoinPhrase,
-            };
-        }),
+    const seed: Omit<ReleaseSeed, 'name'>  = {
+        urls: convertUrls(aggregatedAlbum.url),
+        edit_note: editNoteBuilder.buildSeedReleaseEditNote(aggregatedAlbum, "Additional URLs seeded"),
+        redirect_uri: origin+"&showActions",
     };
+    return flatten(seed);
 }
 
 const seed = {
-    buildSeed
+    buildSeed,
+    seedUrls
 }
 
 export default seed;
