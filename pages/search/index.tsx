@@ -11,7 +11,7 @@ import { ProviderNamespace } from "../../types/provider-types";
 import clientProviders from "../../utils/clientProviders";
 import { SAMBLFetch } from "../../utils/clientAPIHandler";
 import { GetServerSidePropsContext } from "next";
-import normalizeVars from "../../utils/normalizeVars";
+import { normalizeVars } from "../../utils/pageVarsUtils";
 import { redirect } from "next/dist/server/api-utils";
 
 async function getItems(query: string, provider: string) {

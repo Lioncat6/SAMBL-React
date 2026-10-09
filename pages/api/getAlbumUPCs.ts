@@ -1,6 +1,6 @@
 import providers from "../../lib/providers/providers";
 import logger from "../../utils/logger";
-import normalizeVars from "../../utils/normalizeVars";
+import { normalizeVars } from "../../utils/pageVarsUtils";
 import { ProviderWithCapabilities } from "../../types/provider-types";
 import { SAMBLApiError, SAMBLAPIResponse, UPCData } from "../../types/api-types";
 import { Stages } from "../../utils/timings";

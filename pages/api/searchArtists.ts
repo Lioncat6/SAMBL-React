@@ -2,7 +2,7 @@ import musicbrainz from "../../lib/providers/musicbrainz";
 import providers from "../../lib/providers/providers";
 import logger from "../../utils/logger";
 import { NextApiRequest, NextApiResponse } from "next";
-import normalizeVars from "../../utils/normalizeVars";
+import { normalizeVars } from "../../utils/pageVarsUtils";
 import { ArtistSearchData } from "../../types/api-types";
 import { SAMBLApiError } from "../../types/api-types";
 import { ArtistObject } from "../../types/provider-types";

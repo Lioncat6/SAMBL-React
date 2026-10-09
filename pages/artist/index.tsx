@@ -8,7 +8,7 @@ import { SAMBLSettingsContext, useSettings } from "../../components/SettingsCont
 import processData from "../../utils/processAlbumData";
 import { AlbumData, AlbumObject, ArtistObject, ExtendedAlbumData, ExtendedAlbumObject, ProviderNamespace } from "../../types/provider-types";
 import { SAMBLApiError, ArtistData, ReleaseCountData, SAMBLAPIResponse, ArtistLookupData } from "../../types/api-types"
-import { ArtistPageData, DisplayAlbum, SAMBLError } from "../../types/component-types";
+import { ArtistPageData, ArtistPageProps, DisplayAlbum, SAMBLError } from "../../types/component-types";
 import ErrorPage from "../../components/ErrorPage";
 import { AggregatedAlbum, AggregatedData, AlbumStack } from "../../types/aggregated-types";
 import toasts from "../../utils/toasts";
@@ -19,6 +19,8 @@ import parsers from "../../lib/parsers/parsers";
 import albumStack from "../../utils/albumStack";
 import clientProviders from "../../utils/clientProviders";
 import { RawSAMBLFetch, SAMBLFetch } from "../../utils/clientAPIHandler";
+import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
+import { getAllValues, getFirst, PathOnlyURL } from "../../utils/pageVarsUtils";
 
 async function fetchArtistData(id: string, provider: ProviderNamespace | string) {
 	try {
@@ -29,21 +31,18 @@ async function fetchArtistData(id: string, provider: ProviderNamespace | string)
 	}
 }
 
-export async function getServerSideProps(context) {
+export async function getServerSideProps(context: GetServerSidePropsContext): Promise<GetServerSidePropsResult<ArtistPageProps>> {
 	try {
-		let { spid, spids, artist_mbid, mbid, provider_id, provider_ids, provider, pid, pids, viewingAlbum }:
-			{ spid?: string, spids?: string, artist_mbid?: string, mbid?: string, provider_id?: string, provider_ids?: string, provider?: string, pid?: string, pids?: string, viewingAlbum?: string } = context.query;
-		if (spid) provider_id = spid;
-		if (spids) provider_ids = spids;
-		if ((spid || spids) && !provider) provider = "spotify";
-		if (pid) provider_id = pid;
-		if (pids) provider_ids = pids;
+		let { artist_mbid, mbid, provider_id, provider, viewingAlbum } = context.query;
 		if (mbid) artist_mbid = mbid;
-		const splitIds = provider_ids?.split(",");
-		if (!provider_id && splitIds && splitIds.length > 0) provider_id = splitIds[0];
+		const targetID = getFirst(artist_mbid);
+		const artistIDs = getAllValues(provider_id);
+		const artistID = getFirst(artistIDs);
+		const sourceProvider = getFirst(provider);
+		const openAlbum = getFirst(viewingAlbum);
 		const noRedirect = Object.prototype.hasOwnProperty.call(context.query, "noRedirect");
 
-		if (!provider) {
+		if (!sourceProvider) {
 			const error: SAMBLError = {
 				type: "parameter",
 				parameters: ["provider"]
@@ -53,7 +52,7 @@ export async function getServerSideProps(context) {
 			}
 		}
 
-		if (!provider_id) {
+		if (!artistID) {
 			const error: SAMBLError = {
 				type: "parameter",
 				parameters: ["provider_id"]
@@ -63,39 +62,29 @@ export async function getServerSideProps(context) {
 			}
 		}
 
-		if (!artist_mbid && provider_id && !noRedirect) {
-			let ids = provider_id ? provider_id : (splitIds && splitIds[0]);
-			const response = await RawSAMBLFetch<ArtistLookupData>(`/api/lookupArtist?provider_id=${ids}&provider=${provider}`, true);
+		if (!targetID && !noRedirect) {
+			const response = await RawSAMBLFetch<ArtistLookupData>(`/api/lookupArtist?provider_id=${artistID}&provider=${sourceProvider}`, true);
 			if (response.data) {
 				const { mbid: fetchedMBid } = response.data
 				if (fetchedMBid) {
-					let destination = `/artist?provider_id=${ids}&provider=${provider}&artist_mbid=${fetchedMBid}`;
-					if (!spid && splitIds && splitIds?.length > 1) {
-						destination = `/artist?provider_ids=${provider_ids}&provider=${provider}&artist_mbid=${fetchedMBid}`;
-					}
+					const redirectUrl = new PathOnlyURL('artist');
+					redirectUrl.setQuery('provider_id', artistIDs);
+					redirectUrl.setQuery('provider', sourceProvider);
+					redirectUrl.setQuery('artist_mbid', fetchedMBid)
 					return {
 						redirect: {
-							destination: destination,
+							destination: redirectUrl.toString(),
 							permanent: false,
 						},
 					};
 				}
 			}
 		}
-		if (splitIds?.length == 1) {
-			let destination = `/artist?provider_id=${splitIds[0]}${artist_mbid ? `&artist_mbid=${artist_mbid}` : ""}&provider=${provider}`;
-			return {
-				redirect: {
-					destination: destination,
-					permanent: false,
-				},
-			};
-		}
 
 		async function getViewedAlbum(): Promise<AlbumStack | null> {
 			if (viewingAlbum) {
 				try {
-					const [data, timings] = await SAMBLFetch<AlbumStack>(`/api/compareSingleAlbum?provider_id=${viewingAlbum}&provider=${provider}`, true);
+					const [data, timings] = await SAMBLFetch<AlbumStack>(`/api/compareSingleAlbum?provider_id=${viewingAlbum}&provider=${sourceProvider}`, true);
 					return data;
 				} catch {
 					return null;
@@ -103,17 +92,16 @@ export async function getServerSideProps(context) {
 			}
 			return null
 		}
-		const { createUrl, parseUrl } = parsers.getParser(provider as ProviderNamespace)
+		const { createUrl, parseUrl } = parsers.getParser(sourceProvider as ProviderNamespace)
 		let artist: ArtistPageData;
-		if (provider_ids && provider_ids?.length > 1) {
+		if (artistIDs?.length > 1) {
 			let data: ArtistObject[] = [];
 			let providerUrls: string[] = [];
 			let providerIds: string[] = [];
 			let artistMBIDs: string[] = [];
 			let mbArtist: null | ArtistObject = null;
-			let pIDArray = splitIds || [];
-			for (let id of pIDArray) {
-				const artistData = await fetchArtistData(id, provider)
+			for (let id of artistIDs) {
+				const artistData = await fetchArtistData(id, sourceProvider)
 				data.push(artistData.providerData);
 				providerUrls.push(artistData.providerData.url.url);
 				providerIds.push(artistData.providerData.id);
@@ -150,20 +138,20 @@ export async function getServerSideProps(context) {
 				id: providerIds[0],
 				urls: providerUrls,
 				mbids: [...new Set(artistMBIDs)],
-				provider: provider as ProviderNamespace || "spotify",
-				mbid: artist_mbid || null,
+				provider: sourceProvider as ProviderNamespace || "spotify",
+				mbid: targetID || null,
 				url: createUrl("artist", mostPopularArtist?.id || ""),
 				relevance: mostPopularArtist?.relevance || "",
 				info: mostPopularArtist?.info || "",
 				mbData: mbArtist,
-				viewingAlbum: viewingAlbum || null,
+				viewingAlbum: openAlbum ?? null,
 				viewedAlbum: await getViewedAlbum(),
 				type: "artist"
 			};
 			// original ids pIDArray
 			// source ids providerIds
-			if (!providerIds.every((id) => pIDArray.includes(id)) && !noRedirect) {
-				let destination = `/artist?provider_ids=${providerIds.join(",")}${artist_mbid ? `&artist_mbid=${artist_mbid}` : ""}&provider=${provider}`;
+			if (!providerIds.every((id) => artistIDs.includes(id)) && !noRedirect) {
+				let destination = `/artist?provider_ids=${providerIds.join(",")}${artist_mbid ? `&artist_mbid=${artist_mbid}` : ""}&provider=${sourceProvider}`;
 				return {
 					redirect: {
 						destination: destination,
@@ -172,20 +160,20 @@ export async function getServerSideProps(context) {
 				};
 			}
 		} else {
-			const fetchedData = (await fetchArtistData(provider_id, provider));
-			if (String(fetchedData.providerData.id).trim() != String(provider_id).trim() && !noRedirect) {
+			const fetchedData = (await fetchArtistData(artistID, sourceProvider));
+			if (String(fetchedData.providerData.id).trim() != artistID.trim() && !noRedirect) {
 				return {
 					redirect: {
-						destination: `/artist?provider_id=${fetchedData.providerData.id}&provider=${provider}${artist_mbid ? `&artist_mbid=${artist_mbid}` : ""}`,
+						destination: `/artist?provider_id=${fetchedData.providerData.id}&provider=${sourceProvider}${artist_mbid ? `&artist_mbid=${artist_mbid}` : ""}`,
 						permanent: false,
 					},
 				};
 			}
 			artist = {
 				...fetchedData.providerData,
-				mbData: fetchedData.mbData,
-				mbid: artist_mbid || null,
-				viewingAlbum: viewingAlbum || null,
+				mbData: fetchedData.mbData ?? null,
+				mbid: targetID ?? null,
+				viewingAlbum: openAlbum ?? null, 
 				viewedAlbum: await getViewedAlbum()
 			};
 		}
@@ -224,9 +212,9 @@ async function fetchArtistReleaseCount(mbid: string) {
 
 let loadArtistAlbums: ((bypassCache: boolean) => Promise<void>) | null = null;
 
-export default function Artist({ artist, error }: { artist: ArtistPageData, error: SAMBLError }) {
+export default function Artist({ artist, error }: { artist: ArtistPageData, error?: SAMBLError }) {
 	if (error || !artist) {
-		return <ErrorPage error={error} />
+		return <ErrorPage error={error ?? null} />
 	}
 	const { settings, loading: waitingForMount } = useSettings() as SAMBLSettingsContext;
 	const router = useRouter();

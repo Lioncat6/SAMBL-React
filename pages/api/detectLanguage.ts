@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import normalizeVars from "../../utils/normalizeVars";
+import { normalizeVars } from "../../utils/pageVarsUtils";
 import scriptAndLanguage from "../../utils/scriptAndLanguage";
 import { LangData, SAMBLAPIResponse } from "../../types/api-types";
 import { Stages } from "../../utils/timings";

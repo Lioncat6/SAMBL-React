@@ -6,7 +6,7 @@ import { DeepSearchArtist, DeepSearchData, DeepSearchMethod, SAMBLApiError, SAMB
 import { IArtist } from "musicbrainz-api";
 import { NextApiRequest, NextApiResponse } from "next";
 import stringSimilarity from 'string-similarity';
-import normalizeVars from "../../utils/normalizeVars";
+import { normalizeVars } from "../../utils/pageVarsUtils";
 import processAlbumData from "../../utils/processAlbumData";
 import text from "../../utils/text";
 import parsers from "../../lib/parsers/parsers";
@@ -55,7 +55,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
         let artistInfo = await stages.await('Get artist info', sourceProvider.getArtistById(parsed_id), sourceProvider.namespace);
         if (artistInfo == null) {
-            return api.response(404, { error: { error: "Artist not found!" } });
+            return api.response(404, { error: { error: "Artist not found!", provider: sourceProvider.namespace } });
         }
 
         let useUPCs = !(searchUPCs == "false");
@@ -68,7 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         //TODO: Implement paging here (in case people want to just check the whole discography for some reason)
         let data = sourceProvider.formatAlbumGetData(results);
         if (data == null) {
-            return api.response(404, { error: { error: "Artist albums not found!" } });
+            return api.response(404, { error: { error: "Artist albums not found!", provider: sourceProvider.namespace } });
         }
         let albumData: AlbumObject[] = data?.albums?.map(album => sourceProvider.formatAlbumObject(album)) || [];
         let upcs = albumData.map(album => album.upc).filter(upc => upc);

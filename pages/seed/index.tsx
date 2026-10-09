@@ -17,7 +17,7 @@ import albumStack from "../../utils/albumStack";
 import { SAMBLFetch } from "../../utils/clientAPIHandler";
 import ReleaseActionsPopup from "../../components/Popups/ReleaseActionsMenu";
 import { GetServerSidePropsContext } from "next";
-import normalizeVars from "../../utils/normalizeVars";
+import { normalizeVars } from "../../utils/pageVarsUtils";
 import { hostname } from "node:os";
 import harmony from "../../lib/seeders/harmony";
 import Notice from "../../components/notices";

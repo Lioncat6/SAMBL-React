@@ -2,7 +2,7 @@ import providers from "../../lib/providers/providers";
 import logger from "../../utils/logger";
 import { NextApiRequest, NextApiResponse } from "next";
 import { AlbumData, RawAlbumData } from "../../types/provider-types";
-import normalizeVars from "../../utils/normalizeVars";
+import { normalizeVars } from "../../utils/pageVarsUtils";
 import { SAMBLApiError } from "../../types/api-types";
 import ServerAPIHandler from "../../utils/serverAPIHandler";
 import { Stages } from "../../utils/timings";

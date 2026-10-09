@@ -8,7 +8,7 @@ import { Transition } from "@headlessui/react";
 import editUrlBuilder from "../utils/editUrlBuilder";
 import { useSettingsOrDefaults } from "./SettingsContext";
 
-function NoticeBox({ color, text, button }: { color: string, text: string, button?: JSX.Element | null }) {
+function NoticeBox({ color, text, button }: { color: string, text?: string, button?: JSX.Element | null }) {
 	const [visible, setVisible] = useState(true);
 	function dismiss() {
 		setVisible(false);
@@ -132,7 +132,7 @@ type NoticeType =
 	"onHarmony" |
 	"notGreen"
 
-export default function Notice({ data, type }: { data?: any, type: NoticeType }): JSX.Element | null {
+export default function Notice({ data, type, text, color, button }: { data?: any, type?: NoticeType, text?: string, color?: string, button?: JSX.Element }): JSX.Element | null {
 	if (type === "noMBID") {
 		return <NoMBIDNotice data={data} />;
 	} else if (type === "quickFetched") {
@@ -143,6 +143,12 @@ export default function Notice({ data, type }: { data?: any, type: NoticeType })
 		return <OnHarmonyNotice url={data} />
 	} else if (type === "notGreen") {
 		return <NotGreenNotice />
+	} else {
+		return <NoticeBox
+			color={color ?? "orange"}
+			text={text}
+			button={button}
+		/>
 	}
 	return null;
 }

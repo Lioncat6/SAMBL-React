@@ -4,7 +4,7 @@ import logger from "../../utils/logger";
 import { NextApiRequest, NextApiResponse } from "next";
 import { AlbumData, AlbumObject, ArtistObject, ExtendedAlbumObject, ProviderWithCapabilities, RawAlbumData } from "../../types/provider-types";
 import { IUrl } from "musicbrainz-api";
-import normalizeVars from "../../utils/normalizeVars";
+import { normalizeVars } from "../../utils/pageVarsUtils";
 import { SAMBLAPIResponse } from "../../types/api-types";
 import providers from "../../lib/providers/providers";
 import { AggregatedData, RawAggregateData } from "../../types/aggregated-types";

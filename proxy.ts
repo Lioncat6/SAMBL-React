@@ -1,22 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { deleteKeys, getAllFromKeys, getAllValues, hasAnyKey, setQuery } from './utils/pageVarsUtils';
 
 export function proxy(request: NextRequest) {
-    const url = new URL(request.url)
-    const spotifyParams = ["spid", "spotifyId"]
-    const spotifyRedirect = spotifyParams.find(param => url.searchParams.has(param))
-    if (spotifyRedirect) {
-        url.searchParams.set('provider_id', url.searchParams.get(spotifyRedirect) ?? "")
-        url.searchParams.set('provider', 'spotify')
-        url.searchParams.delete(spotifyRedirect)
-        return NextResponse.redirect(url)
-    }
-    const spotifyMultipleParams = ["spids", "spotifyIds"]
-    const spotifyMultipleRedirect = spotifyMultipleParams.find(param => url.searchParams.has(param))
-    if (spotifyMultipleRedirect) {
-        url.searchParams.set('provider_ids', url.searchParams.get(spotifyMultipleRedirect) ?? "")
-        url.searchParams.set('provider', 'spotify')
-        url.searchParams.delete(spotifyMultipleRedirect)
-        return NextResponse.redirect(url)
+    const nextUrl = request.nextUrl;
+    let searchParams = nextUrl.searchParams;
+    const spotifyIDKeys = ["spid", "spotifyId", "spids", "spotifyIds"]
+    const artistIDKeys = [...spotifyIDKeys, "pid", "pids", "provider_ids"]
+    if (hasAnyKey(searchParams, artistIDKeys)) {
+        const isSpotify = hasAnyKey(searchParams, spotifyIDKeys)
+        const artistIDs = getAllValues(getAllFromKeys(searchParams, artistIDKeys), ",");
+        setQuery(searchParams, 'provider_id', artistIDs)
+        if (isSpotify) searchParams.set('provider', 'spotify')
+        deleteKeys(searchParams, artistIDKeys);
+        return NextResponse.redirect(nextUrl.toString())
     }
 
     return NextResponse.next()

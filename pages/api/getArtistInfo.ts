@@ -4,7 +4,7 @@ import logger from "../../utils/logger"
 import { IArtist } from "musicbrainz-api";
 import { ArtistData } from "../../types/api-types";
 import { NextApiRequest, NextApiResponse } from "next";
-import normalizeVars from "../../utils/normalizeVars";
+import { normalizeVars } from "../../utils/pageVarsUtils";
 import { ProviderWithCapabilities } from "../../types/provider-types";
 import { SAMBLApiError } from "../../types/api-types";
 import { Stages } from "../../utils/timings";

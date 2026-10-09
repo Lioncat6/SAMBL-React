@@ -3,7 +3,7 @@ import providers from "../../lib/providers/providers"
 import musicbrainz from "../../lib/providers/musicbrainz";
 import processData from "../../utils/processAlbumData";
 import { NextApiRequest, NextApiResponse } from "next";
-import normalizeVars from "../../utils/normalizeVars";
+import { normalizeVars } from "../../utils/pageVarsUtils";
 import { IRelease } from "musicbrainz-api";
 import { APITimingStage, ArtistSearchData, SAMBLAPIResponse, SingleAlbumData } from "../../types/api-types";
 import { AlbumObject, ArtistObject, MediumObject, PartialArtistObject, ProviderNamespace, TrackObject } from "../../types/provider-types";

@@ -7,7 +7,7 @@ import SearchBox from "../../components/SearchBox";
 import { FaWindowRestore } from "react-icons/fa6";
 import toasts from "../../utils/toasts";
 import { FindData, ISRCData, SAMBLAPIResponse, UPCData, URLLookupData } from "../../types/api-types";
-import normalizeVars from "../../utils/normalizeVars";
+import { normalizeVars } from "../../utils/pageVarsUtils";
 import { AlbumObject, ArtistObject, TrackObject } from "../../types/provider-types";
 import parsers from "../../lib/parsers/parsers";
 import SAMBLHead from "../../components/SAMBLHead";

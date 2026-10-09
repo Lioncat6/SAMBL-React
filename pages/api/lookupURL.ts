@@ -3,7 +3,7 @@ import musicbrainz from "../../lib/providers/musicbrainz";
 import logger from "../../utils/logger";
 import { NextApiRequest, NextApiResponse } from "next";
 import { AlbumObject, ArtistObject, GenericObject, TrackObject } from "../../types/provider-types";
-import normalizeVars from "../../utils/normalizeVars";
+import { normalizeVars } from "../../utils/pageVarsUtils";
 import { URLLookupData } from "../../types/api-types";
 import { SAMBLApiError } from "../../types/api-types";
 import { IRecording } from "musicbrainz-api";

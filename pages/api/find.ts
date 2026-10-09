@@ -3,7 +3,7 @@ import { FindData, SAMBLApiError } from "../../types/api-types";
 import { AlbumObject, ProviderWithCapabilities, TrackObject } from "../../types/provider-types";
 import { NextApiRequest, NextApiResponse } from "next";
 import providers from "../../lib/providers/providers";
-import normalizeVars from "../../utils/normalizeVars";
+import { normalizeVars } from "../../utils/pageVarsUtils";
 import { Stages } from "../../utils/timings";
 import ServerAPIHandler from "../../utils/serverAPIHandler";
 
