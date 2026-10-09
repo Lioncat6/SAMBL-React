@@ -83,9 +83,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (!query) {
             return api.response(400, { error: { error: "Parameter `query` is required", parameters: ['query'] } });
         }
+        if (!provider) {
+            return api.response(400, { error: { error: "Parameter `provider` is required", parameters: ['provider'] } });
+        }
         let sourceProvider = provider ? providers.parseProvider(provider, ["searchByArtistName", "formatArtistSearchData", "formatArtistObject"]) : false;
         if (!sourceProvider) {
-            return api.response(400, { error: { error: `Provider \`${provider}\` does not support this operation` } });
+            return api.error.provider(sourceProvider, provider);
         }
         stages.start('Search source for artist', sourceProvider.namespace);
         let results = await sourceProvider.searchByArtistName(query);

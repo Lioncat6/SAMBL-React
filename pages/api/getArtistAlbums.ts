@@ -16,17 +16,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 		if (!provider_id || !provider) {
 			return api.response(400, { error: { error: "Parameters `provider_id` and `provider` are required", parameters: ['provider_id', 'provider'] } });
 		}
-		let providerObj = providers.parseProvider(provider, ["getArtistAlbums", "formatAlbumGetData", "formatAlbumObject"]);
-		if (!providerObj) {
-			return api.response(400, { error: { error: "Provider doesn't exist or doesn't support this operation" } });
+		let sourceProvider = providers.parseProvider(provider, ["getArtistAlbums", "formatAlbumGetData", "formatAlbumObject"]);
+		if (!sourceProvider) {
+			return api.error.provider(sourceProvider, provider);
 		}
-		stages.start('Get source artist albums', providerObj.namespace);
-		let rawData = await providerObj.getArtistAlbums(provider_id, offset, Number(limit), { noCache: forceRefresh });
+		stages.start('Get source artist albums', sourceProvider.namespace);
+		let rawData = await sourceProvider.getArtistAlbums(provider_id, offset, Number(limit), { noCache: forceRefresh });
 		stages.end('Get source artist albums');
-		let data: RawAlbumData = providerObj.formatAlbumGetData(rawData);
+		let data: RawAlbumData = sourceProvider.formatAlbumGetData(rawData);
 		let formattedData: AlbumData = {
 			...data,
-			albums: data.albums.map(album => providerObj.formatAlbumObject(album))
+			albums: data.albums.map(album => sourceProvider.formatAlbumObject(album))
 		}
 		api.response<AlbumData>(200, { data: formattedData });
 	} catch (error) {
