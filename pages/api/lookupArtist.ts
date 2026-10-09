@@ -44,7 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return api.response(400, { error: { error: "Parameters `provider_id` and `provider` are required when not using `url`", parameters: ['provider_id', 'provider'] } });
         }
         if (!sourceProvider) {
-            return api.response(400, { error: { error: `Provider \`${provider}\` does not support this operation` } });
+            return api.error.provider(sourceProvider, provider);
         }
         stages.start('Get source artist by ID', sourceProvider.namespace)
         const artist = await sourceProvider.getArtistById(parsed_id, { noCache: forceRefresh });

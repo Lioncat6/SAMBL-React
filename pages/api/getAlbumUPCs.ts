@@ -41,7 +41,7 @@ export default async function handler(req, res) {
             return api.response(400, { error: { error: "Parameters `provider_id` and `provider` are required when not using `url`", parameters: ['provider_id', 'provider'] } });
         }
         if (!sourceProvider) {
-            return api.response(400, { error: { error: `Provider \`${provider}\` does not support this operation`}});
+            return api.error.provider(sourceProvider, provider);
         }
         stages.start('Fetch album by ID', sourceProvider.namespace);
         let results = await sourceProvider.getAlbumById(parsed_id, { noCache: forceRefresh });

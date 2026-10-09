@@ -144,18 +144,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         } else {
             return api.response(400, { error: { error: "Parameters `provider_id` and `provider` are required when not using `url`", parameters: ['provider_id', 'provider'] } });
         }
-        const providerObj = providers.parseProvider(provider || "", ["getAlbumById", "formatAlbumObject", "getTrackById", "formatTrackObject", "getArtistById", "formatArtistObject"]);
+        const sourceProvider = providers.parseProvider(provider || "", ["getAlbumById", "formatAlbumObject", "getTrackById", "formatTrackObject", "getArtistById", "formatArtistObject"]);
 
-        if (!providerObj) {
-            return api.response(400, { error: { error: "Provider doesn't exist or doesn't support this operation", parameters: ['provider'] } })
+        if (!sourceProvider) {
+            return api.error.provider(sourceProvider, provider);
         }
         stages.start('Album fetch')
-        const rawAlbum = await providerObj.getAlbumById(parsed_id, { noCache: true });
+        const rawAlbum = await sourceProvider.getAlbumById(parsed_id, { noCache: true });
         stages.end('Album fetch')
         if (!rawAlbum) {
-            return api.response(404, { error: { error: "Album not found", provider: providerObj.namespace } })
+            return api.response(404, { error: { error: "Album not found", provider: sourceProvider.namespace } })
         }
-        let sourceAlbum = providerObj.formatAlbumObject(rawAlbum);
+        let sourceAlbum = sourceProvider.formatAlbumObject(rawAlbum);
         let mbAlbum: IRelease | null = null;
         if (!ignoreTarget) {
             stages.start('MusicBrainz album Lookup')
@@ -175,20 +175,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         let albumArtist: ArtistObject | null = null;
         if (artist_id) {
             stages.start('Source artist lookup')
-            const rawArtist = await providerObj.getArtistById(artist_id);
+            const rawArtist = await sourceProvider.getArtistById(artist_id);
             if (rawArtist) {
-                albumArtist = providerObj.formatArtistObject(rawArtist);
+                albumArtist = sourceProvider.formatArtistObject(rawArtist);
             }
             stages.end('Source artist lookup')
         }
-        const ISRCConfig = providerObj.config?.capabilities.isrcs;
+        const ISRCConfig = sourceProvider.config?.capabilities.isrcs;
         // Fetch ISRCs if needed
         if (fetchISRCs && ISRCConfig?.availability != "never" && ISRCConfig?.presence == "onTrackRefresh") {
             stages.start('Fetch ISRCs')
             sourceAlbum = (await getReleaseISRCs(sourceAlbum)) ?? sourceAlbum;
             stages.end('Fetch ISRCs')
         }
-        let albumData = processData([sourceAlbum], [], formattedMBAlbum ? [formattedMBAlbum] : [], providerObj.namespace, albumArtist);
+        let albumData = processData([sourceAlbum], [], formattedMBAlbum ? [formattedMBAlbum] : [], sourceProvider.namespace, albumArtist);
         let album = albumData.albumData?.[0]
         if (!album) return api.response(500, { error: { error: 'Error processing album data' } });
         if (detectLanguage) {

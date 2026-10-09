@@ -220,7 +220,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 		const sourceProvider = providers.parseProvider(provider, ["getArtistAlbums", "formatAlbumGetData", "formatAlbumObject", "getArtistById", "formatArtistObject"])
 
 		if (!sourceProvider) {
-			return api.response(400, { error: { error: `Provider ${provider} doesn't support this operation!` } });
+			return api.error.provider(sourceProvider, provider);
 		}
 
 		let sourceArtist: ArtistObject | null = null;
