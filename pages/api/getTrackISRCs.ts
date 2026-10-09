@@ -2,7 +2,7 @@ import providers from "../../lib/providers/providers";
 import logger from "../../utils/logger";
 import { ProviderWithCapabilities } from "../../types/provider-types";
 import { NextApiRequest, NextApiResponse } from "next";
-import normalizeVars from "../../utils/normalizeVars";
+import { normalizeVars } from "../../utils/pageVarsUtils";
 import { ISRCData, SAMBLApiError } from "../../types/api-types";
 import { Stages } from "../../utils/timings";
 import ServerAPIHandler from "../../utils/serverAPIHandler";

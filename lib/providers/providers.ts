@@ -39,21 +39,24 @@ function getDefaultProvider(): Provider {
  *
  * @param {string|object} rawProvider - The provider namespace string or provider object.
  * @param {string[]} [capabilities] - Array of required function names.
+ * @param {boolean} useDefault - Use the default provider if the above provider is invalid
  * @returns {object|boolean} The matched provider object if all capabilities are present, otherwise false.
  */
 
 function parseProvider<T extends ProviderCapability[]>( 
     rawProvider: ProviderNamespace | string | Provider, 
-    capabilities?: T 
-): (T extends ProviderCapability[] ? ProviderWithCapabilities<T> : PartialProvider) | false {
+    capabilities?: T,
+    useDefault?: boolean
+): (T extends ProviderCapability[] ? ProviderWithCapabilities<T> : PartialProvider) | false | null {
     let provider = getDefaultProvider();
 
     if (typeof rawProvider === "string") {
-        providerList.forEach(p => {
-            if (p.namespace == rawProvider) {
-                provider = p;
-            }
-        });
+        const matchedProvider = providerList.find((provider => provider.namespace == rawProvider.toLocaleLowerCase()))
+        if (matchedProvider) {
+            provider = matchedProvider
+        } else if (!useDefault) {
+            return null
+        }
     } else {
         provider = rawProvider;
     }
@@ -70,13 +73,18 @@ function parseProvider<T extends ProviderCapability[]>(
     return provider as any;
 }
 
+/**
+ * Get all providers matching a set of capabilities
+ * @param {string[]} [capabilities] Array of required function names, if not provided, all enabled providers are returned
+ * @returns {object|boolean} Array of all matching providers.
+ */
 function getAllProviders<T extends ProviderCapability[]>( 
     capabilities?: T 
 ): (T extends ProviderCapability[] ? ProviderWithCapabilities<T> : PartialProvider  )[] {
     let allProviders: (T extends ProviderCapability[] ? ProviderWithCapabilities<T> : PartialProvider)[] = []
     providerList.forEach((p)=>{
         const parsedProvider = parseProvider(p, capabilities)
-        if (parsedProvider != false) {
+        if (parsedProvider) {
             allProviders.push(parsedProvider)
         }
     })

@@ -101,12 +101,21 @@ export interface SAMBLSettings {
 
 export class UrlParser {
     parseUrl: (url: string) => UrlData | null;
-    createUrl: (urlType: UrlType, providerId: string, mbTypes?: number[], country?: string)=> ExternalUrlData
+    createUrl: (urlType: UrlType, providerId: string, mbTypes?: number[], country?: string) => ExternalUrlData
 }
 
 export class DeepSearchSelection {
     mbid: string
     userSelected: boolean
-    trackArtists: boolean 
+    trackArtists: boolean
     data: DeepSearchData
+}
+
+// Props
+export type WithError = {
+    error?: SAMBLError
+}
+
+export type ArtistPageProps = WithError & {
+    artist?: ArtistPageData
 }

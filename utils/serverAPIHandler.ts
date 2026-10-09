@@ -28,4 +28,12 @@ export default class ServerAPIHandler {
     response<T extends SAMBLAPIData | never = never>(code: number, response: SAMBLAPIResponseWithoutTimings<T>) {
         return SAMBLResponse<T>(this.res, code, response, this.stages)
     }
+
+    get error() {
+        return {
+            provider: (providerStatus: null | false, providerName: string) => {
+                return SAMBLResponse<never>(this.res, 400, {error: {error: `Provider ${providerName} does ${providerStatus === false ? 'does not support this operation': 'does not exist or is disabled'}`}}, this.stages);
+            }
+        };
+    }
 }

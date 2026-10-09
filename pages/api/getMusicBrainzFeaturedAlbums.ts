@@ -1,6 +1,6 @@
 import musicbrainz from "../../lib/providers/musicbrainz";
 import logger from "../../utils/logger";
-import normalizeVars from "../../utils/normalizeVars";
+import { normalizeVars } from "../../utils/pageVarsUtils";
 import { SAMBLApiError } from "../../types/api-types";
 import { NextApiRequest, NextApiResponse } from "next";
 import { Stages } from "../../utils/timings";
