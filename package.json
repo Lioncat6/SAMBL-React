@@ -42,7 +42,7 @@
 		"soundcloud.ts": "^0.7.3",
 		"spotify-web-api-node": "^5.0.0",
 		"string-similarity": "^4.0.4",
-		"unicode-properties": "^1.4.1"
+		"unicode-properties": "^2.0.1"
 	},
 	"repository": {
 		"type": "git",
