@@ -18,6 +18,7 @@ export class GenericObject {
     name: string;
     url: ExternalUrlData | null;
     type: ObjectType
+    sourceType?: ObjectType
     mbid?: string | null;
 }
 
@@ -66,7 +67,7 @@ export class AlbumObject extends ImageObject {
     genres: string[] | null;
     type: "album";
     script?: ReleaseScript;
-    language?: ReleaseLanguage
+    language?: ReleaseLanguage;
 };
 
 export class LabelObject extends GenericObject {
@@ -89,6 +90,13 @@ export class ExternalUrlData {
     url: string;
     urlInfo: UrlInfo | null;
     mbTypes: number[]
+}
+
+export class ExternalIdData {
+    id: string;
+    rawId?: string;
+    type?: UrlType;
+    unresolved?: boolean;
 }
 
 export class CommonExtends {
@@ -139,7 +147,7 @@ export class TrackObject extends ImageObject {
 export class ExtendedTrackObject extends TrackObject {
     comment?: string | null;
     externalUrls?: string[] | null;
-    extraInfo?: {[key: string]: any};
+    extraInfo?: { [key: string]: any };
 }
 
 export class PagingData {
@@ -223,7 +231,7 @@ export type ProviderCapability = (keyof PartialProvider);
 export type ProviderWithCapabilities<T extends ProviderCapability[]> = Omit<PartialProvider, T[number]> & Required<Pick<PartialProvider, T[number]>>;
 
 type KeysWithKey<T, K extends PropertyKey> = {
-  [P in keyof T]: K extends keyof NonNullable<T[P]> ? P : never
+    [P in keyof T]: K extends keyof NonNullable<T[P]> ? P : never
 }[keyof T];
 
 export type IRelationType = KeysWithKey<IRelation, "id">
@@ -250,5 +258,5 @@ export class MusicBrainzProvider extends FullProvider {
     getArtistReleaseCount: (artistId: string, options?: CacheOptions) => Promise<number | null>;
     getArtistByUrl: (url: string, inc?: UrlIncludes[], options?: CacheOptions) => Promise<IArtist | null>;
     validateMBID: (mbid: string) => boolean;
-    getIdsByUrlQuery: (query: RegexArtistUrlQuery, type?: IRelationType, inc?: RelationsIncludes[], options?:CacheOptions) => Promise<IdMBIDDict | null>;
+    getIdsByUrlQuery: (query: RegexArtistUrlQuery, type?: IRelationType, inc?: RelationsIncludes[], options?: CacheOptions) => Promise<IdMBIDDict | null>;
 }
