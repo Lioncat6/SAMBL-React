@@ -18,7 +18,15 @@ export class GenericObject {
     name: string;
     url: ExternalUrlData | null;
     type: ObjectType
+    /**
+     * Indicates if the source for the object considers it a different type.
+     * For example:
+     *   - A bandcamp single track as an album
+     */
     sourceType?: ObjectType
+    /**
+     * Either pulled from the object source or when matched during aggregation
+     */
     mbid?: string | null;
 }
 
