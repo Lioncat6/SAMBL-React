@@ -6,7 +6,6 @@ import bcApi from "bandcamp-scraper";
 import parsers from "../parsers/parsers";
 import medium from "../../utils/medium";
 import SAMBLUserAgent from "../../utils/userAgent";
-
 const namespace = "bandcamp";
 
 const { createUrl, parseUrl } = parsers.getParser(namespace);
@@ -61,7 +60,7 @@ function searchAsync(params: { query: string, page: number }) {
 function getArtistByIdAsync(id: string) {
 	return new Promise((resolve, reject) => {
 		try {
-			bcApi.getArtistInfo(createUrl('artist', id).url, (error, artistData) => {
+			bcApi.getArtistInfo(`${createUrl('artist', id).url}/music`, (error, artistData) => {
 				if (error) reject(error);
 				else resolve(artistData);
 			}, cookie, userAgent);
@@ -210,18 +209,23 @@ function getTags(rawData) {
 	return tags.filter(tag => tag != null && tag != undefined);
 }
 
+function getImageURL(id: string | null | undefined, url?: string | null | undefined, small = false, isAlbum = false): string | null {
+	const size = small ? 3 : 0;
+	if (url) return url.replace(/_\d+\.(?:jpg|png)$/, `_${size}.${small ? 'jpg' : 'png'}`)
+	if (!id) return null;
+	return `https://f4.bcbits.com/img/${isAlbum ? 'a' : ''}${id}_${size}.png`;
+}
+
 function formatArtistObject(rawData): ArtistObject {
 	const id = parseUrl(rawData.url)?.id || rawData.raw?.subdomain || ":";
 	return {
 		name: rawData.name,
 		url: createUrl("artist", id),
-		imageUrl: rawData.imageUrl?.replace(/_\d+\.jpg$/, "_0.jpg"),
-		imageUrlSmall: rawData.imageUrl?.replace(/_\d+\.jpg$/, "_3.jpg"),
-		bannerUrl: rawData.raw?.design?.bg_image_id
-			? `https://f4.bcbits.com/img/${rawData.raw.design.bg_image_id}_0.jpg`
-			: rawData.raw?.header_desktop
-				? `https://f4.bcbits.com/img/${rawData.raw.header_desktop.image_id}_0.jpg`
-				: rawData.bannerImage ? rawData.bannerImage : "",
+		imageUrl: getImageURL(null, rawData.imageUrl),
+		imageUrlSmall: getImageURL(null, rawData.imageUrl, true),
+		bannerUrl: getImageURL(rawData.raw?.design?.bg_image_id) ??
+			getImageURL(rawData.raw?.header_desktop?.image_id) ??
+			rawData.bannerImage ?? null,
 		relevance: rawData.location,
 		info: rawData.tags.join(", "),
 		genres: getTags(rawData),
@@ -287,19 +291,19 @@ function formatAlbumObject(album): AlbumObject {
 	if (!album.artist) {
 		album.artist = bcId.artist;
 	}
-	if (isTrack) {
+	if (isTrack || (album.numTracks ?? album.tracks?.length == 1)) {
 		albumType = "single";
 	}
 	let imageUrl =
-		album.imageUrl?.replace(/_\d+\.jpg$/, "_0.jpg") ||
-		`https://f4.bcbits.com/img/a${album.raw.art_id}_0.jpg`;
+		getImageURL(null, album.imageUrl) ??
+		getImageURL(album.raw.art_id, null, false, true)
 	let imageUrlSmall =
-		album.imageUrl?.replace(/_\d+\.jpg$/, "_3.jpg") ||
-		`https://f4.bcbits.com/img/a${album.raw.art_id}_3.jpg`;
+		getImageURL(null, album.imageUrl, true) ??
+		getImageURL(album.raw.art_id, null, true, true)
 	return {
 		provider: namespace,
 		id: createId(bcId),
-		name: album.name || album.title,
+		name: album.name ?? album.title,
 		url: createUrl("album", createId(bcId)),
 		imageUrl: imageUrl,
 		imageUrlSmall: imageUrlSmall,
@@ -318,14 +322,15 @@ function formatAlbumObject(album): AlbumObject {
 		releaseDate: text.formatDate(
 			album.releaseDate || album.raw?.current?.release_date
 		),
-		trackCount: album.numTracks ? album.numTracks : album.tracks?.length ? album.tracks?.length : isTrack ? 1 : null,
+		trackCount: album.numTracks ?? album.tracks?.length ?? isTrack ? 1 : null,
 		albumType: albumType,
 		upc: album.raw?.current?.upc || null,
 		mediums: medium.convertTrackList(getAlbumTracks(album), 'Digital Media'),
 		labels: getLabels(album),
 		copyrights: null,
 		genres: getTags(album),
-		type: "album"
+		type: "album",
+		sourceType: isTrack ? "track" : "album"
 	};
 }
 
@@ -348,15 +353,11 @@ function getAlbumTracks(album): TrackObject[] {
 				album.releaseDate || album.raw?.current?.release_date
 			);
 			trackinfo.imageUrl =
-				album.imageUrl?.replace(/_\d+\.jpg$/, "_0.jpg") ||
-				(album.raw.art_id
-					? `https://f4.bcbits.com/img/a${album.raw.art_id}_0.jpg`
-					: null);
+				getImageURL(null, album.imageUrl) ??
+				getImageURL(album.raw.art_id, null, false, true)
 			trackinfo.imageUrlSmall =
-				album.imageUrl?.replace(/_\d+\.jpg$/, "_3.jpg") ||
-				(album.raw.art_id
-					? `https://f4.bcbits.com/img/a${album.raw.art_id}_3.jpg`
-					: null);
+				getImageURL(null, album.imageUrl, true) ??
+				getImageURL(album.raw.art_id, null, true, true)
 			tracks.push(formatTrackObject(trackinfo));
 		}
 	} else if (album && album.raw?.current?.type == "track") {
@@ -368,24 +369,16 @@ function getAlbumTracks(album): TrackObject[] {
 			album.releaseDate || album.raw?.current?.release_date
 		);
 		trackinfo.imageUrl =
-			album.imageUrl?.replace(/_\d+\.jpg$/, "_0.jpg") ||
-			(album.raw.art_id
-				? `https://f4.bcbits.com/img/a${album.raw.art_id}_0.jpg`
-				: null);
+			getImageURL(null, album.imageUrl) ??
+			getImageURL(album.raw.art_id, null, false, true)
 		trackinfo.imageUrlSmall =
-			album.imageUrl?.replace(/_\d+\.jpg$/, "_3.jpg") ||
-			(album.raw.art_id
-				? `https://f4.bcbits.com/img/a${album.raw.art_id}_3.jpg`
-				: null);
+			getImageURL(null, album.imageUrl, true) ??
+			getImageURL(album.raw.art_id, null, true, true)
 		trackinfo.isrc = album.raw.current.isrc;
 		tracks.push(formatTrackObject(trackinfo));
 	}
 	tracks.sort((a, b) => (a.trackNumber || 0) - (b.trackNumber || 0));
 	return tracks;
-}
-
-function createImageUrl(artId, size = 0) {
-	return artId ? `https://f4.bcbits.com/img/a${artId}_${size}.png` : null
 }
 
 function formatTrackObject(track): ExtendedTrackObject {
@@ -400,8 +393,8 @@ function formatTrackObject(track): ExtendedTrackObject {
 		id: id || null,
 		name: track.title,
 		url: createUrl("track", id || ""),
-		imageUrl: track.imageUrl || createImageUrl(rawTrack?.art_id) || null,
-		imageUrlSmall: track.imageUrlSmall || createImageUrl(rawTrack?.art_id, 3) || null,
+		imageUrl: getImageURL(null, track.imageUrl) ?? getImageURL(rawTrack?.art_id, null, false, true),
+		imageUrlSmall: getImageURL(null, track.imageUrl, true) || getImageURL(rawTrack?.art_id, null, true, true),
 		trackArtists: [formatPartialArtistObject(track)],
 		artistNames: artistName ? [artistName] : [],
 		albumName: track.albumName || null,
@@ -473,7 +466,7 @@ const bandcamp: FullProvider = {
 	formatArtistLookupData,
 	formatAlbumObject,
 	formatAlbumGetData,
-	getArtistById,
+	getArtistById: withCache(getArtistById, { ttl: 60 * 30, namespace: namespace }),
 	parseUrl
 };
 
