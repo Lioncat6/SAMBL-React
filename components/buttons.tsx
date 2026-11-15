@@ -4,11 +4,12 @@ import { Button } from "@headlessui/react";
 import editUrlBuilder from "../utils/editUrlBuilder";
 import { ArtistObject } from "../types/provider-types";
 import DeepSearchMenuPopup from "./Popups/DeepSearchMenu";
-import { FaLink, FaMagnifyingGlass, FaSeedling } from "react-icons/fa6";
+import { FaLink, FaMagnifyingGlass, FaSeedling, FaVideo, FaYoutube } from "react-icons/fa6";
 import { AlbumStack } from "../types/aggregated-types";
 import albumStack from "../utils/albumStack";
 import { HTMLAttributeAnchorTarget, JSX } from "react";
 import { useSettingsOrDefaults } from "./SettingsContext";
+import { PiFlowerTulipBold } from "react-icons/pi";
 
 export function AddButtons({ artist }: { artist: ArtistObject }) {
 	const { settings } = useSettingsOrDefaults();
@@ -35,63 +36,47 @@ export function AddButtons({ artist }: { artist: ArtistObject }) {
 	);
 }
 
-function LookupButtonInner() {
-	return <><FaMagnifyingGlass /> Lookup</>
-}
-
-function FindButtonInner() {
-	return <><FaMagnifyingGlass /> Find</>
-}
-
-function SearchButtonInner() {
-	return <>Search</>
-}
-
-function SeedButtonInner() {
-	return (
-		<><FaSeedling /> Seed Release</>
-	)
-}
-
-function ReleaseActionsButtonInner() {
-	return <><FaLink /> Release Actions</>
-}
-
-export function ActionButton({ type, onClick, isLoading, data }: { type: "lookup" | "find" | "search" | "seed" | "releaseActions", onClick?: () => void, isLoading?: boolean, data?: any }) {
+export function ActionButton({ type, onClick, isLoading, data }: { type: "lookup" | "find" | "search" | "seed" | "releaseActions" | "recording", onClick?: () => void, isLoading?: boolean, data?: any }) {
 	let buttonContent = <>Enter</>;
 	let buttonStyles = styles.actionButton;
 	let buttonId = "actionButton";
-
+	let title: string | undefined = undefined;
 	switch (type) {
 		case "lookup":
-			buttonContent = <LookupButtonInner />;
+			buttonContent = <><FaMagnifyingGlass /> Lookup</>;
 			buttonStyles = styles.lookupButton;
 			buttonId = "lookupButton";
 			break;
 		case "find":
-			buttonContent = <FindButtonInner />;
+			buttonContent = <><FaMagnifyingGlass /> Find</>;
 			buttonStyles = styles.findButton;
 			buttonId = "findButton";
 			break;
 		case "search":
-			buttonContent = <SearchButtonInner />;
+			buttonContent = <>Search</>;
 			buttonStyles = styles.searchButton;
 			buttonId = "searchEnter";
 			break;
 		case "seed":
-			buttonContent = <SeedButtonInner />;
+			buttonContent = <><FaSeedling /> Seed Release</>;
 			buttonStyles = styles.seedButton;
 			buttonId = "seedButton";
 			break;
+		case "recording":
+			buttonContent = <><FaYoutube/> <PiFlowerTulipBold /> Seed Standalone Video Recording</>;
+			buttonStyles = styles.seedRecordingButton;
+			buttonId = "seedRecordingButton";
+			title = "Seed video release as a standalone recording"
+			break;
 		case "releaseActions":
-			buttonContent = <ReleaseActionsButtonInner />;
+			buttonContent = <><FaLink /> Release Actions</>;
 			buttonStyles = styles.releaseActionsButton;
 			buttonId = "releaseActionsButton"
 			break
 	}
 
 	return (
-		<button type="button" className={`${buttonStyles ? `${buttonStyles} ` : ''}${styles.actionButton}`} id={buttonId} onClick={onClick}>
+		<button type="button" className={`${buttonStyles ? `${buttonStyles} ` : ''}${styles.actionButton}`} id={buttonId} onClick={onClick} title={title}>
 			{isLoading ? (
 				<div className="lds-ellipsis">
 					<div></div>

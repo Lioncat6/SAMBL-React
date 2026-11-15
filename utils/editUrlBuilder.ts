@@ -5,6 +5,7 @@ import { DeepSearchSelection } from "../types/component-types";
 import { ArtistObject, PartialArtistObject, ProviderNamespace, TrackObject } from "../types/provider-types";
 import albumStack from "./albumStack";
 import editNoteBuilder from "./editNoteBuilder";
+import seed from "./seed";
 
 function buildAddArtistEditUrl(artist: PartialArtistObject, targetBaseUrl: string): string {
     let editNote = editNoteBuilder.buildEditNote('Artist', artist.provider, artist.url.url, artist.url.url);
@@ -120,7 +121,6 @@ function buildBulkRecordingUrlSeedUrl(album: AlbumStack, targetBaseUrl: string):
             recordings.set(track.mbid, [{url, types: types.map(type => type.toString())}]);
         }
     }
-    console.log(recordings)
     const seedUrlsHash: mbSeedUrlsToReleaseRecordingsSchema = {
         version: 2,
         recordings,
@@ -131,6 +131,16 @@ function buildBulkRecordingUrlSeedUrl(album: AlbumStack, targetBaseUrl: string):
     return baseUrl.toString();
 }
 
+// function buildStandaloneRecordingSeedURL(data: TrackObject | AlbumStack, targetBaseUrl: string, origin: string): string | null {
+//     const rawSeed = seed.buildRecordingSeed(data, origin);
+//     if (!rawSeed) return null;
+//     const baseUrl = new URL(`https://${targetBaseUrl}/recording/create`);
+//     for (const [key, value] of Object.entries(rawSeed)) {
+//         baseUrl.searchParams.append(`edit-recording.${key}`, String(value));
+//     }
+//     return baseUrl.toString();
+// }
+
 const editUrlBuilder = {
     buildAddArtistEditUrl,
     buildDeepSearchEditUrl,
@@ -138,7 +148,8 @@ const editUrlBuilder = {
     buildCoverArtSeedUrl,
     buildArtistImageSeedUrl,
     buildRecordingUrlSeedUrl,
-    buildBulkRecordingUrlSeedUrl
+    buildBulkRecordingUrlSeedUrl,
+    // buildStandaloneRecordingSeedURL
 }
 
 export default editUrlBuilder;

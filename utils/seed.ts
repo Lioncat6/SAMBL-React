@@ -10,7 +10,7 @@ import type {
     ReleaseUrlSeed,
     TrackSeed,
 } from '@kellnerd/musicbrainz/seeding/release';
-import { ExternalUrlData, PartialArtistObject } from "../types/provider-types";
+import { ExternalUrlData, PartialArtistObject, TrackObject } from "../types/provider-types";
 import { ReleaseGroupType } from "@kellnerd/musicbrainz/data/release-group";
 import editNoteBuilder from "./editNoteBuilder";
 import albumStack from "./albumStack";
@@ -33,7 +33,8 @@ function convertReleaseGroupType(SAMBLType: string | null): ReleaseGroupType[] |
     return foundType ? [foundType] : undefined;
 }
 
-function convertUrls(SAMBLUrl: ExternalUrlData): ReleaseUrlSeed[] {
+function convertUrls(SAMBLUrl: ExternalUrlData | null): ReleaseUrlSeed[] {
+    if (!SAMBLUrl) return [];
     if (SAMBLUrl.mbTypes.length == 0) return [{ url: SAMBLUrl.url }];
     return SAMBLUrl.mbTypes.map((type) => ({
         url: SAMBLUrl.url,
@@ -71,21 +72,21 @@ function convertArtistCredit(artists?: PartialArtistObject[]): ArtistCreditSeed 
 
 
 export function flatten(record: Record<string, any>, preservedKeys: string[] = []): Record<string, any> {
-	const flatRecord = {};
+    const flatRecord = {};
 
-	for (const key in record) {
-		let value = record[key];
-		if (typeof value === 'object' && value !== null && !preservedKeys.includes(key)) { // also matches arrays
-			value = flatten(value, preservedKeys);
-			for (const childKey in value) {
-				flatRecord[key + '.' + childKey] = value[childKey]; // concatenate keys
-			}
-		} else if (value !== undefined) { // value is already flat (e.g. a string) or should be preserved
-			flatRecord[key] = value; // keep the key
-		}
-	}
+    for (const key in record) {
+        let value = record[key];
+        if (typeof value === 'object' && value !== null && !preservedKeys.includes(key)) { // also matches arrays
+            value = flatten(value, preservedKeys);
+            for (const childKey in value) {
+                flatRecord[key + '.' + childKey] = value[childKey]; // concatenate keys
+            }
+        } else if (value !== undefined) { // value is already flat (e.g. a string) or should be preserved
+            flatRecord[key] = value; // keep the key
+        }
+    }
 
-	return flatRecord;
+    return flatRecord;
 }
 
 
@@ -118,27 +119,90 @@ function buildSeed(stack: AlbumStack, origin: string) {
         language: aggregatedAlbum.language?.code,
         script: aggregatedAlbum.script?.code,
         urls: convertUrls(aggregatedAlbum.url),
-        annotation: (aggregatedAlbum.copyrights && aggregatedAlbum.copyrights.length > 0) ? 'Copyright: '+aggregatedAlbum.copyrights?.join('%0A'): undefined, //TODO: Add detail text to albums,
+        annotation: (aggregatedAlbum.copyrights && aggregatedAlbum.copyrights.length > 0) ? 'Copyright: ' + aggregatedAlbum.copyrights?.join('%0A') : undefined, //TODO: Add detail text to albums,
         edit_note: editNoteBuilder.buildSeedReleaseEditNote(aggregatedAlbum),
-        redirect_uri: origin+"&showActions",
+        redirect_uri: origin + "&showActions",
     };
     return flatten(seed);
 }
 
+export interface RecordingSeed {
+    //https://github.com/kellnerd/musicbrainz-ts
+    /** The name of the recording. Non-empty string. Required. */
+    name: string;
+
+    /** A disambiguation comment for the recording. Non-empty string. */
+    comment?: string;
+    /** Text to place in the recordings annotation (multi-line). */
+    annotation?: string;
+    /**
+     * The isrcs of the recording.
+     *
+     * May be any valid isrc without whitespace.
+     */
+    isrcs?: string[];
+    /** A recording may be credited to multiple artists via an Artist Credit. */
+    artist_credit?: ArtistCreditSeed;
+
+    /** You can seed a list of URLs to add as relationships to the recording. */
+    urls?: ReleaseUrlSeed[];
+
+    /** The track's duration, in MM:SS form or an integer as milliseconds. */
+    length?: string | number;
+
+    /** Is the recording a video */
+    video?: 1 | 0
+
+    /** Specify the content of the edit note (multi-line). */
+    edit_note?: string;
+    /**
+     * A URI to redirect to after the recording is submitted.
+     *
+     * The recording's MBID will be added to this URI under the `recording_mbid` query
+     * parameter. E.g., if http://example.com/ is provided for this, the user will
+     * be redirected to a URI like http://example.com/?recording_mbid=4587fe99-db0e-4553-a56a-164dd38ab380.
+     */
+    redirect_uri?: string;
+}
+
+function buildRecordingSeed(data: AlbumStack | TrackObject, origin: string) {
+    let recording: TrackObject | undefined;
+    if ("aggregated" in data) {
+        const stack = data as AlbumStack;
+        const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(stack)
+        recording = sourceAlbum?.mediums[0]?.tracks[0];
+        if (!recording) return null;
+    } else {
+        recording = data as TrackObject;
+    }
+    const seed: RecordingSeed = {
+        name: recording.name,
+        artist_credit: convertArtistCredit(recording.trackArtists),
+        urls: convertUrls(recording.url),
+        annotation:  undefined, 
+        isrcs: recording.isrcs,
+        length: recording.duration ?? undefined,
+        video: recording.isVideo ? 1 : 0,
+        edit_note: editNoteBuilder.buildSeedRecordingEditNote(recording),
+        redirect_uri: origin + "&showRecordingActions",
+    }
+    return flatten(seed);
+}
 
 function seedUrls(stack: AlbumStack, origin: string) {
     const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(stack)
 
-    const seed: Omit<ReleaseSeed, 'name'>  = {
+    const seed: Omit<ReleaseSeed, 'name'> = {
         urls: convertUrls(aggregatedAlbum.url),
         edit_note: editNoteBuilder.buildSeedReleaseEditNote(aggregatedAlbum, "Additional URLs seeded"),
-        redirect_uri: origin+"&showActions",
+        redirect_uri: origin + "&showActions",
     };
     return flatten(seed);
 }
 
 const seed = {
     buildSeed,
+    buildRecordingSeed,
     seedUrls
 }
 

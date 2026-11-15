@@ -128,6 +128,9 @@ export default function Seed({ data, error, hostName, timings }: { data?: AlbumS
                 {harmonyProviders.includes(aggregatedAlbum.provider) && <Notice type={"onHarmony"} data={harmony.buildUrl(aggregatedAlbum.url.url, aggregatedAlbum.upc)}/>}
                 <SearchBox type="lookup" />
                 <ReleaseSeedButton data={data} origin={origin}/>
+                {sourceAlbum?.isVideo && 
+                    <ReleaseSeedButton data={data} origin={origin} type="recording"/>
+                }
                 {targetAlbum &&
                     <ReleaseActionsPopup data={data} button={<ActionButton type="releaseActions"/>} open={showActions} origin={origin}/>
                 }

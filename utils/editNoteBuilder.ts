@@ -1,7 +1,7 @@
 import { AggregatedAlbum, AggregatedArtist, AlbumStack } from "../types/aggregated-types";
 import { DeepSearchData } from "../types/api-types";
 import { DeepSearchSelection } from "../types/component-types";
-import { ArtistObject, PartialArtistObject, ProviderNamespace } from "../types/provider-types";
+import { ArtistObject, PartialArtistObject, ProviderNamespace, TrackObject } from "../types/provider-types";
 import albumStack from "./albumStack";
 import clientProviders from "./clientProviders";
 import text from "./text";
@@ -117,6 +117,14 @@ function buildSeedReleaseEditNote(data: AggregatedAlbum, action?: string): strin
         ;
 }
 
+function buildSeedRecordingEditNote(data: TrackObject): string {
+    return `Standalone Recording seeded from ''SAMBL''\n` +
+        `'''Provider:''' ${clientProviders.getDisplayName(data.provider)}\n` +
+        (data.url ? `'''Source:''' ${data.url?.url}\n`: '') +
+        SAMBLFooter()
+        ;
+}
+
 function buildRecordingSeedEditNote(provider: ProviderNamespace, albumName: string, targetUrl: string, sourceUrl: string, encodeString = true, lineSplit = '%0A'): string {
     return encode( 
         `Recording URLs matched while importing release from ''SAMBL''${lineSplit}`+
@@ -130,7 +138,8 @@ const editNoteBuilder = {
     buildEditNote,
     buildDeepSearchEditNote,
     buildSeedReleaseEditNote,
-    buildRecordingSeedEditNote
+    buildRecordingSeedEditNote,
+    buildSeedRecordingEditNote
 }
 
 export default editNoteBuilder;

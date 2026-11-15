@@ -62,6 +62,14 @@
     background-color: #006297;
 }
 
+.seedRecordingButton {
+    background-color: #50aaa3;
+}
+
+.seedRecordingButton:hover {
+    background-color: #4d9791;
+}
+
 .releaseActionsButton {
     background-color: #eba000;
 }
