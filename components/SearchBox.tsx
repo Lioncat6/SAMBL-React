@@ -10,7 +10,7 @@ import { ArtistLookupData, SAMBLApiError, SAMBLAPIResponse } from "../types/api-
 import { PiBoatDuotone } from "react-icons/pi";
 import parsers from "../lib/parsers/parsers";
 import { ActionButton } from "./buttons";
-import { SAMBLFetch } from "../utils/clientAPIHandler";
+import { RawSAMBLFetch, SAMBLFetch } from "../utils/clientAPIHandler";
 function SearchBox() {
 	const [loadingState, setLoadingState] = useState(false);
 	const [inputValue, setInputValue] = useState("");
@@ -48,15 +48,30 @@ function SearchBox() {
 
 	async function checkArtist(url: string) {
 		try {
-			const [data, timings] = await SAMBLFetch<ArtistLookupData>(`/api/lookupArtist?url=${encodeURIComponent(url)}`);
-			const {mbid, provider, provider_id } = data;
-			if (mbid) {
-				router.push(`/artist?provider_id=${provider_id}&provider=${provider}&artist_mbid=${mbid}`);
+			const response = await RawSAMBLFetch<ArtistLookupData>(`/api/lookupArtist?url=${encodeURIComponent(url)}`);
+			if (response.error) {
+				const error = response.error;
+				if (error.code == 404) {
+					toasts.error("No artist was found for this URL");
+				} else {
+					toasts.error("An error occured while looking up this URL!", error);
+				}
+				setLoadingState(false);
+			} else if (response.data) {
+				const {mbid, provider, provider_id } = response.data;
+				if (mbid) {
+					router.push(`/artist?provider_id=${provider_id}&provider=${provider}&artist_mbid=${mbid}`);
+				} else {
+					router.push(`/newartist?provider_id=${provider_id}&provider=${provider}`);
+				}
 			} else {
-				router.push(`/newartist?provider_id=${provider_id}&provider=${provider}`);
+				toasts.error("An unknown error occured while looking up this URL!");
+				setLoadingState(false);
 			}
+			
 		} catch (error) {
 			toasts.error("An error occured while looking up this URL!", error);
+			setLoadingState(false);
 		}
 	}
 
