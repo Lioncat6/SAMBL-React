@@ -3,9 +3,9 @@ import { CacheOptions } from "../utils/cache";
 import { AggregatedAlbum } from "./aggregated-types";
 import { ReleaseLanguage, ReleaseScript } from "../utils/scriptAndLanguage";
 
-export type ProviderNamespace = FullProviderNamespace | "musixmatch"
+export type ProviderNamespace = FullProviderNamespace | "musixmatch";
 
-export type FullProviderNamespace = "spotify" | "tidal" | "deezer" | "musicbrainz" | "soundcloud" | "bandcamp" | "applemusic" | "naver" | "qobuz" | "discogs" | "volumo";
+export type FullProviderNamespace = "spotify" | "tidal" | "deezer" | "musicbrainz" | "soundcloud" | "bandcamp" | "applemusic" | "naver" | "qobuz" | "discogs" | "volumo" | "youtube";
 
 export type ObjectType = "partialArtist" | "artist" | "album" | "track" | "label"
 
@@ -76,6 +76,7 @@ export class AlbumObject extends ImageObject {
     type: "album";
     script?: ReleaseScript;
     language?: ReleaseLanguage;
+    isVideo?: boolean;
 };
 
 export class LabelObject extends GenericObject {
@@ -91,13 +92,16 @@ export class UrlData {
 
 export class UrlInfo extends UrlData {
     provider: ProviderNamespace;
+
 }
 
 
 export class ExternalUrlData {
     url: string;
     urlInfo: UrlInfo | null;
-    mbTypes: number[]
+    mbType?: UrlType;
+    mbTypes: number[];
+    isVideo?: boolean;
 }
 
 export class ExternalIdData {
@@ -150,6 +154,7 @@ export class TrackObject extends ImageObject {
     duration: number | null;
     isrcs: string[];
     type: "track";
+    isVideo?: boolean;
 };
 
 export class ExtendedTrackObject extends TrackObject {

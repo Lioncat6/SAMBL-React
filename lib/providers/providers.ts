@@ -13,12 +13,13 @@ import naver from "./naver";
 import qobuz from "./qobuz";
 import discogs from "./discogs";
 import volumo from "./volumo";
+import youtube from "./youtube";
 const { isDisabled } = clientProviders;
 
 const providerList = [
     spotify,
     musicbrainz,
-    musixmatch,
+    // musixmatch,
     deezer,
     tidal,
     bandcamp,
@@ -27,7 +28,8 @@ const providerList = [
     naver,
     qobuz,
     discogs,
-    volumo
+    volumo,
+    youtube
 ];
 
 function getDefaultProvider(): Provider {

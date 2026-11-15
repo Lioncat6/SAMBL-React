@@ -1,6 +1,6 @@
 import { Provider, ProviderNamespace } from "../types/provider-types";
 import text from "./text";
-import { FaSpotify, FaDeezer, FaSoundcloud, FaQuestion } from "react-icons/fa6";
+import { FaSpotify, FaDeezer, FaSoundcloud, FaQuestion, FaYoutube } from "react-icons/fa6";
 import { SiTidal, SiBandcamp, SiApplemusic, SiNaver, SiDiscogs, SiMusicbrainz } from "react-icons/si";
 import { TbCircleDashedLetterS, TbVinyl } from "react-icons/tb";
 import { PiLetterCircleVFill } from "react-icons/pi";
@@ -35,6 +35,7 @@ function GetDisplayProviders() {
         { name: "Qobuz", namespace: "qobuz", icon: <TbVinyl />},
         { name: 'Discogs', namespace: "discogs", icon: <SiDiscogs /> },
         { name: 'Volumo', namespace: "volumo", icon: <PiLetterCircleVFill /> },
+        { name: 'YouTube', namespace: "youtube", icon: <FaYoutube /> },
     ];
     return providerArray;
 }
