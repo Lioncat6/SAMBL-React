@@ -315,26 +315,14 @@ function formatArtistSearchData(rawData: youtube_v3.Schema$SearchListResponse): 
     return results;
 }
 
-async function getUploadsPlaylist(channelId: string) {
-    const channelResponse = await getYtAPI().channels.list({
-        part: ['contentDetails'],
-        id: [channelId]
-    });
-    const uploadsPlaylistId = channelResponse.data.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
-    if (!uploadsPlaylistId) throw new Error('Channel uploads playlist missing');
-    return uploadsPlaylistId;
-}
-
-const getUploadsPlaylistCached = withCache(getUploadsPlaylist, { ttl: 60 * 30, namespace: namespace });
-
 async function getArtistAlbums(channelId: string, offset: string | undefined, limit = 50): Promise<youtube_v3.Schema$PlaylistItemListResponse | null> {
     if (limit > 50) limit = 50;
     if (String(offset) == "0") offset= undefined;
     try {
-        const uploadsPlaylistId = await getUploadsPlaylistCached(channelId);
         const response = await getYtAPI().playlistItems.list({
             part: ['snippet', 'contentDetails'],
-            playlistId: uploadsPlaylistId,
+            //https://wiki.archiveteam.org/index.php/YouTube/Technical_details#ID_formats
+            playlistId: channelId.replace(/UC([A-Za-z0-9_-]{21}[AQgw])/, 'UU$1'),
             maxResults: limit,
             pageToken: offset
         });
