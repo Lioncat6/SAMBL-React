@@ -45,7 +45,7 @@ interface YTArtistSearchResult extends youtube_v3.Schema$SearchResult {
     snippet: YTSearchSnippet
     id: YTArtistSearchResultID
 }
-interface YTSearchSnippet extends youtube_v3.Schema$SearchResultSnippet {
+interface YTSearchSnippet extends youtube_v3.Schema$SearchResultSnippet { 
     title: string
 }
 interface YTArtistSearchResultID extends youtube_v3.Schema$ResourceId {
@@ -97,7 +97,7 @@ function getThumbnailURL(thumbnails: youtube_v3.Schema$ThumbnailDetails | null |
     if (small) {
         return thumbnails.standard?.url ?? null;
     }
-    return thumbnails?.maxres?.url ?? thumbnails?.uhd?.url ?? thumbnails?.qhd?.url ?? thumbnails.fhd?.url ?? thumbnails.standard?.url ?? thumbnails.default?.url ?? null;
+    return thumbnails.default?.url?.replace(/https:\/\/i.ytimg.com\/vi\/([^\/]+)\/.+/, 'https://i.ytimg.com/vi/$1/oardefault.jpg') ?? null;
 }
 
 function parseWikiUrls(urls: string[] | null | undefined): string[] {
@@ -228,12 +228,11 @@ function formatArtistLookupData(artist: YTChannel): YTChannel {
     return artist;
 }
 
-function getMaxChannelImage(url: string | null | undefined, small = false): string | null {
+function getChannelImage(url: string | null | undefined, small = false): string | null {
     if (!url) return null;
-    if (small) return url;
+    if (small) return url.replace(/https:\/\/yt3\.ggpht\.com\/([^=]+).+/, 'https://yt3.googleusercontent.com/$1=s160-c-k-c0x00ffffff-no-rj');
     return url.replace(/(?:(?:=|%3D)[^\/?]*)?(\?.*)?$/, '=s0$1') + '?imgmax=0';
 }
-
 
 function formatArtistObject(artist: YTChannel | YTArtistSearchResult): ArtistObject {
     if (artist.kind == "youtube#channel") {
@@ -250,10 +249,10 @@ function formatArtistObject(artist: YTChannel | YTArtistSearchResult): ArtistObj
             relevance: channel.statistics?.subscriberCount ? `${channel.statistics?.subscriberCount} Subscribers` : '',
             followers: Number(channel.statistics?.subscriberCount) ?? null,
             popularity: null,
-            bannerUrl: getMaxChannelImage(banners?.bannerImageUrl ?? banners?.bannerTvImageUrl),
-            imageUrl: getMaxChannelImage(thumbnails?.maxres?.url ?? thumbnails?.default?.url),
-            imageUrlSmall: thumbnails?.default?.url ?? null,
-            genres: [...channel.brandingSettings?.channel?.keywords ?? [], ...parseWikiUrls(channel.topicDetails?.topicCategories)],
+            bannerUrl: getChannelImage(banners?.bannerImageUrl ?? banners?.bannerTvImageUrl),
+            imageUrl: getChannelImage(thumbnails?.maxres?.url ?? thumbnails?.default?.url),
+            imageUrlSmall: getChannelImage(thumbnails?.default?.url, true),
+            genres: [...channel.brandingSettings?.channel?.keywords?.split(",") ?? [], ...parseWikiUrls(channel.topicDetails?.topicCategories)],
             url: createUrl('artist', channel.id)
         }
         return artistObject;
@@ -271,8 +270,8 @@ function formatArtistObject(artist: YTChannel | YTArtistSearchResult): ArtistObj
             followers: null,
             popularity: null,
             bannerUrl: null,
-            imageUrl: getMaxChannelImage(thumbnails?.maxres?.url ?? thumbnails?.default?.url),
-            imageUrlSmall: thumbnails?.default?.url ?? null,
+            imageUrl: getChannelImage(thumbnails?.maxres?.url ?? thumbnails?.default?.url),
+            imageUrlSmall: getChannelImage(thumbnails?.default?.url, true),
             genres: null,
             url: createUrl('artist', channel.id.channelId)
         }
