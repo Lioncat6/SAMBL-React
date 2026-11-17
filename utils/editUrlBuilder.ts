@@ -6,6 +6,7 @@ import { ArtistObject, PartialArtistObject, ProviderNamespace, TrackObject } fro
 import albumStack from "./albumStack";
 import editNoteBuilder from "./editNoteBuilder";
 import seed from "./seed";
+import { EntityType } from "musicbrainz-api";
 
 function buildAddArtistEditUrl(artist: PartialArtistObject, targetBaseUrl: string): string {
     let editNote = editNoteBuilder.buildEditNote('Artist', artist.provider, artist.url.url, artist.url.url);
@@ -47,10 +48,11 @@ function buildISRCEditUrl(data: AlbumStack): string | null {
 }
 
 function buildCoverArtSeedUrl(data: AlbumStack, origin: string, targetBaseUrl: string): string | null {
+    const formIdentifier = 'x_seed';
     const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(data);
-    const albumUrlParameter = "x_seed.image.0.url";
-    const imageUrlParameter = "x_seed.image.0.url"
-    const originUrlParameter = "x_seed.origin";
+    const albumUrlParameter = `${formIdentifier}.image.0.url`;
+    const imageUrlParameter = `${formIdentifier}.image.0.url`;
+    const originUrlParameter = `${formIdentifier}.origin`;
     const supportedProviders: ProviderNamespace[] = ['applemusic', 'bandcamp', 'deezer', 'discogs', 'musicbrainz', 'qobuz', 'soundcloud', 'spotify', 'tidal'];
     const fallbackImageUrl = aggregatedAlbum.imageUrl ?? aggregatedAlbum.imageUrlSmall;
     if (!aggregatedAlbum.mbid) return null;
@@ -67,29 +69,31 @@ function buildCoverArtSeedUrl(data: AlbumStack, origin: string, targetBaseUrl: s
 }
 
 function buildArtistImageSeedUrl(artist: ArtistObject, targetBaseUrl: string): string | null {
+    const formIdentifier = 'edit-artist';
     const { mbid, imageUrl, imageUrlSmall } = artist;
     const sourceImage = imageUrl ?? imageUrlSmall;
     if (!mbid || !sourceImage) return null;
     const baseUrl = new URL(`https://${targetBaseUrl}/artist/${mbid}/edit`)
     let editNote = editNoteBuilder.buildEditNote('Artist image', artist.provider, sourceImage, artist.url.url, null, false);
     //edit-artist.url.0.text=&edit-artist.url.0.link_type_id=173&edit-artist.edit_note=${editNote}
-    baseUrl.searchParams.append('edit-artist.url.0.text', `https://web.archive.org/web/0/${imageUrl}`);
-    baseUrl.searchParams.append('edit-artist.url.0.link_type_id', "173");
-    baseUrl.searchParams.append('edit-artist.edit_note', editNote);
+    baseUrl.searchParams.append(`${formIdentifier}.url.0.text`, `https://web.archive.org/web/0/${imageUrl}`);
+    baseUrl.searchParams.append(`${formIdentifier}.url.0.link_type_id`, "173");
+    baseUrl.searchParams.append(`${formIdentifier}.edit_note`, editNote);
     return baseUrl.toString().replace(/%250A/g, '%0A');
 }
 
 function buildRecordingUrlSeedUrl(recording: TrackObject, album: AlbumStack, targetBaseUrl: string): string | null {
+    const formIdentifier = 'edit-recording';
     const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(album);
     const { mbid, url, provider } = recording;
     if (!mbid || !url || url.mbTypes.length == 0 || !targetAlbum) return null;
     const baseUrl = new URL(`https://${targetBaseUrl}/recording/${mbid}/edit`);
     let editNode = editNoteBuilder.buildRecordingSeedEditNote(provider, aggregatedAlbum.name, targetAlbum.url.url, aggregatedAlbum.url.url, false);
     for (const typeIndex in url.mbTypes) {
-        baseUrl.searchParams.append(`edit-recording.url.${typeIndex}.text`, url.url)
-        baseUrl.searchParams.append(`edit-recording.url.${typeIndex}.link_type_id`, url.mbTypes[typeIndex].toString())
+        baseUrl.searchParams.append(`${formIdentifier}.url.${typeIndex}.text`, url.url)
+        baseUrl.searchParams.append(`${formIdentifier}.url.${typeIndex}.link_type_id`, url.mbTypes[typeIndex].toString())
     }
-    baseUrl.searchParams.append('edit-recording.edit_note', editNode)
+    baseUrl.searchParams.append(`${formIdentifier}.edit_note`, editNode)
     return baseUrl.toString().replace(/%250A/g, '%0A');
 }
 
@@ -141,6 +145,14 @@ function buildBulkRecordingUrlSeedUrl(album: AlbumStack, targetBaseUrl: string):
 //     return baseUrl.toString();
 // }
 
+function buildAliasSeedUrl(alias: string, targetType: EntityType, target: string, targetBaseUrl: string){
+    const formIdentifier = 'edit-alias'
+    const baseUrl = new URL(`https://${targetBaseUrl}/${targetType}/${target}/add-alias`);
+    baseUrl.searchParams.append(`${formIdentifier}.name`, alias.trim());
+    // Artists have 'Legal name' in the second slot instead of 'Search hint', pushing it to id 3
+    const typeId = targetType == "artist" ? 3 : 2;
+    baseUrl.searchParams.append(`${formIdentifier}.type_id`, String(typeId));
+}
 const editUrlBuilder = {
     buildAddArtistEditUrl,
     buildDeepSearchEditUrl,

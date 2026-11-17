@@ -142,7 +142,8 @@ function formatAlbumObject(album: YTVideo | YTPlaylistItem): AlbumObject {
         mediums: medium.convertTrackList([formatTrackObject(album)], 'Digital Media'),
         imageUrl: getThumbnailURL(snippet.thumbnails),
         imageUrlSmall: getThumbnailURL(snippet.thumbnails, true),
-        isVideo: true
+        isVideo: true,
+        comment: snippet.description
     }
     return albumObject;
 }
@@ -177,7 +178,8 @@ function formatTrackObject(track: YTVideo | YTPlaylistItem): TrackObject {
         imageUrl: getThumbnailURL(snippet.thumbnails),
         imageUrlSmall: getThumbnailURL(snippet.thumbnails, true),
         duration: duration,
-        isVideo: true
+        isVideo: true,
+        comment: snippet.description
     }
     return TrackObject;
 }
