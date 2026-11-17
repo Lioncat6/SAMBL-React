@@ -97,7 +97,8 @@ function getThumbnailURL(thumbnails: youtube_v3.Schema$ThumbnailDetails | null |
     if (small) {
         return thumbnails.standard?.url ?? null;
     }
-    return thumbnails.default?.url?.replace(/https:\/\/i.ytimg.com\/vi\/([^\/]+)\/.+/, 'https://i.ytimg.com/vi/$1/oardefault.jpg') ?? null;
+    // return thumbnails.default?.url?.replace(/https:\/\/i.ytimg.com\/vi\/([^\/]+)\/.+/, 'https://i.ytimg.com/vi/$1/oardefault.jpg') ?? null;
+    return thumbnails?.maxres?.url ?? thumbnails?.uhd?.url ?? thumbnails?.qhd?.url ?? thumbnails.fhd?.url ?? thumbnails.standard?.url ?? thumbnails.default?.url ?? null;
 }
 
 function parseWikiUrls(urls: string[] | null | undefined): string[] {
