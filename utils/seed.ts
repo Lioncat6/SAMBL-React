@@ -14,6 +14,7 @@ import { ExternalUrlData, PartialArtistObject, TrackObject } from "../types/prov
 import { ReleaseGroupType } from "@kellnerd/musicbrainz/data/release-group";
 import editNoteBuilder from "./editNoteBuilder";
 import albumStack from "./albumStack";
+import clientProviders from "./clientProviders";
 
 function convertDate(SAMBLDate: string): PartialDate | undefined {
     const parts = SAMBLDate.split('-').map((part) => parseInt(part, 10));
@@ -93,6 +94,10 @@ export function flatten(record: Record<string, any>, preservedKeys: string[] = [
 function buildSeed(stack: AlbumStack, origin: string) {
     const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(stack)
 
+    let annotation: string | undefined = '';
+    if (aggregatedAlbum.copyrights && aggregatedAlbum.copyrights.length > 0) annotation+='Copyright: ' + aggregatedAlbum.copyrights?.join('%0A');
+    if (sourceAlbum?.comment) annotation += `=== From ${clientProviders.getDisplayName(sourceAlbum.provider)}: ===\n`+sourceAlbum.comment;
+    if (annotation.length == 0) annotation = undefined;
     const seed: ReleaseSeed = {
         name: aggregatedAlbum.name,
         artist_credit: convertArtistCredit(aggregatedAlbum.albumArtists),
@@ -119,7 +124,7 @@ function buildSeed(stack: AlbumStack, origin: string) {
         language: aggregatedAlbum.language?.code,
         script: aggregatedAlbum.script?.code,
         urls: convertUrls(aggregatedAlbum.url),
-        annotation: (aggregatedAlbum.copyrights && aggregatedAlbum.copyrights.length > 0) ? 'Copyright: ' + aggregatedAlbum.copyrights?.join('%0A') : undefined, //TODO: Add detail text to albums,
+        annotation: annotation,
         edit_note: editNoteBuilder.buildSeedReleaseEditNote(aggregatedAlbum),
         redirect_uri: origin + "&showActions",
     };
