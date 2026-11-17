@@ -3,9 +3,10 @@ import { AggregatedAlbum, AggregatedData, AggregatedMedium, AggregatedTrack, Alb
 import text from "./text";
 import parsers from "../lib/parsers/parsers";
 import medium from "./medium";
+import { DisplayAlbum } from "../types/component-types";
 
 export default function processData(sourceAlbums: AlbumObject[], providerAlbums: AlbumObject[] | undefined, targetAlbums: ExtendedAlbumObject[], provider: ProviderNamespace, currentArtist?: PartialArtistObject | null, quick = false, full = false, aggregateSourceTracks = false): AggregatedData {
-	let albumData: AlbumStack[] = [];
+	let albumData: DisplayAlbum[] = [];
 	let sourceIdsArray: string[] = [];
 	let green = 0;
 	let red = 0;
