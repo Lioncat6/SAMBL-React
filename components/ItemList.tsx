@@ -23,7 +23,7 @@ import ExportMenuPopup from "./Popups/ExportMenu";
 import TrackMenuPopup from "./Popups/TrackMenu";
 import FilterMenuPopup from "./Popups/FilterMenu";
 import toasts from "../utils/toasts";
-import { AlbumObject, ArtistObject, ExtendedTrackObject, ObjectType, PartialArtistObject, ProviderNamespace, TrackObject } from "../types/provider-types";
+import { AlbumObject, ArtistObject, ObjectType, PartialArtistObject, ProviderNamespace, TrackObject } from "../types/provider-types";
 import { MdAlbum, MdAudiotrack, MdPerson } from "react-icons/md";
 import { SAMBLAPIResponse } from "../types/api-types";
 import { SAMBLArtistIcon } from "./icons";
@@ -433,7 +433,7 @@ function getItemIcon(type: ObjectType) {
 	}
 }
 
-function GenericItem({ item }: { item: AlbumObject | ExtendedTrackObject | ArtistObject }) {
+function GenericItem({ item }: { item: AlbumObject | TrackObject | ArtistObject }) {
 	const exportState = useExportState()?.exportState;
 	const { provider, imageUrl, imageUrlSmall, name, url, type } = item;
 	const info = [

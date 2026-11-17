@@ -1,6 +1,6 @@
 import { ReleaseLanguage, ReleaseScript } from "../utils/scriptAndLanguage"
 import { AggregatedAlbum, AggregatedArtist, AggregatedData, AlbumStack, RawAggregateData } from "./aggregated-types"
-import { AlbumData, AlbumObject, ArtistObject, ExtendedAlbumData, ExtendedAlbumObject, ExtendedTrackObject, PartialArtistObject, ProviderNamespace, TrackObject } from "./provider-types"
+import { AlbumData, AlbumObject, ArtistObject, ExtendedAlbumData, ExtendedAlbumObject, PartialArtistObject, ProviderNamespace, TrackObject } from "./provider-types"
 
 export type DeepSearchMethod = "most_common" | "name_similarity"
 export class DeepSearchData {
@@ -34,7 +34,7 @@ export class ArtistLookupData {
 
 export class URLLookupData {
     albums: ExtendedAlbumObject[] | AlbumObject[]
-    tracks: ExtendedTrackObject[]
+    tracks: TrackObject[]
     artists: ArtistObject[]
     query: string
 }

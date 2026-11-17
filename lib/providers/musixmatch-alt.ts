@@ -2,7 +2,7 @@ import MusixMatchAPI from "./lib/musixmatch-alt";
 import logger from "../../utils/logger";
 import withCache from "../../utils/cache";
 import ErrorHandler from "../../utils/errorHandler";
-import { ExtendedTrackObject, PartialProvider } from "../../types/provider-types";
+import { PartialProvider, TrackObject } from "../../types/provider-types";
 import { AxiosBasicCredentials, AxiosProxyConfig } from "axios";
 import parsers from "../../lib/parsers/parsers";
 const namespace = "musixmatch";
@@ -71,7 +71,7 @@ async function withRetry(apiCall: () => Promise<any>, retries = 3, delay = 250) 
 	}
 }
 
-async function getTrackByISRC(isrc: string): Promise<ExtendedTrackObject[] | null> {
+async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> {
 	try {
 		await refreshApi();
 		const trackData = await withRetry(() => mxmAPI.get_track(null, isrc));
@@ -103,7 +103,7 @@ async function getTrackByISRC(isrc: string): Promise<ExtendedTrackObject[] | nul
 				verified: !mxmData.lyrics?.published_status.toString().includes("5"),
 				restricted: mxmData.lyrics?.restricted
 			}
-			const trackObject: ExtendedTrackObject = {
+			const trackObject: TrackObject = {
 				id: mxmData.track.track_id,
 				extraInfo,
 				comment: [

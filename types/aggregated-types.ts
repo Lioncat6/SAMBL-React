@@ -1,3 +1,4 @@
+import { DisplayAlbum } from "./component-types";
 import { ExtendedAlbumObject, TrackObject, ArtistObject, AlbumObject, LabelObject, MediumObject, PartialArtistObject } from "./provider-types";
 
 export type AlbumIssue = 'noUPC' | 'UPCDiff' | 'missingISRCs' | 'ISRCDiff' | 'trackDiff' | 'noDate' | 'dateDiff' | 'noCover';
@@ -40,16 +41,16 @@ export class AlbumMatch {
     album: AlbumObject
 }
 
-export class AggregatedAlbum extends AlbumObject{
+export interface AggregatedAlbum extends AlbumObject{
     mediums: AggregatedMedium[];
     sourceArtist: PartialArtistObject | null;
 }
 
-export class AggregatedMedium extends MediumObject {
-    override tracks: AggregatedTrack[]
+export interface AggregatedMedium extends MediumObject {
+     tracks: AggregatedTrack[]
 }
 
-export class AggregatedTrack extends TrackObject {
+export interface AggregatedTrack extends TrackObject {
     // sourceArtist: PartialArtistObject | null;
     status: TrackStatus;
     trackIssues: TrackIssue[];
@@ -61,7 +62,7 @@ export class BasicTrack {
 }
 
 export class AggregatedData {
-    albumData: AlbumStack[]
+    albumData: DisplayAlbum[]
     statusText: string
     green: number
     orange: number

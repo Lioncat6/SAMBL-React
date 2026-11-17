@@ -7,28 +7,28 @@ import { DeepSearchData } from "./api-types";
 export type searchReason = "artist" | "title";
 export type albumSearchReason = searchReason | "track";
 
-export class DisplayAlbumStack extends AlbumStack {
+export interface DisplayAlbumStack extends AlbumStack {
     albums: DisplayAlbumMatch[];
 }
 
-export class DisplayAlbum extends DisplayAlbumStack {
+export interface DisplayAlbum extends DisplayAlbumStack {
     searchReason?: albumSearchReason
     viewingAlbum?: boolean
 }
 
-export class DisplayAlbumMatch extends AlbumMatch {
+export interface DisplayAlbumMatch extends AlbumMatch {
     album: DisplayAlbumObject
 }
 
-export class DisplayAlbumObject extends AlbumObject {
+export interface DisplayAlbumObject extends AlbumObject {
     mediums: DisplayMedium[];
 }
 
-export class DisplayMedium extends MediumObject {
-    override tracks: DisplayTrack[]
+export interface DisplayMedium extends MediumObject {
+    tracks: DisplayTrack[]
 }
 
-export class DisplayTrack extends AggregatedTrack {
+export interface DisplayTrack extends AggregatedTrack {
     highlight?: boolean
     searchReason?: searchReason
 }

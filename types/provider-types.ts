@@ -35,6 +35,13 @@ export class ImageObject extends GenericObject {
     imageUrlSmall: string | null;
 }
 
+export class CommonExtends {
+    comment?: string | null;
+    externalUrls?: string[] | null;
+    extraInfo?: { [key: string]: any };
+}
+
+export type FullBaseObject = CommonExtends & ImageObject;
 
 export class PartialArtistObject extends ImageObject {
     name: string
@@ -58,7 +65,7 @@ export class ExtendedArtistObject extends ArtistObject {
     aliases: string[] | null;
 }
 
-export class AlbumObject extends ImageObject {
+export interface AlbumObject extends FullBaseObject {
     provider: ProviderNamespace;
     id: string;
     name: string;
@@ -111,17 +118,9 @@ export class ExternalIdData {
     unresolved?: boolean;
 }
 
-export class CommonExtends {
-    comment: string | null;
-    externalUrls: string[] | null;
-}
-
-export class ExtendedAlbumObject extends AlbumObject {
-    comment: string | null;
-    externalUrls: string[] | null;
+export interface ExtendedAlbumObject extends AlbumObject {
     hasImage: boolean;
     albumArtists: ArtistObject[];
-    override mediums: ExtendedMediumObject[];
 };
 
 export class MediumObject {
@@ -134,11 +133,7 @@ export class MediumObject {
     number: number | null;
 }
 
-export class ExtendedMediumObject extends MediumObject {
-    tracks: ExtendedTrackObject[];
-}
-
-export class TrackObject extends ImageObject {
+export interface TrackObject extends FullBaseObject {
     provider: ProviderNamespace;
     id: string | null;
     name: string;
@@ -156,12 +151,6 @@ export class TrackObject extends ImageObject {
     type: "track";
     isVideo?: boolean;
 };
-
-export class ExtendedTrackObject extends TrackObject {
-    comment?: string | null;
-    externalUrls?: string[] | null;
-    extraInfo?: { [key: string]: any };
-}
 
 export class PagingData {
     count: number | null;
@@ -250,7 +239,7 @@ type KeysWithKey<T, K extends PropertyKey> = {
 export type IRelationType = KeysWithKey<IRelation, "id">
 
 export class MusicBrainzProvider extends FullProvider {
-    override getTrackByISRC: (isrc: string, options?: CacheOptions) => Promise<ExtendedTrackObject[] | null>;
+    override getTrackByISRC: (isrc: string, options?: CacheOptions) => Promise<TrackObject[] | null>;
     override getAlbumByUPC: (upc: string, options?: CacheOptions) => Promise<ExtendedAlbumObject[] | null>;
     override formatAlbumObject: (album: any) => ExtendedAlbumObject;
     getAlbumByMBID: (id: string, inc: ReleaseIncludes[], options?: CacheOptions) => Promise<IRelease | null>;

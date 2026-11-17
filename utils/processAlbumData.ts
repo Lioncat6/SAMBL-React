@@ -1,4 +1,4 @@
-import { AlbumObject, ExtendedAlbumObject, ExtendedTrackObject, FullProviderNamespace, PartialArtistObject, ProviderNamespace, TrackObject } from "../types/provider-types";
+import { AlbumObject, ExtendedAlbumObject, FullProviderNamespace, PartialArtistObject, ProviderNamespace, TrackObject } from "../types/provider-types";
 import { AggregatedAlbum, AggregatedData, AggregatedMedium, AggregatedTrack, AlbumStack, AlbumIssue, AlbumMatch, AlbumStatus, BasicTrack, TrackIssue, TrackStatus } from "../types/aggregated-types";
 import text from "./text";
 import parsers from "../lib/parsers/parsers";
@@ -84,7 +84,7 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 		let mbid = "";
 		let finalHasCoverArt = false;
 		let albumIssues: AlbumIssue[] = [];
-		let finalTracks: ExtendedTrackObject[] = [];
+		let finalTracks: TrackObject[] = [];
 		let finalAlbum: ExtendedAlbumObject | null = null as ExtendedAlbumObject | null; //Typescript, why must you be like this
 		let mbBarcode: string | null = "";
 

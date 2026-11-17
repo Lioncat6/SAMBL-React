@@ -1,5 +1,5 @@
 import { MusicBrainzApi, CoverArtArchiveApi, IRelation, IArtist, IBrowseReleasesQuery, IRelease, IRecording, ICoversInfo, IReleaseList, IUrlLookupResult, IUrl, IBrowseReleasesResult, IArtistList, IArtistMatch, ITrack, UrlIncludes, ReleaseIncludes, RecordingIncludes, IEntity, ITypedEntity, RelationsIncludes, ILabel, ILabelInfo, IMedium } from "musicbrainz-api";
-import { UrlMBIDDict, ArtistObject, PartialArtistObject, ExtendedAlbumObject, MusicBrainzProvider, ExtendedAlbumData, ExtendedTrackObject, RegexArtistUrlQuery, IdMBIDDict, Capabilities, ExternalUrlData, IRelationType, LabelObject, MediumObject, ExtendedMediumObject } from "../../types/provider-types";
+import { UrlMBIDDict, ArtistObject, PartialArtistObject, ExtendedAlbumObject, MusicBrainzProvider, ExtendedAlbumData, RegexArtistUrlQuery, IdMBIDDict, Capabilities, ExternalUrlData, IRelationType, LabelObject, MediumObject, TrackObject } from "../../types/provider-types";
 import withCache from "../../utils/cache";
 import ErrorHandler from "../../utils/errorHandler";
 import parsers from "../parsers/parsers";
@@ -200,7 +200,7 @@ async function getAlbumByUPC(upc: string): Promise<ExtendedAlbumObject[] | null>
 	return null;
 }
 
-async function getTrackByISRC(isrc: string): Promise<ExtendedTrackObject[] | null> {
+async function getTrackByISRC(isrc: string): Promise<TrackObject[] | null> {
 	try {
 		const data = await mbApi.search("recording", { query: `isrc:${isrc}`, inc: ["artist-rels"], limit: 20 });
 		checkError(data);
@@ -377,11 +377,11 @@ function formatLabelObject(label: ILabelInfo): LabelObject {
 	}
 }
 
-function getReleaseMediums(mediums: IMedium[]): ExtendedMediumObject[] {
+function getReleaseMediums(mediums: IMedium[]): MediumObject[] {
 	if (!mediums || mediums.length === 0) {
 		return [];
 	}
-	let formattedMediums: ExtendedMediumObject[] = [];
+	let formattedMediums: MediumObject[] = [];
 	mediums.forEach(medium => {
 		if ("tracks" in medium && medium.tracks) {
 			formattedMediums.push({
@@ -394,7 +394,7 @@ function getReleaseMediums(mediums: IMedium[]): ExtendedMediumObject[] {
 	return formattedMediums;
 }
 
-function formatTrackObject(track: IRecording | ITrack): ExtendedTrackObject {
+function formatTrackObject(track: IRecording | ITrack): TrackObject {
 	let trackNumber: number | null = null;
 	let recording: IRecording = track as IRecording;
 	if (!('isrcs' in track) && 'recording' in track) {

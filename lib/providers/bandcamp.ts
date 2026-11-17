@@ -1,4 +1,4 @@
-import type { ArtistObject, AlbumObject, TrackObject, FullProvider, PartialArtistObject, RawAlbumData, Capabilities, ExternalUrlData, ExtendedTrackObject, LabelObject } from "../../types/provider-types";
+import type { ArtistObject, AlbumObject, TrackObject, FullProvider, PartialArtistObject, RawAlbumData, Capabilities, ExternalUrlData, LabelObject } from "../../types/provider-types";
 import withCache from "../../utils/cache";
 import ErrorHandler from "../../utils/errorHandler";
 import text from "../../utils/text";
@@ -381,7 +381,7 @@ function getAlbumTracks(album): TrackObject[] {
 	return tracks;
 }
 
-function formatTrackObject(track): ExtendedTrackObject {
+function formatTrackObject(track): TrackObject {
 	const artistId = track.url.match(/^https?:\/\/([^.]+)\.bandcamp\.com/)[1];
 	const id = parseUrl(track.url)?.id;
 	const rawTrack = track.raw;
