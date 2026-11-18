@@ -24,12 +24,12 @@ function SAMBLFooter(): string {
  * @param {string} artistUrl The URL of the artist's page.
  * @returns {string} The formatted edit note string.
  */
-function buildEditNote(edit: string, provider: string, sourceUrl: string, artistUrl: string, pageUrl: string | null = null, encodeString = true): string {
+function buildEditNote(edit: string, provider: string, sourceUrl: string, artistUrl?: string, pageUrl?: string | null, encodeString = true): string {
     return encode(
         `${edit} imported from ''SAMBL''%0A` +
         `'''Provider:''' ${provider}%0A` +
         `'''Source:''' ${sourceUrl}%0A` +
-        `'''Artist:''' ${artistUrl}%0A` +
+        (artistUrl ? `'''Artist:''' ${artistUrl}%0A` : '') +
         (pageUrl ? `'''SAMBL URL:''' ${pageUrl}%0A` : '') +
         `%0A` +
         SAMBLFooter(), encodeString
@@ -120,18 +120,18 @@ function buildSeedReleaseEditNote(data: AggregatedAlbum, action?: string): strin
 function buildSeedRecordingEditNote(data: TrackObject): string {
     return `Standalone Recording seeded from ''SAMBL''\n` +
         `'''Provider:''' ${clientProviders.getDisplayName(data.provider)}\n` +
-        (data.url ? `'''Source:''' ${data.url?.url}\n`: '') +
+        (data.url ? `'''Source:''' ${data.url?.url}\n` : '') +
         SAMBLFooter()
         ;
 }
 
 function buildRecordingSeedEditNote(provider: ProviderNamespace, albumName: string, targetUrl: string, sourceUrl: string, encodeString = true, lineSplit = '%0A'): string {
-    return encode( 
-        `Recording URLs matched while importing release from ''SAMBL''${lineSplit}`+
-        `'''Provider:''' ${clientProviders.getDisplayName(provider)} (${sourceUrl})${lineSplit}`+
-        `'''Release:''' ${albumName} (${targetUrl})${lineSplit}${lineSplit}`+
+    return encode(
+        `Recording URLs matched while importing release from ''SAMBL''${lineSplit}` +
+        `'''Provider:''' ${clientProviders.getDisplayName(provider)} (${sourceUrl})${lineSplit}` +
+        `'''Release:''' ${albumName} (${targetUrl})${lineSplit}${lineSplit}` +
         SAMBLFooter()
-    , encodeString);
+        , encodeString);
 }
 
 const editNoteBuilder = {

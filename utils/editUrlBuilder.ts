@@ -2,11 +2,12 @@ import { useEffect } from "react";
 import { useSettings, useSettingsOrDefaults } from "../components/SettingsContext";
 import { AggregatedAlbum, AggregatedTrack, AlbumStack } from "../types/aggregated-types";
 import { DeepSearchSelection } from "../types/component-types";
-import { ArtistObject, PartialArtistObject, ProviderNamespace, TrackObject } from "../types/provider-types";
+import { ArtistObject, GenericObject, PartialArtistObject, ProviderNamespace, TrackObject } from "../types/provider-types";
 import albumStack from "./albumStack";
 import editNoteBuilder from "./editNoteBuilder";
 import seed from "./seed";
 import { EntityType } from "musicbrainz-api";
+import text from "./text";
 
 function buildAddArtistEditUrl(artist: PartialArtistObject, targetBaseUrl: string): string {
     let editNote = editNoteBuilder.buildEditNote('Artist', artist.provider, artist.url.url, artist.url.url);
@@ -145,13 +146,15 @@ function buildBulkRecordingUrlSeedUrl(album: AlbumStack, targetBaseUrl: string):
 //     return baseUrl.toString();
 // }
 
-function buildAliasSeedUrl(alias: string, targetType: EntityType, target: string, targetBaseUrl: string){
+function buildAliasSeedUrl(source: GenericObject, targetType: EntityType, target: string, targetBaseUrl: string){
     const formIdentifier = 'edit-alias'
     const baseUrl = new URL(`https://${targetBaseUrl}/${targetType}/${target}/add-alias`);
-    baseUrl.searchParams.append(`${formIdentifier}.name`, alias.trim());
+    baseUrl.searchParams.append(`${formIdentifier}.name`, source.name.trim());
     // Artists have 'Legal name' in the second slot instead of 'Search hint', pushing it to id 3
     const typeId = targetType == "artist" ? 3 : 2;
     baseUrl.searchParams.append(`${formIdentifier}.type_id`, String(typeId));
+    const editNode = editNoteBuilder.buildEditNote(`${text.capitalizeFirst(targetType).replaceAll('-', ' ')} Alias`, source.provider, source.url?.url ?? 'Unknown')
+    baseUrl.searchParams.append(`${formIdentifier}.edit_note`, editNode)
 }
 const editUrlBuilder = {
     buildAddArtistEditUrl,
@@ -161,7 +164,8 @@ const editUrlBuilder = {
     buildArtistImageSeedUrl,
     buildRecordingUrlSeedUrl,
     buildBulkRecordingUrlSeedUrl,
-    // buildStandaloneRecordingSeedURL
+    // buildStandaloneRecordingSeedURL,
+    buildAliasSeedUrl
 }
 
 export default editUrlBuilder;
