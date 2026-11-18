@@ -154,7 +154,8 @@ function buildAliasSeedUrl(source: GenericObject, targetType: EntityType, target
     const typeId = targetType == "artist" ? 3 : 2;
     baseUrl.searchParams.append(`${formIdentifier}.type_id`, String(typeId));
     const editNode = editNoteBuilder.buildEditNote(`${text.capitalizeFirst(targetType).replaceAll('-', ' ')} Alias`, source.provider, source.url?.url ?? 'Unknown')
-    baseUrl.searchParams.append(`${formIdentifier}.edit_note`, editNode)
+    baseUrl.searchParams.append(`${formIdentifier}.edit_note`, editNode);
+    return baseUrl.toString().replace(/%250A/g, '%0A');
 }
 const editUrlBuilder = {
     buildAddArtistEditUrl,
