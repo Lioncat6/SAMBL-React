@@ -1,4 +1,3 @@
-import { DisplayAlbum } from "./component-types";
 import { ExtendedAlbumObject, TrackObject, ArtistObject, AlbumObject, LabelObject, MediumObject, PartialArtistObject } from "./provider-types";
 
 export type AlbumIssue = 'noUPC' | 'UPCDiff' | 'missingISRCs' | 'ISRCDiff' | 'trackDiff' | 'noDate' | 'dateDiff' | 'noCover';
@@ -62,7 +61,7 @@ export class BasicTrack {
 }
 
 export class AggregatedData {
-    albumData: DisplayAlbum[]
+    albumData: AlbumStack[]
     statusText: string
     green: number
     orange: number

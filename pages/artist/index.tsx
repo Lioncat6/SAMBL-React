@@ -437,7 +437,7 @@ export default function Artist({ artist, error }: { artist: ArtistPageData, erro
 				data = processData(sourceAlbums.current, [], [...mbAlbums.current, ...mbFeaturedAlbums.current], artist.provider, artist);
 			}
 			setStatusText(data.statusText);
-			setAlbums(data.albumData); //TODO: Fix this
+			setAlbums(data.albumData);
 			setLoading(false);
 		}
 		loadAlbums();

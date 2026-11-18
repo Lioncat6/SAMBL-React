@@ -1,4 +1,4 @@
-import { AlbumObject, ArtistObject, ExternalUrlData, MediumObject, ProviderNamespace, UrlData, UrlType } from "./provider-types";
+import { AlbumObject, ArtistObject, ExternalUrlData, MediumObject, ProviderNamespace, TrackObject, UrlData, UrlType } from "./provider-types";
 import { AggregatedAlbum, AggregatedArtist, AggregatedTrack, AlbumStack, AlbumMatch } from "./aggregated-types";
 import { JSX } from "react";
 import { SeederNamespace } from "./seeder-types";
@@ -28,7 +28,7 @@ export interface DisplayMedium extends MediumObject {
     tracks: DisplayTrack[]
 }
 
-export interface DisplayTrack extends AggregatedTrack {
+export interface DisplayTrack extends TrackObject {
     highlight?: boolean
     searchReason?: searchReason
 }
