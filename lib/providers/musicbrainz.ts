@@ -363,7 +363,8 @@ function formatAlbumObject(album: IRelease): ExtendedAlbumObject {
 		genres: album.genres ? album.genres.map(genre => genre.name) : null,
 		labels: album["label-info"]?.filter(label => label.label).map(label => formatLabelObject(label)) || null,
 		copyrights: formatCopyright(album),
-		type: "album"
+		type: "album",
+		mbid: album.id
 	}
 }
 
@@ -374,6 +375,7 @@ function formatLabelObject(label: ILabelInfo): LabelObject {
 		id: label.label?.id || null,
 		name: label.label?.name || "",
 		url: label.label?.id ? createUrl('label', label.label.id) : null,
+		mbid: label.label?.id
 	}
 }
 
@@ -418,7 +420,8 @@ function formatTrackObject(track: IRecording | ITrack): TrackObject {
 		isrcs: recording.isrcs || [],
 		comment: recording.disambiguation || null,
 		externalUrls: recording.relations ? recording.relations.filter(rel => rel.url && rel.url?.resource)?.map(rel => rel.url?.resource).filter(url => typeof url == 'string') : [],
-		type: "track"
+		type: "track",
+		mbid: recording.id
 	}
 }
 
@@ -449,7 +452,8 @@ function formatArtistObject(artist: IArtist): ArtistObject {
 		genres: [...new Set([...(artist as any).genres?.map(genre => genre.name) || [], ...(artist as any).tags?.map(tag => tag.name) || []])],
 		followers: null,
 		popularity: null,
-		type: "artist"
+		type: "artist",
+		mbid: artist.id
 	}
 }
 
@@ -461,7 +465,8 @@ function formatPartialArtistObject(artist: IArtist): PartialArtistObject {
 		url: createUrl('artist', artist.id),
 		imageUrl: null,
 		imageUrlSmall: null,
-		type: "partialArtist"
+		type: "partialArtist",
+		mbid: artist.id
 	}
 }
 
