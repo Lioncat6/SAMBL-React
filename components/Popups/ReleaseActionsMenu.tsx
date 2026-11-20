@@ -15,6 +15,7 @@ import medium from "../../utils/medium";
 import { useState } from "react";
 import Notice from "../notices";
 import { ReleaseSeedButton } from "../ReleaseSeed";
+import { MdAudiotrack, MdDriveFileRenameOutline } from "react-icons/md";
 
 function ReleaseActionsMenu({ close, data, origin }: { close?: () => void, data: AlbumStack, origin: string }) {
     const { settings } = useSettingsOrDefaults();
@@ -28,6 +29,8 @@ function ReleaseActionsMenu({ close, data, origin }: { close?: () => void, data:
     // const mediums = aggregatedAlbum.mediums.length > 0 ? aggregatedAlbum.mediums : sourceAlbum?.mediums || [];
     const { mediums } = aggregatedAlbum;
     const tracks = mediums.flatMap(medium => medium.tracks);
+    const targetMediums = targetAlbum?.mediums;
+    const targetTracks = targetMediums?.flatMap(medium => medium.tracks);
     const tracksAvailable = tracks.length > 0;
     const [tracksExpanded, setTracksExpanded] = useState(false);
     const bulkTrackUrlSeedUrl = editUrlBuilder.buildBulkRecordingUrlSeedUrl(data, settings.targetBaseUrl);
@@ -75,7 +78,7 @@ function ReleaseActionsMenu({ close, data, origin }: { close?: () => void, data:
                         title={tracksAvailable ? tracksExpanded ? "Collapse" : "Expand" : "Track aggregation failed!"}
                         disabled={!tracksAvailable}
                     >
-                        <FaLink /> Import track URLs {tracksExpanded ? <FaChevronRight /> : <FaChevronDown />}
+                        <MdAudiotrack /> Import track data {tracksExpanded ? <FaChevronRight /> : <FaChevronDown />}
                     </PopupActionButton>
                     <PopupActionButton
                         type="link"
@@ -92,19 +95,38 @@ function ReleaseActionsMenu({ close, data, origin }: { close?: () => void, data:
                         <br />
                         {tracks.map(track => {
                             const trackUrlSeedUrl = editUrlBuilder.buildRecordingUrlSeedUrl(track, data, settings.targetBaseUrl);
+                            const targetTrack = targetTracks?.find((mbTrack) => mbTrack.mbid == track.mbid);
+                            const trackAliasSeedURL = (targetTrack && track.mbid && (targetTrack.name != track.name)) ?
+                                editUrlBuilder.buildAliasSeedUrl(track, 'recording', track.mbid, settings.targetBaseUrl) :
+                                null;
+                            console.log(trackAliasSeedURL)
                             return (
                                 <div className={styles.miniTrackContainer} key={track.trackNumber}>
                                     <span className={styles.trackNumber}>{track.trackNumber}</span> <span className={styles.miniTrackTitle}>{track.name}</span>
-                                    {trackUrlSeedUrl &&
-                                        <div className={styles.linkImportButton}>
-                                            <PopupActionButton
-                                                type="link"
-                                                href={trackUrlSeedUrl}
-                                            >
-                                                {clientProviders.getDisplayIcon(track.provider)} Seed Urls
-                                            </PopupActionButton>
-                                        </div>
-                                    }
+                                    <div className={styles.trackImportButtons}>
+                                        <>
+                                            {trackAliasSeedURL &&
+                                                <div className={styles.linkImportButton}>
+                                                    <PopupActionButton
+                                                        type="link"
+                                                        href={trackAliasSeedURL}
+                                                    >
+                                                        <MdDriveFileRenameOutline /> Seed Alias
+                                                    </PopupActionButton>
+                                                </div>
+                                            }
+                                            {trackUrlSeedUrl &&
+                                                <div className={styles.linkImportButton}>
+                                                    <PopupActionButton
+                                                        type="link"
+                                                        href={trackUrlSeedUrl}
+                                                    >
+                                                        {clientProviders.getDisplayIcon(track.provider)} Seed Urls
+                                                    </PopupActionButton>
+                                                </div>
+                                            }
+                                        </>
+                                    </div>
                                 </div>
                             )
 

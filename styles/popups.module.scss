@@ -641,9 +641,17 @@
   background-color: var(--background-secondary);
 }
 
-.linkImportButton>a {
-  text-wrap: nowrap;
-  margin: 0;
+
+.linkImportButton {
+  margin-left: 5px;
+  >a {
+    text-wrap: nowrap;
+    margin: 0;
+  }
+}
+
+.trackImportButtons {
+  display: flex;
 }
 
 .trackButtonContainer {
@@ -860,10 +868,11 @@
 }
 
 .statusBar {
-	height: 100%;
-	width: 8px;
-	border-radius: 20px;
-  margin: 0 7px 0 -3px
+  height: 100%;
+  width: 8px;
+  border-radius: 20px;
+  margin: 0 7px 0 -3px;
+  flex-shrink: 0;
 }
 
 .noAggregatedTracksWarning {
