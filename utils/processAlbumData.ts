@@ -1,4 +1,4 @@
-import { AlbumObject, ExtendedAlbumObject, FullProviderNamespace, PartialArtistObject, ProviderNamespace, TrackObject } from "../types/provider-types";
+import { AlbumObject, ExtendedAlbumObject, FullProviderNamespace, MediumObject, PartialArtistObject, ProviderNamespace, TrackObject } from "../types/provider-types";
 import { AggregatedAlbum, AggregatedData, AggregatedMedium, AggregatedTrack, AlbumStack, AlbumIssue, AlbumMatch, AlbumStatus, BasicTrack, TrackIssue, TrackStatus } from "../types/aggregated-types";
 import text from "./text";
 import parsers from "../lib/parsers/parsers";
@@ -55,65 +55,38 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 		}
 	});
 
-	sourceAlbums.forEach((album) => {
+	sourceAlbums.forEach((sourceAlbum) => {
 		let albumStatus: AlbumStatus = "red" as AlbumStatus;
-		let albumMBUrl = "";
 
 		//Provider data
-		let provider = album.provider;
-		let providerId = album.id;
-		let providerAlbumName = album.name;
-		let providerUrl = album.url;
-		let providerAlbumImage = album.imageUrl || "";
-		let providerAlbumImageSmall = album.imageUrlSmall || providerAlbumImage;
-		let providerAlbumArtists = album.albumArtists;
-		let providerArtistNames = album.artistNames;
-		let providerReleaseDate = album.releaseDate;
-		let providerTrackCount = album.trackCount;
-		let providerMediumCount = album.mediums.length;
-		let providerAlbumType = album.albumType;
-		let providerBarcode = album.upc || null;
-		let providerMediums = album.mediums || [];
-		let providerTracks = album.mediums.flatMap(medium => medium.tracks) || [];
-		let providerGenres = album.genres;
-		let providerCopyrights = album.copyrights;
-		let providerLabels = album.labels;
-
-		let targetTrackCount: number | null = 0;
-		let targetMediumCount: number | null = 0;
-		let mbReleaseDate: string | null = "";
-		let mbid = "";
-		let finalHasCoverArt = false;
+		let provider = sourceAlbum.provider;
+		let providerId = sourceAlbum.id;
+		let providerAlbumName = sourceAlbum.name;
+		let providerUrl = sourceAlbum.url;
+		let providerAlbumImage = sourceAlbum.imageUrl || "";
+		let providerAlbumImageSmall = sourceAlbum.imageUrlSmall || providerAlbumImage;
+		let providerAlbumArtists = sourceAlbum.albumArtists;
+		let providerArtistNames = sourceAlbum.artistNames;
+		let providerReleaseDate = sourceAlbum.releaseDate;
+		let providerTrackCount = sourceAlbum.trackCount;
+		let providerMediumCount = sourceAlbum.mediums.length;
+		let providerAlbumType = sourceAlbum.albumType;
+		let providerBarcode = sourceAlbum.upc || null;
+		let providerMediums = sourceAlbum.mediums;
+		let providerGenres = sourceAlbum.genres;
+		let providerCopyrights = sourceAlbum.copyrights;
+		let providerLabels = sourceAlbum.labels;
 		let albumIssues: AlbumIssue[] = [];
-		let finalTracks: TrackObject[] = [];
-		let finalAlbum: ExtendedAlbumObject | null = null as ExtendedAlbumObject | null; //Typescript, why must you be like this
-		let mbBarcode: string | null = "";
+		let matchedTargetAlbum: ExtendedAlbumObject | null = null as ExtendedAlbumObject | null; //Typescript, why must you be like this
 
 		function tryMap(map: Map<String, ExtendedAlbumObject[]>, input: string, status: AlbumStatus) {
 			if (input && map.has(input)) {
 				const matches = map.get(input) || [];
-				for (const targetAlbum of matches) {
-					if (!targetAlbum?.name) continue;
-					const localTargetTrackCount = targetAlbum.trackCount;
-					const localTargetMediumCount = targetAlbum.mediums.length;
-					const localTargetReleaseDate = targetAlbum.releaseDate;
-					const targetReleaseUPC = targetAlbum.upc;
-					const hasCoverArt = targetAlbum.hasImage;
-					let targetMediums = targetAlbum.mediums;;
-					let targetTracks = targetAlbum.mediums.flatMap(medium => medium.tracks);
-
+				for (const albumMatch of matches) {
 					albumStatus = status;
-					mbid = targetAlbum.id;
-					albumMBUrl = `https://musicbrainz.org/release/${mbid}`;
-					targetTrackCount = localTargetTrackCount;
-					targetMediumCount = localTargetMediumCount;
-					mbReleaseDate = localTargetReleaseDate;
-					finalHasCoverArt = hasCoverArt;
-					finalTracks = targetTracks;
-					finalAlbum = targetAlbum;
-					mbBarcode = targetReleaseUPC;
+					matchedTargetAlbum = albumMatch;
 					// prefer the first exact URL match
-					if (targetAlbum.trackCount == providerTrackCount && (providerBarcode ? (targetReleaseUPC == providerBarcode) : true)) {
+					if (albumMatch.trackCount == providerTrackCount && (providerBarcode ? (albumMatch.upc == providerBarcode) : true)) {
 						break; //Break if match is good enough, keep looping if not
 					}
 				}
@@ -143,55 +116,135 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 		// const alwaysBarcodeProviders: ProviderNamespace[] = allProviders.filter((provider) => provider.config.capabilities.upcs?.availability == "always").map((provider) => provider.namespace)
 		// const alwaysISRCProviders: ProviderNamespace[] = allProviders.filter((provider) => provider.config.capabilities.isrcs?.availability == "always").map((provider) => provider.namespace)
 
-		const alwaysBarcodeProviders: ProviderNamespace[] = ["spotify", "deezer", "tidal", "applemusic"]
-		const alwaysISRCProviders: ProviderNamespace[] = ["spotify", "deezer", "tidal", "applemusic"]
+		let aggregatedMediums: AggregatedMedium[] = [];
 
-		let mbTrackNames: string[] = [];
-		let mbTrackISRCs: BasicTrack[] = [];
-		let mbAlignedISRCs: (string[] | null)[] = [];
-		let mbISRCs: string[] = [];
-		let tracksWithoutISRCs: string[] = [];
-		for (let track in finalTracks) {
-			if (!finalTracks[track]) continue;
-			let titleString = finalTracks[track].name;
-			let ISRCs = finalTracks[track].isrcs;
-			mbAlignedISRCs.push(ISRCs || null)
-			if (ISRCs.length < 1) {
-				tracksWithoutISRCs.push(track);
-			} else {
-				mbISRCs.push(...ISRCs);
-			}
-			mbTrackNames.push(titleString);
-			mbTrackISRCs.push({ name: titleString, isrcs: ISRCs });
-		}
-		let providerHasISRCs = false;
-		let hasMatchingISRCs = true;
-		let albumTrackISRCs: (string | null)[] = []
-		for (let track in providerTracks) {
-			const currentTrack = providerTracks[track];
-			if (!currentTrack.trackNumber) currentTrack.trackNumber = Number(track) + 1
-			if (currentTrack.isrcs) {
-				if (currentTrack.isrcs[0] != null && currentTrack.isrcs[0] != undefined) {
-					providerHasISRCs = true;
+		if (albumStatus != "red" && matchedTargetAlbum) {
+
+			let aggregateMediums = (matchedTargetAlbum.mediums.length == sourceAlbum.mediums.length);
+			if (aggregateMediums) {
+				for (const mediumIndex in matchedTargetAlbum.mediums) {
+					if (matchedTargetAlbum.mediums[mediumIndex].tracks.length != sourceAlbum.mediums[mediumIndex].tracks.length) aggregateMediums = false;
 				}
-				albumTrackISRCs.push(currentTrack.isrcs[0] || null);
-				if (providerHasISRCs && !mbAlignedISRCs[track]?.includes(currentTrack.isrcs[0])) {
-					hasMatchingISRCs = false;
-				}
-			} else {
-				albumTrackISRCs.push(null)
 			}
-		}
+			const flatTargetTracks = matchedTargetAlbum.mediums.flatMap(medium => medium.tracks);
+			const flatSourceTracks = sourceAlbum.mediums.flatMap(medium => medium.tracks);
+			
 
-		let aggregateTracks = true;
+			// Only used if aggregateMediums is false;
+			let aggregateTracks = (flatTargetTracks.length > 0 && flatSourceTracks.length > 0 && flatTargetTracks.length == flatSourceTracks.length)
 
-		if (albumStatus != "red") {
+			const alwaysBarcodeProviders: ProviderNamespace[] = ["spotify", "deezer", "tidal", "applemusic"]
+			const alwaysISRCProviders: ProviderNamespace[] = ["spotify", "deezer", "tidal", "applemusic"]
+
+			let alignedISRCs: (string[] | null)[][] = [];
+			let tracksWithoutISRCs = 0;
+			for (let mediumIndex in matchedTargetAlbum.mediums) {
+				for (let trackIndex in matchedTargetAlbum.mediums[mediumIndex].tracks) {
+					const track = matchedTargetAlbum.mediums[mediumIndex].tracks[trackIndex];
+					alignedISRCs[mediumIndex][trackIndex] = track.isrcs.map(isrc => isrc.toUpperCase());
+					if (track.isrcs.length == 0) tracksWithoutISRCs++;
+				}
+			}
+			let flatAlignedISRCs = alignedISRCs.flatMap(mediumISRCs => mediumISRCs);
+			let providerHasISRCs = false;
+			let hasMatchingISRCs = true;
+			if (!aggregateMediums) {
+				for (let trackIndex in flatSourceTracks) {
+					const currentTrack = flatSourceTracks[trackIndex];
+					if (currentTrack.isrcs && currentTrack.isrcs.some((isrc) => flatAlignedISRCs[trackIndex]?.includes(isrc))) {
+						
+					}
+				}
+			}
+
+			//Track Aggregation3
+
+			if (aggregateTracks) {
+				for (const medium of providerMediums) {
+					let aggregatedTracks: AggregatedTrack[] = [];
+					for (let i = 0; i < medium.tracks.length; i++) {
+						let trackIssues: TrackIssue[] = [];
+						let sourceTrack = medium.tracks[i];
+						let targetTrack = targetTracks[i] || null;
+						let status: TrackStatus = "orange";
+						// export type TrackIssue = 'noISRC' | 'ISRCDiff' | 'noUrl' | 'noDuration' | "artistDiff"
+						const shouldHaveISRC = (sourceTrack.isrcs && sourceTrack.isrcs.length > 0);
+						if (shouldHaveISRC) {
+							if (!targetTrack.isrcs || targetTrack.isrcs.length < 1) {
+								trackIssues.push("noISRC");
+							} else if (targetTrack) {
+								const mbISRCsForTrack = targetTrack.isrcs || [];
+								if (!mbISRCsForTrack.includes(sourceTrack.isrcs[0] || "")) {
+									trackIssues.push("ISRCDiff");
+								}
+							}
+						}
+
+						// Force ISRCs lowercase to avoid shenanegains with data sources not normalizing this
+						// Granted, this should be normalized in the provider code, but better safe than sorry
+						if (sourceTrack.isrcs.some(isrc => targetTrack.isrcs.find(targetISRC => targetISRC.toUpperCase() == isrc.toUpperCase()))) {
+							status = "blue";
+						}
+
+						if ((sourceTrack.url && targetTrack.externalUrls?.includes(sourceTrack.url?.url)) ||
+							targetTrack.externalUrls?.find((url) => {
+								const targetUrlID = parser.parseUrl(url)?.id;
+								const sourceUrlID = sourceTrack.url ? parser.parseUrl(sourceTrack.url.url)?.id : null
+								// Incase of weird shenanegains with mismatching URLs stored in musicbrainz, we parse the external URL and compare its ID too
+								// In the case of certain providers having URLs with cosmetic IDs, we check with the parsed source URL ID too
+								return (targetUrlID == sourceTrack.id || targetUrlID == sourceUrlID)
+							})) {
+							status = "green";
+						}
+
+						if (!targetTrack.duration || targetTrack.duration == 0) {
+							trackIssues.push("noDuration");
+						}
+						// if artist diff
+						let providerArtistNamesSet = new Set(sourceTrack.artistNames.map(name => text.normalizeText(name)));
+						let mbArtistNamesSet = new Set<string>();
+						if (targetTrack && targetTrack.trackArtists) {
+							targetTrack.trackArtists.forEach(artist => {
+								mbArtistNamesSet.add(text.normalizeText(artist.name));
+							});
+						}
+						let artistDiff = false;
+						if (providerArtistNamesSet.size != mbArtistNamesSet.size) {
+							artistDiff = true;
+						} else {
+							providerArtistNamesSet.forEach(name => {
+								if (!mbArtistNamesSet.has(name)) {
+									artistDiff = true;
+								}
+							});
+						}
+						if (artistDiff) {
+							trackIssues.push("artistDiff");
+						}
+
+						aggregatedTracks.push({
+							status: status,
+							...sourceTrack,
+							mbid: targetTrack ? targetTrack.id : null,
+							// sourceArtist: currentArtist || null,
+							trackIssues: trackIssues,
+							isrcs: sourceTrack.isrcs.length > 0 ? sourceTrack.isrcs : targetTrack.isrcs.length > 0 ? targetTrack.isrcs : [],
+							trackNumber: sourceTrack.trackNumber || targetTrack.trackNumber || Number(i) + 1
+						});
+					}
+					aggregatedMediums.push({
+						...medium,
+						tracks: aggregatedTracks
+					})
+				}
+			}
+
 			if ((!mbBarcode || mbBarcode == null) && (providerBarcode || alwaysBarcodeProviders.includes(provider))) {
 				albumIssues.push("noUPC");
 			} else if (providerBarcode && providerBarcode.replace(/^0+/, '') != mbBarcode?.replace(/^0+/, '')) {
 				albumIssues.push("UPCDiff")
 			}
-			if (tracksWithoutISRCs.length > 0 && (providerHasISRCs || alwaysISRCProviders.includes(provider))) {
+			if (tracksWithoutISRCs > 0 && (providerHasISRCs || alwaysISRCProviders.includes(provider))) {
 				albumIssues.push("missingISRCs");
 			} else if (!hasMatchingISRCs && aggregateTracks) {
 				albumIssues.push("ISRCDiff")
@@ -208,94 +261,19 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 			if (!finalHasCoverArt && !quick) {
 				albumIssues.push("noCover");
 			}
-		}
 
-		if (!finalTracks || !providerTracks || finalTracks.length == 0 || providerTracks.length == 0 || finalTracks.length != providerTracks.length || !finalTracks[0] || !providerTracks[0] || providerTracks.some((track) => !track.url)) {
-			aggregateTracks = false;
-		}
-		//Track Aggregation3
-		let aggregatedMediums: AggregatedMedium[] = [];
-		if (aggregateTracks) {
-			for (const medium of providerMediums) {
-				let aggregatedTracks: AggregatedTrack[] = [];
-				for (let i = 0; i < medium.tracks.length; i++) {
-					let trackIssues: TrackIssue[] = [];
-					let providerTrack = medium.tracks[i];
-					let mbTrack = finalTracks[i] || null;
-					let status: TrackStatus = "orange";
-					// export type TrackIssue = 'noISRC' | 'ISRCDiff' | 'noUrl' | 'noDuration' | "artistDiff"
-					const shouldHaveISRC = (providerTrack.isrcs && providerTrack.isrcs.length > 0);
-					if (shouldHaveISRC) {
-						if (!mbTrack.isrcs || mbTrack.isrcs.length < 1) {
-							trackIssues.push("noISRC");
-						} else if (mbTrack) {
-							const mbISRCsForTrack = mbTrack.isrcs || [];
-							if (!mbISRCsForTrack.includes(providerTrack.isrcs[0] || "")) {
-								trackIssues.push("ISRCDiff");
-							}
-						}
-					}
-
-					if (providerTrack.isrcs.some(isrc => mbTrack.isrcs.includes(isrc))) {
-						status = "blue";
-					}
-
-					if (mbTrack.externalUrls?.includes(providerTrack.url?.url || "")) {
-						status = "green";
-					}
-
-					if (!mbTrack.duration || mbTrack.duration == 0) {
-						trackIssues.push("noDuration");
-					}
-					// if artist diff
-					let providerArtistNamesSet = new Set(providerTrack.artistNames.map(name => text.normalizeText(name)));
-					let mbArtistNamesSet = new Set<string>();
-					if (mbTrack && mbTrack.trackArtists) {
-						mbTrack.trackArtists.forEach(artist => {
-							mbArtistNamesSet.add(text.normalizeText(artist.name));
-						});
-					}
-					let artistDiff = false;
-					if (providerArtistNamesSet.size != mbArtistNamesSet.size) {
-						artistDiff = true;
-					} else {
-						providerArtistNamesSet.forEach(name => {
-							if (!mbArtistNamesSet.has(name)) {
-								artistDiff = true;
-							}
-						});
-					}
-					if (artistDiff) {
-						trackIssues.push("artistDiff");
-					}
-
-					aggregatedTracks.push({
-						status: status,
-						...providerTrack,
-						mbid: mbTrack ? mbTrack.id : null,
-						// sourceArtist: currentArtist || null,
-						trackIssues: trackIssues,
-						isrcs: providerTrack.isrcs.length > 0 ? providerTrack.isrcs : mbTrack.isrcs.length > 0 ? mbTrack.isrcs : [],
-						trackNumber: providerTrack.trackNumber || mbTrack.trackNumber || Number(i) + 1
-					});
-				}
-				aggregatedMediums.push({
-					...medium,
-					tracks: aggregatedTracks
-				})
-			}
 		}
 
 		if (!sourceIdsArray.find((a) => a === provider + providerId)) { //Deduplicate; Will eventually support multiple providers in once comparison, so we probably don't want to have collisions if two different streaming services use the same ID for some reason
 			let albumMatches: AlbumMatch[] = []
 			albumMatches.push({
 				type: "source",
-				album: album
+				album: sourceAlbum
 			})
-			if (finalAlbum) {
+			if (matchedTargetAlbum) {
 				albumMatches.push({
 					type: "target",
-					album: finalAlbum
+					album: matchedTargetAlbum
 				})
 			}
 			total++;
@@ -326,7 +304,7 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 					albumType: providerAlbumType,
 					upc: providerBarcode,
 					mediums: aggregatedMediums,
-					mbid,
+					mbid: matchedTargetAlbum?.mbid,
 					sourceArtist: currentArtist || null,
 					labels: providerLabels,
 					copyrights: providerCopyrights,
