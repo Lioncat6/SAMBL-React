@@ -302,7 +302,7 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 						)}
 						{(messages && messages?.length > 0) && 
 							<div>
-								{messages?.map((message) => MessageIcon({message}))}
+								{messages?.map((message, index) => <MessageIcon message={message} key={index}/>)}
 							</div>
 						}
 						<div className={`${styles.refreshIcon} ${isLoading && styles.loading}`} onClick={() => (refreshData())} title="Refresh Album Data">

@@ -126,7 +126,7 @@ export default function Seed({ data, error, hostName, timings }: { data?: AlbumS
                 <h1 className={styles.seedTitle} id="searchFor">Seed Release</h1>
             </div> */}
                 {harmonyProviders.includes(aggregatedAlbum.provider) && <Notice.onHarmony url={harmony.buildUrl(aggregatedAlbum.url.url, aggregatedAlbum.upc)}/>}
-                {aggregatedAlbum.messages && aggregatedAlbum.messages.map((message) => <Notice.providerMessage message={message} />)}
+                {aggregatedAlbum.messages && aggregatedAlbum.messages.map((message, index) => <Notice.providerMessage message={message} key={index} />)}
                 <SearchBox type="lookup" />
                 <ReleaseSeedButton data={data} origin={origin}/>
                 {sourceAlbum?.isVideo && 
