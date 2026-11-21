@@ -44,7 +44,7 @@ function ReleaseActionsMenu({ close, data, origin }: { close?: () => void, data:
             </div>
             <div className={styles.content}>
                 {/* <AlbumDetails data={data} /> */}
-                {notGreen && <Notice type={"notGreen"} />}
+                {notGreen && <Notice.notGreen />}
                 {notGreen && <ReleaseSeedButton data={data} origin={origin} type={"urls"} />}
                 <PopupActionButton
                     type="link"
