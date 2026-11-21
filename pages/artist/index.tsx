@@ -485,9 +485,9 @@ export default function Artist({ artist, error }: { artist: ArtistPageData, erro
 						])}
 					/>
 				</>}
-			{!artist.mbid && <Notice type={"noMBID"} data={artist} />}
-			{isQuickFetched && <Notice type={"quickFetched"} />}
-			{isAi && <Notice type={"aiArtist"} />}
+			{!artist.mbid && <Notice.noMBID data={artist} />}
+			{isQuickFetched && <Notice.quickFetched />}
+			{isAi && <Notice.aiArtist />}
 			<ArtistInfo artist={artist} />
 			<div id="contentContainer">{loading ? <ItemList type={"loadingAlbum"} text={statusText} refresh={refreshAlbums} items={[]} /> : <ItemList type={"album"} items={albums} text={statusText} refresh={refreshAlbums} viewItem={artist.viewingAlbum} />}</div>
 		</>

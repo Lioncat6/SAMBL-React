@@ -1,4 +1,4 @@
-import styles from "../styles/itemList.module.css";
+import styles from "../styles/itemList.module.scss";
 import Link from "next/link";
 import React, { useEffect, useState, memo, JSX, Provider } from "react";
 import { SAMBLSettingsContext, useSettings, useSettingsOrDefaults } from "./SettingsContext";
@@ -7,14 +7,14 @@ import { useExport as useExportState } from "./ExportState";
 import { List, RowComponentProps } from "react-window";
 import { FaDeezer, FaQuestionCircle } from "react-icons/fa";
 import { SiApplemusic, SiTidal } from "react-icons/si";
-import { FaAnglesRight, FaAnglesLeft, FaNotEqual, FaSoundcloud, FaBandcamp } from "react-icons/fa6";
+import { FaAnglesRight, FaAnglesLeft, FaNotEqual, FaSoundcloud, FaBandcamp, FaCircleInfo, FaCircleExclamation } from "react-icons/fa6";
 import { IoMdRefresh } from "react-icons/io";
 import { toast, Flip, ToastOptions } from "react-toastify";
 import text from "../utils/text";
 import { PiPlaylistBold } from "react-icons/pi";
 import { TbPlaylistOff } from "react-icons/tb";
 import editNoteBuilder from "../utils/editNoteBuilder";
-import { IoFilter } from "react-icons/io5";
+import { IoFilter, IoWarning } from "react-icons/io5";
 import { DisplayAlbum, FilterData } from "../types/component-types";
 import seeders from "../lib/seeders/seeders";
 import { AggregatedAlbum, AggregatedArtist, AlbumStack } from "../types/aggregated-types";
@@ -23,7 +23,7 @@ import ExportMenuPopup from "./Popups/ExportMenu";
 import TrackMenuPopup from "./Popups/TrackMenu";
 import FilterMenuPopup from "./Popups/FilterMenu";
 import toasts from "../utils/toasts";
-import { AlbumObject, ArtistObject, ObjectType, PartialArtistObject, ProviderNamespace, TrackObject } from "../types/provider-types";
+import { AlbumObject, ArtistObject, MessageType, ObjectType, PartialArtistObject, ProviderNamespace, SAMBLMessage, TrackObject } from "../types/provider-types";
 import { MdAlbum, MdAudiotrack, MdPerson } from "react-icons/md";
 import { SAMBLAPIResponse } from "../types/api-types";
 import { SAMBLArtistIcon } from "./icons";
@@ -33,7 +33,7 @@ import { RawSAMBLFetch } from "../utils/clientAPIHandler";
 import editUrlBuilder from "../utils/editUrlBuilder";
 
 function AlbumIcons({ item, refresh }: { item: DisplayAlbum, refresh: (fetchISRCs: boolean) => void }) {
-	const {settings} = useSettingsOrDefaults();
+	const { settings } = useSettingsOrDefaults();
 	const [aggregatedAlbum, sourceAlbum, targetAlbum] = albumStack.unstack(item)
 	const sourceArtist = item.aggregated?.sourceArtist;
 	const { status, albumIssues } = item;
@@ -161,6 +161,20 @@ function SelectionButtons({ item }) {
 	);
 }
 
+function MessageIcon({ message }: { message: SAMBLMessage }) {
+	const icons: Record<MessageType, JSX.Element> = {
+		"warning": <IoWarning />,
+		"info": <FaCircleInfo />,
+		"error": <FaCircleExclamation />
+	}
+	return (
+		<span
+			className={`${styles.messageIcon} ${styles[message.type]}`}
+			title={message.text}
+		>{icons[message.type]}</span>
+	)
+}
+
 const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; selecting?: boolean; onUpdate?: (updatedItem: DisplayAlbum) => void }) => {
 	const [isLoading, setIsLoading] = useState(false);
 	const exportState = useExportState()?.exportState;
@@ -179,14 +193,15 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 		trackCount,
 		albumType,
 		mbid,
-	} = item.aggregated;
-	const albumTracks = item.aggregated?.mediums.flatMap((medium) => medium.tracks) || [];
-	const sourceArtist = item.aggregated?.sourceArtist;
+		messages
+	} = aggregatedAlbum;
+	const albumTracks = aggregatedAlbum.mediums.flatMap((medium) => medium.tracks) || [];
+	const sourceArtist = aggregatedAlbum.sourceArtist;
 
 	async function refreshData(fetchISRCs = false) {
 		setIsLoading(true);
 		try {
-			const response = await toasts.dispPromise(RawSAMBLFetch<AlbumStack>(`/api/compareSingleAlbum?url=${url.url}${sourceArtist?.mbid ? `&mbid=${sourceArtist.mbid}`:''}${sourceArtist?.id ? `&artist_id=${sourceArtist?.id}`: ''}${fetchISRCs ? '&fetchISRCs' : ""}`), "Refreshing album...", "Failed to fetch album");
+			const response = await toasts.dispPromise(RawSAMBLFetch<AlbumStack>(`/api/compareSingleAlbum?url=${url.url}${sourceArtist?.mbid ? `&mbid=${sourceArtist.mbid}` : ''}${sourceArtist?.id ? `&artist_id=${sourceArtist?.id}` : ''}${fetchISRCs ? '&fetchISRCs' : ""}`), "Refreshing album...", "Failed to fetch album");
 			setIsLoading(false);
 			if (response.data) {
 				const album = response.data
@@ -253,7 +268,6 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 		"data-tracks-without-isrcs": getTracksWithoutISRCs(),
 		"data-barcode": targetAlbum?.upc || "",
 	};
-
 	return (
 		<div className={`${styles.listItem} ${styles.album}`} {...data_params}>
 			<div className={styles.innerItem}>
@@ -286,6 +300,11 @@ const AlbumItem = ({ item, selecting = false, onUpdate }: { item: DisplayAlbum; 
 								/>
 							</a>
 						)}
+						{(messages && messages?.length > 0) && 
+							<div>
+								{messages?.map((message) => MessageIcon({message}))}
+							</div>
+						}
 						<div className={`${styles.refreshIcon} ${isLoading && styles.loading}`} onClick={() => (refreshData())} title="Refresh Album Data">
 							<IoMdRefresh />
 						</div>

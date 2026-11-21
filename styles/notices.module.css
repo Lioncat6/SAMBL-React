@@ -98,3 +98,8 @@
     opacity: 0 !important;
     transform: scale(0.95);
 }
+
+.providerIcon {
+    cursor: help;
+    filter: saturate(0.8);
+}

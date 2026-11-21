@@ -113,7 +113,7 @@ export default function NewArtist({ artist, error }: { artist?: ArtistPageData, 
                     artist.relevance,
                 ])}
             />
-            {(artist.ids && artist.ids?.length > 1) && <Notice text={`This page only supports a single artist ID; Ignored IDs: ${artist.ids.toSpliced(0, 1).join(", ")}`} />}
+            {(artist.ids && artist.ids?.length > 1) && <Notice.custom text={`This page only supports a single artist ID; Ignored IDs: ${artist.ids.toSpliced(0, 1).join(", ")}`} />}
             <ArtistInfo artist={artist} />
             <div id="contentContainer">
                 <AddButtons artist={artist} />

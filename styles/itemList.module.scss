@@ -766,3 +766,17 @@
 .listItem:hover .refreshIcon {
   color: var(--foreground-tertiary);
 }
+
+.messageIcon {
+  margin-left: 2px;
+  &.warning {
+    color: var(--status-orange)
+  }
+  &.info {
+    color: var(--status-blue)
+  }
+  &.error {
+    color: var(--status-red)
+  }
+  cursor: help;
+}

@@ -1,14 +1,18 @@
 import styles from "../styles/notices.module.css";
+import providerColors from '../styles/providerColors.module.css'
 import text from "../utils/text";
 import editNoteBuilder from "../utils/editNoteBuilder";
 import { ArtistPageData } from "../types/component-types";
 import { JSX, useState } from "react";
-import { FaXmark } from "react-icons/fa6";
+import { FaCircleExclamation, FaCircleInfo, FaXmark } from "react-icons/fa6";
 import { Transition } from "@headlessui/react";
 import editUrlBuilder from "../utils/editUrlBuilder";
 import { useSettingsOrDefaults } from "./SettingsContext";
+import { MessageType, ProviderNamespace, SAMBLMessage } from "../types/provider-types";
+import { IoWarning } from "react-icons/io5";
+import clientProviders from "../utils/clientProviders";
 
-function NoticeBox({ color, text, button }: { color: string, text?: string, button?: JSX.Element | null }) {
+function NoticeBox({ color, text, button }: { color?: string, text?: string | JSX.Element, button?: JSX.Element | null }) {
 	const [visible, setVisible] = useState(true);
 	function dismiss() {
 		setVisible(false);
@@ -23,7 +27,7 @@ function NoticeBox({ color, text, button }: { color: string, text?: string, butt
 				leaveTo={styles.noticeLeaveTo}
 			>
 				<div className={styles.noticeBox}>
-					<div className={`${styles.boxBorder} ${styles[color]}`}></div>
+					<div className={`${styles.boxBorder} ${color && styles[color]}`}></div>
 					<div className={styles.noticeContent}>
 						<div className={styles.topNoticeText}>{text}</div>
 						{button}
@@ -125,30 +129,35 @@ function NotGreenNotice() {
 	);
 }
 
-type NoticeType =
-	"noMBID" |
-	"quickFetched" |
-	"aiArtist" |
-	"onHarmony" |
-	"notGreen"
-
-export default function Notice({ data, type, text, color, button }: { data?: any, type?: NoticeType, text?: string, color?: string, button?: JSX.Element }): JSX.Element | null {
-	if (type === "noMBID") {
-		return <NoMBIDNotice data={data} />;
-	} else if (type === "quickFetched") {
-		return <QuickFetchedNotice />;
-	} else if (type === "aiArtist") {
-		return <AIArtistNotice />;
-	} else if (type === "onHarmony") {
-		return <OnHarmonyNotice url={data} />
-	} else if (type === "notGreen") {
-		return <NotGreenNotice />
-	} else {
-		return <NoticeBox
-			color={color ?? "orange"}
-			text={text}
-			button={button}
-		/>
+function ProviderMessageNotice({message}: {message: SAMBLMessage}) {
+	const icons: Record<MessageType, JSX.Element> = {
+		"warning": <IoWarning />,
+		"info": <FaCircleInfo />,
+		"error": <FaCircleExclamation />
 	}
-	return null;
+	const colors: Record<MessageType, string> = {
+		"warning": "orange",
+		"info": "skyblue",
+		"error": "red"
+	}
+	return (
+		<NoticeBox 
+			color={colors[message.type]}
+			text={<>{message.provider && <span className={`${styles.providerIcon} ${providerColors[message.provider]}`} title={clientProviders.getDisplayName(message.provider)}>{clientProviders.getDisplayIcon(message.provider)}</span>} {icons[message.type]} Provider {text.capitalizeFirst(message.type)}: <code>{message.text}</code></>}
+		/>
+	)
 }
+
+
+
+const Notice = {
+	noMBID: NoMBIDNotice,
+	quickFetched: QuickFetchedNotice,
+	aiArtist: AIArtistNotice,
+	onHarmony: OnHarmonyNotice,
+	notGreen: NotGreenNotice,
+	providerMessage: ProviderMessageNotice,
+	custom: NoticeBox
+}
+
+export default Notice;
