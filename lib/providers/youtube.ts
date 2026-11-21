@@ -1,4 +1,4 @@
-import { AlbumObject, ArtistObject, Capabilities, FullProvider, PartialArtistObject, PartialProvider, RawAlbumData, TrackObject } from "../../types/provider-types";
+import { AlbumObject, ArtistObject, Capabilities, FullProvider, PartialArtistObject, PartialProvider, RawAlbumData, SAMBLMessage, TrackObject } from "../../types/provider-types";
 import withCache from "../../utils/cache";
 import ErrorHandler from "../../utils/errorHandler";
 import medium from "../../utils/medium";
@@ -113,6 +113,7 @@ function parseWikiUrls(urls: string[] | null | undefined): string[] {
 }
 
 function formatAlbumObject(album: YTVideo | YTPlaylistItem): AlbumObject {
+    console.log(JSON.stringify(album))
     const video = album as YTVideo | YTPlaylistItem;
     const snippet = video.snippet;
     const artists: PartialArtistObject[] = getPartialArtistsFromSnippet(snippet) ?? [];
@@ -123,6 +124,10 @@ function formatAlbumObject(album: YTVideo | YTPlaylistItem): AlbumObject {
     let id = video.id;
     if ("resourceId" in snippet && snippet.resourceId?.videoId) {
         id = snippet.resourceId?.videoId
+    }
+    let messages: SAMBLMessage[] = [];
+    if ("categoryId" in video.snippet && video.snippet.categoryId != "10") {
+        messages.push({provider: namespace, type: "warning", text: `This video is not categorized as Music by YouTube; Category: ${video.snippet.categoryId}`})
     }
     const albumObject: AlbumObject = {
         provider: namespace,
@@ -143,7 +148,8 @@ function formatAlbumObject(album: YTVideo | YTPlaylistItem): AlbumObject {
         imageUrl: getThumbnailURL(snippet.thumbnails),
         imageUrlSmall: getThumbnailURL(snippet.thumbnails, true),
         isVideo: true,
-        comment: snippet.description
+        comment: snippet.description,
+        messages
     }
     return albumObject;
 }
@@ -163,6 +169,10 @@ function formatTrackObject(track: YTVideo | YTPlaylistItem): TrackObject {
     if (video.contentDetails && "endAt" in video.contentDetails) {
         duration = video.contentDetails.endAt ? Number(video.contentDetails.endAt) * 1000 : null;
     }
+    let messages: SAMBLMessage[] = [];
+    if ("categoryId" in video.snippet && video.snippet.categoryId != "10") {
+        messages.push({provider: namespace, type: "warning", text: `This video is not categorized as Music by YouTube; Category: ${video.snippet.categoryId}`})
+    }
     const TrackObject: TrackObject = {
         provider: namespace,
         type: "track",
@@ -179,7 +189,8 @@ function formatTrackObject(track: YTVideo | YTPlaylistItem): TrackObject {
         imageUrlSmall: getThumbnailURL(snippet.thumbnails, true),
         duration: duration,
         isVideo: true,
-        comment: snippet.description
+        comment: snippet.description,
+        messages
     }
     return TrackObject;
 }
@@ -243,6 +254,7 @@ function formatArtistObject(artist: YTChannel | YTArtistSearchResult): ArtistObj
         const snippet = channel.snippet;
         const banners = channel.brandingSettings?.image;
         const thumbnails = channel.snippet.thumbnails
+        console.log(channel)
         const artistObject: ArtistObject = {
             name: snippet.title,
             id: channel.id,
@@ -262,7 +274,7 @@ function formatArtistObject(artist: YTChannel | YTArtistSearchResult): ArtistObj
     } else {
         const channel = artist as YTArtistSearchResult;
         const snippet = channel.snippet;
-        const thumbnails = channel.snippet.thumbnails
+        const thumbnails = channel.snippet.thumbnails;
         const artistObject: ArtistObject = {
             name: snippet.title,
             id: channel.id.channelId,
