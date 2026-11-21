@@ -7,7 +7,7 @@ import { DisplayAlbum } from "../types/component-types";
 
 export default function processData(sourceAlbums: AlbumObject[], providerAlbums: AlbumObject[] | undefined, targetAlbums: ExtendedAlbumObject[], provider: ProviderNamespace, currentArtist?: PartialArtistObject | null, quick = false, full = false, aggregateSourceTracks = false): AggregatedData {
 	let albumData: AlbumStack[] = [];
-	let sourceIdsArray: string[] = [];
+	let albumSignatures: string[] = [];
 	let green = 0;
 	let red = 0;
 	let orange = 0;
@@ -59,24 +59,12 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 		let albumStatus: AlbumStatus = "red" as AlbumStatus;
 
 		//Provider data
-		let provider = sourceAlbum.provider;
-		let providerId = sourceAlbum.id;
-		let providerAlbumName = sourceAlbum.name;
+		let sourceProvider = sourceAlbum.provider;
+		let sourceId = sourceAlbum.id;
 		let providerUrl = sourceAlbum.url;
-		let providerAlbumImage = sourceAlbum.imageUrl || "";
-		let providerAlbumImageSmall = sourceAlbum.imageUrlSmall || providerAlbumImage;
-		let providerAlbumArtists = sourceAlbum.albumArtists;
-		let providerArtistNames = sourceAlbum.artistNames;
-		let providerReleaseDate = sourceAlbum.releaseDate;
-		let providerTrackCount = sourceAlbum.trackCount;
-		let providerMediumCount = sourceAlbum.mediums.length;
-		let providerAlbumType = sourceAlbum.albumType;
-		let providerBarcode = sourceAlbum.upc || null;
-		let providerMediums = sourceAlbum.mediums;
-		let providerGenres = sourceAlbum.genres;
-		let providerCopyrights = sourceAlbum.copyrights;
-		let providerLabels = sourceAlbum.labels;
+		let sourceMediums = sourceAlbum.mediums;
 		let albumIssues: AlbumIssue[] = [];
+
 		let matchedTargetAlbum: ExtendedAlbumObject | null = null as ExtendedAlbumObject | null; //Typescript, why must you be like this
 
 		function tryMap(map: Map<String, ExtendedAlbumObject[]>, input: string, status: AlbumStatus) {
@@ -86,7 +74,7 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 					albumStatus = status;
 					matchedTargetAlbum = albumMatch;
 					// prefer the first exact URL match
-					if (albumMatch.trackCount == providerTrackCount && (providerBarcode ? (albumMatch.upc == providerBarcode) : true)) {
+					if (albumMatch.trackCount == sourceAlbum.trackCount && (sourceAlbum.upc ? (albumMatch.upc == sourceAlbum.upc) : true)) {
 						break; //Break if match is good enough, keep looping if not
 					}
 				}
@@ -95,11 +83,11 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 
 		// Try URL map
 		const sourceUrl = providerUrl.url?.trim();
-		tryMap(targetIdAlbumMap, parser.parseUrl(sourceUrl)?.id || providerId, "green")
+		tryMap(targetIdAlbumMap, parser.parseUrl(sourceUrl)?.id || sourceId, "green")
 
 		// Try UPC map
-		if (albumStatus == "red" && providerBarcode) {
-			const formattedUPC = text.removeLeadingZeros(providerBarcode).toString()
+		if (albumStatus == "red" && sourceAlbum.upc) {
+			const formattedUPC = text.removeLeadingZeros(sourceAlbum.upc).toString()
 			if (formattedUPC != "") {
 				tryMap(targetUPCAlbumMap, formattedUPC, "blue")
 			}
@@ -107,9 +95,11 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 
 		// Try name map
 		if (albumStatus == "red") {
-			const normalized = text.normalizeText(providerAlbumName || "");
+			const normalized = text.normalizeText(sourceAlbum.name);
 			tryMap(targetNameAlbumMap, normalized, "orange")
 		}
+
+		let targetMediums = matchedTargetAlbum?.mediums;
 
 		// TODO: Figure out a way to do this client side
 		// const allProviders = providers.getAllProviders(["config"]);
@@ -118,15 +108,15 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 
 		let aggregatedMediums: AggregatedMedium[] = [];
 
-		if (albumStatus != "red" && matchedTargetAlbum) {
+		if (albumStatus != "red" && matchedTargetAlbum && targetMediums) {
 
-			let aggregateMediums = (matchedTargetAlbum.mediums.length == sourceAlbum.mediums.length);
+			let aggregateMediums = (targetMediums?.length == sourceAlbum.mediums.length);
 			if (aggregateMediums) {
-				for (const mediumIndex in matchedTargetAlbum.mediums) {
-					if (matchedTargetAlbum.mediums[mediumIndex].tracks.length != sourceAlbum.mediums[mediumIndex].tracks.length) aggregateMediums = false;
+				for (const mediumIndex in targetMediums) {
+					if (targetMediums[mediumIndex].tracks.length != sourceAlbum.mediums[mediumIndex].tracks.length) aggregateMediums = false;
 				}
 			}
-			const flatTargetTracks = matchedTargetAlbum.mediums.flatMap(medium => medium.tracks);
+			const flatTargetTracks = targetMediums.flatMap(medium => medium.tracks);
 			const flatSourceTracks = sourceAlbum.mediums.flatMap(medium => medium.tracks);
 			
 
@@ -138,9 +128,10 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 
 			let alignedISRCs: (string[] | null)[][] = [];
 			let tracksWithoutISRCs = 0;
-			for (let mediumIndex in matchedTargetAlbum.mediums) {
-				for (let trackIndex in matchedTargetAlbum.mediums[mediumIndex].tracks) {
-					const track = matchedTargetAlbum.mediums[mediumIndex].tracks[trackIndex];
+			for (let mediumIndex in targetMediums) {
+				for (let trackIndex in targetMediums[mediumIndex].tracks) {
+					const track = targetMediums[mediumIndex].tracks[trackIndex];
+					if (!alignedISRCs[mediumIndex]) alignedISRCs[mediumIndex] = []
 					alignedISRCs[mediumIndex][trackIndex] = track.isrcs.map(isrc => isrc.toUpperCase());
 					if (track.isrcs.length == 0) tracksWithoutISRCs++;
 				}
@@ -155,17 +146,42 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 						
 					}
 				}
+			} else {
+				for (let mediumIndex in sourceAlbum.mediums) {
+					for (let trackIndex in sourceAlbum.mediums[mediumIndex].tracks) {
+						const currentTrack = sourceAlbum.mediums[mediumIndex].tracks[trackIndex];
+						if (currentTrack.isrcs && currentTrack.isrcs.some((isrc) => alignedISRCs[mediumIndex][trackIndex]?.includes(isrc))) {
+						
+					}
+					}
+				}
 			}
 
 			//Track Aggregation3
 
+			if (!aggregateMediums){
+				// If mediums don't line up, force them to all be one. aggregateTracks takes care of if that will line up
+				sourceMediums = [{
+					tracks: sourceMediums.flatMap((medium) => medium.tracks),
+					format: sourceMediums[0]?.format,
+					number: 1
+				}]
+				targetMediums = [{
+					tracks: targetMediums.flatMap((medium) => medium.tracks),
+					format: targetMediums[0]?.format,
+					number: 1
+				}]
+			}
+
 			if (aggregateTracks) {
-				for (const medium of providerMediums) {
+				for (const mediumIndex in sourceMediums) {
 					let aggregatedTracks: AggregatedTrack[] = [];
-					for (let i = 0; i < medium.tracks.length; i++) {
+					let sourceMedium = sourceAlbum.mediums[mediumIndex];
+					let targetMedium = targetMediums?.[mediumIndex];
+					for (let trackIndex = 0; trackIndex < sourceMedium.tracks.length; trackIndex++) {
 						let trackIssues: TrackIssue[] = [];
-						let sourceTrack = medium.tracks[i];
-						let targetTrack = targetTracks[i] || null;
+						let sourceTrack = sourceMedium.tracks[trackIndex];
+						let targetTrack = targetMedium.tracks[trackIndex];
 						let status: TrackStatus = "orange";
 						// export type TrackIssue = 'noISRC' | 'ISRCDiff' | 'noUrl' | 'noDuration' | "artistDiff"
 						const shouldHaveISRC = (sourceTrack.isrcs && sourceTrack.isrcs.length > 0);
@@ -229,42 +245,44 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 							// sourceArtist: currentArtist || null,
 							trackIssues: trackIssues,
 							isrcs: sourceTrack.isrcs.length > 0 ? sourceTrack.isrcs : targetTrack.isrcs.length > 0 ? targetTrack.isrcs : [],
-							trackNumber: sourceTrack.trackNumber || targetTrack.trackNumber || Number(i) + 1
+							trackNumber: sourceTrack.trackNumber || targetTrack.trackNumber || Number(trackIndex) + 1
 						});
 					}
 					aggregatedMediums.push({
-						...medium,
+						...sourceMedium,
 						tracks: aggregatedTracks
 					})
 				}
 			}
 
-			if ((!mbBarcode || mbBarcode == null) && (providerBarcode || alwaysBarcodeProviders.includes(provider))) {
+			if (!matchedTargetAlbum.upc && (sourceAlbum.upc || alwaysBarcodeProviders.includes(sourceProvider))) {
 				albumIssues.push("noUPC");
-			} else if (providerBarcode && providerBarcode.replace(/^0+/, '') != mbBarcode?.replace(/^0+/, '')) {
+			} else if (sourceAlbum.upc && text.removeLeadingZeros(sourceAlbum.upc) != text.removeLeadingZeros(matchedTargetAlbum.upc ?? 0)) {
 				albumIssues.push("UPCDiff")
 			}
-			if (tracksWithoutISRCs > 0 && (providerHasISRCs || alwaysISRCProviders.includes(provider))) {
+			if (tracksWithoutISRCs > 0 && (providerHasISRCs || alwaysISRCProviders.includes(sourceProvider))) {
 				albumIssues.push("missingISRCs");
 			} else if (!hasMatchingISRCs && aggregateTracks) {
 				albumIssues.push("ISRCDiff")
 			}
-			if (targetTrackCount && (targetTrackCount != providerTrackCount) && providerTrackCount != null) {
+			if (matchedTargetAlbum.trackCount != null && sourceAlbum.trackCount != null && (matchedTargetAlbum.trackCount != sourceAlbum.trackCount)) {
 				aggregateTracks = false;
 				albumIssues.push("trackDiff");
 			}
-			if (mbReleaseDate == "" || mbReleaseDate == undefined || !mbReleaseDate) {
+			if (matchedTargetAlbum.releaseDate == "" || !matchedTargetAlbum.releaseDate) {
 				albumIssues.push("noDate");
-			} else if (mbReleaseDate != providerReleaseDate) {
+			} else if (matchedTargetAlbum.releaseDate != sourceAlbum.releaseDate) {
 				albumIssues.push("dateDiff");
 			}
-			if (!finalHasCoverArt && !quick) {
+			if (!matchedTargetAlbum.hasImage && !quick) {
 				albumIssues.push("noCover");
 			}
 
 		}
 
-		if (!sourceIdsArray.find((a) => a === provider + providerId)) { //Deduplicate; Will eventually support multiple providers in once comparison, so we probably don't want to have collisions if two different streaming services use the same ID for some reason
+		const albumSignature = `${sourceAlbum.provider}.${sourceId}`
+
+		if (!albumSignatures.find((sig) => sig === albumSignature)) { //Deduplicate; Will eventually support multiple providers in once comparison, so we probably don't want to have collisions if two different streaming services use the same ID for some reason
 			let albumMatches: AlbumMatch[] = []
 			albumMatches.push({
 				type: "source",
@@ -286,29 +304,15 @@ export default function processData(sourceAlbums: AlbumObject[], providerAlbums:
 			} else {
 				red++;
 			}
-			sourceIdsArray.push(provider + providerId);
+			albumSignatures.push(albumSignature);
 			albumData.push({
 				albumIssues,
 				status: albumStatus,
 				aggregated: {
-					provider: provider,
-					id: providerId,
-					name: providerAlbumName,
-					url: providerUrl,
-					imageUrl: providerAlbumImage,
-					imageUrlSmall: providerAlbumImageSmall,
-					albumArtists: providerAlbumArtists,
-					artistNames: providerArtistNames,
-					releaseDate: providerReleaseDate,
-					trackCount: providerTrackCount,
-					albumType: providerAlbumType,
-					upc: providerBarcode,
+					...sourceAlbum,
 					mediums: aggregatedMediums,
-					mbid: matchedTargetAlbum?.mbid,
-					sourceArtist: currentArtist || null,
-					labels: providerLabels,
-					copyrights: providerCopyrights,
-					genres: providerGenres,
+					mbid: matchedTargetAlbum?.mbid ?? sourceAlbum.mbid,
+					sourceArtist: currentArtist ?? null,
 					type: "album"
 				},
 				albums: albumMatches
