@@ -5,6 +5,7 @@ import medium from "../../utils/medium";
 import text from "../../utils/text";
 import parsers from "../parsers/parsers";
 import { youtube_v3, youtube as youtubeAPI } from '@googleapis/youtube'
+import { getYouTubeCategory, getYouTubeTopic, musicCategoryId, musicTopicId } from "./lib/youtube-topics-genres";
 
 const namespace = "youtube";
 
@@ -113,12 +114,14 @@ function parseWikiUrls(urls: string[] | null | undefined): string[] {
 }
 
 function formatAlbumObject(album: YTVideo | YTPlaylistItem): AlbumObject {
-    console.log(JSON.stringify(album))
     const video = album as YTVideo | YTPlaylistItem;
     const snippet = video.snippet;
     const artists: PartialArtistObject[] = getPartialArtistsFromSnippet(snippet) ?? [];
     let genres: string[] = [];
     if ("tags" in snippet && "topicDetails" in video) {
+        //...video.topicDetails?.topicIds?.map((id) => getYouTubeTopic(id) ?? id) ?? []
+        // /\ Usually undefined
+        //...parseWikiUrls(video.topicDetails?.topicCategories)
         genres = [...snippet.tags ?? [], ...parseWikiUrls(video.topicDetails?.topicCategories)]
     }
     let id = video.id;
@@ -126,8 +129,8 @@ function formatAlbumObject(album: YTVideo | YTPlaylistItem): AlbumObject {
         id = snippet.resourceId?.videoId
     }
     let messages: SAMBLMessage[] = [];
-    if ("categoryId" in video.snippet && video.snippet.categoryId != "10") {
-        messages.push({provider: namespace, type: "warning", text: `This video is not categorized as Music by YouTube; Category: ${video.snippet.categoryId}`})
+    if ("categoryId" in video.snippet && video.snippet.categoryId && video.snippet.categoryId != musicCategoryId) {
+        messages.push({provider: namespace, type: "warning", text: `This video is not categorized as Music by YouTube; Category: ${getYouTubeCategory(video.snippet.categoryId) ?? video.snippet.categoryId}`})
     }
     const albumObject: AlbumObject = {
         provider: namespace,
@@ -170,8 +173,8 @@ function formatTrackObject(track: YTVideo | YTPlaylistItem): TrackObject {
         duration = video.contentDetails.endAt ? Number(video.contentDetails.endAt) * 1000 : null;
     }
     let messages: SAMBLMessage[] = [];
-    if ("categoryId" in video.snippet && video.snippet.categoryId != "10") {
-        messages.push({provider: namespace, type: "warning", text: `This video is not categorized as Music by YouTube; Category: ${video.snippet.categoryId}`})
+    if ("categoryId" in video.snippet && video.snippet.categoryId && video.snippet.categoryId != musicCategoryId) {
+        messages.push({provider: namespace, type: "warning", text: `This video is not categorized as Music by YouTube; Category: ${getYouTubeCategory(video.snippet.categoryId) ?? video.snippet.categoryId}`})
     }
     const TrackObject: TrackObject = {
         provider: namespace,
@@ -254,7 +257,10 @@ function formatArtistObject(artist: YTChannel | YTArtistSearchResult): ArtistObj
         const snippet = channel.snippet;
         const banners = channel.brandingSettings?.image;
         const thumbnails = channel.snippet.thumbnails
-        console.log(channel)
+        let messages: SAMBLMessage[] = [];
+        if (channel.topicDetails?.topicIds && !channel.topicDetails?.topicIds?.includes(musicTopicId)) {
+            messages.push({provider: namespace, type: "warning", text: `This channel is not categorized as Music by YouTube; Topics: ${channel.topicDetails.topicIds.map((id) => getYouTubeTopic(id)).join(", ")}`})
+        }
         const artistObject: ArtistObject = {
             name: snippet.title,
             id: channel.id,
@@ -267,14 +273,17 @@ function formatArtistObject(artist: YTChannel | YTArtistSearchResult): ArtistObj
             bannerUrl: getChannelImage(banners?.bannerImageUrl ?? banners?.bannerTvImageUrl),
             imageUrl: getChannelImage(thumbnails?.maxres?.url ?? thumbnails?.default?.url),
             imageUrlSmall: getChannelImage(thumbnails?.default?.url, true),
-            genres: [...channel.brandingSettings?.channel?.keywords?.split(",") ?? [], ...parseWikiUrls(channel.topicDetails?.topicCategories)],
-            url: createUrl('artist', channel.id)
+            //parseWikiUrls(channel.topicDetails?.topicCategories)
+            genres: [...channel.brandingSettings?.channel?.keywords?.split(",") ?? [], ...channel.topicDetails?.topicIds?.map((id) => getYouTubeTopic(id) ?? id) ?? []],
+            url: createUrl('artist', channel.id),
+            messages
         }
         return artistObject;
     } else {
         const channel = artist as YTArtistSearchResult;
         const snippet = channel.snippet;
         const thumbnails = channel.snippet.thumbnails;
+        
         const artistObject: ArtistObject = {
             name: snippet.title,
             id: channel.id.channelId,
