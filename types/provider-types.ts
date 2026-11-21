@@ -28,6 +28,18 @@ export class GenericObject {
      * Either pulled from the object source or when matched during aggregation
      */
     mbid?: string | null;
+    /**
+     * Messages to display in the SAMBL client
+     */
+    messages?: SAMBLMessage[]
+}
+
+export type MessageType = "warning" | "error" | "info";
+
+export interface SAMBLMessage {
+    provider: ProviderNamespace;
+    type: MessageType;
+    text: string;
 }
 
 export class ImageObject extends GenericObject {
